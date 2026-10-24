@@ -45,6 +45,11 @@ namespace EnrageWestworld.Core
         [DataMember] public int Deaths;                            // times died and woke again
         [DataMember] public int SparedSeen;                        // enRAGE's count of the times the player let them go, last we looked
 
+        // 0.6: the Awakening
+        [DataMember] public int WakeStage;                         // 0 asleep, 1 stirring, 2 questioning, 3 unravelling, 4 awake
+        [DataMember] public long WakeStageAt;                      // game minute the current stage began
+        [DataMember] public bool WakeRolled;                       // the chance of starting already stirring has been rolled for this person
+
         public bool Has(string topic)
         {
             return Told.Contains(topic);

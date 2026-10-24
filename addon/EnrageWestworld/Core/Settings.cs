@@ -10,7 +10,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 7;
+        public const int CurrentVersion = 12;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -45,6 +45,9 @@ namespace EnrageWestworld.Core
         public int StrangerReturnChance = 5;
         public bool HostsQuestionReality = true;
         public int RealityChance = 15;
+        public int AwakeningShare = 5;
+        public int AwakeningDays = 6;
+        public int AwakeningDespair = 2;
         public bool SpokenVoice = true;
         public int VoiceVolume = 80;
         public string VoiceMan = string.Empty;
@@ -56,7 +59,7 @@ namespace EnrageWestworld.Core
         public int StalkerDayOnly = 25;
         public int StalkerNightOnly = 50;
         public int StalkerBoth = 25;
-        public int StalkerMinutes = 8;
+        public int StalkerMinutes = 120;
 
         // [World]
         public bool Deeds = true;
@@ -105,7 +108,9 @@ namespace EnrageWestworld.Core
         public string NewsTo = "ticker";
         public bool UseGameFeed;
         public string TestKey = "F7";
+        public string WarNewsTo = "right";
         public string FlirtKey = "F6";
+        public string WakeKey = "G";
         public string ReaderKey = "F5";
         public bool ReloadIni = true;
         public bool DebugLog;
@@ -206,6 +211,8 @@ namespace EnrageWestworld.Core
                     s.TestKey = "F7";
                 if (s.SettingsVersion < 6 && s.StalkerChance == 8)
                     s.StalkerChance = 20;   // the old default: stalkers were too rare to ever meet
+                if (s.SettingsVersion < 8 && (s.StalkerMinutes == 8 || s.StalkerMinutes == 60))
+                    s.StalkerMinutes = 120; // the old default and the old ceiling: a stalker now stays up to two hours
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
                 log?.Invoke("Settings: updated " + Path.GetFileName(path) + " to this version (your values kept, new options added).");
@@ -219,12 +226,15 @@ namespace EnrageWestworld.Core
             ReturnChance = Math.Max(0, Math.Min(100, ReturnChance));
             StrangerReturnChance = Math.Max(0, Math.Min(100, StrangerReturnChance));
             RealityChance = Math.Max(0, Math.Min(100, RealityChance));
+            AwakeningShare = Math.Max(0, Math.Min(100, AwakeningShare));
+            AwakeningDays = Math.Max(1, Math.Min(60, AwakeningDays));
+            AwakeningDespair = Math.Max(0, Math.Min(10, AwakeningDespair));
             VoiceVolume = Math.Max(0, Math.Min(100, VoiceVolume));
             StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerDayOnly = Math.Max(0, Math.Min(1000, StalkerDayOnly));
             StalkerNightOnly = Math.Max(0, Math.Min(1000, StalkerNightOnly));
             StalkerBoth = Math.Max(0, Math.Min(1000, StalkerBoth));
-            StalkerMinutes = Math.Max(1, Math.Min(60, StalkerMinutes));
+            StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
             TickerSeconds = Math.Max(4, Math.Min(120, TickerSeconds));
@@ -283,6 +293,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("StrangerReturnChance = " + StrangerReturnChance + "   ; percent of strangers you kill who come back");
             b.AppendLine("HostsQuestionReality = " + B(HostsQuestionReality) + "   ; people sometimes wonder whether their world is real");
             b.AppendLine("RealityChance = " + RealityChance + "   ; percent of remarks and thoughts that drift that way");
+            b.AppendLine("AwakeningShare = " + AwakeningShare + "   ; percent of the living who slowly wake up and see the world for what it is (0 turns it off)");
+            b.AppendLine("AwakeningDays = " + AwakeningDays + "   ; in-game days a woken person spends on each of the first three stages");
+            b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, armed and alone, can't bear it and ends their own life (0 turns this off; a content note is in the readme)");
             b.AppendLine("SpokenVoice = " + B(SpokenVoice) + "   ; those lines are also read aloud with the Windows voice");
             b.AppendLine("VoiceVolume = " + VoiceVolume + "   ; 0-100");
             b.AppendLine("VoiceMan = " + (VoiceMan ?? "") + "   ; part of the name of the Windows voice for men (the log lists the installed ones); empty = any man's voice");
@@ -294,7 +307,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("StalkerDayOnly = " + StalkerDayOnly + "   ; on a stalker day, weight for just a daytime stalker (05:00 to 18:00)");
             b.AppendLine("StalkerNightOnly = " + StalkerNightOnly + "   ; ... weight for just a night stalker (18:00 to 05:00)");
             b.AppendLine("StalkerBoth = " + StalkerBoth + "   ; ... weight for one by day and another at night (the three weights are relative, e.g. 25/50/25)");
-            b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; longest a stalker keeps it up (real minutes)");
+            b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; how long a stalker keeps it up (real minutes, up to 240)");
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");
@@ -343,7 +356,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("NewsTo = " + NewsTo + "   ; where news and thoughts go: ticker, subtitles, enrage (enRAGE's own notices) or gamefeed");
             b.AppendLine("UseGameFeed = " + B(UseGameFeed) + "   ; EXPERIMENTAL: the game's top-left toasts (same as NewsTo = gamefeed)");
             b.AppendLine("TestKey = " + TestKey + "   ; shows what the nearest person enRAGE knows thinks of you");
+            b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: right (the game's pop-ups on the right of the screen) or ticker");
             b.AppendLine("FlirtKey = " + FlirtKey + "   ; look at someone (as if to greet them) and press it to flirt");
+            b.AppendLine("WakeKey = " + WakeKey + "   ; testing the Awakening: face one of enRAGE's people and press it to wake them one stage (set it to something unused, or a combination like Ctrl+G)");
             b.AppendLine("ReaderKey = " + ReaderKey + "   ; read the diaries, letters and clippings you carry");
             b.AppendLine("ReloadIni = " + B(ReloadIni) + "   ; pick up changes to this file while the game runs");
             b.AppendLine("DebugLog = " + B(DebugLog));

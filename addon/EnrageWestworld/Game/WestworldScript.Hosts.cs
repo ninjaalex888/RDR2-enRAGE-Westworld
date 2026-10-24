@@ -368,7 +368,7 @@ namespace EnrageWestworld.InGame
             _stalkerLabel = label;
             _stalkerIsTest = test;
             _stalkerIsDay = day;
-            _stalker = new Stalker(f, label, woman, Math.Max(2, _cfg.StalkerMinutes - _rng.Next(Math.Max(1, _cfg.StalkerMinutes / 3))));
+            _stalker = new Stalker(f, label, woman, _cfg.StalkerMinutes);
             _stalkerPendingUntil = now + 25000;
             Log.Write("STALKER begins: " + label + (f != null ? " (killed " + (f.Town ?? f.Zone ?? "somewhere") + ")" : "") + (test ? " (test)" : day ? " (daytime)" : f == null ? " (night)" : "") +
                       ", game time " + Clock(Bridge.Now()));

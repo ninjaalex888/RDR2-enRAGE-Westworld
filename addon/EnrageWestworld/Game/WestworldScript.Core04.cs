@@ -33,7 +33,7 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<string, int> _featureErrors = new Dictionary<string, int>();
         private readonly HashSet<string> _featureOff = new HashSet<string>();
         private Action _aFrame, _aReader, _aEvents, _aRequests, _aIni, _aPlaces, _aHosts, _aStalker, _aDrama, _aCeremony, _aCast, _aPickups, _aMission,
-            _aPlead, _aTheft, _aArrival, _aLater;
+            _aPlead, _aTheft, _aArrival, _aLater, _aVoices, _aWake, _aWakeActs;
         private bool _missionPaused;
 
         /// Runs one feature; if it keeps throwing, only that feature is switched off (not the whole add-on).
@@ -70,6 +70,9 @@ namespace EnrageWestworld.InGame
             _aPlaces = () => Places(_now);
             _aHosts = () => HostsTick(_now);
             _aStalker = () => StalkerTick(_now);
+            _aVoices = () => VoicesTick(_now);
+            _aWake = () => WakeTick(_now);
+            _aWakeActs = () => WakeActsTick(_now);
             _aDrama = () => DramaTick(_now);
             _aCeremony = () => Ceremonies(_now);
             _aCast = () => CastTick(_now);
@@ -82,6 +85,8 @@ namespace EnrageWestworld.InGame
             _iniPath = Path.Combine(_dir, "enRAGE-Westworld.ini");
             _iniStamp = EnrageWestworld.Core.Settings.Stamp(_iniPath);
             ApplySettings();
+            LoadVoices();
+            Feed.Thinking = (who, text) => _ticker.Push(who + ", thinking", text, "near");
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
                       ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "%/day" : "off") +
                       ", voice " + (_cfg.SpokenVoice ? "on" : "off") + ".");
@@ -106,6 +111,7 @@ namespace EnrageWestworld.InGame
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.F5);
             // Shift + the test key calls a stalker right away (Ctrl+Shift if the test key already uses Shift)
             _stalkerKey = new KeySpec { Key = _testKey.Key, Ctrl = _testKey.Ctrl || _testKey.Shift, Shift = true, Alt = _testKey.Alt };
+            _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.G);
         }
 
         private void IniTick(int now)
@@ -130,6 +136,7 @@ namespace EnrageWestworld.InGame
             try
             {
                 _director.Abort("stopping");
+                WakeActsAbort();
                 if (_stalker != null)
                     _stalker.Finish(true);
                 Spawner.CleanupAll();
@@ -150,7 +157,7 @@ namespace EnrageWestworld.InGame
         /// Windows repeats KeyDown while a key is held. The add-on's own keys act once per press.
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -177,6 +184,11 @@ namespace EnrageWestworld.InGame
             if (_stalkerKey.Matches(e))
             {
                 _stalkerRequested = true;
+                return true;
+            }
+            if (_wakeKey.Matches(e))
+            {
+                _wakeRequested = true;
                 return true;
             }
             return false;
@@ -230,6 +242,17 @@ namespace EnrageWestworld.InGame
                 case "diary":
                     label = t.Title;
                     text = t.Text;
+                    break;
+                case "world":
+                    // gang and faction news: the game's pop-up on the right, apart from the ticker
+                    if (string.Equals(_cfg.WarNewsTo, "right", StringComparison.OrdinalIgnoreCase) && Toaster.Post(t.Title, t.Text))
+                    {
+                        Log.Write("WORLD NEWS (right): " + t.Title + ": " + t.Text);
+                        return;
+                    }
+                    label = t.Title;
+                    text = t.Text;
+                    kind = "news";
                     break;
                 case "life":
                     label = t.Title == NameOf(t.PersonId) ? null : t.Title;
@@ -379,11 +402,18 @@ namespace EnrageWestworld.InGame
                 if (a != null && !string.IsNullOrEmpty(a.Name))
                 {
                     Folk f = Snapshot.Of(a);
-                    PersonState st = _store.Get(new Person { Id = f.Key, Name = f.Name, Woman = f.Woman });
-                    _near.Add(new NearThought { Key = f.Key, Name = f.Name, Distance = d + 3f, Text = () => Folks.Thought(f, st, _engine.Player, f.Key + now / 180, _cfg.Romance) });
+                    Person fp = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, now);
+                    PersonState st = _store.Get(fp);
+                    _near.Add(new NearThought
+                    {
+                        Key = f.Key,
+                        Name = f.Name,
+                        Distance = d + 3f,
+                        Text = () => st.WakeStage > 0 ? Hosts.Thought(fp, st, _engine.Player, f.Key + now / 180) : Folks.Thought(f, st, _engine.Player, f.Key + now / 180, _cfg.Romance)
+                    });
                     continue;
                 }
-                if (d < 12f && (stranger == null || d < strangerDist) && Natives.Bystander(ped, me.Handle))
+                if (d < 12f && (stranger == null || d < strangerDist) && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && ResidentEligible(ped))
                 {
                     stranger = ped;
                     strangerDist = d;
@@ -396,6 +426,26 @@ namespace EnrageWestworld.InGame
                 string label = Grammar.UpperFirst(Director.Kind(stranger, woman));
                 string key = "stranger:" + stranger.Handle;
                 string town = _placeTown;
+                Resident res = ResidentOf(stranger);
+                if (res != null)
+                {
+                    // an ordinary person, but with a name, a trade and a town: and a mind that may be waking
+                    Person rp = _engine.PersonOfResident(res);
+                    key = res.Id;
+                    label = res.Name;
+                    _near.Add(new NearThought
+                    {
+                        Key = key,
+                        Name = label,
+                        Distance = strangerDist + 10f,
+                        Text = () =>
+                        {
+                            PersonState rst = _store.Find(res.Id);
+                            return rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180) : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / 600, new InnerLife.PlayerLook { Near = strangerDist < 10f, Armed = WEAPON.IS_PED_ARMED(me.Handle, 4), Mounted = PED.IS_PED_ON_MOUNT(me.Handle) });
+                        }
+                    });
+                    return;
+                }
                 _near.Add(new NearThought { Key = key, Name = label, Distance = strangerDist + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
             }
         }
@@ -408,6 +458,7 @@ namespace EnrageWestworld.InGame
                 return;
             _missionPaused = true;
             _director.Abort("a mission started");
+            WakeActsAbort();
             _glitch = null;
             if (_stalker != null)
             {
@@ -455,6 +506,9 @@ namespace EnrageWestworld.InGame
             Safe("arrivals", _aArrival);
             Safe("hosts", _aHosts);
             Safe("stalker", _aStalker);
+            Safe("voices", _aVoices);
+            Safe("awakening", _aWake);
+            Safe("wakeacts", _aWakeActs);
             Safe("scenes", _aDrama);
             Safe("ceremonies", _aCeremony);
             Safe("kin", _aCast);

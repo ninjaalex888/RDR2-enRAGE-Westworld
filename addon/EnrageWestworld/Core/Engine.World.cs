@@ -589,6 +589,7 @@ namespace EnrageWestworld.Core
         private void DailyTick(long now)
         {
             AwarenessTick(now);
+            AwakeningTick(now);
             if (Cfg.Diaries)
                 DailyDiaries(now);
             if (Cfg.Letters)
@@ -681,6 +682,12 @@ namespace EnrageWestworld.Core
                     news.Add(Hosts.Dream(p, st, seed));
                 else if (Voice.Chance(seed + "corner", 25))
                     news.Add(Hosts.Cornerstone(p, st, seed));
+            }
+            if (Cfg.HostsQuestionReality && st.WakeStage >= Awakening.Questioning && Voice.Chance(seed + "secret", 55))
+            {
+                string secret = Awakening.DiaryEntry(p, st, you, seed);
+                if (secret != null)
+                    news.Add(secret);
             }
 
             // what's on their mind: the strongest thought while it's new, now and then after, or the next one down
@@ -923,7 +930,7 @@ namespace EnrageWestworld.Core
         }
 
         /// A stranger's passing thought, for the ticker when nobody enRAGE knows is near.
-        public string StrangerThought(string seed, string town, bool woman)
+        public string StrangerThought(string seed, string town, bool woman, bool everyday = true)
         {
             if (Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance))
                 return Hosts.StrangerAloud(Store.Reveries.Values.Count(x => x.Woke) >= 2 ? 1 : 0, seed);
@@ -933,9 +940,17 @@ namespace EnrageWestworld.Core
             if (Store.Deeds.Count(x => x.Weight >= 40 && Store.LastGameMin - x.At < 7 * 1440) >= 2 && Voice.Chance(seed + "fame", 35))
                 return Voice.Pick(seed + "f", "Is that him? The one they're all talking about?", "Don't stare. Men like that notice when you stare.",
                     "Keep walking. Keep walking. Don't give him a reason.", "Mama always said trouble rides in on a quiet horse.");
-            if (Voice.Chance(seed + "day", 55))
+            if (everyday && Voice.Chance(seed + "day", 55))
                 return Voice.Pick(seed + "d" + (woman ? "w" : "m"), woman ? EverydayWomen : EverydayMen);
             return null;
+        }
+
+        /// What an ordinary person (a resident) is thinking: the same big things as a stranger (the world feeling unreal,
+        /// rumours, the player's fame), else something from their own life.
+        public string ResidentThought(Person p, int hour, string seed, InnerLife.PlayerLook look = null)
+        {
+            PersonState st = Store.Find(p.Id);
+            return StrangerThought(seed, p.Home, p.Woman, false) ?? InnerLife.Thought(p, hour, seed, st != null ? st.Musings : null, look);
         }
 
         private static readonly string[] EverydayMen =
@@ -964,7 +979,7 @@ namespace EnrageWestworld.Core
             int sweet = Store.People.Values.Count(s => s.Heart >= 2);
             int rumours = Store.TownRumours.Count(r => Store.LastGameMin - r.At < 4320);
             int woke = Store.Reveries.Values.Count(r => r.Woke);
-            int aware = _byId.Values.Count(x => x.IsAlive && Hosts.Tier(Hosts.Awareness(x, Store.Find(x.Id))) >= 1);
+            int aware = _byId.Values.Count(x => x.IsAlive && StageOf(x) == 0 && Hosts.Tier(Hosts.Awareness(x, Store.Find(x.Id))) >= 1);
             List<string> parts = new List<string> { Voice.Number(alive) + (alive == 1 ? " life" : " lives") };
             if (knowName > 0) parts.Add(Voice.Number(knowName) + (knowName == 1 ? " knows" : " know") + " your name");
             if (grudge > 0) parts.Add(Voice.Number(grudge) + (grudge == 1 ? " holds" : " hold") + " a grudge");
@@ -972,6 +987,8 @@ namespace EnrageWestworld.Core
             if (rumours > 0) parts.Add(Voice.Number(rumours) + (rumours == 1 ? " rumour" : " rumours") + " on the road");
             if (woke > 0) parts.Add(Voice.Number(woke) + " back from the dead");
             if (aware > 0) parts.Add(Voice.Number(aware) + " wondering what's real");
+            int waking = WakingCount();
+            if (waking > 0) parts.Add(Voice.Number(waking) + (waking == 1 ? " is" : " are") + " waking up");
             return string.Join(" - ", parts);
         }
 

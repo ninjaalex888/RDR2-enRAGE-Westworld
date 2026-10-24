@@ -87,9 +87,7 @@ namespace EnrageWestworld.InGame
                 _later.RemoveAt(i--);
                 if (l.Ped != 0 && (!ENTITY.DOES_ENTITY_EXIST(l.Ped) || ENTITY.IS_ENTITY_DEAD(l.Ped)))
                     continue;
-                Feed.Say(l.Label, l.Line);
-                if (l.Ped != 0 && l.Voice != null)
-                    Speech.SayTag(l.Ped, l.Voice, Game.Player.Character.Handle);
+                Feed.Say(l.Label, l.Line, l.Ped != 0 ? Speech.When(l.Ped, l.Voice, Game.Player.Character.Handle) : null);
                 if (l.Speak)
                     Tts.Say(l.Line, l.Woman, 0.9f, true, l.Label);
             }

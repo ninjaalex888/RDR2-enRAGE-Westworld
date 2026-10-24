@@ -833,6 +833,41 @@ namespace EnrageWestworld.Core
 			return t;
 		}
 
+		/// enRAGE's gang and faction events: wars, feuds, clashes, rivalries, unrest, rank changes, jobs. They are news about the
+		/// world, not about one person's life, and are shown apart from the ticker (see WarNewsTo).
+		internal static bool IsWarfare(string kind)
+		{
+			switch (kind)
+			{
+			case "WAR":
+			case "FEUD":
+			case "CLASH":
+			case "RIVALRY":
+			case "TURMOIL":
+			case "RANKS":
+			case "JOB":
+			case "VDL":
+				return true;
+			default:
+				return false;
+			}
+		}
+
+		internal static string WarLabel(string kind)
+		{
+			switch (kind)
+			{
+			case "WAR": return "Gang war";
+			case "FEUD": return "Feud";
+			case "CLASH": return "Clash";
+			case "RIVALRY": return "Rivals";
+			case "TURMOIL": return "Unrest";
+			case "RANKS": return "Gang ranks";
+			case "JOB": return "Gang job";
+			default: return "Gang news";
+			}
+		}
+
 		public Toast LifeUpdate(LifeEvent ev)
 		{
 			if (Store.Announced.Contains(ev.Id))
@@ -865,8 +900,8 @@ namespace EnrageWestworld.Core
 						Log("LIFE " + person.Name + " (" + text + "): " + text3);
 						return new Toast
 						{
-							Kind = "life",
-							Title = text,
+							Kind = IsWarfare(ev.Kind) ? "world" : "life",
+							Title = IsWarfare(ev.Kind) ? WarLabel(ev.Kind) : text,
 							PersonId = person.Id,
 							Weight = 25,
 							Text = Short(text3)

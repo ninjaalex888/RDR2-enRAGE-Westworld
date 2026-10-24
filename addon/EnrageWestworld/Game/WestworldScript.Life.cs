@@ -315,7 +315,7 @@ namespace EnrageWestworld.InGame
         private void BeginWedding(Wedding w, Vector3 church, int now)
         {
             Vector3 spot;
-            if (!Natives.SafeCoord(church + new Vector3(4f, 4f, 0f), out spot))
+            if (!Natives.StandSpot(church + new Vector3(4f, 4f, 0f), church.Z, out spot))
                 spot = church;
             WeddingRun run = new WeddingRun { W = w, At = spot, GiveUpAt = now + 15000, Lines = Scenes.Vows(w, w.Id) };
             run.PreacherModel = Natives.Hash(w.Town == "Saint Denis" ? "u_m_m_nbxpriest_01" : "u_m_m_rhdpreacher_01");
@@ -545,7 +545,7 @@ namespace EnrageWestworld.InGame
                     Ped speaker = mourners.Count > 0 ? mourners[i % mourners.Count] : null;
                     NemesisRecord who = speaker != null ? _bridge.RecordAt(speaker.Handle) : null;
                     string label = who != null ? who.Name : speaker != null ? "A mourner" : "Someone at the graveside";
-                    Feed.Say(label, lines[i]);
+                    Feed.Say(label, lines[i], speaker != null ? Speech.For(speaker.Handle, lines[i], fallback: "replybad") : null);
                     if (speaker != null && i == lines.Count - 1 && byYou)
                         TASK.TASK_LOOK_AT_ENTITY(speaker.Handle, Game.Player.Character.Handle, 8000, 0, 51, 0);
                 }

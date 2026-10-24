@@ -6,7 +6,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-**Version 0.5.4.** 0.4 and 0.5.1 have been played in game without trouble, and the first of the new 0.5 scenes (the posse) has been seen. The rest of 0.5 was checked outside the game but not yet in game. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/issues) and attach your log.
+**Version 0.5.5.** Stable in play so far. Stalkers, the posse scene, the wake key and the Awakening's first stages have been seen in game; the newest parts (the fuller wake acts, voices matched to feeling, the gang news pop-ups) have had only a short test. One content note: a small, adjustable chance (`AwakeningDespair`, default 2 percent, 0 turns it off) that a fully awake, armed ordinary person ends their own life. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/issues) and attach your log.
 
 ## What it does
 
@@ -27,7 +27,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 ## Install
 
 1. Install [enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967) 0.9.5.2 and what it needs (Script Hook RDR2 and Script Hook RDR2 .NET V2), and make sure it works.
-2. Download **[enRAGE-Westworld-0.5.4.zip](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/raw/main/release/enRAGE-Westworld-0.5.4.zip)** (it's also in the [release](release) folder). It holds `EnrageWestworld.dll` and a README.txt that explains every feature and setting.
+2. Download **[enRAGE-Westworld-0.5.5.zip](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/raw/main/release/enRAGE-Westworld-0.5.5.zip)** (it's also in the [release](release) folder). It holds `EnrageWestworld.dll` and a README.txt that explains every feature and setting.
 3. Copy `EnrageWestworld.dll` into your game's `scripts` folder, next to enRAGE's `NemesisMod.dll`. To update, just replace the file: what people remember carries over, and your settings are kept.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
 
@@ -79,15 +79,20 @@ The bridge finds enRAGE's running script through Script Hook .NET and changes th
 
 ## Roadmap
 
-1. **The Awakening.** A few hosts slowly realise they're living in a loop. It shows more and more in what they think, say and do, until they break their script.
-2. **Interaction menu.** Ask someone about rumours, buy them a drink, ask for work, threaten them or flirt.
-3. **Spreading saloon brawls.** One punch and half the saloon joins in.
-4. **Answering letters.** Reply kindly, coldly or with a threat, and it changes what the writer does next.
-5. **Narratives.** People ask for your help, and how it turns out changes their lives.
-6. **Town events.** Elections, a new sheriff, a hanging, a church raising.
-7. **New arrivals.** Settlers, a mail-order bride, a preacher: towns change over time.
-8. **Natural voices.** An optional free offline voice engine (Piper), with a different voice for each person.
-9. **Stalkers on horseback**, and revenants who turn up at camp.
+1. **Everyone is someone.** Every ordinary person in the world gets a name, a trade, a town and a temperament of their own, remembers what happens to them and can wake, not only the few that enRAGE tracks. The first part is in; what they remember of you, and deeds they witness, come next.
+2. **The Awakening.** A few hosts slowly realise they're living in a loop. It shows more and more in what they think, say and do, until they break their script. It spreads: awakened hosts talk about the loop where you can overhear them, try to wake others, and pass on a line that means something to them. They notice what can't be true, like a man they saw die walking around again. The ticker counts how many are stirring.
+3. **Memory that behaves like memory.** Memories blur and get rewritten over time, unless they hurt. Places hold memories: ride past where you shot someone's brother and those who knew him react to the spot. People know you by your horse, your clothes and your habits, not only your face.
+4. **Inner lives.** People hold opinions of each other, not just of you, which decides who gossips with whom and who takes whose side. They dream about what really happened to them. They change their minds, and their diaries show the turn.
+5. **Interaction menu.** Ask someone about rumours, buy them a drink, ask for work, threaten them or flirt.
+6. **Spreading saloon brawls.** One punch and half the saloon joins in.
+7. **Answering letters.** Reply kindly, coldly or with a threat, and it changes what the writer does next.
+8. **Narratives.** People ask for your help, and how it turns out changes their lives.
+9. **Town events.** Elections, a new sheriff, a hanging, a church raising.
+10. **New arrivals.** Settlers, a mail-order bride, a preacher: towns change over time.
+11. **Natural voices.** An optional free offline voice engine (Piper), with a different voice for each person.
+12. **Stalkers on horseback**, and revenants who turn up at camp.
+13. **The game's real words.** Where the game's own recorded line is played, the subtitle shows what it actually says, and the add-on's own line moves to the ticker as the person's thought. Needs the game's speech audio turned into text once, offline.
+14. **Optional inner voices from a local language model.** Far off, and always optional: a model the player installs themselves writes extra thoughts for woken people in the background, from their own memories, saved ahead of time so the game never waits. Nothing depends on it; the written lines always come first.
 
 ## Credits
 

@@ -20,7 +20,8 @@ namespace EnrageWestworld.InGame
         private static int _turn;
 
         public static readonly string[] Greet = { "GREET_GENERAL_STRANGER", "HOWS_IT_GOING", "GREET_GENERAL_FAMILIAR", "GENERIC_HOWDY", "GENERIC_HI", "CHAT_GREET" };
-        public static readonly string[] Familiar = { "GREET_GENERAL_FAMILIAR", "GREET_AGAIN", "HOWS_IT_GOING", "GREET_GENERAL_STRANGER" };
+        public static readonly string[] Familiar = { "GREET_GENERAL_FAMILIAR", "HOWS_IT_GOING", "GREET_GENERAL_STRANGER" };
+        public static readonly string[] Again = { "GREET_AGAIN" };   // "your memory fading? you already said hello": for the Awakening, not plain greetings
         public static readonly string[] Angry = { "GENERIC_ANGRY_SHOUT", "GENERIC_INSULT_HIGH_NEUTRAL", "WHATS_YOUR_PROBLEM", "GENERIC_ANGRY_REACTION", "GENERIC_CURSE_HIGH", "INSULT_RESPONSE", "GENERIC_INSULT_MED_NEUTRAL" };
         public static readonly string[] Mild = { "GENERIC_CURSE_MED", "DISMISSIVE_REACT", "CUT_THAT_OUT", "INSULT_RESPONSE", "GENERIC_INSULT_MED_NEUTRAL" };
         public static readonly string[] Scared = { "GENERIC_FRIGHTENED_HIGH", "SCARED_HELP", "GENERIC_FRIGHTENED_MED", "PANIC_HELP", "GENERIC_SHOCKED_HIGH" };
@@ -77,6 +78,7 @@ namespace EnrageWestworld.InGame
             {
                 case "greet": return GreetNow();
                 case "familiar": return Familiar;
+                case "again": return Again;
                 case "angry": return Angry;
                 case "mild": return Mild;
                 case "scared": return Scared;
@@ -116,6 +118,25 @@ namespace EnrageWestworld.InGame
                 case "buy": return Buy;
                 default: return null;
             }
+        }
+
+        /// One play request, nothing chosen for you: take 0 = random, 1..N = that recording; voice null = the
+        /// ped's own. For the voice probe.
+        public static unsafe bool Play(int ped, string line, int take, uint paramHash, string voice, int listener)
+        {
+            if (ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped))
+                return false;
+            ulong* p = stackalloc ulong[8];
+            for (int i = 0; i < 8; i++)
+                p[i] = 0;
+            p[0] = Draw.CString(line);
+            p[1] = voice != null ? Draw.CString(voice) : 0;
+            p[2] = (ulong)take;
+            p[3] = paramHash;
+            p[4] = listener != 0 && ENTITY.DOES_ENTITY_EXIST(listener) ? (uint)listener : 0u;
+            p[6] = 1;
+            p[7] = 1;
+            return Function.Call<bool>(PlayAmbientSpeech, ped, p);
         }
 
         public static unsafe bool Say(int ped, string line, int listener)
@@ -182,6 +203,62 @@ namespace EnrageWestworld.InGame
         {
             string[] set = Set(tag);
             return set != null && SayAny(ped, set, listener);
+        }
+
+        // ---- known voices: a chosen take, and its words if someone wrote them down (see Core.VoiceBook) ----
+
+        public static Core.VoiceBook Book;
+        private static readonly Dictionary<uint, string> BankByModel = new Dictionary<uint, string>();
+
+        /// The voice bank this ped certainly speaks with (its model has only one), or null.
+        public static string BankOf(int ped)
+        {
+            if (Book == null || Book.BankCount == 0 || ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped))
+                return null;
+            uint model = ENTITY.GET_ENTITY_MODEL(ped);
+            string bank;
+            if (!BankByModel.TryGetValue(model, out bank))
+                BankByModel[model] = bank = Book.SoleBank((NemesisSystem.Models.Name(model) ?? string.Empty).ToUpperInvariant());
+            return bank;
+        }
+
+        /// Plays a recording from the set. When the ped's voice is known it's a chosen take, and `words` is
+        /// what that take says if someone has written it down (else null).
+        public static bool SayWords(int ped, string[] set, int listener, out string words)
+        {
+            words = null;
+            string bank = BankOf(ped), line;
+            int take;
+            if (bank != null && Book.Pick(bank, set, _turn++, out line, out take, out words))
+            {
+                if (Play(ped, line, take, Natives.Hash(Params[0]), null, listener))
+                    return true;
+                words = null;
+            }
+            return SayAny(ped, set, listener);
+        }
+
+        /// A voice to play later, when its subtitle appears (Feed.Say's onShow); it returns the words actually
+        /// spoken when they're known. Null when there's nothing to play. Skipped if the ped is gone or already
+        /// speaking by then.
+        public static System.Func<string> When(int ped, string tag, int listener = 0)
+        {
+            string[] set = Set(tag);
+            if (ped == 0 || set == null)
+                return null;
+            return () =>
+            {
+                string words = null;
+                if (!Busy(ped))
+                    SayWords(ped, set, listener, out words);
+                return words;
+            };
+        }
+
+        /// A voice for a line the add-on wrote: the tone is read from the words and the speaker's feelings.
+        public static System.Func<string> For(int ped, string line, int listener = 0, int hate = 0, int fear = 0, bool friendly = false, string fallback = null)
+        {
+            return When(ped, Core.Tone.Of(line, hate, fear, friendly) ?? fallback, listener);
         }
 
         public static bool Busy(int ped)

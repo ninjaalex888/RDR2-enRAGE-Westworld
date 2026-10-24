@@ -489,14 +489,14 @@ namespace EnrageWestworld.InGame
 						{
 							if (nemesisRecord != null && nemesisRecord.IsAlive)
 							{
-								TalkTo(nemesisRecord);
+								TalkTo(nemesisRecord, key);
 							}
 							else
 							{
 								Acquaintance acquaintance = _bridge.AcquaintanceAt(key);
 								if (acquaintance != null)
 								{
-									TalkTo(acquaintance);
+									TalkTo(acquaintance, key);
 								}
 							}
 						}
@@ -516,7 +516,7 @@ namespace EnrageWestworld.InGame
 			return false;
 		}
 
-		private void TalkTo(NemesisRecord rec)
+		private void TalkTo(NemesisRecord rec, int ped)
 		{
 			if (TalkedRecently(rec.Id))
 			{
@@ -530,7 +530,7 @@ namespace EnrageWestworld.InGame
 				Gossip = GossipFor(person)
 			};
 			List<string> lines = _engine.Greet(person, Bridge.Now(), ctx);
-			Speak(person.Name, lines);
+			Speak(person.Name, lines, ped, person.Hate, person.Fear, person.Friendly);
 			if (_cfg.RevealToEnrage)
 			{
 				int num = Snapshot.MarkKnown(rec, person);
@@ -542,7 +542,7 @@ namespace EnrageWestworld.InGame
 			_remarked[person.Id] = Game.GameTime;
 		}
 
-		private void TalkTo(Acquaintance a)
+		private void TalkTo(Acquaintance a, int ped)
 		{
 			Folk folk = Snapshot.Of(a);
 			if (!TalkedRecently(folk.Key))
@@ -557,25 +557,39 @@ namespace EnrageWestworld.InGame
 				if (list.Count != 0)
 				{
 					Log.Write("TALK " + folk.Name + " (townsfolk): " + string.Join(" | ", list));
-					Speak(folk.Name, list);
+					Speak(folk.Name, list, ped, folk.Grudge, 0, false);
 					_remarked[folk.Key] = Game.GameTime;
 				}
 			}
 		}
 
-		private void Speak(string speaker, List<string> lines)
+		/// A conversation, line by line. Up to three lines get a recorded voice that fits their tone, the
+		/// player's own lines in his voice. Not the opening greeting: the game has already answered that one.
+		private void Speak(string speaker, List<string> lines, int ped = 0, int hate = 0, int fear = 0, bool friendly = false)
 		{
 			string firstName = _engine.Player.FirstName;
-			foreach (string line in lines)
+			int me = Game.Player.Character.Handle;
+			int voiced = 0;
+			for (int i = 0; i < lines.Count; i++)
 			{
-				if (line.StartsWith("YOU:"))
+				string line = lines[i];
+				bool you = line.StartsWith("YOU:");
+				string text = you ? line.Substring(4).Trim().Trim('"') : line;
+				Func<string> voice = null;
+				if (ped != 0 && voiced < 3)
 				{
-					Feed.Say(firstName, line.Substring(4).Trim().Trim('"'));
+					string tag = you ? Tone.Of(text) : Tone.Of(text, hate, fear, friendly);
+					if (i == 0 && !you && tag == "greet")
+					{
+						tag = null;
+					}
+					voice = you ? Speech.When(me, tag, ped) : Speech.When(ped, tag, me);
+					if (voice != null)
+					{
+						voiced++;
+					}
 				}
-				else
-				{
-					Feed.Say(speaker, line);
-				}
+				Feed.Say(you ? firstName : speaker, text, voice);
 			}
 		}
 
@@ -698,7 +712,7 @@ namespace EnrageWestworld.InGame
 						Remark remark = _engine.RemarkFor(person, now2);
 						if (remark != null)
 						{
-							Show(person.Name, person.Woman, remark);
+							Show(person.Name, person.Woman, remark, Speech.For(handle, remark.Text, character.Handle, person.Hate, person.Fear, person.Friendly));
 							_remarked[person.Id] = now;
 							_lastRemarkAt = now;
 							flag = false;
@@ -728,7 +742,7 @@ namespace EnrageWestworld.InGame
 						Remark remark2 = Townsfolk.RemarkFor(folk, personState, folk.Key + personState.Told.Count, _cfg.Romance, _engine.Player);
 						if (remark2 != null)
 						{
-							Show(folk.Name, folk.Woman, remark2);
+							Show(folk.Name, folk.Woman, remark2, Speech.For(handle, remark2.Text, character.Handle, folk.Grudge));
 							_remarked[folk.Key] = now;
 							_lastRemarkAt = now;
 							flag = false;
@@ -747,7 +761,9 @@ namespace EnrageWestworld.InGame
 			return false;
 		}
 
-		private static void Show(string name, bool woman, Remark r)
+		/// A passing remark. Uncanny ones are read by the Windows voice; muttered ones stay silent; the rest
+		/// get the speaker's recorded voice when it fits.
+		private static void Show(string name, bool woman, Remark r, Func<string> voice = null)
 		{
 			Log.Write("REMARK " + name + (r.Muttered ? " (muttered)" : "") + ": " + r.Text);
 			if (r.Uncanny)
@@ -760,7 +776,7 @@ namespace EnrageWestworld.InGame
 			}
 			else
 			{
-				Feed.Say(name, r.Text);
+				Feed.Say(name, r.Text, r.Uncanny ? null : voice);
 			}
 		}
 
@@ -1037,7 +1053,7 @@ namespace EnrageWestworld.InGame
 					return;
 				}
 				FlirtResult r = _engine.FlirtWith(person, now, Watchers(character, num));
-				SayFlirt(r, person.Name);
+				SayFlirt(r, person.Name, num, person.Hate);
 				LookAt(num, character.Handle);
 				ApplyEffects();
 				NoteFlirt(ped, person.Name);
@@ -1047,7 +1063,7 @@ namespace EnrageWestworld.InGame
 			if (acquaintance != null)
 			{
 				Folk folk = Snapshot.Of(acquaintance);
-				SayFlirt(_engine.FlirtWithFolk(folk, grownUp: true, now), folk.Name);
+				SayFlirt(_engine.FlirtWithFolk(folk, grownUp: true, now), folk.Name, num, folk.Grudge);
 				LookAt(num, character.Handle);
 				ApplyEffects();
 				NoteFlirt(ped, folk.Name);
@@ -1057,23 +1073,25 @@ namespace EnrageWestworld.InGame
 				bool flag = !PED.IS_PED_MALE(num);
 				bool drawn = Romance.DrawnTo("ped" + num, flag, otherIsWoman: false, _cfg.SameSexRomance);
 				string seed = num + "|" + Game.GameTime / 20000;
-				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed));
-				Feed.Say(flag ? "A woman" : "A man", Romance.StrangerReply(flag, drawn, seed));
+				string reply = Romance.StrangerReply(flag, drawn, seed);
+				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed), Speech.When(character.Handle, "flatter", num));
+				Feed.Say(flag ? "A woman" : "A man", reply, Speech.For(num, reply, character.Handle, fallback: drawn ? "flatter" : "no"));
 				LookAt(num, character.Handle);
 				NoteFlirt(ped, Director.Kind(ped, flag));
 			}
 		}
 
-		private void SayFlirt(FlirtResult r, string name)
+		private void SayFlirt(FlirtResult r, string name, int ped, int hate)
 		{
 			if (r == null || r.YouSay == null)
 			{
 				return;
 			}
-			Feed.Say(_engine.Player.FirstName, r.YouSay);
+			int me = Game.Player.Character.Handle;
+			Feed.Say(_engine.Player.FirstName, r.YouSay, Speech.When(me, "flatter", ped));
 			if (r.Reply != null)
 			{
-				Feed.Say(name, r.Reply);
+				Feed.Say(name, r.Reply, Speech.For(ped, r.Reply, me, hate));
 			}
 			foreach (KeyValuePair<Person, string> jealou in r.Jealous)
 			{
@@ -1163,7 +1181,7 @@ namespace EnrageWestworld.InGame
 							string text = _engine.Insulted(person, Bridge.Now());
 							if (text != null && !Feed.Talking)
 							{
-								Feed.Say(person.Name, text);
+								Feed.Say(person.Name, text, Speech.For(key, text, Game.Player.Character.Handle, person.Hate, person.Fear, fallback: "mild"));
 							}
 							ApplyEffects();
 						}
@@ -1179,6 +1197,8 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			List<EnrageEffect> list = _engine.Effects.ToList();
+			// residents live only in this add-on: nothing about them is ever written to enRAGE
+			list.RemoveAll(x => Resident.IsResident(x.PersonId) || Resident.IsResident(x.OtherId));
 			_engine.Effects.Clear();
 			if (!_bridge.CanWrite)
 			{
@@ -1326,9 +1346,12 @@ namespace EnrageWestworld.InGame
 						{
 							continue;
 						}
+						int a = list2[j].Key.Handle, b = list2[k].Key.Handle;
+						string aName = list2[j].Value.Name;
 						foreach (KeyValuePair<string, string> item2 in list3)
 						{
-							Feed.Say(item2.Key, item2.Value);
+							bool first = item2.Key == aName;
+							Feed.Say(item2.Key, item2.Value, Speech.For(first ? a : b, item2.Value, first ? b : a, fallback: "chat"));
 						}
 						LookAt(list2[j].Key.Handle, list2[k].Key.Handle);
 						LookAt(list2[k].Key.Handle, list2[j].Key.Handle);
@@ -1366,8 +1389,8 @@ namespace EnrageWestworld.InGame
 							flag2 = false;
 						}
 						List<string> list5 = Romance.Strangers(flag, flag2, ped2.Handle + "|" + ped3.Handle + "|" + now / 600000);
-						Feed.Say(Label(ped2, flag, second: false), list5[0]);
-						Feed.Say(Label(ped3, flag2, flag == flag2), list5[1]);
+						Feed.Say(Label(ped2, flag, second: false), list5[0], Speech.For(ped2.Handle, list5[0], ped3.Handle, fallback: "flatter"));
+						Feed.Say(Label(ped3, flag2, flag == flag2), list5[1], Speech.For(ped3.Handle, list5[1], ped2.Handle, fallback: "respond"));
 						LookAt(ped2.Handle, ped3.Handle);
 						LookAt(ped3.Handle, ped2.Handle);
 						_lastStrangersAt = now;

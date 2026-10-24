@@ -29,6 +29,8 @@ namespace EnrageWestworld.Core
                 a += 6;
             if (p.Memories != null)
                 a += Math.Min(15, p.Memories.Count(m => (m.Emotion == "Fear" || m.Emotion == "Grief") && m.Intensity >= 70) * 5);
+            if (st != null && st.WakeStage > 0)
+                a = Math.Max(a, Awakening.Floor(st.WakeStage));
             return Math.Max(0, Math.Min(100, a));
         }
 
@@ -51,7 +53,7 @@ namespace EnrageWestworld.Core
             }
         }
 
-        private static string Fill(string line, Person p, PlayerRef you, string seed)
+        internal static string Fill(string line, Person p, PlayerRef you, string seed)
         {
             string name = you != null && you.KnownByName ? "Mr. " + you.Surname : "mister";
             return line.Replace("{god}", God(p, seed)).Replace("{you}", name)
@@ -165,12 +167,24 @@ namespace EnrageWestworld.Core
         /// Something odd said aloud to the player. Marks it so it isn't repeated soon.
         public static string Aloud(Person p, PersonState st, PlayerRef you, string seed)
         {
+            if (st != null && st.WakeStage > 0 && Voice.Chance(seed + "wk", 75))
+            {
+                string w = Awakening.Aloud(p, st, you, seed);
+                if (w != null)
+                    return w;
+            }
             int tier = Tier(Awareness(p, st));
             return Choose(AloudLines, tier, st, seed, line => Fill(line, p, you, seed));
         }
 
         public static string Thought(Person p, PersonState st, PlayerRef you, string seed)
         {
+            if (st != null && st.WakeStage > 0 && Voice.Chance(seed + "wk", 80))
+            {
+                string w = Awakening.Thought(p, st, you, seed);
+                if (w != null)
+                    return w;
+            }
             int tier = Tier(Awareness(p, st));
             return Choose(ThoughtLines, tier, st, seed, line => Fill(line, p, you, seed));
         }
@@ -188,7 +202,7 @@ namespace EnrageWestworld.Core
                 .Replace("{you}", "mister").Replace("{town}", "this town");
         }
 
-        private static string Choose(string[][] pools, int tier, PersonState st, string seed, Func<string, string> fill)
+        internal static string Choose(string[][] pools, int tier, PersonState st, string seed, Func<string, string> fill)
         {
             // mostly the person's own level, sometimes one below
             int t = tier > 0 && Voice.Chance(seed + "lower", 30) ? tier - 1 : tier;

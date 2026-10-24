@@ -1,4 +1,4 @@
-enRAGE Westworld 0.5.4 - an unofficial add-on for enRAGE
+enRAGE Westworld 0.5.5 - an unofficial add-on for enRAGE
 ==========================================================
 
 The people enRAGE keeps track of start acting like they have their own lives. They tell you about
@@ -13,6 +13,37 @@ enRAGE's files. enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemp
 Source code and bug reports: https://github.com/ninjaalex888/RDR2-enRAGE-Westworld
 
 Story Mode only. Don't run script mods in Red Dead Online.
+
+
+NEW IN 0.5.5
+------------
+- Stalkers can appear again. In 0.5.4 the game turned down every spot a stalker tried to appear
+  on, so none ever showed up. If the game won't give a spot, the stalker now uses plain ground
+  behind you (never inside a building). Staged weddings use the same fix.
+- Stand still for 20 seconds and the stalker runs in close and circles you. Take a step and
+  he runs back out to 45 to 70 m, behind a tree or a building corner if there is one, and
+  watches you from there. Turning the camera doesn't scare him off. Walking up to him no
+  longer ends it; drawing on him still does.
+- More of what people say comes with their real voice. Conversations with enRAGE's people,
+  remarks as you pass, replies to insults, flirting, couples and strangers chatting, and
+  mourners at funerals now play a recorded game line that fits the feeling of the subtitle:
+  angry, scared, grieving, grateful, gossiping, flirting, brushing you off. Arthur or John
+  answers in his own voice when you flirt or talk. The words differ from the subtitle (the game
+  can't say new words); the feeling matches. Uncanny lines keep the Windows voice.
+- A stalker now keeps it up for StalkerMinutes in full, and the default is 120 (two hours, up to
+  240). If yours was the old default (8) or the old ceiling (60), it's raised to 120 for you.
+- The Awakening, first part. About 5% of the people enRAGE tracks are quietly chosen to wake up, leaning toward those who already suspect the most. Over days of game time each one moves through four stages: stirring (deja vu), questioning (they count things, test the world), unravelling (fragments, repeated words), awake (lucid, looking for you). What they think, say and write changes with the stage, and from stage two they keep a secret diary. The ticker summary counts them. Settings: AwakeningShare (5), AwakeningDays (6 days per stage). To see it at once, face one of enRAGE's people and press G (WakeKey in the ini): they wake one stage and say something.
+- Everyone is someone. Ordinary people who are not enRAGE's (most of the world) get a name, a trade, a town and a temperament of their own when you press the wake key near them or the ticker shows their thoughts. They can wake like anyone else: press G (WakeKey) near any adult and they wake one stage. They exist only in this add-on and are saved once something happens to them.
+- The Awakening on screen. Woken people now act oddly when you are near. Stirring: a glance a moment too long, or a stop and a stare. Questioning: they stand perfectly still watching you, or pace the same few steps over and over. Unravelling: they freeze mid-step and pace faster, with pauses, as if stuck in a loop. Awake: they walk straight up to you, face you and say something lucid. Only ordinary people and enRAGE's named townsfolk are directed (never enRAGE's full people, never during story missions or in danger), and they are handed back as they were. Use G near someone to wake them and watch.
+- Ordinary people's thoughts are now written from real psychology: the body, status anxiety, loss and threat bias, the worries of 1899, the mask over what they feel, and what they notice about you when you are close.
+- Every adult can now be a person with a mind, soldiers and lawmen too. Ordinary people get the full acts; enRAGE's own people and soldiers in its camps only turn their heads, think and speak (their movement is enRAGE's).
+- Fuller acts. Stirring: double-takes. Questioning: standing perfectly still, pacing, walking out to see where the town ends, asking a neighbour if they feel it too. Unravelling: freezing mid-step, shouting at the sky, kneeling, running with no goal. Awake is a lasting state: they come to you, say a few things (who is writing this, is there an outside) and end by pleading, trying to leave town, trying to wake someone or refusing to get up.
+- CONTENT NOTE: a small chance (AwakeningDespair, default 2 percent, 0 turns it off) that a fully awake, armed ordinary person cannot bear it and ends their own life. It never happens to enRAGE's people or townsfolk, and it is not counted as anything you did. Set it to 0 if you would rather not see it.
+- Acts and words belong together now: people who pace count their steps in their heads, people who freeze lose their sentence halfway, and the one walking up to you thinks about why. The thoughts appear on the ticker as it happens.
+- Ordinary people have inner lives of their own: what a passer-by thinks now comes from their trade, town, temperament, faith or the hour of the day.
+- Gang and faction news (wars, feuds, clashes, rivalries) now appears as the game's pop-up on the right of the screen, away from the bottom ticker, which keeps what people think and do. WarNewsTo in the ini (right or ticker) switches it back.
+- The wake key now makes the person act at once so you can see what each stage does.
+- The log shows the game's first few answers ("SAFECOORD probe"), to help pin down the cause.
 
 
 NEW IN 0.5.4
@@ -227,7 +258,9 @@ Strangers you kill are remembered too, and a few (StrangerReturnChance, 5%) come
 
 Stalkers. Rarely, by day or by night, someone follows you. They keep their distance, stand and stare when they think
 you can't see, freeze when you look at them and slip out of sight, and somehow turn up behind you
-again after you've ridden off. They never attack. Walk up to them, or draw on them, and they run.
+again after you've ridden off. Stand still for 20 seconds and they run in close and circle you;
+move and they run back out, behind a tree or a building if there is one. They
+never attack. Draw on them and they run for good. One can follow you for up to two hours.
 Sometimes it's someone you killed.
 
 
@@ -296,10 +329,11 @@ in the file. The new ones:
 [Ticker]    Ticker (true), TickerNearbyMetres (30), TickerSeconds (12), TickerY (0.962, height on
             screen), TickerScale (0.30, text size), TickerWidth (0.60), NoticesAsSubtitles (false)
 [Westworld] Reveries (true), ReturnChance (15), StrangerReturnChance (5),
-            HostsQuestionReality (true), RealityChance (15), SpokenVoice (true), VoiceVolume (80),
+            HostsQuestionReality (true), RealityChance (15), AwakeningShare (5), AwakeningDays (6), AwakeningDespair (2), WakeKey (G), SpokenVoice (true), VoiceVolume (80),
             VoiceMan, VoiceWoman (part of a Windows voice's name; empty = any), VoiceVariety (true),
+            WarNewsTo (right),
             Glitches (true), Stalkers (true), StalkerChance (20, percent per day),
-            StalkerDayOnly (25), StalkerNightOnly (50), StalkerBoth (25), StalkerMinutes (8)
+            StalkerDayOnly (25), StalkerNightOnly (50), StalkerBoth (25), StalkerMinutes (120)
 [World]     Deeds, RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
@@ -319,6 +353,7 @@ F7  what the nearest person enRAGE knows thinks of you (and a status line in the
 F6  flirt with the person you're looking at
 F5  read your letters, diaries and clippings (or take a diary you've just found)
 Shift+F7  call a stalker now (for testing)
+G         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
 None of these are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it
 in the ini (e.g. ReaderKey = Ctrl+F5).

@@ -13,7 +13,22 @@ namespace EnrageWestworld.InGame
 			public string Text;
 
 			public int Ms;
+
+			// The speaker's recorded voice, played as the subtitle appears. If it returns the words the
+			// recording says, those are shown instead, and the add-on's own line goes to Thinking.
+			public Func<string> OnShow;
+
+			public string Speaker;
+
+			public string Full;     // the whole line (it may be split over several subtitles)
+
+			public object Group;    // the subtitles one line was split into
 		}
+
+		/// Where a line goes when the speaker's real recorded words replace it on screen (the ticker).
+		public static Action<string, string> Thinking;
+
+		private static object _dropGroup;
 
 		private static readonly Queue<Line> _speech = new Queue<Line>();
 
@@ -47,16 +62,51 @@ namespace EnrageWestworld.InGame
 			_news.Clear();
 		}
 
-		public static void Say(string speaker, string text)
+		/// Shows a line right now, ahead of everything queued (for the test keys, so their answer isn't stuck behind other subtitles).
+		public static void Interrupt(string text, int ms = 4000)
 		{
+			_speech.Clear();
+			_news.Clear();
+			_dropGroup = null;
+			Screen.PrintSubtitle(Clean(text));
+			_lastShownAt = Game.GameTime;
+			_nextAt = Game.GameTime + ms;
+		}
+
+		public static void Say(string speaker, string text, Func<string> onShow = null)
+		{
+			object group = new object();
 			foreach (string item in Split(text, 150))
 			{
 				_speech.Enqueue(new Line
 				{
 					Text = speaker + ": \"" + item + "\"",
-					Ms = Duration(item)
+					Ms = Duration(item),
+					OnShow = onShow,
+					Speaker = speaker,
+					Full = text,
+					Group = group
 				});
+				onShow = null;
 			}
+		}
+
+		/// Like Say, but ahead of everything already queued (an outburst can't wait its turn).
+		public static void SayFirst(string speaker, string text, Func<string> onShow = null)
+		{
+			object group = new object();
+			List<Line> items = new List<Line>();
+			foreach (string item in Split(text, 150))
+			{
+				items.Add(new Line { Text = speaker + ": \"" + item + "\"", Ms = Duration(item), OnShow = onShow, Speaker = speaker, Full = text, Group = group });
+				onShow = null;
+			}
+			Line[] rest = _speech.ToArray();
+			_speech.Clear();
+			foreach (Line l in items)
+				_speech.Enqueue(l);
+			foreach (Line l in rest)
+				_speech.Enqueue(l);
 		}
 
 		public static void Mutter(string speaker, bool woman, string text)
@@ -90,12 +140,36 @@ namespace EnrageWestworld.InGame
 			int gameTime = Game.GameTime;
 			if (gameTime >= _nextAt)
 			{
+				while (_speech.Count > 0 && _dropGroup != null && _speech.Peek().Group == _dropGroup)
+				{
+					_speech.Dequeue();   // the rest of a line already replaced by the speaker's real words
+				}
 				Line line = ((_speech.Count > 0) ? _speech.Dequeue() : ((_news.Count > 0) ? _news.Dequeue() : null));
 				if (line != null)
 				{
-					Screen.PrintSubtitle(Clean(line.Text));
+					string text = line.Text;
+					int ms = line.Ms;
+					if (line.OnShow != null)
+					{
+						try
+						{
+							string words = line.OnShow();
+							if (!string.IsNullOrEmpty(words))
+							{
+								text = line.Speaker + ": \"" + words + "\"";
+								ms = Duration(words);
+								_dropGroup = line.Group;
+								Thinking?.Invoke(line.Speaker, line.Full);
+							}
+						}
+						catch (Exception ex)
+						{
+							Log.Write("Voice: " + ex.Message);
+						}
+					}
+					Screen.PrintSubtitle(Clean(text));
 					_lastShownAt = gameTime;
-					_nextAt = gameTime + line.Ms;
+					_nextAt = gameTime + ms;
 				}
 			}
 		}

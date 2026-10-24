@@ -40,14 +40,63 @@ namespace EnrageWestworld.InGame
             return h;
         }
 
+        private static int _safeProbes;
+        public static int GroundFallbacks;
+
+        /// The game's safe spot for a ped near `near`. In 0.5.4 every call in town failed, so the answer is read in
+        /// both layouts (padded 24-byte and packed 12-byte) and the first few raw results are logged.
         public static unsafe bool SafeCoord(Vector3 near, out Vector3 found)
         {
             ulong* buf = stackalloc ulong[4];
             for (int i = 0; i < 4; i++)
                 buf[i] = 0;
             bool ok = PATHFIND.GET_SAFE_COORD_FOR_PED(near.X, near.Y, near.Z, true, (Vector3*)buf, 0);
-            found = ok ? new Vector3(*(float*)buf, *(float*)(buf + 1), *(float*)(buf + 2)) : near;
-            return ok && found.DistanceTo(near) < 60f;
+            float* f = (float*)buf;
+            Vector3 padded = new Vector3(f[0], f[2], f[4]), packed = new Vector3(f[0], f[1], f[2]);
+            if (_safeProbes < 3)
+            {
+                _safeProbes++;
+                Log.Write("SAFECOORD probe: ok " + ok + ", near " + V(near) + ", raw " + f[0].ToString("F1") + " " + f[1].ToString("F1") + " " +
+                          f[2].ToString("F1") + " " + f[3].ToString("F1") + " " + f[4].ToString("F1") + " " + f[5].ToString("F1"));
+            }
+            found = near;
+            if (!ok)
+                return false;
+            if (padded.DistanceTo(near) < 60f)
+                found = padded;
+            else if (packed.DistanceTo(near) < 60f)
+                found = packed;
+            else
+                return false;
+            return true;
+        }
+
+        /// SafeCoord, or failing that the ground at (x, y): searched first from just above `level` (so roofs
+        /// overhead are skipped), then from just above `near`. Never a spot inside a building.
+        public static unsafe bool StandSpot(Vector3 near, float level, out Vector3 found)
+        {
+            if (SafeCoord(near, out found))
+                return true;
+            float[] starts = { level + 3f, near.Z + 3f };
+            foreach (float start in starts)
+            {
+                ulong slot = 0;   // a full 8-byte slot for the float out-parameter
+                if (!MISC.GET_GROUND_Z_FOR_3D_COORD(near.X, near.Y, start, (float*)&slot, false))
+                    continue;
+                float g = *(float*)&slot;
+                if (g < -200f || Math.Abs(g - level) > 15f || INTERIOR.GET_INTERIOR_AT_COORDS(near.X, near.Y, g + 1f) != 0)
+                    continue;
+                found = new Vector3(near.X, near.Y, g);
+                GroundFallbacks++;
+                return true;
+            }
+            found = near;
+            return false;
+        }
+
+        private static string V(Vector3 v)
+        {
+            return v.X.ToString("F1") + " " + v.Y.ToString("F1") + " " + v.Z.ToString("F1");
         }
 
         public static unsafe bool GroundZ(float x, float y, float zHint, out float z)

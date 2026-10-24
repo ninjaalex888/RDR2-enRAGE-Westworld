@@ -41,6 +41,8 @@ namespace EnrageWestworld.Core
         [DataMember] public bool DeadSeeded;
         [DataMember] public bool SparedSeeded;                 // enRAGE's mercy counts read once, quietly
         [DataMember] public int DiaryDayKey;
+        [DataMember] public List<Resident> Residents = new List<Resident>();   // ordinary people something has happened to (see Residents.cs)
+        [DataMember] public int NextResident;
 
         public long WasAt;
 
@@ -54,6 +56,27 @@ namespace EnrageWestworld.Core
             }
             st.Name = p.Name;
             return st;
+        }
+
+        public const int MaxResidents = 400;
+
+        public Resident FindResident(string id)
+        {
+            return Residents.FirstOrDefault(r => r.Id == id);
+        }
+
+        /// Saves a resident something has happened to. Over the limit, the oldest untouched ones go first.
+        public void KeepResident(Resident r, long now)
+        {
+            r.TouchedAt = now;
+            if (!Residents.Contains(r))
+                Residents.Add(r);
+            while (Residents.Count > MaxResidents)
+            {
+                Resident drop = Residents.Where(x => x != r).OrderBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).First();
+                Residents.Remove(drop);
+                People.Remove(drop.Id);
+            }
         }
 
         public PersonState Find(string id)
@@ -204,6 +227,7 @@ namespace EnrageWestworld.Core
             if (Debts == null) Debts = new List<Debt>();
             if (Counts == null) Counts = new Dictionary<string, int>();
             if (TownVisits == null) TownVisits = new Dictionary<string, long>();
+            if (Residents == null) Residents = new List<Resident>();
             foreach (Affair a in Affairs)
                 if (a.Said == null)
                     a.Said = new List<string>();
