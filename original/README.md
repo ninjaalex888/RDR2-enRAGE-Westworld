@@ -1,0 +1,1 @@
+Put `NemesisMod.dll` from your enRAGE install (the game's `scripts` folder) here before building. enRAGE's files aren't included in this repo. enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemption2/mods/10967
