@@ -1,7 +1,9 @@
 // Someone following the player at a distance. Never attacks. Stands and stares when he thinks he's unseen,
 // freezes when looked at, then slips out of sight; turns up behind you again when you've ridden off.
-// Stand still for 20 seconds and he runs in close and circles you; take a step and he runs
-// back out to 45-70 m, behind a tree or a corner if there is one. Runs for good when threatened.
+// Stand still a while (StalkerStillSeconds) and he does what StalkerWhenStill says: circles you close, keeps his
+// distance and stares, or runs straight at you and stops a few steps short; take a step and he runs back out
+// (StalkerHideMin-Max), behind a tree or a corner if there is one. Never attacks; runs for good when threatened.
+// Every distance and time comes from the [Stalkers] settings, read live.
 using System;
 using EnrageWestworld.Core;
 using RDR2;
@@ -12,11 +14,11 @@ namespace EnrageWestworld.InGame
 {
     internal sealed class Stalker
     {
-        private enum Mode { Follow, Stare, Watched, Hide, Circle, Retreat, Lurk, Flee }
+        private enum Mode { Follow, Stare, Watched, Hide, Circle, Retreat, Lurk, Still, Rush, Flee }
 
-        private const int StillMs = 20000;   // how long the player must stand still before he closes in
         private const uint MoveLR = 1301263553u, MoveUD = 4255658384u, HorseMoveLR = 308778731u, HorseMoveUD = 1002303471u;
 
+        private readonly Settings _cfg;   // the live settings: a change in the ini or the panel applies at once
         private readonly Random _rng = new Random();
         private Ped _ped;
         private Mode _mode = Mode.Follow;
@@ -27,7 +29,11 @@ namespace EnrageWestworld.InGame
         private Vector3 _stillAt, _goal;
         private float _circleRadius;
         private int _circleDir;
+        private int _rushSince;
         private int _nextTry, _failModel, _failNoGround, _failInView, _failCreate, _failWater;
+
+        /// Further than this and he's lost you: he turns up behind you again when nobody is looking.
+        private float FarAway { get { return Math.Max(85f, _cfg.StalkerAppearMax + 15f); } }
 
         public readonly Fallen Revenant;     // null for a nameless stranger
         public readonly string Label;
@@ -35,12 +41,13 @@ namespace EnrageWestworld.InGame
         public bool Done { get; private set; }
         public int Handle { get { return _ped != null ? _ped.Handle : 0; } }
 
-        public Stalker(Fallen revenant, string label, bool woman, int minutes)
+        public Stalker(Fallen revenant, string label, bool woman, Settings cfg)
         {
             Revenant = revenant;
             Label = label;
             Woman = woman;
-            _endsAt = Game.GameTime + minutes * 60000;
+            _cfg = cfg;
+            _endsAt = Game.GameTime + cfg.StalkerMinutes * 60000;
         }
 
         /// Why the attempts so far failed, for the log.
@@ -67,7 +74,7 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             Vector3 at;
-            if (!HiddenSpotBehind(player, 45f, 70f, out at))
+            if (!HiddenSpotBehind(player, _cfg.StalkerAppearMin, _cfg.StalkerAppearMax, out at))
                 return false;
             Ped p = Spawner.Spawn(model, at, 0f);
             if (p == null)
@@ -91,7 +98,7 @@ namespace EnrageWestworld.InGame
             _nextRelocate = Game.GameTime + 20000;
             _stillSince = Game.GameTime;
             _stillAt = player.Position;
-            Log.Write("STALKER " + Label + " appears " + (int)at.DistanceTo(player.Position) + " m behind you" + (Revenant != null ? " (back from the dead)" : ""));
+            Log.Write("STALKER " + Label + " appears " + (int)at.DistanceTo(player.Position) + " m behind you" + (Revenant != null ? " (someone you killed, returned)" : ""));
             return true;
         }
 
@@ -119,7 +126,7 @@ namespace EnrageWestworld.InGame
             bool active = PlayerActive(player);
             if (active)
                 _stillSince = now;
-            bool close = _mode == Mode.Circle || _mode == Mode.Retreat;   // he chose to be near: no "caught" flight
+            bool close = _mode == Mode.Circle || _mode == Mode.Retreat || _mode == Mode.Rush;   // he chose to be near: no "caught" flight
 
             if (_mode != Mode.Flee && (threatened || (dist < 7f && !close) || now > _endsAt))
             {
@@ -132,8 +139,8 @@ namespace EnrageWestworld.InGame
                 return;
             }
 
-            if (_mode != Mode.Flee && _mode != Mode.Circle && now - _stillSince >= StillMs)
-                StartCircle(player, now);
+            if (_mode != Mode.Flee && _mode != Mode.Circle && _mode != Mode.Rush && _mode != Mode.Still && now - _stillSince >= _cfg.StalkerStillSeconds * 1000)
+                StartStill(player, now);
 
             switch (_mode)
             {
@@ -147,6 +154,41 @@ namespace EnrageWestworld.InGame
                     {
                         _nextOrder = now + 1000;
                         CircleStep(player);
+                    }
+                    break;
+
+                case Mode.Still:   // keeping his distance, staring, until you move
+                    if (active)
+                    {
+                        _mode = Mode.Follow;
+                        _nextOrder = 0;
+                    }
+                    else if (watched)
+                        Watched(player, now);
+                    break;
+
+                case Mode.Rush:
+                    if (active || now - _rushSince > 15000)
+                    {
+                        StartRetreat(player, now);
+                        break;
+                    }
+                    if (_modeUntil == 0 && dist < 3.5f)
+                    {
+                        // stops a few steps short, face to face: he never lays a hand on you
+                        TASK.CLEAR_PED_TASKS(h, true, false);
+                        TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, player.Handle, 2000, 0f, 0f, 0f);
+                        TASK.TASK_LOOK_AT_ENTITY(h, player.Handle, 7000, 0, 51, 0);
+                        _modeUntil = now + 3500 + _rng.Next(2500);
+                        _nextMutter = now;
+                        Log.Write("STALKER " + Label + " stops a few steps short of you");
+                    }
+                    else if (_modeUntil > 0 && now > _modeUntil)
+                        StartRetreat(player, now);
+                    else if (_modeUntil == 0 && now >= _nextOrder)
+                    {
+                        _nextOrder = now + 700;
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, pp.X, pp.Y, pp.Z, 3f, -1, 3f, 0, 0f);
                     }
                     break;
 
@@ -165,7 +207,7 @@ namespace EnrageWestworld.InGame
                         Watched(player, now);
                         break;
                     }
-                    if (now > _modeUntil || dist > 85f)
+                    if (now > _modeUntil || dist > FarAway)
                     {
                         _mode = Mode.Follow;
                         _nextOrder = 0;
@@ -178,12 +220,12 @@ namespace EnrageWestworld.InGame
                         Watched(player, now);
                         break;
                     }
-                    if (dist > 85f && !onScreen && now >= _nextRelocate)
+                    if (dist > FarAway && !onScreen && now >= _nextRelocate)
                     {
                         Relocate(player, now);
                         break;
                     }
-                    if (dist <= 34f)
+                    if (dist <= _cfg.StalkerStareMetres)
                     {
                         _mode = Mode.Stare;
                         _modeUntil = now + 6000 + _rng.Next(8000);
@@ -193,7 +235,7 @@ namespace EnrageWestworld.InGame
                     if (now >= _nextOrder)
                     {
                         _nextOrder = now + 2500;
-                        Vector3 goal = pp + (me - pp).Normalized * 26f;
+                        Vector3 goal = pp + (me - pp).Normalized * _cfg.StalkerFollowMetres;
                         Vector3 safe;
                         if (Natives.StandSpot(goal, pp.Z, out safe))
                             goal = safe;
@@ -207,7 +249,7 @@ namespace EnrageWestworld.InGame
                         Watched(player, now);
                         break;
                     }
-                    if (dist > 45f || now > _modeUntil)
+                    if (dist > _cfg.StalkerStareMetres + 11 || now > _modeUntil)
                         _mode = Mode.Follow;
                     break;
 
@@ -233,7 +275,7 @@ namespace EnrageWestworld.InGame
                     break;
             }
 
-            if (_mode != Mode.Flee && (!watched || _mode == Mode.Circle) && dist < 50f && now >= _nextMutter)
+            if (_cfg.StalkerMutters && _mode != Mode.Flee && (!watched || _mode == Mode.Circle || _mode == Mode.Rush) && dist < 50f && now >= _nextMutter)
             {
                 _nextMutter = now + 40000 + _rng.Next(30000);
                 say(Label, Hosts.StalkerMutter(Revenant, you, Revenant != null, Label + now / 1000), Revenant != null);
@@ -295,7 +337,7 @@ namespace EnrageWestworld.InGame
         {
             Vector3 at;
             _nextRelocate = now + 25000;
-            if (!HiddenSpotBehind(player, 38f, 58f, out at))
+            if (!HiddenSpotBehind(player, _cfg.StalkerAppearMin * 0.85f, _cfg.StalkerAppearMax * 0.85f, out at))
                 return;
             int h = _ped.Handle;
             TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, true);
@@ -317,11 +359,38 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        /// The player has stood still long enough: whatever StalkerWhenStill says. The clock starts again after each.
+        private void StartStill(Ped player, int now)
+        {
+            _stillSince = now;
+            int dist = (int)_ped.Position.DistanceTo(player.Position);
+            switch (_cfg.StalkerWhenStill)
+            {
+                case "watch":
+                    _mode = Mode.Still;
+                    Face(player, true);
+                    Log.Write("STALKER " + Label + " stops and watches you, " + dist + " m away");
+                    break;
+                case "rush":
+                    _mode = Mode.Rush;
+                    _modeUntil = 0;
+                    _rushSince = now;
+                    _nextOrder = 0;
+                    TASK.CLEAR_PED_TASKS(_ped.Handle, true, false);
+                    TASK.TASK_LOOK_AT_ENTITY(_ped.Handle, player.Handle, -1, 0, 51, 0);
+                    Log.Write("STALKER " + Label + " runs straight at you (" + dist + " m away)");
+                    break;
+                default:
+                    StartCircle(player, now);
+                    break;
+            }
+        }
+
         /// The player has stood still long enough: run in close and start circling him.
         private void StartCircle(Ped player, int now)
         {
             _mode = Mode.Circle;
-            _circleRadius = 6f + (float)_rng.NextDouble() * 4f;
+            _circleRadius = Math.Max(2.5f, _cfg.StalkerCircleMetres - 2f + (float)_rng.NextDouble() * 4f);
             _circleDir = _rng.Next(2) == 0 ? 1 : -1;
             _nextOrder = 0;
             _nextMutter = Math.Min(_nextMutter, now + 2500);
@@ -369,7 +438,7 @@ namespace EnrageWestworld.InGame
             for (int i = 0; i < 16; i++)
             {
                 double a = away + (_rng.NextDouble() * 2 - 1) * Math.PI * 0.6;
-                float d = 45f + (float)_rng.NextDouble() * 25f;
+                float d = _cfg.StalkerHideMin + (float)_rng.NextDouble() * (_cfg.StalkerHideMax - _cfg.StalkerHideMin);
                 Vector3 c = pp + new Vector3((float)Math.Cos(a) * d, (float)Math.Sin(a) * d, 0f);
                 Vector3 safe;
                 if (!Natives.StandSpot(c, pp.Z, out safe))

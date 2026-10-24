@@ -99,7 +99,7 @@ namespace EnrageWestworld.Core
 
         private void AwakeningTick(long now)
         {
-            if (Cfg.AwakeningShare <= 0)
+            if (!Cfg.WestWorld)
                 return;
             long perStage = Math.Max(1, Cfg.AwakeningDays) * 1440L;
             List<Person> living = _byId.Values.Where(p => p.IsAlive && !p.Lore).ToList();
@@ -108,8 +108,8 @@ namespace EnrageWestworld.Core
             // everyone who has begun to wake, whoever they are (enRAGE people already advanced above)
             foreach (PersonState st in Store.People.Values.Where(s => s.WakeStage >= Awakening.Stirring && s.WakeStage < Awakening.Awake && !Gone(s.Id) && !_byId.ContainsKey(s.Id)).ToList())
                 AdvanceIfDue(PersonForState(st), now, perStage);
-            if (living.Count == 0)
-                return;
+            if (living.Count == 0 || Cfg.AwakeningShare <= 0)
+                return;   // no one new wakes; those already waking carry on
             int target = (int)Math.Ceiling(living.Count * Cfg.AwakeningShare / 100.0);
             int current = living.Count(p => StageOf(p) > 0);
             while (current < target)

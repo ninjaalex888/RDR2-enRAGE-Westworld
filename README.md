@@ -22,7 +22,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 
 **Life in the street.** Strangers near you flirt, quarrel, call in debts, catch cheats and propose. They square off in standoffs, sing old songs drunk, tell tall tales (some about you), read the paper aloud, haggle over horses, fall for a snake-oil pitch and pick pockets. You can step in: take a side, break up a fight (the town hears you're a peacemaker), or egg it on. Hold a gun on a stranger and they beg; lower it and word gets around that you showed mercy. Weddings happen at the church, and mourners speak at enRAGE's funerals.
 
-**Westworld.** Some people begin to suspect their world is made. At first it's deja vu and odd dreams; later they notice the loops, the same faces, "the music that comes before trouble". Now and then someone glitches. Some of the people you kill wake up days later and remember how they died and who did it. Rarely, by day or by night, someone follows you at a distance and hides when you look.
+**West World (one switch turns it all on or off).** Some people begin to suspect their world is made. At first it's deja vu and odd dreams; later they notice the loops, the same faces, "the music that comes before trouble". Now and then someone glitches. Some of the people you kill wake up days later and remember how they died and who did it. Rarely, by day or by night, someone follows you at a distance and hides when you look.
 
 **Voices.** Most lines come with a fitting recorded line in the speaker's own in-game voice. The stranger lines are read aloud by any Windows voice you have installed, and each speaker keeps their own voice, pitch and pace.
 

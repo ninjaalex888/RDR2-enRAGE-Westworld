@@ -191,8 +191,10 @@ namespace EnrageWestworld.Core
         {
             foreach (Reverie r in Store.Reveries.Values.Where(x => x.WakeAt > 0 && !x.Woke && now >= x.WakeAt).ToList())
             {
+                if (!Cfg.Reveries)
+                    continue;   // West World or reveries switched off: they wait, they aren't forgotten
                 Person p = Find(r.PersonId);
-                if (p == null || p.IsAlive || p.PresumedDead || p.Lore || !Cfg.Reveries)
+                if (p == null || p.IsAlive || p.PresumedDead || p.Lore)
                 {
                     r.WakeAt = 0;
                     continue;
@@ -459,7 +461,7 @@ namespace EnrageWestworld.Core
             // and the lives of people they know
             foreach (Affair a in Store.Affairs.Where(x => x.Stage >= 2 && (town == null || x.Town == town)).OrderByDescending(x => x.At).Take(2))
                 pool.Add(a.AName + " has been " + (a.Stage >= 5 ? "married to " : a.Stage == 4 ? "engaged to " : "courting ") + a.BName);
-            foreach (Reverie rv in Store.Reveries.Values.Where(x => x.Woke).OrderByDescending(x => x.WokeAt).Take(1))
+            foreach (Reverie rv in Store.Reveries.Values.Where(x => Cfg.WestWorld && x.Woke).OrderByDescending(x => x.WokeAt).Take(1))
                 pool.Add(rv.Name + " was dead" + (rv.Buried ? " and buried" : "") + ", and now " + (rv.Woman ? "she" : "he") + "'s walking around like nothing happened");
             return pool;
         }
@@ -672,7 +674,7 @@ namespace EnrageWestworld.Core
                 news.Add(debt.ToId == p.Id ? Person.FirstOf(debt.FromName) + " still owes me " + Voice.Number(debt.Amount) + " dollars."
                     : "I owe " + Person.FirstOf(debt.ToName) + " " + Voice.Number(debt.Amount) + " dollars. Don't know where I'll find it.");
             Reverie rv;
-            if (Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && now - rv.WokeAt > 1440 && Voice.Chance(seed + "rv", 30))
+            if (Cfg.WestWorld && Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && now - rv.WokeAt > 1440 && Voice.Chance(seed + "rv", 30))
                 news.Add(Hosts.ReverieThought(rv, you, seed));
             if (Cfg.HostsQuestionReality && Hosts.Tier(Hosts.Awareness(p, st)) >= 1)
             {
@@ -892,7 +894,7 @@ namespace EnrageWestworld.Core
             PlayerRef you = Talk.RefFor(p, st, Player);
             string seed = p.Id + "|tick|" + now / 180;
             Reverie rv;
-            if (Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && Voice.Chance(seed + "rv", 60))
+            if (Cfg.WestWorld && Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && Voice.Chance(seed + "rv", 60))
                 return Hosts.ReverieThought(rv, you, seed);
             if (Cfg.HostsQuestionReality && Voice.Chance(seed + "host", Math.Min(60, Cfg.RealityChance / 2 + Hosts.Awareness(p, st) / 3)))
                 return Hosts.Thought(p, st, you, seed);
@@ -978,8 +980,8 @@ namespace EnrageWestworld.Core
             int grudge = _byId.Values.Count(x => x.IsAlive && x.Hate >= 40);
             int sweet = Store.People.Values.Count(s => s.Heart >= 2);
             int rumours = Store.TownRumours.Count(r => Store.LastGameMin - r.At < 4320);
-            int woke = Store.Reveries.Values.Count(r => r.Woke);
-            int aware = _byId.Values.Count(x => x.IsAlive && StageOf(x) == 0 && Hosts.Tier(Hosts.Awareness(x, Store.Find(x.Id))) >= 1);
+            int woke = Cfg.WestWorld ? Store.Reveries.Values.Count(r => r.Woke) : 0;
+            int aware = !Cfg.WestWorld ? 0 : _byId.Values.Count(x => x.IsAlive && StageOf(x) == 0 && Hosts.Tier(Hosts.Awareness(x, Store.Find(x.Id))) >= 1);
             List<string> parts = new List<string> { Voice.Number(alive) + (alive == 1 ? " life" : " lives") };
             if (knowName > 0) parts.Add(Voice.Number(knowName) + (knowName == 1 ? " knows" : " know") + " your name");
             if (grudge > 0) parts.Add(Voice.Number(grudge) + (grudge == 1 ? " holds" : " hold") + " a grudge");
@@ -987,7 +989,7 @@ namespace EnrageWestworld.Core
             if (rumours > 0) parts.Add(Voice.Number(rumours) + (rumours == 1 ? " rumour" : " rumours") + " on the road");
             if (woke > 0) parts.Add(Voice.Number(woke) + " back from the dead");
             if (aware > 0) parts.Add(Voice.Number(aware) + " wondering what's real");
-            int waking = WakingCount();
+            int waking = Cfg.WestWorld ? WakingCount() : 0;
             if (waking > 0) parts.Add(Voice.Number(waking) + (waking == 1 ? " is" : " are") + " waking up");
             return string.Join(" - ", parts);
         }
@@ -1008,7 +1010,7 @@ namespace EnrageWestworld.Core
             PlayerRef you = Talk.RefFor(p, st, Player);
             string seed = p.Id + "|x|" + st.Talks;
             Reverie rv;
-            if (Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && !st.Has("told:reverie"))
+            if (Cfg.WestWorld && Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && !st.Has("told:reverie"))
             {
                 st.Mark("told:reverie");
                 lines.Insert(0, Hosts.ReverieAloud(rv, you, seed));
@@ -1037,7 +1039,7 @@ namespace EnrageWestworld.Core
         private Remark EarlyRemark(Person p, PersonState st, PlayerRef you, string seed, long now)
         {
             Reverie rv;
-            if (Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && !st.Has("rem:reverie"))
+            if (Cfg.WestWorld && Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && !st.Has("rem:reverie"))
             {
                 st.Mark("rem:reverie");
                 return new Remark { Key = "reverie", Text = Hosts.ReverieAloud(rv, you, seed), Uncanny = true };

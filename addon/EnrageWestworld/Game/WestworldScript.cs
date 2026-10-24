@@ -143,7 +143,7 @@ namespace EnrageWestworld.InGame
 				_oldCopy = true;
 				Log.Write("STOPPED: EnrageWestworld.dll (the old name of this add-on) is still in the scripts folder. Delete it; RealNPCs stays off until then.");
 			}
-			_cfg = EnrageWestworld.Core.Settings.Load(Path.Combine(_dir, "RealNPCs.ini"), Log.Write);
+			_cfg = EnrageWestworld.Core.Settings.Load(Path.Combine(_dir, "RealNPCs.ini"), Log.Write).Gated();   // the master switches applied; the ini keeps the player's own values
 			Log.Debug = _cfg.DebugLog;
 			Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
 			Feed.UseGameFeed = _cfg.UseGameFeed;

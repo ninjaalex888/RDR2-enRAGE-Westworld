@@ -259,8 +259,9 @@ namespace EnrageWestworld.InGame
             if (gameMin <= 0)
                 return;
             string blocked = StalkBlocker();
-            if (_cfg.Stalkers && blocked == null)
+            if (_cfg.Stalkers && _cfg.WestWorld && blocked == null)
             {
+                // someone you killed, back as a stalker: a West World thing
                 Fallen due = _store.Fallen.FirstOrDefault(f => !f.Done && f.ReturnAt > 0 && gameMin >= f.ReturnAt);
                 if (due != null)
                 {
@@ -270,7 +271,7 @@ namespace EnrageWestworld.InGame
                 }
             }
             int hour = CLOCK.GET_CLOCK_HOURS();
-            bool daylight = hour >= 5 && hour < 18;
+            bool daylight = hour >= 5 && hour < _cfg.StalkerNightFrom;   // the stalker day starts at 05:00; nightfall is StalkerNightFrom
             int night = StalkNight(gameMin);
             if (_cfg.Stalkers && night != _stalkDay)
             {
@@ -293,7 +294,7 @@ namespace EnrageWestworld.InGame
                     Log.Write("A daytime stalker never got a clear moment before dusk; dropped.");
                     continue;
                 }
-                string wait = blocked ?? (!s.Test && !s.Day && daylight ? "it's daytime, and tonight's stalker comes out between 18:00 and 05:00" : null);
+                string wait = blocked ?? (!s.Test && !s.Day && daylight ? "it's daytime, and tonight's stalker comes out between " + _cfg.StalkerNightFrom.ToString("00") + ":00 and 05:00" : null);
                 if (wait != null)
                 {
                     if (firstWait == null)
@@ -340,8 +341,8 @@ namespace EnrageWestworld.InGame
             {
                 if (daylight)
                 {
-                    // 06:00 to 16:59
-                    long at = night * 1440L + 300 + 60 + _rng.Next(11 * 60);
+                    // between StalkerDayFrom and StalkerDayTo (06:00 to 17:00 by default)
+                    long at = night * 1440L + _cfg.StalkerDayFrom * 60 + _rng.Next(Math.Max(1, (_cfg.StalkerDayTo - _cfg.StalkerDayFrom) * 60));
                     _stalkSlots.Add(new StalkSlot { At = at, Day = true });
                     msg += "; the daytime one around " + Clock(at) + (gameMin >= at ? " (due now)" : "");
                 }
@@ -352,8 +353,8 @@ namespace EnrageWestworld.InGame
             }
             if (nite && !_stalkSlots.Any(s => !s.Day && !s.Test))
             {
-                // 18:00 to 03:59
-                long at = night * 1440L + 300 + 13 * 60 + _rng.Next(10 * 60);
+                // from StalkerNightFrom to StalkerNightTo after midnight (18:00 to 04:00 by default), never past 05:00
+                long at = night * 1440L + _cfg.StalkerNightFrom * 60 + _rng.Next(Math.Max(1, (24 - _cfg.StalkerNightFrom + _cfg.StalkerNightTo) * 60));
                 _stalkSlots.Add(new StalkSlot { At = at });
                 msg += "; the night one around " + Clock(at) + (gameMin >= at ? " (due now)" : "");
             }
@@ -368,7 +369,7 @@ namespace EnrageWestworld.InGame
             _stalkerLabel = label;
             _stalkerIsTest = test;
             _stalkerIsDay = day;
-            _stalker = new Stalker(f, label, woman, _cfg.StalkerMinutes);
+            _stalker = new Stalker(f, label, woman, _cfg);
             _stalkerPendingUntil = now + 25000;
             Log.Write("STALKER begins: " + label + (f != null ? " (killed " + (f.Town ?? f.Zone ?? "somewhere") + ")" : "") + (test ? " (test)" : day ? " (daytime)" : f == null ? " (night)" : "") +
                       ", game time " + Clock(Bridge.Now()));

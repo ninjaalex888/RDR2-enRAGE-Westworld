@@ -90,6 +90,8 @@ namespace EnrageWestworld.InGame
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
                       ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "%/day" : "off") +
                       ", voice " + (_cfg.SpokenVoice ? "on" : "off") + ".");
+            Log.Write("West World " + (_cfg.WestWorld ? "on (awakening " + _cfg.AwakeningShare + "%, breakdown " + _cfg.AwakeningBreakdown + "%, despair " + _cfg.AwakeningDespair + "%)" : "off") +
+                      ", Stalkers " + (_cfg.Stalkers ? "on (" + _cfg.StalkerChance + "%/day, when you stand still: " + _cfg.StalkerWhenStill + ")" : "off") + ".");
             Log.Write("0.5 features: scene reactions " + (_cfg.SceneReactions ? "on" : "off") + ", standoffs " + (_cfg.Standoffs ? "on" : "off") + ", songs " + (_cfg.Songs ? "on" : "off") +
                       ", tall tales " + (_cfg.TallTales ? "on" : "off") + ", pickpockets " + (_cfg.Pickpockets ? "on" : "off") + ", pleading " + (_cfg.Pleading ? "on" : "off") +
                       ", arrivals " + (_cfg.ArrivalTalk ? "on" : "off") + ", mourners " + (_cfg.Mourners ? "on" : "off") + ", posses " + (_cfg.PosseTalk ? "on" : "off") + ".");
@@ -125,7 +127,7 @@ namespace EnrageWestworld.InGame
             _iniStamp = stamp;
             EnrageWestworld.Core.Settings fresh = EnrageWestworld.Core.Settings.Load(_iniPath, Log.Write);
             _iniStamp = EnrageWestworld.Core.Settings.Stamp(_iniPath);
-            _cfg.CopyFrom(fresh);
+            _cfg.CopyFrom(fresh.Gated());
             ApplySettings();
             Log.Write("Settings reloaded from the ini.");
             News("RealNPCs", "settings reloaded.", "news");
@@ -409,7 +411,7 @@ namespace EnrageWestworld.InGame
                         Key = f.Key,
                         Name = f.Name,
                         Distance = d + 3f,
-                        Text = () => st.WakeStage > 0 ? Hosts.Thought(fp, st, _engine.Player, f.Key + now / 180) : Folks.Thought(f, st, _engine.Player, f.Key + now / 180, _cfg.Romance)
+                        Text = () => _cfg.WestWorld && st.WakeStage > 0 ? Hosts.Thought(fp, st, _engine.Player, f.Key + now / 180) : Folks.Thought(f, st, _engine.Player, f.Key + now / 180, _cfg.Romance)
                     });
                     continue;
                 }
@@ -441,7 +443,7 @@ namespace EnrageWestworld.InGame
                         Text = () =>
                         {
                             PersonState rst = _store.Find(res.Id);
-                            return rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180) : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / 600, new InnerLife.PlayerLook { Near = strangerDist < 10f, Armed = WEAPON.IS_PED_ARMED(me.Handle, 4), Mounted = PED.IS_PED_ON_MOUNT(me.Handle) });
+                            return _cfg.WestWorld && rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180) : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / 600, new InnerLife.PlayerLook { Near = strangerDist < 10f, Armed = WEAPON.IS_PED_ARMED(me.Handle, 4), Mounted = PED.IS_PED_ON_MOUNT(me.Handle) });
                         }
                     });
                     return;

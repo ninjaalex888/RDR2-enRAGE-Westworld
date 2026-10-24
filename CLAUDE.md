@@ -37,12 +37,13 @@ Needs `refs/ScriptHookRDRNetAPI.dll` and `original/NemesisMod.dll`, both from Le
 
 There is no way to run the game in CI. Play-test in game and read the log at `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\RealNPCs.log`. Hotkeys: F7 (status and log dump), Shift+F7 (call a stalker now), G (wake the person you face one stage; `WakeKey`), F6 (flirt), F5 (letters and diaries).
 
-## Stalkers (current design, 0.5.4)
+## Stalkers (current design, 0.6.0)
 
 - Stalker "days" run 05:00 to 05:00. Each day rolls once: none (100 - `StalkerChance`), else day only / night only / both by the weights `StalkerDayOnly` / `StalkerNightOnly` / `StalkerBoth`.
 - Pending stalkers are kept as slots (`StalkSlot`: test, day, night) in `WestworldScript.Hosts.cs`. A due stalker waits for a clear moment (outdoors, no story mission, no lawmen, not fighting, not in water, screen not fading). A day slot is dropped at 18:00; a night slot carries over to the next night.
 - Spawn spots: `GET_SAFE_COORD_FOR_PED` always returns false in RDR2 (seen in game, 0.5.5), so `Natives.StandSpot` falls back to `GET_GROUND_Z_FOR_3D_COORD` (from the player's height first, never inside an interior).
 - Behaviour (0.5.5): follow, stare, freeze when watched, hide. Player still for 20 s (no movement or move input; the camera is ignored) -> Circle at 6-10 m; any movement -> Retreat to a hidden spot 45-70 m out (`CoverSpot`), then Lurk. Lasts `StalkerMinutes` (default 120).
+- Settings (0.6.0): `[Stalkers]` master `Stalkers` plus StalkerDayFrom/To and StalkerNightFrom/To (due windows; the 05:00 stalker day and the 05:00 daylight start are fixed, nightfall = StalkerNightFrom), appear/follow/stare/circle/hide distances, StalkerStillSeconds, StalkerWhenStill (circle / watch / rush; rush stops at 3.5 m and never attacks), StalkerMutters. `Stalker` holds the live `Settings` object, so panel or ini changes apply at once. A revenant stalker needs West World on too.
 - Failed spawns retry after 1, 2, 4, 8, then 10 minutes. The log says what a stalker is waiting for (`STALKER due, waiting: ...`).
 - Not yet confirmed in game: stalkers, and most of the 0.5 street scenes.
 
@@ -78,3 +79,8 @@ There is no way to run the game in CI. Play-test in game and read the log at `Do
 ## Writing brief for thoughts
 
 Lex's brief is saved at `C:\mods\prompts\You are an expert Behavioral Psycho.txt` (outside the repo). Inner-life lines follow it: short fragmented sentences, one sensory detail, period vocabulary, and the frames: immediate bodily needs, status anxiety (the looking-glass self), negativity and loss bias and the just-world excuse, the gap between the outside and the inside, 1899 anxieties, and granular observation of the player. Pools live in `Core/InnerLife.cs`.
+
+## Master switches and gating (0.6.0)
+
+- `Settings.Gated()` applies the masters to a copy: `WestWorld` false zeroes AwakeningShare/Despair, HostsQuestionReality, Glitches, Reveries, ReturnChance, StrangerReturnChance. `_cfg` (game and engine) is always the gated copy (`Load(...).Gated()`, `CopyFrom(fresh.Gated())`); nothing writes `_cfg` back to disk, so the ini keeps the player's values. Settings.Load ignores sections, so moving keys between sections needs no migration.
+- Paths that look at already-woken people check `WestWorld` directly (ticker thoughts for residents and townsfolk, wake acts, the wake key, reverie lines, the summary counts, revenant stalkers). Pending reveries wait while it's off instead of being cancelled.

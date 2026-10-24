@@ -10,7 +10,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 12;
+        public const int CurrentVersion = 13;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -39,27 +39,47 @@ namespace EnrageWestworld.Core
         public float TickerWidth = 0.60f;
         public bool NoticesAsSubtitles;
 
-        // [Westworld]
+        // [WestWorld] - the master switch and everything under it
+        public bool WestWorld = true;
+        public int AwakeningShare = 5;
+        public int AwakeningDays = 6;
+        public int AwakeningBreakdown = 35;
+        public int AwakeningDespair = 2;
+        public bool HostsQuestionReality = true;
+        public int RealityChance = 15;
+        public bool Glitches = true;
         public bool Reveries = true;
         public int ReturnChance = 15;
         public int StrangerReturnChance = 5;
-        public bool HostsQuestionReality = true;
-        public int RealityChance = 15;
-        public int AwakeningShare = 5;
-        public int AwakeningDays = 6;
-        public int AwakeningDespair = 2;
-        public bool SpokenVoice = true;
-        public int VoiceVolume = 80;
-        public string VoiceMan = string.Empty;
-        public string VoiceWoman = string.Empty;
-        public bool VoiceVariety = true;
-        public bool Glitches = true;
+
+        // [Stalkers]
         public bool Stalkers = true;
         public int StalkerChance = 20;
         public int StalkerDayOnly = 25;
         public int StalkerNightOnly = 50;
         public int StalkerBoth = 25;
+        public int StalkerDayFrom = 6;
+        public int StalkerDayTo = 17;
+        public int StalkerNightFrom = 18;
+        public int StalkerNightTo = 4;
         public int StalkerMinutes = 120;
+        public int StalkerAppearMin = 45;
+        public int StalkerAppearMax = 70;
+        public int StalkerFollowMetres = 26;
+        public int StalkerStareMetres = 34;
+        public int StalkerStillSeconds = 20;
+        public string StalkerWhenStill = "circle";
+        public int StalkerCircleMetres = 8;
+        public int StalkerHideMin = 45;
+        public int StalkerHideMax = 70;
+        public bool StalkerMutters = true;
+
+        // [Voices]
+        public bool SpokenVoice = true;
+        public int VoiceVolume = 80;
+        public string VoiceMan = string.Empty;
+        public string VoiceWoman = string.Empty;
+        public bool VoiceVariety = true;
 
         // [World]
         public bool Deeds = true;
@@ -132,6 +152,25 @@ namespace EnrageWestworld.Core
         }
 
         /// Takes every value from another Settings (an ini reload keeps this same object, which the engine also holds).
+        /// What the game actually runs with: the values from the ini, with the master switches applied (West World
+        /// off turns off everything under it). Never written back to the ini, so the player's own values are kept.
+        public Settings Gated()
+        {
+            Settings g = new Settings();
+            g.CopyFrom(this);
+            if (!g.WestWorld)
+            {
+                g.AwakeningShare = 0;
+                g.AwakeningDespair = 0;
+                g.HostsQuestionReality = false;
+                g.Glitches = false;
+                g.Reveries = false;
+                g.ReturnChance = 0;
+                g.StrangerReturnChance = 0;
+            }
+            return g;
+        }
+
         public void CopyFrom(Settings other)
         {
             if (other == null)
@@ -229,6 +268,23 @@ namespace EnrageWestworld.Core
             AwakeningShare = Math.Max(0, Math.Min(100, AwakeningShare));
             AwakeningDays = Math.Max(1, Math.Min(60, AwakeningDays));
             AwakeningDespair = Math.Max(0, Math.Min(10, AwakeningDespair));
+            AwakeningBreakdown = Math.Max(0, Math.Min(100, AwakeningBreakdown));
+            // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
+            StalkerDayFrom = Math.Max(5, Math.Min(16, StalkerDayFrom));
+            StalkerDayTo = Math.Max(StalkerDayFrom + 1, Math.Min(18, StalkerDayTo));
+            StalkerNightFrom = Math.Max(Math.Max(17, StalkerDayTo), Math.Min(23, StalkerNightFrom));
+            StalkerNightTo = Math.Max(0, Math.Min(5, StalkerNightTo));
+            // stalker distances, kept in a sensible order so one odd value can't break him
+            StalkerAppearMin = Math.Max(20, Math.Min(150, StalkerAppearMin));
+            StalkerAppearMax = Math.Max(StalkerAppearMin, Math.Min(200, StalkerAppearMax));
+            StalkerFollowMetres = Math.Max(10, Math.Min(80, StalkerFollowMetres));
+            StalkerStareMetres = Math.Max(StalkerFollowMetres + 4, Math.Min(100, StalkerStareMetres));
+            StalkerStillSeconds = Math.Max(5, Math.Min(300, StalkerStillSeconds));
+            StalkerCircleMetres = Math.Max(3, Math.Min(15, StalkerCircleMetres));
+            StalkerHideMin = Math.Max(20, Math.Min(150, StalkerHideMin));
+            StalkerHideMax = Math.Max(StalkerHideMin, Math.Min(200, StalkerHideMax));
+            string still = (StalkerWhenStill ?? "").Trim().ToLowerInvariant();
+            StalkerWhenStill = still == "watch" || still == "rush" ? still : "circle";
             VoiceVolume = Math.Max(0, Math.Min(100, VoiceVolume));
             StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerDayOnly = Math.Max(0, Math.Min(1000, StalkerDayOnly));
@@ -287,27 +343,47 @@ namespace EnrageWestworld.Core
             b.AppendLine("TickerWidth = " + F(TickerWidth) + "   ; share of the screen width it may use");
             b.AppendLine("NoticesAsSubtitles = " + B(NoticesAsSubtitles) + "   ; also flash new notices as subtitles");
             b.AppendLine();
-            b.AppendLine("[Westworld]");
+            b.AppendLine("[WestWorld]");
+            b.AppendLine("WestWorld = " + B(WestWorld) + "   ; master switch: the people who start to see their world is made. false turns off everything in this section");
+            b.AppendLine("AwakeningShare = " + AwakeningShare + "   ; percent of people who slowly wake up and see the world for what it is (0 turns the Awakening off)");
+            b.AppendLine("AwakeningDays = " + AwakeningDays + "   ; in-game days a woken person spends on each of the first three stages");
+            b.AppendLine("AwakeningBreakdown = " + AwakeningBreakdown + "   ; percent of the time an unravelling or awake person breaks down (kneels, shouts at the sky, runs) rather than keeping it together");
+            b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, armed and alone, can't bear it and ends their own life (0 turns this off; a content note is in the readme)");
+            b.AppendLine("HostsQuestionReality = " + B(HostsQuestionReality) + "   ; people sometimes wonder whether their world is real");
+            b.AppendLine("RealityChance = " + RealityChance + "   ; percent of remarks and thoughts that drift that way");
+            b.AppendLine("Glitches = " + B(Glitches) + "   ; rarely, someone freezes or repeats themselves");
             b.AppendLine("Reveries = " + B(Reveries) + "   ; the dead may wake up again, remembering how they died and who did it");
             b.AppendLine("ReturnChance = " + ReturnChance + "   ; percent of the people enRAGE knows (not story characters) who wake up after you kill them");
             b.AppendLine("StrangerReturnChance = " + StrangerReturnChance + "   ; percent of strangers you kill who come back");
-            b.AppendLine("HostsQuestionReality = " + B(HostsQuestionReality) + "   ; people sometimes wonder whether their world is real");
-            b.AppendLine("RealityChance = " + RealityChance + "   ; percent of remarks and thoughts that drift that way");
-            b.AppendLine("AwakeningShare = " + AwakeningShare + "   ; percent of the living who slowly wake up and see the world for what it is (0 turns it off)");
-            b.AppendLine("AwakeningDays = " + AwakeningDays + "   ; in-game days a woken person spends on each of the first three stages");
-            b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, armed and alone, can't bear it and ends their own life (0 turns this off; a content note is in the readme)");
-            b.AppendLine("SpokenVoice = " + B(SpokenVoice) + "   ; those lines are also read aloud with the Windows voice");
+            b.AppendLine();
+            b.AppendLine("[Stalkers]");
+            b.AppendLine("Stalkers = " + B(Stalkers) + "   ; master switch: rarely, someone follows you from a distance and hides when you look. false turns off everything in this section");
+            b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent per in-game day that someone follows you (otherwise none that day; Shift+F7 calls one to test)");
+            b.AppendLine("StalkerDayOnly = " + StalkerDayOnly + "   ; on a stalker day, weight for just a daytime stalker");
+            b.AppendLine("StalkerNightOnly = " + StalkerNightOnly + "   ; ... weight for just a night stalker");
+            b.AppendLine("StalkerBoth = " + StalkerBoth + "   ; ... weight for one by day and another at night (the three weights are relative, e.g. 25/50/25)");
+            b.AppendLine("StalkerDayFrom = " + StalkerDayFrom + "   ; a daytime stalker turns up between this hour (5-16)...");
+            b.AppendLine("StalkerDayTo = " + StalkerDayTo + "   ; ... and this one (up to 18); one who never gets a clear moment is gone by nightfall");
+            b.AppendLine("StalkerNightFrom = " + StalkerNightFrom + "   ; nightfall: a night stalker turns up from this hour (17-23)...");
+            b.AppendLine("StalkerNightTo = " + StalkerNightTo + "   ; ... until this hour after midnight (0-5)");
+            b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; how long a stalker keeps it up (real minutes, up to 240)");
+            b.AppendLine("StalkerAppearMin = " + StalkerAppearMin + "   ; he first turns up this many metres behind you, at least...");
+            b.AppendLine("StalkerAppearMax = " + StalkerAppearMax + "   ; ... and at most");
+            b.AppendLine("StalkerFollowMetres = " + StalkerFollowMetres + "   ; how close he follows");
+            b.AppendLine("StalkerStareMetres = " + StalkerStareMetres + "   ; within this distance he stops and stares (more than StalkerFollowMetres)");
+            b.AppendLine("StalkerStillSeconds = " + StalkerStillSeconds + "   ; stand still this long and he does what StalkerWhenStill says");
+            b.AppendLine("StalkerWhenStill = " + StalkerWhenStill + "   ; circle: runs in close and circles you; watch: keeps his distance and stares; rush: runs straight at you and stops a few steps short (he never attacks)");
+            b.AppendLine("StalkerCircleMetres = " + StalkerCircleMetres + "   ; how close he circles (3-15)");
+            b.AppendLine("StalkerHideMin = " + StalkerHideMin + "   ; when you move, he runs back out at least this far...");
+            b.AppendLine("StalkerHideMax = " + StalkerHideMax + "   ; ... and at most, behind a tree or a building if there is one");
+            b.AppendLine("StalkerMutters = " + B(StalkerMutters) + "   ; he mutters now and then");
+            b.AppendLine();
+            b.AppendLine("[Voices]");
+            b.AppendLine("SpokenVoice = " + B(SpokenVoice) + "   ; uncanny lines are also read aloud with the Windows voice");
             b.AppendLine("VoiceVolume = " + VoiceVolume + "   ; 0-100");
             b.AppendLine("VoiceMan = " + (VoiceMan ?? "") + "   ; part of the name of the Windows voice for men (the log lists the installed ones); empty = any man's voice");
             b.AppendLine("VoiceWoman = " + (VoiceWoman ?? "") + "   ; the same for women");
             b.AppendLine("VoiceVariety = " + B(VoiceVariety) + "   ; each speaker keeps their own voice, pitch and pace");
-            b.AppendLine("Glitches = " + B(Glitches) + "   ; rarely, someone freezes or repeats themselves");
-            b.AppendLine("Stalkers = " + B(Stalkers) + "   ; rarely, someone follows you from a distance and hides when you look");
-            b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent per in-game day that someone follows you (otherwise none that day; Shift+F7 calls one to test)");
-            b.AppendLine("StalkerDayOnly = " + StalkerDayOnly + "   ; on a stalker day, weight for just a daytime stalker (05:00 to 18:00)");
-            b.AppendLine("StalkerNightOnly = " + StalkerNightOnly + "   ; ... weight for just a night stalker (18:00 to 05:00)");
-            b.AppendLine("StalkerBoth = " + StalkerBoth + "   ; ... weight for one by day and another at night (the three weights are relative, e.g. 25/50/25)");
-            b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; how long a stalker keeps it up (real minutes, up to 240)");
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");

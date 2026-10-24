@@ -102,6 +102,12 @@ namespace EnrageWestworld.InGame
             return Natives.IsLaw(ped) && (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0 || LAW.IS_LAW_INCIDENT_ACTIVE(Game.Player.Handle));
         }
 
+        /// Does this unravelling or awake person break down this time, rather than keep it together (AwakeningBreakdown)?
+        private bool Breaks()
+        {
+            return _rng.Next(100) < _cfg.AwakeningBreakdown;
+        }
+
         private string ChooseWakeAct(int stage, bool sitting, bool passive)
         {
             int r = _rng.Next(100);
@@ -111,7 +117,7 @@ namespace EnrageWestworld.InGame
                 {
                     case Awakening.Stirring: return r < 25 ? "glance" : r < 65 ? "lookaround" : "stare";
                     case Awakening.Questioning: return r < 55 ? "stare" : "lookaround";
-                    case Awakening.Unravelling: return r < 60 ? "shout" : "stare";
+                    case Awakening.Unravelling: return Breaks() ? "shout" : "stare";
                     default: return r < 85 ? "awake" : "shout";
                 }
             }
@@ -122,7 +128,9 @@ namespace EnrageWestworld.InGame
                 case Awakening.Questioning:
                     return sitting ? (r < 50 ? "stare" : "lookaround") : r < 15 ? "stare" : r < 45 ? "pace" : r < 65 ? "edge" : r < 85 ? "ask" : "lookaround";
                 case Awakening.Unravelling:
-                    return sitting ? (r < 50 ? "shout" : "kneel") : r < 20 ? "pace" : r < 35 ? "freeze" : r < 55 ? "shout" : r < 75 ? "kneel" : "run";
+                    if (Breaks())
+                        return sitting ? (r < 50 ? "shout" : "kneel") : r < 35 ? "shout" : r < 70 ? "kneel" : "run";   // falling apart
+                    return sitting ? "stare" : r < 50 ? "pace" : r < 80 ? "freeze" : "stare";   // holding it together, just
                 default:
                     return r < 92 ? "awake" : "stare";
             }
@@ -132,7 +140,7 @@ namespace EnrageWestworld.InGame
 
         private void WakeActsTick(int now)
         {
-            if (_missionPaused || _cfg == null || _cfg.AwakeningShare <= 0)
+            if (_missionPaused || _cfg == null || !_cfg.WestWorld)
             {
                 if (_wakeActs.Count > 0)
                     WakeActsAbort();
@@ -216,7 +224,7 @@ namespace EnrageWestworld.InGame
             {
                 case Awakening.Stirring: kind = passive ? "stare" : r < 50 ? "lookaround" : "stare"; break;
                 case Awakening.Questioning: kind = passive ? "lookaround" : r < 35 ? "edge" : r < 70 ? "ask" : "pace"; break;
-                case Awakening.Unravelling: kind = passive ? "shout" : r < 30 ? "kneel" : r < 60 ? "run" : "shout"; break;
+                case Awakening.Unravelling: kind = passive ? "shout" : Breaks() ? (r < 30 ? "kneel" : r < 60 ? "run" : "shout") : (r < 50 ? "pace" : "freeze"); break;
                 default: kind = "awake"; break;
             }
             _wakeCool[handle] = now + (kind == "awake" ? 120000 : 20000);
@@ -600,7 +608,7 @@ namespace EnrageWestworld.InGame
             if (!act.Passive)
             {
                 int r = _rng.Next(100);
-                ending = r < 30 ? "escape" : r < 55 ? "wake" : r < 80 ? "kneel" : "plead";
+                ending = Breaks() ? (r < 50 ? "escape" : "kneel") : (r < 55 ? "wake" : "plead");
                 if (DespairRoll(act, me, dist))
                     ending = WEAPON.IS_PED_ARMED(h, 4) ? "despair" : "giveup";
             }

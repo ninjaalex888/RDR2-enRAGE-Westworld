@@ -3,6 +3,9 @@
 ## 0.6.0
 
 - New name: enRAGE Westworld is now **RealNPCs** (`RealNPCs.dll`, data folder `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs`). On first start the old `enRAGE-Westworld` folder is copied over (saves, diaries, voice files; the ini is renamed `RealNPCs.ini`), and the old folder is left as it was. If `EnrageWestworld.dll` is still in the scripts folder, RealNPCs stays off and says so, so two copies never run together.
+- Two master switches. `WestWorld` (default on) turns the whole West World side on or off: the Awakening, hosts wondering if the world is real, glitches, reveries and revenants. Off, nothing of it happens and people already waking go quiet, without losing their place; pending reveries wait instead of being cancelled. `Stalkers` is its own master with its own section: chance, day and night hours (`StalkerDayFrom`/`To`, `StalkerNightFrom`/`To`; the 05:00 stalker day is unchanged), how far behind they appear, follow and stare distances, how long you must stand still, what they do then (`StalkerWhenStill`: circle, watch, or rush, which stops a few steps short and never attacks), circle distance, how far they run off, and whether they mutter. Odd values are put back in order. A stalker who is someone you killed is a West World thing and needs both switches.
+- `AwakeningBreakdown` (35): how often an unravelling or awake person falls apart (kneels, shouts, runs) rather than holding it together.
+- The ini is reorganised into `[WestWorld]`, `[Stalkers]` and `[Voices]` (settings version 13); values are kept. The game runs on a copy with the master switches applied; the ini always keeps the player's own values.
 - The ticker is always one line high now, so it no longer overlaps the game's subtitles just above it. Text a little too long is set slightly smaller; text much too long is shown in parts, one after another, in the same bar.
 
 ## 0.5.5

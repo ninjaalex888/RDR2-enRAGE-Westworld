@@ -21,6 +21,17 @@ NEW IN 0.6.0
   RealNPCs. If you had the old version: DELETE EnrageWestworld.dll from the scripts folder (RealNPCs
   won't run next to it, and tells you so). Your saves, diaries and settings are copied over from
   the old enRAGE-Westworld folder the first time RealNPCs starts; the old folder is left as it was.
+- Two master switches. WestWorld turns the whole West World side on or off: the Awakening, people
+  wondering if the world is real, glitches, and the dead who wake. Off, nothing of it happens and
+  people already waking go quiet (they pick up where they left off if you turn it back on).
+  Stalkers is its own switch now, with its own settings: the chance, the hours they turn up, how
+  far back they follow, how close they come, how far they run off, whether they mutter, and what
+  they do when you stand still (StalkerWhenStill: circle you close, watch you from where they are,
+  or run straight at you and stop a few steps short - they never attack).
+- AwakeningBreakdown (35): how often an unravelling or awake person falls apart (kneels, shouts
+  at the sky, runs) rather than holding it together.
+- The ini is reorganised into [WestWorld], [Stalkers] and [Voices]; your values are kept.
+- The ticker is always one line high, so it never overlaps the game's subtitles.
 
 
 NEW IN 0.5.5
@@ -337,12 +348,22 @@ in the file. The new ones:
 
 [Ticker]    Ticker (true), TickerNearbyMetres (30), TickerSeconds (12), TickerY (0.962, height on
             screen), TickerScale (0.30, text size), TickerWidth (0.60), NoticesAsSubtitles (false)
-[Westworld] Reveries (true), ReturnChance (15), StrangerReturnChance (5),
-            HostsQuestionReality (true), RealityChance (15), AwakeningShare (5), AwakeningDays (6), AwakeningDespair (2), WakeKey (G), SpokenVoice (true), VoiceVolume (80),
-            VoiceMan, VoiceWoman (part of a Windows voice's name; empty = any), VoiceVariety (true),
-            WarNewsTo (right),
-            Glitches (true), Stalkers (true), StalkerChance (20, percent per day),
-            StalkerDayOnly (25), StalkerNightOnly (50), StalkerBoth (25), StalkerMinutes (120)
+[WestWorld] WestWorld (true): the master switch. false turns off everything below it.
+            AwakeningShare (5), AwakeningDays (6), AwakeningBreakdown (35, how often an unravelling
+            or awake person falls apart), AwakeningDespair (2, see the content note above),
+            HostsQuestionReality (true), RealityChance (15), Glitches (true),
+            Reveries (true), ReturnChance (15), StrangerReturnChance (5)
+[Stalkers]  Stalkers (true): the master switch. StalkerChance (20, percent per day),
+            StalkerDayOnly (25), StalkerNightOnly (50), StalkerBoth (25),
+            StalkerDayFrom (6) / StalkerDayTo (17): when a daytime stalker turns up,
+            StalkerNightFrom (18) / StalkerNightTo (4): when a night stalker turns up,
+            StalkerMinutes (120), StalkerAppearMin (45) / StalkerAppearMax (70): how far behind you
+            he first turns up, StalkerFollowMetres (26), StalkerStareMetres (34),
+            StalkerStillSeconds (20), StalkerWhenStill (circle | watch | rush): what he does when
+            you stand still, StalkerCircleMetres (8), StalkerHideMin (45) / StalkerHideMax (70):
+            how far he runs off when you move, StalkerMutters (true). He never attacks.
+[Voices]    SpokenVoice (true), VoiceVolume (80), VoiceMan, VoiceWoman (part of a Windows voice's
+            name; empty = any), VoiceVariety (true)
 [World]     Deeds, RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
@@ -352,8 +373,9 @@ in the file. The new ones:
                 ticker: the ticker (default); subtitles: 0.3's subtitle notices;
                 enrage: enRAGE's own notice line (its message settings decide) and its feed;
                 gamefeed: EXPERIMENTAL top-left toasts
-            ReaderKey (F5), ReloadIni (true)
-All the 0.3 and 0.4 options are still there and work the same.
+            WarNewsTo (right | ticker): where gang and faction news goes
+            TestKey (F7), FlirtKey (F6), WakeKey (G), ReaderKey (F5), ReloadIni (true)
+All the older options are still there and work the same.
 
 
 KEYS

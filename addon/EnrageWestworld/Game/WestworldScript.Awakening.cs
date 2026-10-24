@@ -215,6 +215,11 @@ namespace EnrageWestworld.InGame
             if (!_wakeRequested)
                 return;
             _wakeRequested = false;
+            if (!_cfg.WestWorld)
+            {
+                WakeNote("West World is switched off (WestWorld in RealNPCs.ini, or the West World page of the settings).");
+                return;
+            }
             Ped me = Game.Player.Character;
             int handle;
             Person p = null;
