@@ -52,6 +52,26 @@ namespace EnrageWestworld.InGame
                 : "enRAGE's settings panel: missing " + string.Join(", ", missing) + (CanReplaceSettings ? "." : "; Alt+F11 stays with enRAGE."));
         }
 
+        /// enRAGE's list of the entries it keeps out of sight was found (without it, its pages aren't shown).
+        public bool EnrageHidesKnown
+        {
+            get
+            {
+                ResolvePanel();
+                return _panelHides != null;
+            }
+        }
+
+        /// enRAGE can be asked to reload its settings after a change (without it, its pages are read-only).
+        public bool CanReloadEnrage
+        {
+            get
+            {
+                ResolvePanel();
+                return _enragePanel != null && _panelReload != null;
+            }
+        }
+
         /// Everything needed to stand in for enRAGE's panel was found.
         public bool CanReplaceSettings
         {

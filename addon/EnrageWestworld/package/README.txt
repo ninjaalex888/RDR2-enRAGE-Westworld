@@ -34,7 +34,7 @@ NEW IN 0.6.0
   settings need their master switch on first. Changes apply at once. NemesisMod.ini is backed up
   to DocumentsRockstar GamesRed Dead Redemption 2RealNPCsackup before the first change.
   ReplaceEnrageSettings = false gives Alt+F11 back to enRAGE's own panel; Ctrl+F7 (SettingsKey)
-  opens this one too. Keyboard only for now.
+  opens this one too. A pad works too: D-pad, LB/RB, A, and B to close.
 - AwakeningBreakdown (35): how often an unravelling or awake person falls apart (kneels, shouts
   at the sky, runs) rather than holding it together.
 - The ini is reorganised into [WestWorld], [Stalkers] and [Voices]; your values are kept.

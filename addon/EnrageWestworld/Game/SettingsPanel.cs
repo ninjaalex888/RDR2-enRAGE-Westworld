@@ -25,8 +25,14 @@ namespace EnrageWestworld.InGame
             public string Title;
             public bool Enrage;
             public string Section;
+            public string Message;   // a page with nothing to change, only this to say
             public List<IniEntry> Rows = new List<IniEntry>();
         }
+
+        // the pad's menu buttons (used only while a pad is the last thing touched, so keys don't count twice)
+        private const uint PadUp = 1662638961u, PadDown = 97156178u, PadLeft = 2791226036u, PadRight = 3736290067u, PadLB = 3901091606u, PadRB = 398377320u,
+                           PadAccept = 3350541322u, PadCancel = 359624985u, PadX = 1840825903u;
+        private const int WriteAfterMs = 450;   // holding Left or Right: written once it settles, not on every step
 
         // text sizes: about half as large again as enRAGE's own panel
         private const float TitleScale = 0.46f, PageScale = 0.38f, RowScale = 0.285f, SmallScale = 0.245f;
@@ -85,6 +91,10 @@ namespace EnrageWestworld.InGame
         private int _page, _row, _scroll;
         private string _note = string.Empty;
         private IniEntry _capture;
+        private Page _pendingPage;
+        private IniEntry _pendingEntry;
+        private string _pendingValue;
+        private int _pendingAt;
 
         public bool Open { get; private set; }
 
@@ -114,6 +124,7 @@ namespace EnrageWestworld.InGame
 
         public void Close()
         {
+            Flush();
             Open = false;
             _capture = null;
             Draw.FrameBudget = Draw.NormalBudget;
@@ -136,7 +147,13 @@ namespace EnrageWestworld.InGame
                     _pages.Add(new Page { Title = s.Name, Section = s.Name, Rows = s.Entries.ToList() });
             }
             _theirs = !string.IsNullOrEmpty(_theirsPath) && File.Exists(_theirsPath) ? IniDoc.Read(_theirsPath, false) : null;
-            if (_theirs != null && _theirs.Error == null)
+            // enRAGE's pages only when we know which of its entries are its own bookkeeping, and can ask it to reload
+            string why = _bridge == null ? "enRAGE hasn't been found yet (it takes a few seconds after loading a save)."
+                : !_bridge.EnrageHidesKnown || !_bridge.CanReloadEnrage ? "this version of enRAGE isn't laid out the way RealNPCs expects (the log says what was missing). Its own panel still works: set ReplaceEnrageSettings to false."
+                : _theirs == null || _theirs.Error != null ? "NemesisMod.ini couldn't be read" + (_theirs != null && _theirs.Error != null ? ": " + _theirs.Error : ".") : null;
+            if (why != null)
+                _pages.Add(new Page { Title = "enRAGE", Enrage = true, Message = "enRAGE's settings can't be shown right now: " + why });
+            else
             {
                 foreach (IniSection s in _theirs.Sections.Where(x => x.Name.Length > 0))
                 {
@@ -173,7 +190,12 @@ namespace EnrageWestworld.InGame
             }
             if (_pages.Count == 0)
                 return;
+            bool changing = key == Keys.Left || key == Keys.A || key == Keys.Right || key == Keys.D;
+            if (!changing)
+                Flush();   // moving on: a value still settling is written first
             Page page = _pages[_page];
+            if (page.Rows.Count == 0 && key != Keys.Q && key != Keys.E && key != Keys.PageUp && key != Keys.PageDown && key != Keys.Tab)
+                return;
             switch (key)
             {
                 case Keys.Up:
@@ -259,6 +281,11 @@ namespace EnrageWestworld.InGame
             }
             string spec = (ctrl ? "Ctrl+" : string.Empty) + (shift ? "Shift+" : string.Empty) + (alt ? "Alt+" : string.Empty) + key;
             Write(_pages[_page], e, spec);
+            // enRAGE hears every key too: say so if this one is also one of its own
+            IniSection keys = _theirs != null ? _theirs.Sections.FirstOrDefault(s => s.Name == "Keys") : null;
+            IniEntry same = keys != null && !ctrl && !shift && !alt ? keys.Entries.FirstOrDefault(k => k.Value.Equals(key.ToString(), StringComparison.OrdinalIgnoreCase)) : null;
+            if (same != null)
+                _note += ". Careful: enRAGE uses " + key + " too (" + Label(same.Key) + "), so both will happen.";
         }
 
         private void Change(Page page, IniEntry e, int dir, bool big)
@@ -284,10 +311,46 @@ namespace EnrageWestworld.InGame
                 _note = key ? "Press Enter to set this key." : Label(e.Key) + " is text: type it in " + (page.Enrage ? "NemesisMod.ini" : "RealNPCs.ini") + ".";
                 return;
             }
-            Write(page, e, next);
+            Stage(page, e, next);
         }
 
         // ---- writing ----------------------------------------------------------------------------------------
+
+        /// Shows the new value at once; it is written when it settles (no change for a moment), or on moving on.
+        private void Stage(Page page, IniEntry e, string value)
+        {
+            if (_pendingEntry != null && _pendingEntry != e)
+                Flush();
+            IniDoc doc = page.Enrage ? _theirs : _ours;
+            if (doc == null || !doc.Set(e, value))
+                return;
+            _pendingPage = page;
+            _pendingEntry = e;
+            _pendingValue = value;
+            _pendingAt = Environment.TickCount;
+            _note = Label(e.Key) + " = " + value;
+        }
+
+        /// Writes the value waiting to be written, if any.
+        public void Flush()
+        {
+            if (_pendingEntry == null)
+                return;
+            Page page = _pendingPage;
+            IniEntry e = _pendingEntry;
+            string value = _pendingValue;
+            _pendingPage = null;
+            _pendingEntry = null;
+            _pendingValue = null;
+            Write(page, e, value);
+        }
+
+        /// Called every frame: writes a value once it has settled.
+        public void Tick()
+        {
+            if (_pendingEntry != null && unchecked(Environment.TickCount - _pendingAt) >= WriteAfterMs)
+                Flush();
+        }
 
         private void Write(Page page, IniEntry e, string value)
         {
@@ -295,7 +358,10 @@ namespace EnrageWestworld.InGame
             if (doc == null)
                 return;
             if (page.Enrage && !BackUp())
+            {
+                Reload();   // nothing was written: show the file as it is
                 return;
+            }
             if (!doc.Set(e, value))
             {
                 _note = "Couldn't change " + Label(e.Key) + ".";
@@ -411,12 +477,47 @@ namespace EnrageWestworld.InGame
 
         // ---- drawing ----------------------------------------------------------------------------------------
 
+        /// The pad's menu buttons, while a pad is in use: D-pad choose and change (hold X for ten steps), LB / RB turn the
+        /// page, A sets a key, B closes. True when the panel was closed.
+        private bool PadInput()
+        {
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadCancel))
+            {
+                if (_capture != null)
+                    Key(Keys.Escape, false, false, false);
+                else
+                    Close();
+                return !Open;
+            }
+            bool big = PAD.IS_DISABLED_CONTROL_PRESSED(0, PadX);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadUp)) Key(Keys.Up, false, false, false);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadDown)) Key(Keys.Down, false, false, false);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLeft)) Key(Keys.Left, big, false, false);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRight)) Key(Keys.Right, big, false, false);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLB)) Key(Keys.Q, false, false, false);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRB)) Key(Keys.E, false, false, false);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadAccept)) Key(Keys.Enter, false, false, false);
+            return !Open;
+        }
+
+        private void DrawHints(float left, bool pad)
+        {
+            if (_note.Length > 0)
+                Draw.Text(Draw.Fit(_note, SmallScale, W - 0.05f), left, Y + H - 0.072f, SmallScale, 236, 196, 120);
+            string keys = pad ? "D-pad choose and change   hold X: x10   LB/RB page   A: set a key (then press it on the keyboard)   B: close"
+                : "Up/Down choose   Left/Right change   Shift: x10   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
+            Draw.Text(Draw.Fit(keys, SmallScale * 0.94f, W - 0.04f), left, Y + H - 0.04f, SmallScale * 0.94f, 140, 128, 110);
+        }
+
         public void Render()
         {
             if (!Open)
                 return;
             PAD.DISABLE_ALL_CONTROL_ACTIONS(0);
             HUD.HIDE_HUD_AND_RADAR_THIS_FRAME();
+            bool pad = !PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
+            if (pad && PadInput())
+                return;   // the pad closed it
             Draw.Rect(0f, 0f, 1f, 1f, 0, 0, 0, 110);
             Draw.Rect(X, Y, W, H, 18, 15, 12, 238);
             Draw.Rect(X, Y, W, 0.004f, 196, 156, 92, 255);
@@ -442,6 +543,17 @@ namespace EnrageWestworld.InGame
             float rowH = Draw.LineHeight(RowScale) * 1.22f;
             float top = pageY + Draw.LineHeight(PageScale) + 0.014f;
             Draw.Rect(left - 0.006f, top - 0.006f, W - 0.032f, 0.0015f, 120, 98, 66, 200);
+            if (page.Rows.Count == 0)
+            {
+                float my = top + 0.01f;
+                foreach (string line in Draw.Wrap(page.Message ?? string.Empty, RowScale, W - 0.05f).Take(6))
+                {
+                    Draw.Text(line, left, my, RowScale, 214, 176, 130);
+                    my += Draw.LineHeight(RowScale) * 1.15f;
+                }
+                DrawHints(left, pad);
+                return;
+            }
             if (_row < _scroll)
                 _scroll = _row;
             if (_row >= _scroll + VisibleRows)
@@ -489,10 +601,7 @@ namespace EnrageWestworld.InGame
                 Draw.Text(line, left, helpY, SmallScale, 196, 184, 162);
                 helpY += helpH;
             }
-            if (_note.Length > 0)
-                Draw.Text(Draw.Fit(_note, SmallScale, W - 0.05f), left, Y + H - 0.072f, SmallScale, 236, 196, 120);
-            const string keys = "Up/Down choose   Left/Right change   Shift: x10   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
-            Draw.Text(Draw.Fit(keys, SmallScale * 0.94f, W - 0.04f), left, Y + H - 0.04f, SmallScale * 0.94f, 140, 128, 110);
+            DrawHints(left, pad);
         }
     }
 }

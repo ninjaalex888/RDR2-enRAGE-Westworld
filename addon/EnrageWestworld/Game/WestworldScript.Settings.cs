@@ -29,12 +29,25 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        private bool PanelOpen { get { return _panel != null && _panel.Open; } }
+        /// Open, and working: if the panel ever switched itself off after errors, keys and the ticker are not held back.
+        private bool PanelOpen { get { return _panel != null && _panel.Open && !_featureOff.Contains("settings panel"); } }
 
         private void SettingsStep(int now)
         {
             if (_aSettings == null)
                 _aSettings = SettingsImpl;
+            if (_panel != null && _panel.Open && _featureOff.Contains("settings panel"))
+            {
+                try
+                {
+                    _panel.Close();   // it failed too often: let go of the keys and the screen
+                }
+                catch
+                {
+                }
+                Draw.FrameBudget = Draw.NormalBudget;
+                return;
+            }
             Safe("settings panel", _aSettings);
         }
 
@@ -68,7 +81,10 @@ namespace EnrageWestworld.InGame
                     OpenPanel();
             }
             if (panel.Open)
+            {
+                panel.Tick();
                 panel.Render();
+            }
         }
 
         private void OpenPanel()
