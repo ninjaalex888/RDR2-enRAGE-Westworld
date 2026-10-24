@@ -27,7 +27,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 ## Install
 
 1. Install [enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967) 0.9.5.2 and what it needs (Script Hook RDR2 and Script Hook RDR2 .NET V2), and make sure it works.
-2. Download `enRAGE-Westworld-0.5.2.zip` from [Releases](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/releases).
+2. Download **[enRAGE-Westworld-0.5.2.zip](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/raw/main/release/enRAGE-Westworld-0.5.2.zip)** (it's also in the [release](release) folder). It holds `EnrageWestworld.dll` and a README.txt that explains every feature and setting.
 3. Copy `EnrageWestworld.dll` into your game's `scripts` folder, next to enRAGE's `NemesisMod.dll`. To update, just replace the file: what people remember carries over, and your settings are kept.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
 
