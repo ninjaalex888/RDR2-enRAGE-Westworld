@@ -159,17 +159,26 @@ namespace EnrageWestworld.InGame
 
         private Keys _lastHotkey;
         private int _lastHotkeyAt;
+        private bool _hotkeyLetGo;
 
-        /// Windows repeats KeyDown while a key is held. The add-on's own keys act once per press.
+        /// Windows repeats KeyDown while a key is held. The add-on's own keys act once per press; a quick second
+        /// press counts once the key has been let go (T tapped through a long ticker line).
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
             if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e) || _settingsKey.Matches(e) || _tickerNextKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
-            bool repeat = e.KeyCode == _lastHotkey && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
+            bool repeat = e.KeyCode == _lastHotkey && !_hotkeyLetGo && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
             _lastHotkey = e.KeyCode;
             _lastHotkeyAt = t;
+            _hotkeyLetGo = false;
             return repeat;
+        }
+
+        private void OnKeyUp(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == _lastHotkey)
+                _hotkeyLetGo = true;
         }
 
         private bool KeyDown04(KeyEventArgs e)

@@ -162,6 +162,7 @@ namespace EnrageWestworld.InGame
 			base.Interval = 0;
 			base.Tick += OnTick;
 			base.KeyDown += OnKeyDown;
+			base.KeyUp += OnKeyUp;
 			base.Aborted += OnAborted;
 		}
 
