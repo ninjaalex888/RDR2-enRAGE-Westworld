@@ -122,7 +122,7 @@ namespace EnrageWestworld.InGame
         private void WakeNote(string text)
         {
             Log.Write("WAKE key: " + text);
-            Feed.Interrupt("Westworld: " + text, 4500);
+            Feed.Interrupt("West World: " + text, 4500);
         }
 
         private static bool Near(Ped me, Ped p)

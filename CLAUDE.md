@@ -4,7 +4,7 @@ Notes for working on this repo with Claude Code.
 
 ## What this is
 
-enRAGE Westworld: an unofficial C# add-on for the enRAGE nemesis mod for Red Dead Redemption 2. It is a separate DLL (`EnrageWestworld.dll`) that sits next to enRAGE's `NemesisMod.dll` in the game's `scripts` folder. Story Mode only. Owner: Lex (GitHub ninjaalex888). Read `README.md` for features and `CHANGELOG.md` for history. The full design doc is the project doc `westworld-addon-design.md` in the claude.ai Project "Red Dead Redemption 2 Mods".
+RealNPCs (formerly enRAGE Westworld, renamed in 0.6.0): an unofficial C# add-on for the enRAGE nemesis mod for Red Dead Redemption 2. It is a separate DLL (`RealNPCs.dll`) that sits next to enRAGE's `NemesisMod.dll` in the game's `scripts` folder. Its data folder is `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs` (`RealNPCs.ini`, `RealNPCs.log`, saves, diaries, `voices\`); on first start it copies the old `enRAGE-Westworld` folder over, and it refuses to run while `EnrageWestworld.dll` is still in `scripts`. Internal names (namespaces `EnrageWestworld.*`, class `WestworldScript`, folder `addon/EnrageWestworld`) were kept on purpose. Player-facing text must keep saying "an unofficial add-on for enRAGE" and link enRAGE's Nexus page. Story Mode only. Owner: Lex (GitHub ninjaalex888). Read `README.md` for features and `CHANGELOG.md` for history. The full design doc is the project doc `westworld-addon-design.md` in the claude.ai Project "Red Dead Redemption 2 Mods".
 
 ## Build
 
@@ -15,7 +15,7 @@ cd addon/EnrageWestworld
 dotnet build -c Release
 ```
 
-Needs `refs/ScriptHookRDRNetAPI.dll` and `original/NemesisMod.dll`, both from Lex's own install and never committed (`*.dll` is git-ignored). Output: `addon/EnrageWestworld/bin/Release/net48/EnrageWestworld.dll`. Copy it into the game's `scripts` folder to test.
+Needs `refs/ScriptHookRDRNetAPI.dll` and `original/NemesisMod.dll`, both from Lex's own install and never committed (`*.dll` is git-ignored). Output: `addon/EnrageWestworld/bin/Release/net48/RealNPCs.dll`. Copy it into the game's `scripts` folder to test.
 
 ## Layout
 
@@ -35,7 +35,7 @@ Needs `refs/ScriptHookRDRNetAPI.dll` and `original/NemesisMod.dll`, both from Le
 
 ## Testing
 
-There is no way to run the game in CI. Play-test in game and read the log at `Documents\Rockstar Games\Red Dead Redemption 2\enRAGE-Westworld\enRAGE-Westworld.log`. Hotkeys: F7 (status and log dump), Shift+F7 (call a stalker now), G (wake the person you face one stage; `WakeKey`), F6 (flirt), F5 (letters and diaries).
+There is no way to run the game in CI. Play-test in game and read the log at `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\RealNPCs.log`. Hotkeys: F7 (status and log dump), Shift+F7 (call a stalker now), G (wake the person you face one stage; `WakeKey`), F6 (flirt), F5 (letters and diaries).
 
 ## Stalkers (current design, 0.5.4)
 
@@ -49,12 +49,12 @@ There is no way to run the game in CI. Play-test in game and read the log at `Do
 ## Releasing
 
 1. Update the version in `EnrageWestworld.csproj`, the title and "NEW IN" section of `package/README.txt`, `README.md` and `CHANGELOG.md`.
-2. Build, then zip `EnrageWestworld.dll` and `README.txt` as `release/enRAGE-Westworld-<version>.zip`, replacing the old zip, and update the link in `README.md`.
+2. Build, then zip `RealNPCs.dll` and `README.txt` as `release/RealNPCs-<version>.zip`, replacing the old zip, and update the link in `README.md`.
 3. Commit and push. A GitHub Release with the zip attached is nicer than the folder link if `gh` can make one.
 
 ## Roadmap
 
-1. Everyone is someone (residents: every ordinary person gets an identity, saved once touched; never written to enRAGE). 2. The Awakening (hosts slowly realise they're in a loop; it spreads host to host, a trigger line, they notice contradictions such as the revived dead, the ticker counts them). 3. Memory that behaves like memory (fading and rewriting, places hold memories, recognised by horse, clothes and habits). 4. Inner lives (opinions of each other, dreams from real memories, changing their minds). 5. Interaction menu. 6. Spreading saloon brawls. 7. Answering letters. 8. Narratives. 9. Town events. 10. New arrivals. 11. Natural voices (Piper). 12. Stalkers on horseback and revenants at camp. 13. The game's real words in subtitles (needs the speech audio exported and transcribed offline once; the plumbing exists: `voices\banks.txt`, `voices\words. 14. Far future, optional: a local language model writing extra inner thoughts in the background from a person's memories (never required; the written lines come first).txt`, `Core/VoiceBook.cs`). Ask Lex before adding anything not on this list. (Everyone is someone, added 2026-10-24 at Lex's request, is the foundation: residents in `Core/Residents.cs`, enRAGE records stay separate.)
+1. Everyone is someone (residents: every ordinary person gets an identity, saved once touched; never written to enRAGE). 2. The Awakening (hosts slowly realise they're in a loop; it spreads host to host, a trigger line, they notice contradictions such as the revived dead, the ticker counts them). 3. Memory that behaves like memory (fading and rewriting, places hold memories, recognised by horse, clothes and habits). 4. Inner lives (opinions of each other, dreams from real memories, changing their minds). 5. Interaction menu. 6. Spreading saloon brawls. 7. Answering letters. 8. Narratives. 9. Town events. 10. New arrivals. 11. Natural voices (Piper). 12. Stalkers on horseback and revenants at camp. 13. The game's real words in subtitles (needs the speech audio exported and transcribed offline once; the plumbing exists: `voices\banks.txt`, `voices\words.txt`, `Core/VoiceBook.cs`). 14. Far future, optional: a local language model writing extra inner thoughts in the background from a person's memories (never required; the written lines come first). Ask Lex before adding anything not on this list. (Everyone is someone, added 2026-10-24 at Lex's request, is the foundation: residents in `Core/Residents.cs`, enRAGE records stay separate.)
 
 ## The Awakening (0.6 work in progress)
 

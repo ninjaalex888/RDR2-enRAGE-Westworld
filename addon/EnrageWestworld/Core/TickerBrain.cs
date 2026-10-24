@@ -9,7 +9,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class TickerLine
     {
-        public string Label;   // "Elihu Starling", "News", "Westworld"
+        public string Label;   // "Elihu Starling", "News", "RealNPCs"
         public string Text;
         public string Kind;    // near, news, summary
         public string Key;     // person key for near lines
@@ -113,7 +113,7 @@ namespace EnrageWestworld.Core
                 else if (_summaryNext || _history.Count == 0)
                 {
                     string s = summary != null ? summary() : null;
-                    next = string.IsNullOrEmpty(s) ? null : new TickerLine { Label = "Westworld", Text = s, Kind = "summary" };
+                    next = string.IsNullOrEmpty(s) ? null : new TickerLine { Label = "RealNPCs", Text = s, Kind = "summary" };
                     _summaryNext = false;
                 }
                 else

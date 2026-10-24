@@ -1,4 +1,4 @@
-// enRAGE-Westworld.ini. Read by field name (key = value ; comment), so a new option only needs a field
+// RealNPCs.ini. Read by field name (key = value ; comment), so a new option only needs a field
 // here and a line in ToIni(). Older files are upgraded in place: values kept, new options added.
 using System;
 using System.Globalization;
@@ -258,7 +258,7 @@ namespace EnrageWestworld.Core
         public string ToIni()
         {
             StringBuilder b = new StringBuilder();
-            b.AppendLine("; enRAGE Westworld add-on settings. true/false, numbers in seconds unless noted.");
+            b.AppendLine("; RealNPCs settings (an unofficial add-on for enRAGE). true/false, numbers in seconds unless noted. Alt+F11 in game edits them too.");
             b.AppendLine("; Saved changes are picked up in game within a few seconds (ReloadIni).");
             b.AppendLine("SettingsVersion = " + SettingsVersion + "   ; leave this alone");
             b.AppendLine();

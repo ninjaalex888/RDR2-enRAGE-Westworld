@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.0
+
+- New name: enRAGE Westworld is now **RealNPCs** (`RealNPCs.dll`, data folder `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs`). On first start the old `enRAGE-Westworld` folder is copied over (saves, diaries, voice files; the ini is renamed `RealNPCs.ini`), and the old folder is left as it was. If `EnrageWestworld.dll` is still in the scripts folder, RealNPCs stays off and says so, so two copies never run together.
+
 ## 0.5.5
 
 - Stalkers can appear again. In 0.5.4 every spawn spot was refused ("no walkable ground behind you" on every try, even in Valentine), so no stalker ever showed up. The game's safe-spot answer is now read in both memory layouts, and if it still says no, the stalker stands on plain ground behind you, never inside a building. Staged weddings use the same fix.

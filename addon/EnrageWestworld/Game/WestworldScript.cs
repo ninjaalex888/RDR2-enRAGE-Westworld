@@ -43,6 +43,12 @@ namespace EnrageWestworld.InGame
 
 		private bool _off;
 
+		private bool _oldCopy;
+
+		private int _oldNotes;
+
+		private int _nextOldNote;
+
 		private bool _toldMissing;
 
 		private bool _testRequested;
@@ -114,7 +120,9 @@ namespace EnrageWestworld.InGame
 		public WestworldScript()
 		{
 			_version = Assembly.GetExecutingAssembly().GetName().Version.ToString(3);
-			_dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Rockstar Games", "Red Dead Redemption 2", "enRAGE-Westworld");
+			string games = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "Rockstar Games", "Red Dead Redemption 2");
+			_dir = Path.Combine(games, "RealNPCs");
+			string copied = CopyOldData(Path.Combine(games, "enRAGE-Westworld"), _dir);   // before anything creates the new folder
 			try
 			{
 				Directory.CreateDirectory(Path.Combine(_dir, "diaries"));
@@ -122,8 +130,20 @@ namespace EnrageWestworld.InGame
 			catch
 			{
 			}
-			Log.Open(Path.Combine(_dir, "enRAGE-Westworld.log"));
-			_cfg = EnrageWestworld.Core.Settings.Load(Path.Combine(_dir, "enRAGE-Westworld.ini"), Log.Write);
+			Log.Open(Path.Combine(_dir, "RealNPCs.log"));
+			if (copied != null)
+			{
+				Log.Write(copied);
+			}
+			string oldDll = Path.Combine(Path.GetDirectoryName(base.FileName) ?? string.Empty, "EnrageWestworld.dll");
+			if (File.Exists(oldDll))
+			{
+				// the add-on before the rename: two copies would both direct the same people
+				_off = true;
+				_oldCopy = true;
+				Log.Write("STOPPED: EnrageWestworld.dll (the old name of this add-on) is still in the scripts folder. Delete it; RealNPCs stays off until then.");
+			}
+			_cfg = EnrageWestworld.Core.Settings.Load(Path.Combine(_dir, "RealNPCs.ini"), Log.Write);
 			Log.Debug = _cfg.DebugLog;
 			Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
 			Feed.UseGameFeed = _cfg.UseGameFeed;
@@ -131,7 +151,7 @@ namespace EnrageWestworld.InGame
 			_flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F6);
 			Setup04();
 			_loadedAt = Environment.TickCount;
-			string[] obj2 = new string[9] { "enRAGE Westworld ", _version, " loaded (", base.FileName, "). Test key: ", null, null, null, null };
+			string[] obj2 = new string[9] { "RealNPCs ", _version, " loaded (", base.FileName, "). Test key: ", null, null, null, null };
 			KeySpec testKey = _testKey;
 			obj2[5] = testKey.ToString();
 			obj2[6] = ", flirt key: ";
@@ -149,6 +169,12 @@ namespace EnrageWestworld.InGame
 		{
 			if (_off)
 			{
+				if (_oldCopy && _oldNotes < 4 && Game.GameTime >= _nextOldNote && Game.GameTime > 8000)
+				{
+					_oldNotes++;
+					_nextOldNote = Game.GameTime + 15000;
+					RDR2.UI.Screen.PrintSubtitle("RealNPCs: please delete EnrageWestworld.dll from the scripts folder. It is this add-on under its old name, and two copies can't run together. RealNPCs is off until then.");
+				}
 				return;
 			}
 			try
@@ -294,14 +320,14 @@ namespace EnrageWestworld.InGame
 				{
 					_toldMissing = true;
 					Log.Write("enRAGE isn't running (not among Script Hook .NET's scripts). The add-on waits for it.");
-					Feed.Notice("enRAGE Westworld", "enRAGE isn't running. This add-on needs enRAGE installed.");
+					Feed.Notice("RealNPCs", "enRAGE isn't running. This add-on needs enRAGE installed.");
 				}
 				return;
 			}
 			if (!_bridge.Usable)
 			{
 				_off = true;
-				Feed.Notice("enRAGE Westworld", "This enRAGE version isn't supported yet (see enRAGE-Westworld.log).");
+				Feed.Notice("RealNPCs", "This enRAGE version isn't supported yet (see RealNPCs.log).");
 				return;
 			}
 			List<NemesisRecord> list = _bridge.Roster();
@@ -311,7 +337,7 @@ namespace EnrageWestworld.InGame
 				Observe();
 				int num = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);
 				Log.Write("Ready: enRAGE " + _bridge.Version + ", " + list.Count + " people, playing as " + PlayerName() + ", " + _store.People.Count + " people in the add-on's memory.");
-				Feed.Notice("enRAGE Westworld", "listening. " + list.Count + " people in the world" + ((num > 0) ? (", " + num + " who know you.") : "."));
+				Feed.Notice("RealNPCs", "listening. " + list.Count + " people in the world" + ((num > 0) ? (", " + num + " who know you.") : "."));
 			}
 		}
 
@@ -349,6 +375,41 @@ namespace EnrageWestworld.InGame
 				John = flag,
 				IntelFor = IntelFor
 			};
+		}
+
+		/// 0.6 renamed the add-on (enRAGE Westworld became RealNPCs). Copies the old data folder (saves, diaries, voice files,
+		/// settings) to the new one, once, when the new one doesn't exist yet. The old folder is left as it was.
+		private static string CopyOldData(string from, string to)
+		{
+			try
+			{
+				if (Directory.Exists(to) || !Directory.Exists(from))
+				{
+					return null;
+				}
+				int n = 0;
+				foreach (string file in Directory.GetFiles(from, "*", SearchOption.AllDirectories))
+				{
+					string rel = file.Substring(from.Length).TrimStart('\\', '/');
+					if (rel.EndsWith(".log", StringComparison.OrdinalIgnoreCase))
+					{
+						continue;
+					}
+					if (rel.Equals("enRAGE-Westworld.ini", StringComparison.OrdinalIgnoreCase))
+					{
+						rel = "RealNPCs.ini";
+					}
+					string dest = Path.Combine(to, rel);
+					Directory.CreateDirectory(Path.GetDirectoryName(dest));
+					File.Copy(file, dest, overwrite: false);
+					n++;
+				}
+				return "Renamed to RealNPCs: copied " + n + " files (saves, diaries, settings) from the old enRAGE-Westworld folder, which is left as it was.";
+			}
+			catch (Exception ex)
+			{
+				return "Renamed to RealNPCs, but the old enRAGE-Westworld folder couldn't be copied: " + ex.Message;
+			}
 		}
 
 		private void Save()
@@ -931,8 +992,8 @@ namespace EnrageWestworld.InGame
 			{
 				int num3 = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);
 				string summary = _engine.Summary() ?? (_recById.Count + " people in the world");
-				Feed.Notice("enRAGE Westworld " + _version, "running. " + summary + ". " + num3 + " who know you, " + _store.TownRumours.Count + " rumours, " + _store.Papers.Count(x => x.Delivered) + " papers in your satchel. Nobody enRAGE knows is close by.");
-				News("Westworld", "test: the ticker works. " + summary + ".");
+				Feed.Notice("RealNPCs " + _version, "running. " + summary + ". " + num3 + " who know you, " + _store.TownRumours.Count + " rumours, " + _store.Papers.Count(x => x.Delivered) + " papers in your satchel. Nobody enRAGE knows is close by.");
+				News("RealNPCs", "test: the ticker works. " + summary + ".");
 				return;
 			}
 			Person person = PersonOf(nemesisRecord);
@@ -1028,7 +1089,7 @@ namespace EnrageWestworld.InGame
 				{
 					_flirtHinted = true;
 					KeySpec flirtKey = _flirtKey;
-					Feed.Notice("enRAGE Westworld", "look at someone the way you would to greet them, then press " + flirtKey.ToString() + " to flirt.");
+					Feed.Notice("RealNPCs", "look at someone the way you would to greet them, then press " + flirtKey.ToString() + " to flirt.");
 				}
 				return;
 			}

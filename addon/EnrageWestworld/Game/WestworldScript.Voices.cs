@@ -34,7 +34,7 @@ namespace EnrageWestworld.InGame
             if (stamp != _wordsStamp)
             {
                 LoadVoices();
-                News("Westworld", "voice words reloaded: " + Speech.Book.WordCount + " recordings.", "news");
+                News("RealNPCs", "voice words reloaded: " + Speech.Book.WordCount + " recordings.", "news");
             }
         }
     }

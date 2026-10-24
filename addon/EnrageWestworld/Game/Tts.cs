@@ -85,7 +85,7 @@ namespace EnrageWestworld.InGame
             if (_thread != null && _thread.IsAlive)
                 return;
             _stop = false;
-            _thread = new Thread(Run) { IsBackground = true, Name = "Westworld voice", Priority = ThreadPriority.BelowNormal };
+            _thread = new Thread(Run) { IsBackground = true, Name = "RealNPCs voice", Priority = ThreadPriority.BelowNormal };
             _thread.SetApartmentState(ApartmentState.STA);
             _thread.Start();
         }

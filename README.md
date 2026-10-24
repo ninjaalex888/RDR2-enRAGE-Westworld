@@ -1,4 +1,6 @@
-# enRAGE Westworld
+# RealNPCs
+
+*Formerly enRAGE Westworld.*
 
 An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967)**, the nemesis-system mod for Red Dead Redemption 2. It makes the people enRAGE keeps track of act like they have their own lives, and it lets the whole world feel what you do. A few of them start to wonder whether any of it is real.
 
@@ -28,10 +30,10 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 
 1. Install [enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967) 0.9.5.2 and what it needs (Script Hook RDR2 and Script Hook RDR2 .NET V2), and make sure it works.
 2. Download **[enRAGE-Westworld-0.5.5.zip](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/raw/main/release/enRAGE-Westworld-0.5.5.zip)** (it's also in the [release](release) folder). It holds `EnrageWestworld.dll` and a README.txt that explains every feature and setting.
-3. Copy `EnrageWestworld.dll` into your game's `scripts` folder, next to enRAGE's `NemesisMod.dll`. To update, just replace the file: what people remember carries over, and your settings are kept.
+3. Copy `RealNPCs.dll` into your game's `scripts` folder, next to enRAGE's `NemesisMod.dll`. To update, just replace the file: what people remember carries over, and your settings are kept. **Coming from enRAGE Westworld** (the old name): delete `EnrageWestworld.dll` from the scripts folder. RealNPCs won't run next to it, and copies your saves, diaries and settings over from the old folder the first time it starts.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
 
-To uninstall, delete `EnrageWestworld.dll`. You can also delete the `enRAGE-Westworld` folder in `Documents\Rockstar Games\Red Dead Redemption 2\` if you don't want to keep what people remembered.
+To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder in `Documents\Rockstar Games\Red Dead Redemption 2\` if you don't want to keep what people remembered.
 
 ## Keys
 

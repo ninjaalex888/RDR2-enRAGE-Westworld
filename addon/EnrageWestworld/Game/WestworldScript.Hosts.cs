@@ -208,7 +208,7 @@ namespace EnrageWestworld.InGame
                     _nextStalkCheck = 0;
                     _stalkWait = null;
                     Log.Write("STALKER test (" + _stalkerKey + "): someone will start following you as soon as nothing is in the way.");
-                    News("Westworld", "stalker test: someone will start following you soon. Go about your business, and check behind you from time to time.", "news");
+                    News("Stalkers", "stalker test: someone will start following you soon. Go about your business, and check behind you from time to time.", "news");
                 }
             }
             if (_stalker != null)
@@ -311,7 +311,7 @@ namespace EnrageWestworld.InGame
                 _stalkWait = firstWait;
                 Log.Write("STALKER due, waiting: " + firstWait + ".");
                 if (_stalkSlots.Any(s => s.Test))
-                    News("Westworld", "stalker test: waiting, " + firstWait + ".", "news");
+                    News("Stalkers", "stalker test: waiting, " + firstWait + ".", "news");
             }
         }
 

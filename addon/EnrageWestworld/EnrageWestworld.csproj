@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>EnrageWestworld</AssemblyName>
+    <AssemblyName>RealNPCs</AssemblyName>
     <RootNamespace>EnrageWestworld</RootNamespace>
     <TargetFramework>net48</TargetFramework>
     <PlatformTarget>x64</PlatformTarget>
@@ -8,9 +8,9 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <Version>0.5.5</Version>
-    <Product>enRAGE Westworld (unofficial add-on for enRAGE)</Product>
-    <Description>A Westworld for enRAGE: people with lives, rumours that grow, the dead who wake, hosts who wonder what they are.</Description>
+    <Version>0.6.0</Version>
+    <Product>RealNPCs (unofficial add-on for enRAGE)</Product>
+    <Description>Real people for enRAGE: lives, memories, inner thoughts and rumours, and an optional West World where some of them wake.</Description>
     <DebugType>none</DebugType>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>

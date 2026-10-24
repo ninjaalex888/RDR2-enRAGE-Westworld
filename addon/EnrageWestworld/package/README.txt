@@ -1,5 +1,5 @@
-enRAGE Westworld 0.5.5 - an unofficial add-on for enRAGE
-==========================================================
+RealNPCs 0.6.0 - an unofficial add-on for enRAGE (formerly enRAGE Westworld)
+=========================================================================
 
 The people enRAGE keeps track of start acting like they have their own lives. They tell you about
 themselves, remember what you did, think about you, keep diaries, gossip, fall in love, marry,
@@ -13,6 +13,14 @@ enRAGE's files. enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemp
 Source code and bug reports: https://github.com/ninjaalex888/RDR2-enRAGE-Westworld
 
 Story Mode only. Don't run script mods in Red Dead Online.
+
+
+NEW IN 0.6.0
+------------
+- New name: enRAGE Westworld is now RealNPCs. The file is RealNPCs.dll and its folder in Documents is
+  RealNPCs. If you had the old version: DELETE EnrageWestworld.dll from the scripts folder (RealNPCs
+  won't run next to it, and tells you so). Your saves, diaries and settings are copied over from
+  the old enRAGE-Westworld folder the first time RealNPCs starts; the old folder is left as it was.
 
 
 NEW IN 0.5.5
@@ -277,13 +285,14 @@ REQUIREMENTS
 
 INSTALL
 -------
-1. Copy EnrageWestworld.dll into your game's "scripts" folder, next to enRAGE's NemesisMod.dll.
-   Updating from an earlier version: just replace the file. What people remember about you
+1. Copy RealNPCs.dll into your game's "scripts" folder, next to enRAGE's NemesisMod.dll.
+   Coming from enRAGE Westworld (the old name): delete EnrageWestworld.dll from that folder.
+   Updating from an earlier RealNPCs: just replace the file. What people remember about you
    carries over, and your ini is updated with the new options (your values are kept).
 2. Start the game and load your Story Mode save.
 3. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
 
-To uninstall, delete EnrageWestworld.dll. You can also delete the enRAGE-Westworld folder in
+To uninstall, delete RealNPCs.dll. You can also delete the RealNPCs folder in
 Documents if you don't want to keep what people remembered.
 
 
@@ -310,9 +319,9 @@ the log; the rest carries on. Bug reports (with your log) are welcome on GitHub 
 
 FILES
 -----
-Documents\Rockstar Games\Red Dead Redemption 2\enRAGE-Westworld\
-    enRAGE-Westworld.ini    settings (created on first run, updated by new versions)
-    enRAGE-Westworld.log    what happened
+Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\
+    RealNPCs.ini            settings (created on first run, updated by new versions)
+    RealNPCs.log            what happened
     arthur.json, john.json  what people know and feel about you, and the world's state,
                             kept separately for each character
     diaries\                one text file per diary, e.g. "arthur - Elihu Starling.txt"
@@ -321,8 +330,8 @@ If you load an older save, the add-on notices that game time went backwards and 
 that hadn't happened yet.
 
 
-SETTINGS (enRAGE-Westworld.ini)
--------------------------------
+SETTINGS (RealNPCs.ini)
+-----------------------
 Saved changes are picked up in game within a few seconds (ReloadIni). Every option has a comment
 in the file. The new ones:
 

@@ -82,7 +82,7 @@ namespace EnrageWestworld.InGame
             _aTheft = () => TheftTick(_now);
             _aArrival = () => ArrivalTick(_now);
             _aLater = () => LaterTick(_now);
-            _iniPath = Path.Combine(_dir, "enRAGE-Westworld.ini");
+            _iniPath = Path.Combine(_dir, "RealNPCs.ini");
             _iniStamp = EnrageWestworld.Core.Settings.Stamp(_iniPath);
             ApplySettings();
             LoadVoices();
@@ -128,7 +128,7 @@ namespace EnrageWestworld.InGame
             _cfg.CopyFrom(fresh);
             ApplySettings();
             Log.Write("Settings reloaded from the ini.");
-            News("Westworld", "settings reloaded.", "news");
+            News("RealNPCs", "settings reloaded.", "news");
         }
 
         private void Shutdown04()

@@ -1,4 +1,4 @@
-// enRAGE-Westworld.log next to the ini. Thread-safe (the voice thread can write too).
+// RealNPCs.log next to the ini. Thread-safe (the voice thread can write too).
 using System;
 using System.IO;
 
