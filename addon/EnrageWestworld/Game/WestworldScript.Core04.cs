@@ -114,6 +114,7 @@ namespace EnrageWestworld.InGame
             // Shift + the test key calls a stalker right away (Ctrl+Shift if the test key already uses Shift)
             _stalkerKey = new KeySpec { Key = _testKey.Key, Ctrl = _testKey.Ctrl || _testKey.Shift, Shift = true, Alt = _testKey.Alt };
             _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.G);
+            _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
         }
 
         private void IniTick(int now)
@@ -159,7 +160,7 @@ namespace EnrageWestworld.InGame
         /// Windows repeats KeyDown while a key is held. The add-on's own keys act once per press.
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e) || _settingsKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -170,6 +171,16 @@ namespace EnrageWestworld.InGame
 
         private bool KeyDown04(KeyEventArgs e)
         {
+            if (PanelOpen)
+            {
+                _panelKeys.Enqueue(e);   // while the settings are open, every key is theirs
+                return true;
+            }
+            if (_settingsKey.Matches(e))
+            {
+                _settingsRequested = true;
+                return true;
+            }
             if (_reader.Open)
             {
                 if (_readerKey.Matches(e))
@@ -318,6 +329,8 @@ namespace EnrageWestworld.InGame
 
         private void FrameImpl(int now)
         {
+            if (PanelOpen)
+                return;   // the settings panel draws itself; no ticker under it
             if (_reader.Open)
             {
                 _reader.Render();

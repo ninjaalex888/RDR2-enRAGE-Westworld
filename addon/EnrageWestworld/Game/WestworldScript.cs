@@ -219,6 +219,7 @@ namespace EnrageWestworld.InGame
 			int gameTime = Game.GameTime;
 			Feed.Tick();
 			Frame(gameTime);
+			SettingsStep(gameTime);
 			if (_engine == null)
 			{
 				if (gameTime >= _nextFind && Environment.TickCount - _loadedAt >= 8000)

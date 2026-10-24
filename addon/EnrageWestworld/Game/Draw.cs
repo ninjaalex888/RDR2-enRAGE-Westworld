@@ -17,8 +17,10 @@ namespace EnrageWestworld.InGame
         private const ulong VarString = 0xFA925AC00EB830B9;
         private const ulong DisplayText = 0x16794E044C9EFB58;
 
-        /// Most text pieces we draw in one frame. The game has a limit shared with enRAGE; stay well below it.
-        public const int FrameBudget = 48;
+        /// Most text pieces we draw in one frame. The game has a limit shared with enRAGE; stay well below it. The settings
+        /// panel raises it while open (enRAGE draws none of its menus then).
+        public const int NormalBudget = 48;
+        public static int FrameBudget = NormalBudget;
 
         private sealed class Pinned
         {

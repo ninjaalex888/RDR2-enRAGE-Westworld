@@ -84,3 +84,11 @@ Lex's brief is saved at `C:\mods\prompts\You are an expert Behavioral Psycho.txt
 
 - `Settings.Gated()` applies the masters to a copy: `WestWorld` false zeroes AwakeningShare/Despair, HostsQuestionReality, Glitches, Reveries, ReturnChance, StrangerReturnChance. `_cfg` (game and engine) is always the gated copy (`Load(...).Gated()`, `CopyFrom(fresh.Gated())`); nothing writes `_cfg` back to disk, so the ini keeps the player's values. Settings.Load ignores sections, so moving keys between sections needs no migration.
 - Paths that look at already-woken people check `WestWorld` directly (ticker thoughts for residents and townsfolk, wake acts, the wake key, reverie lines, the summary counts, revenant stalkers). Pending reveries wait while it's off instead of being cancelled.
+
+## Settings panel (0.6.0)
+
+- `Game/SettingsPanel.cs` draws it; `Core/IniDoc.cs` reads and edits both inis line-faithfully (only the value part of one line changes; encoding, BOM, line endings kept; saved via temp file + `File.Replace`). Tested byte-for-byte on real copies of both inis.
+- `Game/Bridge.Settings.cs` reaches enRAGE's `IniPanel` by name: `_iniPanel`, `IsOpen`, `Toggle()`, `_reload`, `_path`, static `Internal(section, key)` (entries it hides), static `Bindable` (keys it rebinds itself). Missing pieces are logged and Alt+F11 stays with enRAGE.
+- Alt+F11 redirect (`WestworldScript.Settings.cs`): each frame, if enRAGE's panel is open and `ReplaceEnrageSettings` is on, close it with its own `Toggle` and toggle ours. `_letEnrageShow` lets enRAGE's panel stay open when ours handed a key binding to it. While ours is open, `KeyDown04` queues every key for it, so no RealNPCs hotkey fires; game controls and the HUD are hidden, the ticker isn't drawn, and `Draw.FrameBudget` is raised to 120 (back to 48 on close).
+- Our ini writes call `ApplyOurSettings` (reload + gate at once, stamp updated so `IniTick` doesn't reload twice); a value outside `Clamp()` is rewritten to what's in force. enRAGE ini writes: one backup per session to `RealNPCs\backup`, then `_reload`, then re-read to show what enRAGE kept.
+- Not done: gamepad and mouse in the panel.

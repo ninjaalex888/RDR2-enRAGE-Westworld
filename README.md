@@ -43,15 +43,18 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | F6 | Flirt with the person you're looking at |
 | F5 | Read your letters, diaries and clippings, or take a diary you've just found |
 | Shift+F7 | Call a stalker right away, to test that part (the log says what he's waiting for) |
+| G | Wake the person you are facing one stage (West World), so you can see what each stage does |
+| Alt+F11 | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text (Ctrl+F7 opens it too) |
 
-None of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini.
+None of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings: RealNPCs opens its panel in place of enRAGE's, and `ReplaceEnrageSettings = false` gives it back.
 
 ## Settings and log
 
-Everything is kept in `Documents\Rockstar Games\Red Dead Redemption 2\enRAGE-Westworld\`:
+Everything is kept in `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\`:
 
-- `enRAGE-Westworld.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds.
-- `enRAGE-Westworld.log` records what happened. Please attach it to bug reports.
+- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Alt+F11) edits it too, along with enRAGE's `NemesisMod.ini`.
+- `RealNPCs.log` records what happened. Please attach it to bug reports.
+- `backup\` holds a copy of `NemesisMod.ini` from before the panel first changed it in each session.
 - `arthur.json` and `john.json` hold what people know and feel about you. `diaries\` holds the diaries you've found, as text files.
 
 The full guide to every feature and option is the [readme that comes with the mod](addon/EnrageWestworld/package/README.txt).

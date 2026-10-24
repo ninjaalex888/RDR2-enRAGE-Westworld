@@ -28,6 +28,13 @@ NEW IN 0.6.0
   far back they follow, how close they come, how far they run off, whether they mutter, and what
   they do when you stand still (StalkerWhenStill: circle you close, watch you from where they are,
   or run straight at you and stop a few steps short - they never attack).
+- A new settings panel on Alt+F11, with larger text: RealNPCs, West World, Stalkers and every enRAGE
+  setting in one place. Up/Down choose, Left/Right change (Shift: ten at a time), Q/E turn the
+  page, Tab jumps between RealNPCs and enRAGE, Enter sets a key, Backspace closes. Greyed-out
+  settings need their master switch on first. Changes apply at once. NemesisMod.ini is backed up
+  to DocumentsRockstar GamesRed Dead Redemption 2RealNPCsackup before the first change.
+  ReplaceEnrageSettings = false gives Alt+F11 back to enRAGE's own panel; Ctrl+F7 (SettingsKey)
+  opens this one too. Keyboard only for now.
 - AwakeningBreakdown (35): how often an unravelling or awake person falls apart (kneels, shouts
   at the sky, runs) rather than holding it together.
 - The ini is reorganised into [WestWorld], [Stalkers] and [Voices]; your values are kept.
@@ -374,7 +381,8 @@ in the file. The new ones:
                 enrage: enRAGE's own notice line (its message settings decide) and its feed;
                 gamefeed: EXPERIMENTAL top-left toasts
             WarNewsTo (right | ticker): where gang and faction news goes
-            TestKey (F7), FlirtKey (F6), WakeKey (G), ReaderKey (F5), ReloadIni (true)
+            TestKey (F7), FlirtKey (F6), WakeKey (G), ReaderKey (F5), ReloadIni (true),
+            ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel, SettingsKey (Ctrl+F7)
 All the older options are still there and work the same.
 
 
@@ -384,6 +392,7 @@ F7  what the nearest person enRAGE knows thinks of you (and a status line in the
 F6  flirt with the person you're looking at
 F5  read your letters, diaries and clippings (or take a diary you've just found)
 Shift+F7  call a stalker now (for testing)
+Alt+F11   the RealNPCs settings panel (all RealNPCs and enRAGE settings); Ctrl+F7 opens it too
 G         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
 None of these are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it

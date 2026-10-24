@@ -10,7 +10,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 13;
+        public const int CurrentVersion = 14;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -133,6 +133,8 @@ namespace EnrageWestworld.Core
         public string WakeKey = "G";
         public string ReaderKey = "F5";
         public bool ReloadIni = true;
+        public bool ReplaceEnrageSettings = true;
+        public string SettingsKey = "Ctrl+F7";
         public bool DebugLog;
 
         /// Where notices go: "ticker", "subtitles", "enrage" or "gamefeed".
@@ -437,8 +439,24 @@ namespace EnrageWestworld.Core
             b.AppendLine("WakeKey = " + WakeKey + "   ; testing the Awakening: face one of enRAGE's people and press it to wake them one stage (set it to something unused, or a combination like Ctrl+G)");
             b.AppendLine("ReaderKey = " + ReaderKey + "   ; read the diaries, letters and clippings you carry");
             b.AppendLine("ReloadIni = " + B(ReloadIni) + "   ; pick up changes to this file while the game runs");
+            b.AppendLine("ReplaceEnrageSettings = " + B(ReplaceEnrageSettings) + "   ; Alt+F11 opens the larger RealNPCs settings panel (RealNPCs, West World, Stalkers and every enRAGE section) instead of enRAGE's own");
+            b.AppendLine("SettingsKey = " + SettingsKey + "   ; also opens the RealNPCs settings panel");
             b.AppendLine("DebugLog = " + B(DebugLog));
             return b.ToString();
+        }
+
+        /// A setting's value written the way the ini writes it ("true", "0.962", "rush"), or null for an unknown key.
+        public string ValueText(string key)
+        {
+            FieldInfo f = typeof(Settings).GetField(key ?? string.Empty, BindingFlags.IgnoreCase | BindingFlags.Instance | BindingFlags.Public);
+            if (f == null)
+                return null;
+            object v = f.GetValue(this);
+            if (v is bool)
+                return B((bool)v);
+            if (v is float)
+                return F((float)v);
+            return Convert.ToString(v, CultureInfo.InvariantCulture) ?? string.Empty;
         }
 
         private static string B(bool b)

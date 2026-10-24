@@ -1,0 +1,498 @@
+// The RealNPCs settings panel: every RealNPCs setting and every enRAGE setting on one larger, easier-to-read panel.
+// Pages: West World, Stalkers and the rest of RealNPCs first, then each section of NemesisMod.ini. A setting whose
+// master switch is off is greyed out and can't be changed until the switch is on. Changes are written to the ini
+// at once (only that one value; see IniDoc) and take effect: RealNPCs reloads its settings, and enRAGE is asked to
+// reload its own. If enRAGE corrects a value it doesn't accept, the panel shows what it kept. NemesisMod.ini is
+// copied to RealNPCs\backup once per session before the first change.
+// Keys: Up / Down choose, Left / Right change (Shift: ten steps), Q / E or Page Up / Down turn the page, Tab jumps
+// between RealNPCs and enRAGE, Enter sets a key, Backspace or Escape closes. Keyboard only for now.
+using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Text.RegularExpressions;
+using System.Windows.Forms;
+using EnrageWestworld.Core;
+using RDR2.Native;
+
+namespace EnrageWestworld.InGame
+{
+    internal sealed class SettingsPanel
+    {
+        private sealed class Page
+        {
+            public string Title;
+            public bool Enrage;
+            public string Section;
+            public List<IniEntry> Rows = new List<IniEntry>();
+        }
+
+        // text sizes: about half as large again as enRAGE's own panel
+        private const float TitleScale = 0.46f, PageScale = 0.38f, RowScale = 0.285f, SmallScale = 0.245f;
+        private const float X = 0.16f, Y = 0.065f, W = 0.68f, H = 0.87f;
+        private const int VisibleRows = 16;
+        private const int PanelBudget = 120;
+
+        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Features", "World", "Scenes", "Romance", "Ticker", "Voices", "Pacing", "Output" };
+        private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
+        {
+            { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
+            { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Voices", "Voices" }, { "Pacing", "Pacing" }, { "Output", "Keys and notices" }
+        };
+
+        // a setting that only matters while another is on
+        private static readonly Dictionary<string, string> Needs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
+            { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
+            { "VoiceVolume", "SpokenVoice" }, { "VoiceMan", "SpokenVoice" }, { "VoiceWoman", "SpokenVoice" }, { "VoiceVariety", "SpokenVoice" },
+            { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }
+        };
+
+        // sections whose first setting switches the whole section on or off
+        private static readonly Dictionary<string, string> Masters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "WestWorld", "WestWorld" }, { "Stalkers", "Stalkers" }, { "Ticker", "Ticker" }
+        };
+
+        private static readonly Dictionary<string, string[]> Choices = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "StalkerWhenStill", new[] { "circle", "watch", "rush" } },
+            { "NewsTo", new[] { "ticker", "subtitles", "enrage", "gamefeed" } },
+            { "WarNewsTo", new[] { "right", "ticker" } }
+        };
+
+        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey" };
+
+        private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
+            { "TickerY", "Ticker height on screen" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
+            { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
+            { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }
+        };
+
+        private readonly Func<Bridge> _bridgeOf;
+        private Bridge _bridge { get { return _bridgeOf(); } }   // enRAGE may be found after the panel is made
+        private readonly string _oursPath, _backupDir;
+        private readonly Func<string, string> _applyOurs;   // reloads RealNPCs' settings; gives the value now in force for a key
+        private readonly Action _useEnragePanel;           // hands over to enRAGE's own panel (for the keys it rebinds itself)
+        private readonly List<Page> _pages = new List<Page>();
+        private IniDoc _ours, _theirs;
+        private string _theirsPath;
+        private bool _backedUp;
+        private int _page, _row, _scroll;
+        private string _note = string.Empty;
+        private IniEntry _capture;
+
+        public bool Open { get; private set; }
+
+        public SettingsPanel(Func<Bridge> bridge, string oursPath, string backupDir, Func<string, string> applyOurs, Action useEnragePanel)
+        {
+            _bridgeOf = bridge;
+            _oursPath = oursPath;
+            _backupDir = backupDir;
+            _applyOurs = applyOurs;
+            _useEnragePanel = useEnragePanel;
+        }
+
+        // ---- opening and closing ------------------------------------------------------------------------
+
+        public void Show(string enrageIniPath)
+        {
+            _theirsPath = enrageIniPath;
+            Open = true;
+            _capture = null;
+            _note = string.Empty;
+            Draw.FrameBudget = PanelBudget;
+            Reload();
+            _page = Math.Max(0, Math.Min(_page, _pages.Count - 1));
+            _row = 0;
+            _scroll = 0;
+        }
+
+        public void Close()
+        {
+            Open = false;
+            _capture = null;
+            Draw.FrameBudget = Draw.NormalBudget;
+        }
+
+        private void Reload()
+        {
+            string keepTitle = _pages.Count > 0 && _page < _pages.Count ? _pages[_page].Title : null;
+            _pages.Clear();
+            _ours = IniDoc.Read(_oursPath, true);
+            if (_ours.Error == null)
+            {
+                foreach (string name in OurOrder)
+                {
+                    IniSection s = _ours.Sections.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    if (s != null && s.Entries.Count > 0)
+                        _pages.Add(new Page { Title = OurTitles.ContainsKey(name) ? OurTitles[name] : name, Section = s.Name, Rows = s.Entries.ToList() });
+                }
+                foreach (IniSection s in _ours.Sections.Where(x => x.Name.Length > 0 && !OurOrder.Contains(x.Name, StringComparer.OrdinalIgnoreCase) && x.Entries.Count > 0))
+                    _pages.Add(new Page { Title = s.Name, Section = s.Name, Rows = s.Entries.ToList() });
+            }
+            _theirs = !string.IsNullOrEmpty(_theirsPath) && File.Exists(_theirsPath) ? IniDoc.Read(_theirsPath, false) : null;
+            if (_theirs != null && _theirs.Error == null)
+            {
+                foreach (IniSection s in _theirs.Sections.Where(x => x.Name.Length > 0))
+                {
+                    List<IniEntry> rows = s.Entries.Where(e => _bridge == null || !_bridge.EnrageHides(s.Name, e.Key)).ToList();
+                    if (rows.Count > 0)
+                        _pages.Add(new Page { Title = "enRAGE: " + s.Name, Enrage = true, Section = s.Name, Rows = rows });
+                }
+            }
+            if (keepTitle != null)
+            {
+                int i = _pages.FindIndex(p => p.Title == keepTitle);
+                if (i >= 0)
+                    _page = i;
+            }
+            if (_pages.Count > 0)
+                _row = Math.Max(0, Math.Min(_row, _pages[_page].Rows.Count - 1));
+        }
+
+        // ---- keys -------------------------------------------------------------------------------------
+
+        public void Key(Keys key, bool shift, bool ctrl, bool alt)
+        {
+            if (!Open)
+                return;
+            if (_capture != null)
+            {
+                Capture(key, shift, ctrl, alt);
+                return;
+            }
+            if (key == Keys.Back || key == Keys.Escape)
+            {
+                Close();
+                return;
+            }
+            if (_pages.Count == 0)
+                return;
+            Page page = _pages[_page];
+            switch (key)
+            {
+                case Keys.Up:
+                case Keys.W:
+                    _row = (_row + page.Rows.Count - 1) % page.Rows.Count;
+                    break;
+                case Keys.Down:
+                case Keys.S:
+                    _row = (_row + 1) % page.Rows.Count;
+                    break;
+                case Keys.Q:
+                case Keys.PageUp:
+                    TurnTo((_page + _pages.Count - 1) % _pages.Count);
+                    break;
+                case Keys.E:
+                case Keys.PageDown:
+                    TurnTo((_page + 1) % _pages.Count);
+                    break;
+                case Keys.Tab:
+                {
+                    int target = page.Enrage ? 0 : _pages.FindIndex(p => p.Enrage);
+                    if (target >= 0)
+                        TurnTo(target);
+                    break;
+                }
+                case Keys.Left:
+                case Keys.A:
+                    Change(page, page.Rows[_row], -1, shift);
+                    break;
+                case Keys.Right:
+                case Keys.D:
+                    Change(page, page.Rows[_row], 1, shift);
+                    break;
+                case Keys.Enter:
+                    Enter(page, page.Rows[_row]);
+                    break;
+            }
+        }
+
+        private void TurnTo(int page)
+        {
+            _page = page;
+            _row = 0;
+            _scroll = 0;
+            _note = string.Empty;
+        }
+
+        private void Enter(Page page, IniEntry e)
+        {
+            string off = OffBecause(page, e);
+            if (off != null)
+            {
+                _note = off;
+                return;
+            }
+            if (!page.Enrage && OurKeys.Contains(e.Key))
+            {
+                _capture = e;
+                _note = "Waiting for a key: whatever you press next becomes " + Label(e.Key) + " (Ctrl, Shift or Alt with it is fine). Escape keeps " + e.Value + ".";
+                return;
+            }
+            if (page.Enrage && _bridge != null && _bridge.EnrageRebinds(page.Section, e.Key))
+            {
+                // enRAGE checks its keys against each other itself: let it
+                Close();
+                _useEnragePanel();
+                return;
+            }
+            _note = "Left and Right change this one.";
+        }
+
+        private void Capture(Keys key, bool shift, bool ctrl, bool alt)
+        {
+            if (key == Keys.ShiftKey || key == Keys.ControlKey || key == Keys.Menu || key == Keys.LShiftKey || key == Keys.RShiftKey ||
+                key == Keys.LControlKey || key == Keys.RControlKey || key == Keys.LMenu || key == Keys.RMenu)
+                return;
+            IniEntry e = _capture;
+            _capture = null;
+            if (key == Keys.Escape || key == Keys.Back)
+            {
+                _note = Label(e.Key) + " stays " + e.Value + ".";
+                return;
+            }
+            string spec = (ctrl ? "Ctrl+" : string.Empty) + (shift ? "Shift+" : string.Empty) + (alt ? "Alt+" : string.Empty) + key;
+            Write(_pages[_page], e, spec);
+        }
+
+        private void Change(Page page, IniEntry e, int dir, bool big)
+        {
+            string off = OffBecause(page, e);
+            if (off != null)
+            {
+                _note = off;
+                return;
+            }
+            string next;
+            string[] choice;
+            if (!page.Enrage && Choices.TryGetValue(e.Key, out choice))
+            {
+                int i = Array.FindIndex(choice, c => c.Equals(e.Value, StringComparison.OrdinalIgnoreCase));
+                next = choice[((i < 0 ? 0 : i) + dir + choice.Length) % choice.Length];
+            }
+            else
+                next = IniDoc.Step(e.Value, dir, big);
+            if (next == null)
+            {
+                bool key = (!page.Enrage && OurKeys.Contains(e.Key)) || (page.Enrage && _bridge != null && _bridge.EnrageRebinds(page.Section, e.Key));
+                _note = key ? "Press Enter to set this key." : Label(e.Key) + " is text: type it in " + (page.Enrage ? "NemesisMod.ini" : "RealNPCs.ini") + ".";
+                return;
+            }
+            Write(page, e, next);
+        }
+
+        // ---- writing ----------------------------------------------------------------------------------------
+
+        private void Write(Page page, IniEntry e, string value)
+        {
+            IniDoc doc = page.Enrage ? _theirs : _ours;
+            if (doc == null)
+                return;
+            if (page.Enrage && !BackUp())
+                return;
+            if (!doc.Set(e, value))
+            {
+                _note = "Couldn't change " + Label(e.Key) + ".";
+                return;
+            }
+            string err = doc.Save();
+            if (err != null)
+            {
+                _note = "Couldn't save: " + err;
+                Reload();
+                return;
+            }
+            string kept;
+            if (page.Enrage)
+            {
+                bool reloaded = _bridge != null && _bridge.ReloadEnrageSettings();
+                Reload();
+                IniEntry now = _theirs != null ? _theirs.Find(page.Section, e.Key) : null;
+                kept = now != null ? now.Value : value;
+                _note = !reloaded ? Label(e.Key) + " = " + value + " (saved; enRAGE picks it up when it next reads its settings)"
+                    : kept == value ? Label(e.Key) + " = " + value : Label(e.Key) + ": enRAGE kept " + kept;
+                Log.Write("SETTINGS enRAGE [" + page.Section + "] " + e.Key + " = " + kept);
+                return;
+            }
+            kept = _applyOurs(e.Key);
+            if (kept != null && !kept.Equals(value, StringComparison.OrdinalIgnoreCase))
+            {
+                // outside what RealNPCs can use: show (and keep) what it actually runs with
+                doc.Set(e, kept);
+                doc.Save();
+                _applyOurs(e.Key);
+                _note = Label(e.Key) + ": " + value + " is out of range, so it is " + kept;
+            }
+            else
+                _note = Label(e.Key) + " = " + value;
+            Reload();
+            Log.Write("SETTINGS RealNPCs [" + page.Section + "] " + e.Key + " = " + (kept ?? value));
+        }
+
+        /// One copy of NemesisMod.ini per session, before the first change.
+        private bool BackUp()
+        {
+            if (_backedUp)
+                return true;
+            try
+            {
+                Directory.CreateDirectory(_backupDir);
+                string to = Path.Combine(_backupDir, "NemesisMod " + DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", CultureInfo.InvariantCulture) + ".ini");
+                File.Copy(_theirsPath, to, false);
+                _backedUp = true;
+                Log.Write("SETTINGS backed up NemesisMod.ini to " + to);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _note = "Couldn't back up NemesisMod.ini first, so nothing was changed: " + ex.Message;
+                return false;
+            }
+        }
+
+        // ---- what depends on what ----------------------------------------------------------------------
+
+        /// Why this setting can't be changed right now (its switch is off), or null.
+        private string OffBecause(Page page, IniEntry e)
+        {
+            if (page.Enrage || _ours == null)
+                return null;
+            string parent = Parent(page.Section, e.Key);
+            int guard = 0;
+            while (parent != null && guard++ < 4)
+            {
+                IniEntry p = _ours.FindKey(parent);
+                if (p != null && !IsOn(p.Value))
+                    return "Turn on \"" + Label(parent) + "\" first.";
+                parent = Parent(p != null ? p.Section : page.Section, parent);
+            }
+            return null;
+        }
+
+        private static string Parent(string section, string key)
+        {
+            string p;
+            if (Needs.TryGetValue(key, out p))
+                return p;
+            string master;
+            if (Masters.TryGetValue(section ?? string.Empty, out master) && !master.Equals(key, StringComparison.OrdinalIgnoreCase))
+                return master;
+            return null;
+        }
+
+        private static bool IsOn(string value)
+        {
+            string v = (value ?? string.Empty).Trim();
+            if (v.Equals("true", StringComparison.OrdinalIgnoreCase))
+                return true;
+            float f;
+            return float.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out f) && f > 0f;
+        }
+
+        private static string Label(string key)
+        {
+            string l;
+            if (Labels.TryGetValue(key, out l))
+                return l;
+            // "StalkerAppearMin" -> "Stalker appear min"
+            string spaced = Regex.Replace(key, "(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", " ");
+            string[] words = spaced.Split(' ');
+            for (int i = 1; i < words.Length; i++)
+                if (!(words[i].Length > 1 && words[i].ToUpperInvariant() == words[i]))
+                    words[i] = words[i].ToLowerInvariant();
+            return string.Join(" ", words);
+        }
+
+        // ---- drawing ----------------------------------------------------------------------------------------
+
+        public void Render()
+        {
+            if (!Open)
+                return;
+            PAD.DISABLE_ALL_CONTROL_ACTIONS(0);
+            HUD.HIDE_HUD_AND_RADAR_THIS_FRAME();
+            Draw.Rect(0f, 0f, 1f, 1f, 0, 0, 0, 110);
+            Draw.Rect(X, Y, W, H, 18, 15, 12, 238);
+            Draw.Rect(X, Y, W, 0.004f, 196, 156, 92, 255);
+            Draw.Rect(X, Y + H - 0.004f, W, 0.004f, 196, 156, 92, 255);
+
+            float left = X + 0.022f, right = X + W - 0.022f;
+            Draw.Text("RealNPCs settings", left, Y + 0.016f, TitleScale, 236, 222, 196);
+            string where = _pages.Count == 0 ? "" : "page " + (_page + 1) + " of " + _pages.Count;
+            Draw.Text(where, right - Draw.Width(where, SmallScale), Y + 0.03f, SmallScale, 150, 138, 118);
+            if (_pages.Count == 0)
+            {
+                Draw.Text("Couldn't read the settings files. The log says why.", left, Y + 0.12f, RowScale, 220, 120, 100);
+                return;
+            }
+
+            Page page = _pages[_page];
+            float pageY = Y + 0.016f + Draw.LineHeight(TitleScale) + 0.006f;
+            Draw.Text(page.Title, left, pageY, PageScale, page.Enrage ? 214 : 226, page.Enrage ? 160 : 186, page.Enrage ? 120 : 104);
+            string prev = _pages[(_page + _pages.Count - 1) % _pages.Count].Title, next = _pages[(_page + 1) % _pages.Count].Title;
+            string turn = "Q  " + prev + "      E  " + next;
+            Draw.Text(Draw.Fit(turn, SmallScale, W * 0.55f), right - Math.Min(Draw.Width(turn, SmallScale), W * 0.55f), pageY + 0.012f, SmallScale, 150, 138, 118);
+
+            float rowH = Draw.LineHeight(RowScale) * 1.22f;
+            float top = pageY + Draw.LineHeight(PageScale) + 0.014f;
+            Draw.Rect(left - 0.006f, top - 0.006f, W - 0.032f, 0.0015f, 120, 98, 66, 200);
+            if (_row < _scroll)
+                _scroll = _row;
+            if (_row >= _scroll + VisibleRows)
+                _scroll = _row - VisibleRows + 1;
+            for (int i = _scroll; i < page.Rows.Count && i < _scroll + VisibleRows; i++)
+            {
+                IniEntry e = page.Rows[i];
+                float y = top + (i - _scroll) * rowH;
+                bool sel = i == _row;
+                bool off = OffBecause(page, e) != null;
+                if (sel)
+                {
+                    Draw.Rect(left - 0.006f, y - 0.002f, W - 0.032f, rowH, 70, 54, 32, 215);
+                    Draw.Rect(left - 0.006f, y - 0.002f, 0.003f, rowH, 222, 182, 96, 255);
+                }
+                int lr = off ? 105 : sel ? 255 : 226, lg = off ? 98 : sel ? 246 : 216, lb = off ? 90 : sel ? 230 : 196;
+                Draw.Text(Draw.Fit(Label(e.Key), RowScale, W * 0.58f), left + 0.006f, y, RowScale, lr, lg, lb);
+                string v = _capture == e ? "press a key..." : e.Value.Length == 0 ? "(empty)" : e.Value;
+                v = Draw.Fit(v, RowScale, W * 0.3f);
+                int vr, vg, vb;
+                if (off) { vr = 105; vg = 98; vb = 90; }
+                else if (v.Equals("true", StringComparison.OrdinalIgnoreCase)) { vr = 150; vg = 206; vb = 122; }
+                else if (v.Equals("false", StringComparison.OrdinalIgnoreCase)) { vr = 170; vg = 128; vb = 112; }
+                else { vr = 230; vg = 194; vb = 112; }
+                Draw.Text(v, right - 0.012f - Draw.Width(v, RowScale), y, RowScale, vr, vg, vb);
+            }
+            if (page.Rows.Count > VisibleRows)
+            {
+                float trackH = VisibleRows * rowH;
+                float knobH = Math.Max(0.02f, trackH * VisibleRows / page.Rows.Count);
+                float knobY = top + (trackH - knobH) * _scroll / Math.Max(1, page.Rows.Count - VisibleRows);
+                Draw.Rect(right - 0.004f, top, 0.003f, trackH, 60, 50, 40, 200);
+                Draw.Rect(right - 0.004f, knobY, 0.003f, knobH, 196, 156, 92, 255);
+            }
+
+            // what the selected setting does
+            float helpY = top + VisibleRows * rowH + 0.012f;
+            Draw.Rect(left - 0.006f, helpY - 0.006f, W - 0.032f, 0.0015f, 120, 98, 66, 200);
+            IniEntry sel2 = page.Rows[Math.Min(_row, page.Rows.Count - 1)];
+            string offWhy = OffBecause(page, sel2);
+            string help = (offWhy != null ? offWhy + " " : string.Empty) + (string.IsNullOrEmpty(sel2.Help) ? "No description." : sel2.Help);
+            float helpH = Draw.LineHeight(SmallScale) * 1.08f;
+            foreach (string line in Draw.Wrap(help, SmallScale, W - 0.05f).Take(3))
+            {
+                Draw.Text(line, left, helpY, SmallScale, 196, 184, 162);
+                helpY += helpH;
+            }
+            if (_note.Length > 0)
+                Draw.Text(Draw.Fit(_note, SmallScale, W - 0.05f), left, Y + H - 0.072f, SmallScale, 236, 196, 120);
+            const string keys = "Up/Down choose   Left/Right change   Shift: x10   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
+            Draw.Text(Draw.Fit(keys, SmallScale * 0.94f, W - 0.04f), left, Y + H - 0.04f, SmallScale * 0.94f, 140, 128, 110);
+        }
+    }
+}
