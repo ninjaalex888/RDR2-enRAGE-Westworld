@@ -357,7 +357,7 @@ in the file. The new ones:
             screen), TickerScale (0.30, text size), TickerWidth (0.60), NoticesAsSubtitles (false)
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
             AwakeningShare (5), AwakeningDays (6), AwakeningBreakdown (35, how often an unravelling
-            or awake person falls apart), AwakeningDespair (2, see the content note above),
+            or awake person falls apart), AwakeningDespair (2, 0-100, see the content note above),
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
             Reveries (true), ReturnChance (15), StrangerReturnChance (5)
 [Stalkers]  Stalkers (true): the master switch. StalkerChance (20, percent per day),

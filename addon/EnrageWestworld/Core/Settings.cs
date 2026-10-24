@@ -10,7 +10,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 14;
+        public const int CurrentVersion = 15;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -269,7 +269,7 @@ namespace EnrageWestworld.Core
             RealityChance = Math.Max(0, Math.Min(100, RealityChance));
             AwakeningShare = Math.Max(0, Math.Min(100, AwakeningShare));
             AwakeningDays = Math.Max(1, Math.Min(60, AwakeningDays));
-            AwakeningDespair = Math.Max(0, Math.Min(10, AwakeningDespair));
+            AwakeningDespair = Math.Max(0, Math.Min(100, AwakeningDespair));
             AwakeningBreakdown = Math.Max(0, Math.Min(100, AwakeningBreakdown));
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
             StalkerDayFrom = Math.Max(5, Math.Min(16, StalkerDayFrom));
@@ -350,7 +350,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("AwakeningShare = " + AwakeningShare + "   ; percent of people who slowly wake up and see the world for what it is (0 turns the Awakening off)");
             b.AppendLine("AwakeningDays = " + AwakeningDays + "   ; in-game days a woken person spends on each of the first three stages");
             b.AppendLine("AwakeningBreakdown = " + AwakeningBreakdown + "   ; percent of the time an unravelling or awake person breaks down (kneels, shouts at the sky, runs) rather than keeping it together");
-            b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, armed and alone, can't bear it and ends their own life (0 turns this off; a content note is in the readme)");
+            b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, armed and alone, can't bear it and ends their own life (0-100, 0 turns this off; a content note is in the readme)");
             b.AppendLine("HostsQuestionReality = " + B(HostsQuestionReality) + "   ; people sometimes wonder whether their world is real");
             b.AppendLine("RealityChance = " + RealityChance + "   ; percent of remarks and thoughts that drift that way");
             b.AppendLine("Glitches = " + B(Glitches) + "   ; rarely, someone freezes or repeats themselves");
