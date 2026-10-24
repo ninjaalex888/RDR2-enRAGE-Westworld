@@ -19,6 +19,7 @@ namespace EnrageWestworld.InGame
         private int _endsAt, _nextThink, _nextMutter, _modeUntil, _nextRelocate, _nextOrder, _fleeSince;
         private int _startHealth;
         private bool _spoke;
+        private int _nextTry, _failModel, _failNoGround, _failInView, _failCreate, _failWater;
 
         public readonly Fallen Revenant;     // null for a nameless stranger
         public readonly string Label;
@@ -34,21 +35,42 @@ namespace EnrageWestworld.InGame
             _endsAt = Game.GameTime + minutes * 60000;
         }
 
+        /// Why the attempts so far failed, for the log.
+        public string Why
+        {
+            get
+            {
+                return "model not loaded " + _failModel + ", no walkable ground behind you " + _failNoGround + ", every spot in view " + _failInView +
+                       ", game refused the spawn " + _failCreate + ", landed in water " + _failWater;
+            }
+        }
+
         /// Tries to put him somewhere behind the player, out of sight. False until it works (model streaming etc.).
         public bool TrySpawn(uint model, Ped player)
         {
-            if (!Spawner.Ready(model))
+            int now = Game.GameTime;
+            if (now < _nextTry)
                 return false;
+            _nextTry = now + 250;
+            if (!Spawner.Ready(model))
+            {
+                _failModel++;
+                return false;
+            }
             Vector3 at;
             if (!HiddenSpotBehind(player, 45f, 70f, out at))
                 return false;
             Ped p = Spawner.Spawn(model, at, 0f);
             if (p == null)
+            {
+                _failCreate++;
                 return false;
+            }
             _ped = p;
             int h = p.Handle;
             if (ENTITY.IS_ENTITY_IN_WATER(h))
             {
+                _failWater++;
                 Spawner.Release(p, true);
                 _ped = null;
                 return false;
@@ -261,12 +283,18 @@ namespace EnrageWestworld.InGame
                 Vector3 c = Natives.BehindCamera(player.Position, d, 70f, _rng);
                 Vector3 safe;
                 if (!Natives.SafeCoord(c, out safe))
+                {
+                    _failNoGround++;
                     continue;
+                }
                 float sx = 0, sy = 0;
                 bool visible = ScreenPoint(safe + new Vector3(0f, 0f, 1f), out sx, out sy) && sx > -0.05f && sx < 1.05f && sy > -0.05f && sy < 1.05f &&
                                !Natives.Blocked(cam, safe + new Vector3(0f, 0f, 1.2f), player.Handle);
                 if (visible)
+                {
+                    _failInView++;
                     continue;
+                }
                 at = safe;
                 return true;
             }

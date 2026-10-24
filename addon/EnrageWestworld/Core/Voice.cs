@@ -442,7 +442,7 @@ namespace EnrageWestworld.Core
         {
             if (string.IsNullOrEmpty(deed))
                 return null;
-            string d = Tail.Replace(deed.Trim(), string.Empty);
+            string d = Tail.Replace(Grammar.FixBareTitles(deed.Trim()), string.Empty);
             string l = d.ToLowerInvariant();
             if (l.StartsWith("you "))
                 return "the man who " + Grammar.Phrase(d.Substring(4), woman);
@@ -505,7 +505,7 @@ namespace EnrageWestworld.Core
         /// A few of enRAGE's memories leave the player out of the words; put him back in.
         public static string Normalize(string text)
         {
-            string t = (text ?? string.Empty).Trim();
+            string t = Grammar.FixBareTitles((text ?? string.Empty).Trim());
             if (Regex.IsMatch(t, @"^paid for (his|her) life$"))
                 return t.Replace("paid for", "paid you for");
             if (t == "turned informer")
@@ -709,6 +709,9 @@ namespace EnrageWestworld.Core
                 return t;
             // "Pvt. Maddox saw you kill a lawman": someone else's name already leads the claim
             if (t.Length > 1 && char.IsUpper(t[0]) && !t.StartsWith("I ") && !t.StartsWith("You "))
+                return t;
+            // "a major saw you kill a man" (an old saved claim whose name was lost): it has its subject too
+            if (Grammar.StartsWithTitleWord(t))
                 return t;
             string pro = woman ? "she " : "he ";
             // "jailed in Rhodes for drunkenness" -> "he was jailed in Rhodes for drunkenness"

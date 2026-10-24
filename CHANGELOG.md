@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.5.4
+
+- Daytime stalkers. Each in-game day rolls one of four outcomes: no stalker, one by day (06:00 to 17:00), one at night (18:00 to 04:00), or both. `StalkerChance` is the chance that someone follows you that day, and the new `StalkerDayOnly`, `StalkerNightOnly` and `StalkerBoth` settings (25 / 50 / 25) set how a stalker day splits.
+- A daytime stalker who never gets a clear moment before dusk is dropped. A night stalker still waits until the next night.
+- The log shows each day's roll, and F7's status line lists the stalkers waiting.
+
+## 0.5.3
+
+- Stalkers fixed. One due after midnight was wiped out when the day changed, and one that couldn't find a hidden spot was given up for the day. A stalker who is due now waits for the first clear moment at night (outdoors, no story mission, no lawmen after you, not fighting), and comes the next night if this one runs out.
+- The log says when a stalker is due and what he's waiting for, and F7's log dump includes the stalker's state.
+- Shift+F7 calls a stalker right away, for testing.
+- Old saved talk that read "Pvt. saw ..." or "Pvt.'s brother" (from before 0.5.1) now reads "a private saw ..." and "a private's brother".
+
 ## 0.5.2
 
 - About twenty lines of dialogue reworded, so every line is the add-on's own.

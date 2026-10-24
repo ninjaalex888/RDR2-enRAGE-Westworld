@@ -35,6 +35,7 @@ namespace EnrageWestworld.Core
         [DataMember] public Dictionary<string, int> Counts = new Dictionary<string, int>();
         [DataMember] public Dictionary<string, long> TownVisits = new Dictionary<string, long>();
         [DataMember] public int LastStalkDay;
+        [DataMember] public int LastDayStalkDay = -1;
         [DataMember] public long LastLetterAt;
         [DataMember] public long LastWorldTickAt;
         [DataMember] public bool DeadSeeded;

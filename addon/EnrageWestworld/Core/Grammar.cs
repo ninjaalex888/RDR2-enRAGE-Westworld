@@ -224,6 +224,44 @@ namespace EnrageWestworld.Core
             return w.Length > 1 && (IrregularPast.Contains(w) || (w.Length > 4 && w.EndsWith("ed")));
         }
 
+        // Versions before 0.5.1 shortened "Pvt. Maddox" to "Pvt." in text they saved ("Pvt. saw you ...",
+        // "Pvt.'s brother"). A title left without its name becomes a plain description: "a private".
+        private static readonly Regex BareTitle = new Regex(@"\b(?:(a|an|the|A|An|The)\s+)?(Pvt|Cpl|Sgt|Lt|Capt|Cpt|Maj|Col|Gen|Dr|Rev|Prof|Mr|Mrs)\.(?='s\b|\s+[a-z])");
+
+        private static readonly Dictionary<string, string> TitleWord = new Dictionary<string, string>
+        {
+            { "Pvt", "private" }, { "Cpl", "corporal" }, { "Sgt", "sergeant" }, { "Lt", "lieutenant" }, { "Capt", "captain" }, { "Cpt", "captain" },
+            { "Maj", "major" }, { "Col", "colonel" }, { "Gen", "general" }, { "Dr", "doctor" }, { "Rev", "preacher" }, { "Prof", "professor" },
+            { "Mr", "man" }, { "Mrs", "woman" }
+        };
+
+        /// "Maj. saw you kill a man" -> "a major saw you kill a man"; "Pvt.'s brother" -> "a private's brother".
+        public static string FixBareTitles(string text)
+        {
+            if (string.IsNullOrEmpty(text) || text.IndexOf('.') < 0)
+                return text;
+            return BareTitle.Replace(text, m =>
+            {
+                string word = TitleWord[m.Groups[2].Value];
+                if (!m.Groups[1].Success)
+                    return "a " + word;
+                string article = m.Groups[1].Value;
+                return (article.ToLowerInvariant() == "the" ? article : (char.IsUpper(article[0]) ? "A" : "a")) + " " + word;
+            });
+        }
+
+        /// True when a claim starts with a title FixBareTitles described ("a major saw ..."), so it already has its subject.
+        public static bool StartsWithTitleWord(string text)
+        {
+            if (string.IsNullOrEmpty(text) || !text.StartsWith("a ", StringComparison.Ordinal))
+                return false;
+            int sp = text.IndexOf(' ', 2);
+            string w = sp > 2 ? text.Substring(2, sp - 2) : text.Substring(2);
+            if (w.EndsWith("'s"))
+                return false;
+            return TitleWord.ContainsValue(w);
+        }
+
         /// "Arrested in Valentine ...", "Made a lieutenant ...": the phrase is passive and needs "was".
         public static bool StartsPassive(string phrase)
         {

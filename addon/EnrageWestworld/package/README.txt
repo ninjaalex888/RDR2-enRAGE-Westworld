@@ -1,4 +1,4 @@
-enRAGE Westworld 0.5.2 - an unofficial add-on for enRAGE
+enRAGE Westworld 0.5.4 - an unofficial add-on for enRAGE
 ==========================================================
 
 The people enRAGE keeps track of start acting like they have their own lives. They tell you about
@@ -13,6 +13,29 @@ enRAGE's files. enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemp
 Source code and bug reports: https://github.com/ninjaalex888/RDR2-enRAGE-Westworld
 
 Story Mode only. Don't run script mods in Red Dead Online.
+
+
+NEW IN 0.5.4
+------------
+- Daytime stalkers. Each in-game day now rolls one of four outcomes: no stalker, one by day
+  (06:00 to 17:00), one at night (18:00 to 04:00), or both. StalkerChance is the chance that
+  someone follows you that day; StalkerDayOnly, StalkerNightOnly and StalkerBoth (default
+  25 / 50 / 25) set how a stalker day splits. A daytime stalker who never gets a clear moment
+  before dusk is dropped; a night stalker still waits until the next night.
+- The log shows each day's roll, e.g. "Stalker roll (20%): one by day and one at night".
+
+
+NEW IN 0.5.3
+------------
+- Stalkers fixed. A stalker due after midnight was wiped out when the day changed, so many nights
+  never got one, and one who couldn't find a hidden spot was given up for the day. Now a stalker
+  who is due waits for the first clear moment at night (outdoors, no story mission, no lawmen
+  after you, not fighting), and if the night ends first he comes the next night.
+- The log says when a stalker is due and what he's waiting for.
+- Shift+F7 calls a stalker right away, for testing (see TESTING IT). F7's log dump now includes
+  the stalker's state.
+- Old saved talk that read "Pvt. saw ..." or "Pvt.'s brother" (from before 0.5.1) now reads
+  "a private saw ..." and "a private's brother".
 
 
 NEW IN 0.5.2
@@ -202,7 +225,7 @@ Reveries. When you kill one of enRAGE's people (not story characters), there's a
 killed them and who did it, and they come back the way enRAGE's people come back from the dead.
 Strangers you kill are remembered too, and a few (StrangerReturnChance, 5%) come back.
 
-Stalkers. Rarely, someone follows you. They keep their distance, stand and stare when they think
+Stalkers. Rarely, by day or by night, someone follows you. They keep their distance, stand and stare when they think
 you can't see, freeze when you look at them and slip out of sight, and somehow turn up behind you
 again after you've ridden off. They never attack. Walk up to them, or draw on them, and they run.
 Sometimes it's someone you killed.
@@ -235,8 +258,8 @@ TESTING IT
 ----------
 This version was checked outside the game (it builds, every enRAGE function it uses was found,
 the people, rumours, letters and diaries were run through simulated weeks, and every scene, plea
-and remark was checked line by line). 0.4 has since been played in game for hours without
-trouble; the new parts of 0.5 haven't been tested in game yet. If something misbehaves, the log
+and remark was checked line by line). 0.4 and 0.5.1 have since been played in game without
+trouble; of the new 0.5 scenes, the posse has been seen so far. If something misbehaves, the log
 (see FILES) says what happened. A feature that keeps failing switches itself off and says so in
 the log; the rest carries on. Bug reports (with your log) are welcome on GitHub (link above).
 - Press F7 near someone enRAGE knows: it shows what they're thinking now. Away from anyone, it
@@ -247,6 +270,9 @@ the log; the rest carries on. Bug reports (with your log) are welcome on GitHub 
 - Kill one of enRAGE's people, loot the body for a diary, then visit a post office a few days later.
 - Stand around a busy street or saloon for a few minutes. Greet someone in the middle of a quarrel.
 - Hold your gun on a passer-by in town (then lower it). Ride into a town where you've done things.
+- Press Shift+F7 to call a stalker right away. He comes once you're outdoors, off any story mission,
+  with no lawmen after you and not fighting; until then the log says what he's waiting for. Go about
+  your business and look behind you now and then (he keeps 30 to 70 metres back).
 
 
 FILES
@@ -272,8 +298,8 @@ in the file. The new ones:
 [Westworld] Reveries (true), ReturnChance (15), StrangerReturnChance (5),
             HostsQuestionReality (true), RealityChance (15), SpokenVoice (true), VoiceVolume (80),
             VoiceMan, VoiceWoman (part of a Windows voice's name; empty = any), VoiceVariety (true),
-            Glitches (true), Stalkers (true), StalkerChance (20, percent per in-game day),
-            StalkerMinutes (8)
+            Glitches (true), Stalkers (true), StalkerChance (20, percent per day),
+            StalkerDayOnly (25), StalkerNightOnly (50), StalkerBoth (25), StalkerMinutes (8)
 [World]     Deeds, RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
@@ -292,6 +318,7 @@ KEYS
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log)
 F6  flirt with the person you're looking at
 F5  read your letters, diaries and clippings (or take a diary you've just found)
+Shift+F7  call a stalker now (for testing)
 None of these are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it
 in the ini (e.g. ReaderKey = Ctrl+F5).

@@ -8,7 +8,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <Version>0.5.2</Version>
+    <Version>0.5.4</Version>
     <Product>enRAGE Westworld (unofficial add-on for enRAGE)</Product>
     <Description>A Westworld for enRAGE: people with lives, rumours that grow, the dead who wake, hosts who wonder what they are.</Description>
     <DebugType>none</DebugType>

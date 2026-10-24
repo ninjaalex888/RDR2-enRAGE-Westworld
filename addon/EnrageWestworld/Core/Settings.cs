@@ -10,7 +10,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 6;
+        public const int CurrentVersion = 7;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -53,6 +53,9 @@ namespace EnrageWestworld.Core
         public bool Glitches = true;
         public bool Stalkers = true;
         public int StalkerChance = 20;
+        public int StalkerDayOnly = 25;
+        public int StalkerNightOnly = 50;
+        public int StalkerBoth = 25;
         public int StalkerMinutes = 8;
 
         // [World]
@@ -218,6 +221,9 @@ namespace EnrageWestworld.Core
             RealityChance = Math.Max(0, Math.Min(100, RealityChance));
             VoiceVolume = Math.Max(0, Math.Min(100, VoiceVolume));
             StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
+            StalkerDayOnly = Math.Max(0, Math.Min(1000, StalkerDayOnly));
+            StalkerNightOnly = Math.Max(0, Math.Min(1000, StalkerNightOnly));
+            StalkerBoth = Math.Max(0, Math.Min(1000, StalkerBoth));
             StalkerMinutes = Math.Max(1, Math.Min(60, StalkerMinutes));
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
@@ -284,7 +290,10 @@ namespace EnrageWestworld.Core
             b.AppendLine("VoiceVariety = " + B(VoiceVariety) + "   ; each speaker keeps their own voice, pitch and pace");
             b.AppendLine("Glitches = " + B(Glitches) + "   ; rarely, someone freezes or repeats themselves");
             b.AppendLine("Stalkers = " + B(Stalkers) + "   ; rarely, someone follows you from a distance and hides when you look");
-            b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent per in-game day");
+            b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent per in-game day that someone follows you (otherwise none that day; Shift+F7 calls one to test)");
+            b.AppendLine("StalkerDayOnly = " + StalkerDayOnly + "   ; on a stalker day, weight for just a daytime stalker (05:00 to 18:00)");
+            b.AppendLine("StalkerNightOnly = " + StalkerNightOnly + "   ; ... weight for just a night stalker (18:00 to 05:00)");
+            b.AppendLine("StalkerBoth = " + StalkerBoth + "   ; ... weight for one by day and another at night (the three weights are relative, e.g. 25/50/25)");
             b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; longest a stalker keeps it up (real minutes)");
             b.AppendLine();
             b.AppendLine("[World]");

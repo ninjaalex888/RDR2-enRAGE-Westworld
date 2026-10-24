@@ -29,8 +29,13 @@ namespace EnrageWestworld.InGame
         private bool _stalkerWoman;
         private int _stalkerPendingUntil;
         private int _nextMusing = -1, _nextGlitch = -1, _nextStalkCheck, _stalkerCooldown;
-        private long _stalkAt = -1;
-        private int _stalkDay = -1;
+        private sealed class StalkSlot { public long At; public bool Day, Test; }
+        private readonly System.Collections.Generic.List<StalkSlot> _stalkSlots = new System.Collections.Generic.List<StalkSlot>();
+        private int _stalkDay = -1;          // the stalker "day" last rolled for (days run 05:00 to 05:00)
+        private string _stalkWait;           // what a due stalker is waiting for, as last logged
+        private bool _stalkerRequested, _stalkerIsTest, _stalkerIsDay;
+        private int _stalkFails;
+        private KeySpec _stalkerKey;
         private GlitchRun _glitch;
 
         private void HostsTick(int now)
@@ -155,8 +160,57 @@ namespace EnrageWestworld.InGame
 
         // ---- the stalker ------------------------------------------------------------------------------
 
+        /// Stalker nights run from 05:00 to 05:00, so the small hours belong to the evening before.
+        private static int StalkNight(long gameMin)
+        {
+            return (int)((gameMin - 300) / 1440);
+        }
+
+        private static string Clock(long gameMin)
+        {
+            int m = (int)(((gameMin % 1440) + 1440) % 1440);
+            return (m / 60).ToString("00") + ":" + (m % 60).ToString("00");
+        }
+
+        /// What keeps a stalker from turning up right now, in words for the log; null when nothing does.
+        private string StalkBlocker()
+        {
+            Ped me = Game.Player.Character;
+            if (MISC.GET_MISSION_FLAG())
+                return "a story mission is running";
+            if (_interiorType != 0)
+                return "you're indoors";
+            if (PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0 || LAW.IS_LAW_INCIDENT_ACTIVE(Game.Player.Handle))
+                return "lawmen are hunting you";
+            if (PED.IS_PED_IN_COMBAT(me.Handle, 0))
+                return "you're fighting someone";
+            if (ENTITY.IS_ENTITY_IN_WATER(me.Handle))
+                return "you're in the water";
+            if (!Spawner.SafeToSpawn())
+                return "the screen is fading or loading";
+            return null;
+        }
+
         private void StalkerTick(int now)
         {
+            if (_stalkerRequested)
+            {
+                _stalkerRequested = false;
+                if (_stalker != null)
+                {
+                    Log.Write("STALKER test: " + _stalker.Label + " is already following you.");
+                }
+                else
+                {
+                    _stalkSlots.RemoveAll(s => s.Test);
+                    _stalkSlots.Add(new StalkSlot { At = Math.Max(1, Bridge.Now()), Test = true });
+                    _stalkerCooldown = 0;
+                    _nextStalkCheck = 0;
+                    _stalkWait = null;
+                    Log.Write("STALKER test (" + _stalkerKey + "): someone will start following you as soon as nothing is in the way.");
+                    News("Westworld", "stalker test: someone will start following you soon. Go about your business, and check behind you from time to time.", "news");
+                }
+            }
             if (_stalker != null)
             {
                 if (_stalker.Done)
@@ -167,71 +221,177 @@ namespace EnrageWestworld.InGame
                 if (_stalkerPendingUntil > 0 && _stalker.Handle == 0)
                 {
                     if (_stalker.TrySpawn(_stalkerModel, Game.Player.Character))
+                    {
                         _stalkerPendingUntil = 0;
+                        _stalkFails = 0;
+                        if (_stalker.Revenant == null && !_stalkerIsTest)
+                        {
+                            if (_stalkerIsDay)
+                                _store.LastDayStalkDay = StalkNight(Bridge.Now());
+                            else
+                                _store.LastStalkDay = StalkNight(Bridge.Now());
+                        }
+                    }
                     else if (now > _stalkerPendingUntil)
                     {
+                        _stalkFails++;
+                        int waitMin = Math.Min(10, 1 << Math.Min(4, _stalkFails - 1));
+                        Log.Write("STALKER couldn't appear (" + _stalker.Why + "); trying again in " + waitMin + (waitMin == 1 ? " minute." : " minutes."));
                         if (_stalker.Revenant != null)
-                            _stalker.Revenant.ReturnAt = Bridge.Now() + 120;
+                            _stalker.Revenant.ReturnAt = Bridge.Now() + 1;
+                        else
+                        {
+                            _stalkSlots.Add(new StalkSlot { At = Math.Max(1, Bridge.Now()), Day = _stalkerIsDay, Test = _stalkerIsTest });
+                        }
                         _stalker = null;
                         _stalkerPendingUntil = 0;
-                        _stalkerCooldown = now + 60000;
-                        Log.Detail("STALKER couldn't find a hidden spot or the model didn't load; trying later");
+                        _stalkerCooldown = now + waitMin * 60000;
                     }
                     return;
                 }
                 _stalker.Tick(Game.Player.Character, _engine.Player, StalkerSay);
                 return;
             }
-            if (!_cfg.Stalkers || now < _nextStalkCheck || now < _stalkerCooldown)
+            if ((!_cfg.Stalkers && !_stalkSlots.Any(s => s.Test)) || now < _nextStalkCheck || now < _stalkerCooldown)
                 return;
-            _nextStalkCheck = now + 15000;
-            Ped me = Game.Player.Character;
-            if (MISC.GET_MISSION_FLAG() || _interiorType != 0 || PED.IS_PED_IN_COMBAT(me.Handle, 0) || PLAYER.GET_PLAYER_WANTED_LEVEL(Game.Player.Handle) > 0 ||
-                ENTITY.IS_ENTITY_IN_WATER(me.Handle))
-                return;
+            _nextStalkCheck = now + 5000;
             long gameMin = Bridge.Now();
-            Fallen due = _store.Fallen.FirstOrDefault(f => !f.Done && f.ReturnAt > 0 && gameMin >= f.ReturnAt);
-            if (due != null)
-            {
-                due.ReturnAt = 0;
-                BeginStalker(due, due.Model, due.Woman, due.Name ?? "A familiar " + (due.Woman ? "woman" : "man"), now);
+            if (gameMin <= 0)
                 return;
-            }
-            int day = (int)(gameMin / 1440);
-            if (day != _stalkDay)
+            string blocked = StalkBlocker();
+            if (_cfg.Stalkers && blocked == null)
             {
-                _stalkDay = day;
-                if (_store.LastStalkDay != day && _rng.Next(100) < _cfg.StalkerChance)
+                Fallen due = _store.Fallen.FirstOrDefault(f => !f.Done && f.ReturnAt > 0 && gameMin >= f.ReturnAt);
+                if (due != null)
                 {
-                    int minute = (18 * 60 + _rng.Next(10 * 60)) % (24 * 60);
-                    _stalkAt = day * 1440L + minute + (minute < 18 * 60 ? 1440 : 0);
-                    Log.Write("Stalker roll (" + _cfg.StalkerChance + "%): tonight, around " + (minute / 60).ToString("00") + ":" + (minute % 60).ToString("00") + " game time.");
-                }
-                else
-                {
-                    _stalkAt = -1;
-                    Log.Detail("Stalker roll (" + _cfg.StalkerChance + "%): not tonight.");
+                    due.ReturnAt = 0;
+                    BeginStalker(due, due.Model, due.Woman, due.Name ?? "A familiar " + (due.Woman ? "woman" : "man"), now, false, false);
+                    return;
                 }
             }
             int hour = CLOCK.GET_CLOCK_HOURS();
-            if (_stalkAt > 0 && gameMin >= _stalkAt && (hour >= 18 || hour < 5))
+            bool daylight = hour >= 5 && hour < 18;
+            int night = StalkNight(gameMin);
+            if (_cfg.Stalkers && night != _stalkDay)
             {
-                _stalkAt = -1;
-                _store.LastStalkDay = day;
+                _stalkDay = night;
+                // a daytime stalker who never got a clear moment doesn't carry over into the evening
+                if (_stalkSlots.RemoveAll(s => s.Day && !s.Test) > 0)
+                    Log.Write("A daytime stalker never got a clear moment before dusk; dropped.");
+                RollStalkers(night, gameMin, daylight);
+            }
+            if (_stalkSlots.Count == 0)
+                return;
+            string firstWait = null;
+            foreach (StalkSlot s in _stalkSlots.OrderByDescending(x => x.Test).ThenBy(x => x.At).ToList())
+            {
+                if (gameMin < s.At)
+                    continue;
+                if (s.Day && !s.Test && !daylight)
+                {
+                    _stalkSlots.Remove(s);
+                    Log.Write("A daytime stalker never got a clear moment before dusk; dropped.");
+                    continue;
+                }
+                string wait = blocked ?? (!s.Test && !s.Day && daylight ? "it's daytime, and tonight's stalker comes out between 18:00 and 05:00" : null);
+                if (wait != null)
+                {
+                    if (firstWait == null)
+                        firstWait = wait;
+                    continue;
+                }
+                _stalkWait = null;
+                _stalkSlots.Remove(s);
                 bool woman = _rng.Next(5) == 0;
-                BeginStalker(null, Spawner.ModelFor(null, woman, _rng.Next()), woman, "Someone", now);
+                BeginStalker(null, Spawner.ModelFor(null, woman, _rng.Next()), woman, "Someone", now, s.Test, s.Day);
+                return;
+            }
+            if (firstWait != null && firstWait != _stalkWait)
+            {
+                _stalkWait = firstWait;
+                Log.Write("STALKER due, waiting: " + firstWait + ".");
+                if (_stalkSlots.Any(s => s.Test))
+                    News("Westworld", "stalker test: waiting, " + firstWait + ".", "news");
             }
         }
 
-        private void BeginStalker(Fallen f, uint model, bool woman, string label, int now)
+        /// Once per in-game day: none, a daytime stalker, a night stalker, or both.
+        private void RollStalkers(int night, long gameMin, bool daylight)
+        {
+            if (_store.LastStalkDay == night || _store.LastDayStalkDay == night)
+            {
+                Log.Detail("Stalker roll: someone already followed you this day.");
+                return;
+            }
+            if (_rng.Next(100) >= _cfg.StalkerChance)
+            {
+                Log.Write("Stalker roll (" + _cfg.StalkerChance + "%): none today.");
+                return;
+            }
+            int wd = _cfg.StalkerDayOnly, wn = _cfg.StalkerNightOnly, wb = _cfg.StalkerBoth;
+            if (wd + wn + wb <= 0)
+                wn = 1;
+            int r = _rng.Next(wd + wn + wb);
+            bool day = r < wd || r >= wd + wn;          // day only, or both
+            bool nite = r >= wd;                        // night only, or both
+            string what = day && nite ? "one by day and one at night" : day ? "a daytime stalker" : "a night stalker";
+            string msg = "Stalker roll (" + _cfg.StalkerChance + "%): " + what;
+            if (day)
+            {
+                if (daylight)
+                {
+                    // 06:00 to 16:59
+                    long at = night * 1440L + 300 + 60 + _rng.Next(11 * 60);
+                    _stalkSlots.Add(new StalkSlot { At = at, Day = true });
+                    msg += "; the daytime one around " + Clock(at) + (gameMin >= at ? " (due now)" : "");
+                }
+                else
+                {
+                    msg += "; the daytime part has already passed";
+                }
+            }
+            if (nite && !_stalkSlots.Any(s => !s.Day && !s.Test))
+            {
+                // 18:00 to 03:59
+                long at = night * 1440L + 300 + 13 * 60 + _rng.Next(10 * 60);
+                _stalkSlots.Add(new StalkSlot { At = at });
+                msg += "; the night one around " + Clock(at) + (gameMin >= at ? " (due now)" : "");
+            }
+            Log.Write(msg + ".");
+        }
+
+        private void BeginStalker(Fallen f, uint model, bool woman, string label, int now, bool test, bool day)
         {
             _stalkerFallen = f;
             _stalkerModel = model;
             _stalkerWoman = woman;
             _stalkerLabel = label;
+            _stalkerIsTest = test;
+            _stalkerIsDay = day;
             _stalker = new Stalker(f, label, woman, Math.Max(2, _cfg.StalkerMinutes - _rng.Next(Math.Max(1, _cfg.StalkerMinutes / 3))));
             _stalkerPendingUntil = now + 25000;
-            Log.Write("STALKER begins: " + label + (f != null ? " (killed " + (f.Town ?? f.Zone ?? "somewhere") + ")" : ""));
+            Log.Write("STALKER begins: " + label + (f != null ? " (killed " + (f.Town ?? f.Zone ?? "somewhere") + ")" : "") + (test ? " (test)" : day ? " (daytime)" : f == null ? " (night)" : "") +
+                      ", game time " + Clock(Bridge.Now()));
+        }
+
+        /// One line for the F7 test dump.
+        private string StalkerStatus()
+        {
+            long g = Bridge.Now();
+            string due;
+            if (_stalker != null)
+                due = (_stalker.Handle == 0 ? "about to appear: " : "following you: ") + _stalker.Label;
+            else if (_stalkSlots.Count > 0)
+                due = string.Join("; ", _stalkSlots.OrderBy(s => s.At).Select(s => (s.Test ? "test" : s.Day ? "day" : "night") + " stalker " +
+                    (g >= s.At ? "due now" : "due at " + Clock(s.At) + (StalkNight(s.At) != StalkNight(g) ? " on a later night" : ""))).ToArray());
+            else
+            {
+                int d = StalkNight(g);
+                due = _store.LastStalkDay == d || _store.LastDayStalkDay == d ? "already came today" : "none waiting";
+            }
+            string blocked = StalkBlocker();
+            return (_cfg.Stalkers ? _cfg.StalkerChance + "% a day (day/night/both " + _cfg.StalkerDayOnly + "/" + _cfg.StalkerNightOnly + "/" + _cfg.StalkerBoth + ")" : "off") + ", " + due + ", game time " + Clock(g) +
+                   ", in the way now: " + (blocked ?? "nothing") + ", failed spawns " + _stalkFails + ", test key " + _stalkerKey;
         }
 
         private void EndStalker(int now)

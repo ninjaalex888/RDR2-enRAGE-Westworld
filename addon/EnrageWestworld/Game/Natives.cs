@@ -158,12 +158,27 @@ namespace EnrageWestworld.InGame
             return dot >= (float)Math.Cos(halfAngle * Math.PI / 180.0);
         }
 
-        /// The point dist metres behind where the camera looks, at the player's height.
+        /// The point dist metres behind where the camera looks, on the ground there (hillsides included);
+        /// at the player's height if the ground there can't be found.
         public static Vector3 BehindCamera(Vector3 player, float dist, float spreadDegrees, Random rng)
         {
             Vector3 rot = CAM.GET_GAMEPLAY_CAM_ROT(2);
             double yaw = (rot.Z + 180.0 + (rng.NextDouble() * 2 - 1) * spreadDegrees) * Math.PI / 180.0;
-            return new Vector3(player.X + (float)(-Math.Sin(yaw) * dist), player.Y + (float)(Math.Cos(yaw) * dist), player.Z);
+            float x = player.X + (float)(-Math.Sin(yaw) * dist), y = player.Y + (float)(Math.Cos(yaw) * dist);
+            return new Vector3(x, y, GroundZ(x, y, player.Z));
+        }
+
+        /// Ground height at (x, y), searching down from well above `near`; `near` itself if nothing sensible is found.
+        public static unsafe float GroundZ(float x, float y, float near)
+        {
+            ulong slot = 0;   // a full 8-byte slot for the float out-parameter
+            if (MISC.GET_GROUND_Z_FOR_3D_COORD(x, y, near + 50f, (float*)&slot, false))
+            {
+                float g = *(float*)&slot;
+                if (g > -200f && Math.Abs(g - near) < 60f)
+                    return g;
+            }
+            return near;
         }
 
         public static string Clock()

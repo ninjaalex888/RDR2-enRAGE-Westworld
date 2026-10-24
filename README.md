@@ -6,7 +6,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-**Version 0.5.2.** 0.4 has been played in game for hours without trouble. The new parts of 0.5 were checked outside the game but haven't been tested in game yet. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/issues) and attach your log.
+**Version 0.5.4.** 0.4 and 0.5.1 have been played in game without trouble, and the first of the new 0.5 scenes (the posse) has been seen. The rest of 0.5 was checked outside the game but not yet in game. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/issues) and attach your log.
 
 ## What it does
 
@@ -20,14 +20,14 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 
 **Life in the street.** Strangers near you flirt, quarrel, call in debts, catch cheats and propose. They square off in standoffs, sing old songs drunk, tell tall tales (some about you), read the paper aloud, haggle over horses, fall for a snake-oil pitch and pick pockets. You can step in: take a side, break up a fight (the town hears you're a peacemaker), or egg it on. Hold a gun on a stranger and they beg; lower it and word gets around that you showed mercy. Weddings happen at the church, and mourners speak at enRAGE's funerals.
 
-**Westworld.** Some people begin to suspect their world is made. At first it's deja vu and odd dreams; later they notice the loops, the same faces, "the music that comes before trouble". Now and then someone glitches. Some of the people you kill wake up days later and remember how they died and who did it. Rarely, someone follows you at a distance and hides when you look.
+**Westworld.** Some people begin to suspect their world is made. At first it's deja vu and odd dreams; later they notice the loops, the same faces, "the music that comes before trouble". Now and then someone glitches. Some of the people you kill wake up days later and remember how they died and who did it. Rarely, by day or by night, someone follows you at a distance and hides when you look.
 
 **Voices.** Most lines come with a fitting recorded line in the speaker's own in-game voice. The stranger lines are read aloud by any Windows voice you have installed, and each speaker keeps their own voice, pitch and pace.
 
 ## Install
 
 1. Install [enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967) 0.9.5.2 and what it needs (Script Hook RDR2 and Script Hook RDR2 .NET V2), and make sure it works.
-2. Download **[enRAGE-Westworld-0.5.2.zip](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/raw/main/release/enRAGE-Westworld-0.5.2.zip)** (it's also in the [release](release) folder). It holds `EnrageWestworld.dll` and a README.txt that explains every feature and setting.
+2. Download **[enRAGE-Westworld-0.5.4.zip](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/raw/main/release/enRAGE-Westworld-0.5.4.zip)** (it's also in the [release](release) folder). It holds `EnrageWestworld.dll` and a README.txt that explains every feature and setting.
 3. Copy `EnrageWestworld.dll` into your game's `scripts` folder, next to enRAGE's `NemesisMod.dll`. To update, just replace the file: what people remember carries over, and your settings are kept.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
 
@@ -40,6 +40,7 @@ To uninstall, delete `EnrageWestworld.dll`. You can also delete the `enRAGE-West
 | F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log |
 | F6 | Flirt with the person you're looking at |
 | F5 | Read your letters, diaries and clippings, or take a diary you've just found |
+| Shift+F7 | Call a stalker right away, to test that part (the log says what he's waiting for) |
 
 None of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini.
 

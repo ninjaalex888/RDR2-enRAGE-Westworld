@@ -910,6 +910,7 @@ namespace EnrageWestworld.InGame
 				", stalker " + (_stalker != null ? _stalker.Label : "none") + ", scene " + (_director.Busy ? "playing" : "none") + ", town " + (_placeTown ?? "-") + ", place " + (_placeKind ?? "-") +
 				", deeds " + _store.Deeds.Count + ", rumours " + _store.TownRumours.Count + ", papers " + _store.Papers.Count(x => x.Delivered) + "/" + _store.Papers.Count +
 				", fallen " + _store.Fallen.Count + ", reveries " + _store.Reveries.Values.Count(x => x.Woke) + "/" + _store.Reveries.Count + ", avengers " + _store.Avengers.Count + ", weddings " + _store.Weddings.Count);
+			Log.Write("TEST stalker: " + StalkerStatus());
 			if (nemesisRecord == null)
 			{
 				int num3 = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);

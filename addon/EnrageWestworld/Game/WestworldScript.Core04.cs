@@ -104,6 +104,8 @@ namespace EnrageWestworld.InGame
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
             _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F6);
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.F5);
+            // Shift + the test key calls a stalker right away (Ctrl+Shift if the test key already uses Shift)
+            _stalkerKey = new KeySpec { Key = _testKey.Key, Ctrl = _testKey.Ctrl || _testKey.Shift, Shift = true, Alt = _testKey.Alt };
         }
 
         private void IniTick(int now)
@@ -148,7 +150,7 @@ namespace EnrageWestworld.InGame
         /// Windows repeats KeyDown while a key is held. The add-on's own keys act once per press.
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -170,6 +172,11 @@ namespace EnrageWestworld.InGame
             if (_readerKey.Matches(e))
             {
                 _readerRequested = true;
+                return true;
+            }
+            if (_stalkerKey.Matches(e))
+            {
+                _stalkerRequested = true;
                 return true;
             }
             return false;
