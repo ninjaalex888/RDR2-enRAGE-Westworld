@@ -68,6 +68,19 @@ namespace EnrageWestworld.InGame
                 Draw.Text(_parts[part], x + _labelWidth, yTop, _drawScale, tr, tg, tb, fade);
         }
 
+        /// The player asked for the next line: on a line shown in parts, the next part first. False when there is none.
+        public static bool NextPart(TickerLine line, Settings cfg, int now)
+        {
+            if (line == null || line != _laidOut || _parts.Count <= 1)
+                return false;
+            int partMs = Math.Max(2500, cfg.TickerSeconds * 1000 / _parts.Count);
+            int part = Math.Min(_parts.Count - 1, Math.Max(0, now - line.ShownAt) / partMs);
+            if (part >= _parts.Count - 1)
+                return false;
+            line.ShownAt = now - (part + 1) * partMs;   // as if the next part were due now
+            return true;
+        }
+
         private static void Layout(TickerLine line, string label, float scale, float maxWidth)
         {
             _laidOut = line;

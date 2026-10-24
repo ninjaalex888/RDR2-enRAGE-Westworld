@@ -35,7 +35,7 @@ Needs `refs/ScriptHookRDRNetAPI.dll` and `original/NemesisMod.dll`, both from Le
 
 ## Testing
 
-There is no way to run the game in CI. Play-test in game and read the log at `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\RealNPCs.log`. Hotkeys: F7 (status and log dump), Shift+F7 (call a stalker now), G (wake the person you face one stage; `WakeKey`), F6 (flirt), F5 (letters and diaries).
+There is no way to run the game in CI. Play-test in game and read the log at `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\RealNPCs.log`. Hotkeys: F7 (status and log dump), Shift+F7 (call a stalker now), G (wake the person you face one stage; `WakeKey`), T (next ticker line; `TickerNextKey`, also enRAGE's telegraph key near a clerk), F6 (flirt), F5 (letters and diaries).
 
 ## Stalkers (current design, 0.6.0)
 
@@ -93,3 +93,4 @@ Lex's brief is saved at `C:\mods\prompts\You are an expert Behavioral Psycho.txt
 - Our ini writes call `ApplyOurSettings` (reload + gate at once, stamp updated so `IniTick` doesn't reload twice); a value outside `Clamp()` is rewritten to what's in force. enRAGE ini writes: one backup per session to `RealNPCs\backup`, then `_reload`, then re-read to show what enRAGE kept.
 - Pad: frontend controls (FrontendUp/Down/Left/Right, LB/RB, Accept, Cancel, X held for x10) only while `IS_USING_KEYBOARD_AND_MOUSE` is false, so keys never count twice. No mouse.
 - Safety: enRAGE pages only when `EnrageHidesKnown` and `CanReloadEnrage` (else a message page; its bookkeeping like Seeded/Cleared/*Day must never become editable). Left/Right changes are staged and written after 450 ms without change, or on moving on or closing (`Flush`). If the "settings panel" feature switches itself off, `PanelOpen` is false and the panel is closed so keys and the ticker come back.
+- A new key setting goes in `SettingsPanel.OurKeys` (so the panel sets it by key press) and in `HeldKeyRepeat` (one action per press). `TickerNextKey` (T, 0.6.0): `Ticker.NextPart` jumps a line shown in parts to its next part, else `TickerBrain.Skip()` moves on (from a thought to the news).

@@ -35,6 +35,7 @@ namespace EnrageWestworld.Core
         private readonly List<TickerLine> _history = new List<TickerLine>();
         private readonly Dictionary<string, KeyValuePair<int, string>> _thoughts = new Dictionary<string, KeyValuePair<int, string>>();
         private int _nextAt;
+        private bool _skipped;
         private int _rotation;        // index into history while nobody is near
         private int _nearTurn;        // which near person is next
         private bool _summaryNext = true;
@@ -57,6 +58,14 @@ namespace EnrageWestworld.Core
                 _fresh.RemoveAt(0);
         }
 
+        /// The player asked for the next line now (TickerNextKey). From someone's thought it moves on to the news,
+        /// so asking again near the same person doesn't bring back the same thought.
+        public void Skip()
+        {
+            _nextAt = 0;
+            _skipped = true;
+        }
+
         public void Clear()
         {
             _fresh.Clear();
@@ -69,6 +78,8 @@ namespace EnrageWestworld.Core
         /// Call a few times a second. near: people close to the player, any order.
         public TickerLine Update(int now, IList<NearThought> near, Func<string> summary)
         {
+            bool skip = _skipped;
+            _skipped = false;
             List<NearThought> close = (near ?? new List<NearThought>()).Where(n => n != null && n.Key != null)
                 .OrderBy(n => n.Distance).ToList();
             string nearest = close.Count > 0 ? close[0].Key : null;
@@ -76,7 +87,7 @@ namespace EnrageWestworld.Core
             // someone new walked up: switch to them straight away (after a short minimum), with a little
             // hysteresis so two people at the same distance don't flicker
             bool newcomer = false;
-            if (nearest != null && nearest != _lastNearKey && (Current == null || now - Current.ShownAt >= 3000))
+            if (!skip && nearest != null && nearest != _lastNearKey && (Current == null || now - Current.ShownAt >= 3000))
             {
                 NearThought shown = close.FirstOrDefault(c => c.Key == _lastNearKey);
                 newcomer = shown == null || close[0].Distance + 2f < shown.Distance;
@@ -92,7 +103,7 @@ namespace EnrageWestworld.Core
             }
 
             TickerLine next = null;
-            if (close.Count > 0)
+            if (close.Count > 0 && !(skip && Current != null && Current.Kind == "near"))
             {
                 if (!newcomer && _fresh.Count > 0 && (Current == null || Current.Kind == "near"))
                     next = TakeFresh();

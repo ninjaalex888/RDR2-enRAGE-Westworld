@@ -10,7 +10,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 15;
+        public const int CurrentVersion = 16;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -38,19 +38,20 @@ namespace EnrageWestworld.Core
         public float TickerScale = 0.30f;
         public float TickerWidth = 0.60f;
         public bool NoticesAsSubtitles;
+        public string TickerNextKey = "T";
 
         // [WestWorld] - the master switch and everything under it
         public bool WestWorld = true;
         public int AwakeningShare = 5;
-        public int AwakeningDays = 6;
-        public int AwakeningBreakdown = 35;
-        public int AwakeningDespair = 2;
+        public int AwakeningDays = 1;
+        public int AwakeningBreakdown = 90;
+        public int AwakeningDespair = 10;
         public bool HostsQuestionReality = true;
         public int RealityChance = 15;
         public bool Glitches = true;
         public bool Reveries = true;
-        public int ReturnChance = 15;
-        public int StrangerReturnChance = 5;
+        public int ReturnChance = 35;
+        public int StrangerReturnChance = 15;
 
         // [Stalkers]
         public bool Stalkers = true;
@@ -344,6 +345,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TickerScale = " + F(TickerScale) + "   ; text size");
             b.AppendLine("TickerWidth = " + F(TickerWidth) + "   ; share of the screen width it may use");
             b.AppendLine("NoticesAsSubtitles = " + B(NoticesAsSubtitles) + "   ; also flash new notices as subtitles");
+            b.AppendLine("TickerNextKey = " + TickerNextKey + "   ; shows the next line on the ticker now (on a long line, its next part first)");
             b.AppendLine();
             b.AppendLine("[WestWorld]");
             b.AppendLine("WestWorld = " + B(WestWorld) + "   ; master switch: the people who start to see their world is made. false turns off everything in this section");

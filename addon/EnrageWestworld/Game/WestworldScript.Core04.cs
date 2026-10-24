@@ -22,6 +22,8 @@ namespace EnrageWestworld.InGame
         private readonly Queue<Keys> _readerKeys = new Queue<Keys>();
         private KeySpec _readerKey;
         private bool _readerRequested;
+        private KeySpec _tickerNextKey;
+        private bool _tickerNextRequested;
         private string _iniPath;
         private DateTime _iniStamp;
         private int _nextNear, _nextIni, _nextUi, _controlOffAt = -1;
@@ -115,6 +117,7 @@ namespace EnrageWestworld.InGame
             _stalkerKey = new KeySpec { Key = _testKey.Key, Ctrl = _testKey.Ctrl || _testKey.Shift, Shift = true, Alt = _testKey.Alt };
             _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.G);
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
+            _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
         }
 
         private void IniTick(int now)
@@ -160,7 +163,7 @@ namespace EnrageWestworld.InGame
         /// Windows repeats KeyDown while a key is held. The add-on's own keys act once per press.
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e) || _settingsKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e) || _settingsKey.Matches(e) || _tickerNextKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -202,6 +205,11 @@ namespace EnrageWestworld.InGame
             if (_wakeKey.Matches(e))
             {
                 _wakeRequested = true;
+                return true;
+            }
+            if (_tickerNextKey.Matches(e) && _cfg.Ticker)
+            {
+                _tickerNextRequested = true;
                 return true;
             }
             return false;
@@ -329,6 +337,8 @@ namespace EnrageWestworld.InGame
 
         private void FrameImpl(int now)
         {
+            bool askNext = _tickerNextRequested;   // the ticker key: only counts while the ticker is showing
+            _tickerNextRequested = false;
             if (PanelOpen)
                 return;   // the settings panel draws itself; no ticker under it
             if (_reader.Open)
@@ -344,6 +354,11 @@ namespace EnrageWestworld.InGame
             {
                 _nextNear = now + 1000;
                 RefreshNear();
+            }
+            if (askNext && !Ticker.NextPart(_tickerLine, _cfg, now))
+            {
+                _ticker.Skip();
+                _nextTickerUpdate = 0;
             }
             if (now >= _nextTickerUpdate || _tickerLine == null)
             {

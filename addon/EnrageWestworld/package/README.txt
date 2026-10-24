@@ -32,13 +32,17 @@ NEW IN 0.6.0
   setting in one place. Up/Down choose, Left/Right change (Shift: ten at a time), Q/E turn the
   page, Tab jumps between RealNPCs and enRAGE, Enter sets a key, Backspace closes. Greyed-out
   settings need their master switch on first. Changes apply at once. NemesisMod.ini is backed up
-  to DocumentsRockstar GamesRed Dead Redemption 2RealNPCsackup before the first change.
+  to Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\backup before the first change.
   ReplaceEnrageSettings = false gives Alt+F11 back to enRAGE's own panel; Ctrl+F7 (SettingsKey)
   opens this one too. A pad works too: D-pad, LB/RB, A, and B to close.
-- AwakeningBreakdown (35): how often an unravelling or awake person falls apart (kneels, shouts
+- AwakeningBreakdown (90): how often an unravelling or awake person falls apart (kneels, shouts
   at the sky, runs) rather than holding it together.
 - The ini is reorganised into [WestWorld], [Stalkers] and [Voices]; your values are kept.
 - The ticker is always one line high, so it never overlaps the game's subtitles.
+- T (TickerNextKey) shows the next line on the ticker now; on a long line shown in parts, the
+  next part first. T is also enRAGE's telegraph key: near a telegraph clerk, both happen.
+- New defaults: AwakeningDays 1, AwakeningBreakdown 90, AwakeningDespair 10, ReturnChance 35,
+  StrangerReturnChance 15. If your ini already has these, your own values are kept.
 
 
 NEW IN 0.5.5
@@ -64,7 +68,7 @@ NEW IN 0.5.5
 - Ordinary people's thoughts are now written from real psychology: the body, status anxiety, loss and threat bias, the worries of 1899, the mask over what they feel, and what they notice about you when you are close.
 - Every adult can now be a person with a mind, soldiers and lawmen too. Ordinary people get the full acts; enRAGE's own people and soldiers in its camps only turn their heads, think and speak (their movement is enRAGE's).
 - Fuller acts. Stirring: double-takes. Questioning: standing perfectly still, pacing, walking out to see where the town ends, asking a neighbour if they feel it too. Unravelling: freezing mid-step, shouting at the sky, kneeling, running with no goal. Awake is a lasting state: they come to you, say a few things (who is writing this, is there an outside) and end by pleading, trying to leave town, trying to wake someone or refusing to get up.
-- CONTENT NOTE: a small chance (AwakeningDespair, default 2 percent, 0 turns it off) that a fully awake, armed ordinary person cannot bear it and ends their own life. It never happens to enRAGE's people or townsfolk, and it is not counted as anything you did. Set it to 0 if you would rather not see it.
+- CONTENT NOTE: a chance (AwakeningDespair, default 10 percent, 0 turns it off) that a fully awake, armed ordinary person cannot bear it and ends their own life. It never happens to enRAGE's people or townsfolk, and it is not counted as anything you did. Set it to 0 if you would rather not see it.
 - Acts and words belong together now: people who pace count their steps in their heads, people who freeze lose their sentence halfway, and the one walking up to you thinks about why. The thoughts appear on the ticker as it happens.
 - Ordinary people have inner lives of their own: what a passer-by thinks now comes from their trade, town, temperament, faith or the hour of the day.
 - Gang and faction news (wars, feuds, clashes, rivalries) now appears as the game's pop-up on the right of the screen, away from the bottom ticker, which keeps what people think and do. WarNewsTo in the ini (right or ticker) switches it back.
@@ -179,6 +183,8 @@ A thin bar at the very bottom of the screen.
   and then rotates through the latest news: thoughts from far away, diary entries, life updates,
   letters, rumours.
 - New news gets a turn straight away and flashes brighter.
+- T (TickerNextKey) moves on to the next line now. A long line shown in parts goes to its next
+  part first; from someone's thought it moves on to the news.
 - It hides in menus, cutscenes, the pause menu, when the HUD is hidden, and while enRAGE's own
   menus are open.
 Spoken lines (people talking to you) still use the subtitle line, as before.
@@ -278,9 +284,9 @@ voice (SpokenVoice). Rarely, someone glitches: freezes and stares, or says the s
 times exactly alike.
 
 Reveries. When you kill one of enRAGE's people (not story characters), there's a chance
-(ReturnChance, 15%) they wake up again a few days later. They remember where they died, what
+(ReturnChance, 35%) they wake up again a few days later. They remember where they died, what
 killed them and who did it, and they come back the way enRAGE's people come back from the dead.
-Strangers you kill are remembered too, and a few (StrangerReturnChance, 5%) come back.
+Strangers you kill are remembered too, and a few (StrangerReturnChance, 15%) come back.
 
 Stalkers. Rarely, by day or by night, someone follows you. They keep their distance, stand and stare when they think
 you can't see, freeze when you look at them and slip out of sight, and somehow turn up behind you
@@ -354,12 +360,13 @@ Saved changes are picked up in game within a few seconds (ReloadIni). Every opti
 in the file. The new ones:
 
 [Ticker]    Ticker (true), TickerNearbyMetres (30), TickerSeconds (12), TickerY (0.962, height on
-            screen), TickerScale (0.30, text size), TickerWidth (0.60), NoticesAsSubtitles (false)
+            screen), TickerScale (0.30, text size), TickerWidth (0.60), NoticesAsSubtitles (false),
+            TickerNextKey (T): the next line now
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
-            AwakeningShare (5), AwakeningDays (6), AwakeningBreakdown (35, how often an unravelling
-            or awake person falls apart), AwakeningDespair (2, 0-100, see the content note above),
+            AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
+            or awake person falls apart), AwakeningDespair (10, 0-100, see the content note above),
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
-            Reveries (true), ReturnChance (15), StrangerReturnChance (5)
+            Reveries (true), ReturnChance (35), StrangerReturnChance (15)
 [Stalkers]  Stalkers (true): the master switch. StalkerChance (20, percent per day),
             StalkerDayOnly (25), StalkerNightOnly (50), StalkerBoth (25),
             StalkerDayFrom (6) / StalkerDayTo (17): when a daytime stalker turns up,
@@ -394,7 +401,9 @@ F5  read your letters, diaries and clippings (or take a diary you've just found)
 Shift+F7  call a stalker now (for testing)
 Alt+F11   the RealNPCs settings panel (all RealNPCs and enRAGE settings); Ctrl+F7 opens it too
 G         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
-None of these are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
+T         the next line on the ticker now (on a long line, its next part first; TickerNextKey).
+          T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
+None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it
 in the ini (e.g. ReaderKey = Ctrl+F5).
 

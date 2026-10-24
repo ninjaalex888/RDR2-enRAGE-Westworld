@@ -8,7 +8,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-**Version 0.5.5.** Stable in play so far. Stalkers, the posse scene, the wake key and the Awakening's first stages have been seen in game; the newest parts (the fuller wake acts, voices matched to feeling, the gang news pop-ups) have had only a short test. One content note: a small, adjustable chance (`AwakeningDespair`, default 2 percent, 0 turns it off) that a fully awake, armed ordinary person ends their own life. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/issues) and attach your log.
+**Version 0.5.5.** Stable in play so far. Stalkers, the posse scene, the wake key and the Awakening's first stages have been seen in game; the newest parts (the fuller wake acts, voices matched to feeling, the gang news pop-ups) have had only a short test. One content note: an adjustable chance (`AwakeningDespair`, default 10 percent, 0 turns it off) that a fully awake, armed ordinary person ends their own life. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/issues) and attach your log.
 
 ## What it does
 
@@ -44,9 +44,10 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | F5 | Read your letters, diaries and clippings, or take a diary you've just found |
 | Shift+F7 | Call a stalker right away, to test that part (the log says what he's waiting for) |
 | G | Wake the person you are facing one stage (West World), so you can see what each stage does |
+| T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
 | Alt+F11 | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text (Ctrl+F7 opens it too) |
 
-None of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings: RealNPCs opens its panel in place of enRAGE's, and `ReplaceEnrageSettings = false` gives it back.
+Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings: RealNPCs opens its panel in place of enRAGE's, and `ReplaceEnrageSettings = false` gives it back.
 
 ## Settings and log
 
