@@ -3,6 +3,7 @@
 ## 0.6.0
 
 - New name: enRAGE Westworld is now **RealNPCs** (`RealNPCs.dll`, data folder `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs`). On first start the old `enRAGE-Westworld` folder is copied over (saves, diaries, voice files; the ini is renamed `RealNPCs.ini`), and the old folder is left as it was. If `EnrageWestworld.dll` is still in the scripts folder, RealNPCs stays off and says so, so two copies never run together.
+- The ticker is always one line high now, so it no longer overlaps the game's subtitles just above it. Text a little too long is set slightly smaller; text much too long is shown in parts, one after another, in the same bar.
 
 ## 0.5.5
 
