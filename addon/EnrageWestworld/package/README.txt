@@ -81,7 +81,10 @@ NEW IN 0.6.0
   (red), and RealNPCs notes no crime: no witnesses remember it, no rumour, no posse talk, no
   newspaper. Someone you shot or drew on first still counts, even if they fire back, and so do
   lawmen and anyone who begged. enRAGE judges its own witnesses the same way, and resets the
-  bounty after fights with its own outlaws. RealNPCs never changes your bounty.
+  bounty after fights with its own outlaws. For everyone else who comes at you, soldiers too,
+  RealNPCs puts back any bounty or wanted level the fight gave you (SelfDefenceNoBounty), unless
+  you also hurt someone who hadn't come at you or did another crime in the last few minutes.
+  Story missions keep their own law.
 
 
 NEW IN 0.5.5
@@ -422,7 +425,7 @@ in the file. The new ones:
             cinematic camera
 [Voices]    SpokenVoice (true), VoiceVolume (80), VoiceMan, VoiceWoman (part of a Windows voice's
             name; empty = any), VoiceVariety (true)
-[World]     Deeds, RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+[World]     Deeds, SelfDefenceNoBounty (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
