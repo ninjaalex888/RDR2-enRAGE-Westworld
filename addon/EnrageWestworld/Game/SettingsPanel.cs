@@ -282,7 +282,7 @@ namespace EnrageWestworld.InGame
                 _note = Label(e.Key) + " stays " + e.Value + ".";
                 return;
             }
-            string spec = (ctrl ? "Ctrl+" : string.Empty) + (shift ? "Shift+" : string.Empty) + (alt ? "Alt+" : string.Empty) + key;
+            string spec = (ctrl ? "Ctrl+" : string.Empty) + (shift ? "Shift+" : string.Empty) + (alt ? "Alt+" : string.Empty) + KeySpec.Name(key);
             Write(_pages[_page], e, spec);
             // enRAGE hears every key too: say so if this one is also one of its own
             IniSection keys = _theirs != null ? _theirs.Sections.FirstOrDefault(s => s.Name == "Keys") : null;

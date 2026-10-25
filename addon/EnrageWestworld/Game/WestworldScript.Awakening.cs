@@ -2,7 +2,7 @@
 // Residents (Core/Residents.cs) are everyone who isn't one of enRAGE's people. Something that asks "who is this?"
 // (the ticker, the wake key) gets a resident for an ordinary adult nearby; the person keeps that identity as long
 // as the game keeps them, and the resident is saved once something happens to them.
-// The wake key (G by default, WakeKey in the ini) wakes the person you're facing by one stage right now, shows what
+// The wake key (Y by default, WakeKey in the ini) wakes the person you're facing by one stage right now, shows what
 // they say at that stage and logs it. The real thing runs once a game day in the engine (Core/Engine.Awakening.cs).
 using System;
 using System.Collections.Generic;

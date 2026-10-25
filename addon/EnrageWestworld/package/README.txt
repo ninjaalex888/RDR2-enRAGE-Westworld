@@ -67,8 +67,10 @@ NEW IN 0.6.0
   go back to their day. The daily roll and its day and night hours (StalkerDayOnly, StalkerNightOnly,
   StalkerBoth, StalkerDayFrom/To, StalkerNightFrom/To) are gone, and StalkerChance starts again at
   20 because it now means each roll.
-- The 0 key (StalkerKey) makes a stalker now, for testing or whenever you like: someone near you,
+- The ] key (StalkerKey) makes a stalker now, for testing or whenever you like: someone near you,
   or a stranger if nobody near can be. It replaces Shift+F7.
+- The wake key is now Y (WakeKey, was G) and the stalker key ] (was 0). An ini still on G or 0 is
+  moved over and the log says so; a key you chose yourself is kept.
 
 
 NEW IN 0.5.5
@@ -363,7 +365,7 @@ the log; the rest carries on. Bug reports (with your log) are welcome on GitHub 
 - Kill one of enRAGE's people, loot the body for a diary, then visit a post office a few days later.
 - Stand around a busy street or saloon for a few minutes. Greet someone in the middle of a quarrel.
 - Hold your gun on a passer-by in town (then lower it). Ride into a town where you've done things.
-- Press 0 to make a stalker right away: someone near you, or a stranger if nobody near can be. It
+- Press ] to make a stalker right away: someone near you, or a stranger if nobody near can be. It
   happens once you're outdoors, off any story mission, with no lawmen after you and not fighting;
   until then the log says what it's waiting for. Go about
   your business and look behind you now and then (he keeps 30 to 70 metres back).
@@ -395,7 +397,7 @@ in the file. The new ones:
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
             Reveries (true), ReturnChance (35), StrangerReturnChance (15)
-[Stalkers]  Stalkers (true): the master switch. StalkerKey (0): make one now,
+[Stalkers]  Stalkers (true): the master switch. StalkerKey (]): make one now,
             StalkerEveryMinutes (10): real minutes between rolls, StalkerChance (20, percent per roll),
             StalkerNearbyMetres (60): someone this close becomes the stalker, StalkerStrangers (true):
             a stranger if nobody near can, StalkerMinutes (120), StalkerAppearMin (45) /
@@ -416,7 +418,7 @@ in the file. The new ones:
                 enrage: enRAGE's own notice line (its message settings decide) and its feed;
                 gamefeed: EXPERIMENTAL top-left toasts
             WarNewsTo (right | ticker): where gang and faction news goes
-            TestKey (F7), FlirtKey (F6), WakeKey (G), ReaderKey (F5), ReloadIni (true),
+            TestKey (F7), FlirtKey (F6), WakeKey (Y), ReaderKey (F5), ReloadIni (true),
             ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel, SettingsKey (Ctrl+F7)
 All the older options are still there and work the same.
 
@@ -426,9 +428,9 @@ KEYS
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log)
 F6  flirt with the person you're looking at
 F5  read your letters, diaries and clippings (or take a diary you've just found)
-0         make a stalker now: someone near you, or a stranger (StalkerKey)
+]         make a stalker now: someone near you, or a stranger (StalkerKey)
 Alt+F11   the RealNPCs settings panel (all RealNPCs and enRAGE settings); Ctrl+F7 opens it too
-G         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
+Y         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
 T         the next line on the ticker now (on a long line, its next part first; TickerNextKey).
           T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
 None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's

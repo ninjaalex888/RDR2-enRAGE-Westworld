@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 19;
+        public const int CurrentVersion = 20;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -56,7 +56,7 @@ namespace EnrageWestworld.Core
 
         // [Stalkers]
         public bool Stalkers = true;
-        public string StalkerKey = "0";
+        public string StalkerKey = "]";
         public int StalkerEveryMinutes = 10;
         public int StalkerChance = 20;
         public int StalkerNearbyMetres = 60;
@@ -130,7 +130,7 @@ namespace EnrageWestworld.Core
         public string TestKey = "F7";
         public string WarNewsTo = "right";
         public string FlirtKey = "F6";
-        public string WakeKey = "G";
+        public string WakeKey = "Y";
         public string ReaderKey = "F5";
         public bool ReloadIni = true;
         public bool ReplaceEnrageSettings = true;
@@ -213,8 +213,19 @@ namespace EnrageWestworld.Core
                 raised.Add("StalkerChance " + s.StalkerChance + " -> 20 (now a chance per roll, every " + s.StalkerEveryMinutes + " minutes)");
                 s.StalkerChance = 20;
             }
+            if (s.SettingsVersion < 20)
+            {
+                // the keys moved: the wake key from G to Y, the stalker key from 0 to ] (a key of your own is kept)
+                if (KeyIs(s.WakeKey, "G")) { s.WakeKey = "Y"; raised.Add("WakeKey G -> Y"); }
+                if (KeyIs(s.StalkerKey, "0") || KeyIs(s.StalkerKey, "D0")) { s.StalkerKey = "]"; raised.Add("StalkerKey 0 -> ]"); }
+            }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
+        }
+
+        private static bool KeyIs(string value, string key)
+        {
+            return value != null && value.Replace(" ", "").Equals(key, StringComparison.OrdinalIgnoreCase);
         }
 
         public static Settings Load(string path, Action<string> log)
@@ -456,7 +467,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TestKey = " + TestKey + "   ; shows what the nearest person enRAGE knows thinks of you");
             b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: right (the game's pop-ups on the right of the screen) or ticker");
             b.AppendLine("FlirtKey = " + FlirtKey + "   ; look at someone (as if to greet them) and press it to flirt");
-            b.AppendLine("WakeKey = " + WakeKey + "   ; testing the Awakening: face one of enRAGE's people and press it to wake them one stage (set it to something unused, or a combination like Ctrl+G)");
+            b.AppendLine("WakeKey = " + WakeKey + "   ; wakes the grown-up you are facing by one stage, to see what each stage does (set it to something unused, or a combination like Ctrl+Y)");
             b.AppendLine("ReaderKey = " + ReaderKey + "   ; read the diaries, letters and clippings you carry");
             b.AppendLine("ReloadIni = " + B(ReloadIni) + "   ; pick up changes to this file while the game runs");
             b.AppendLine("ReplaceEnrageSettings = " + B(ReplaceEnrageSettings) + "   ; Alt+F11 opens the larger RealNPCs settings panel (RealNPCs, West World, Stalkers and every enRAGE section) instead of enRAGE's own");

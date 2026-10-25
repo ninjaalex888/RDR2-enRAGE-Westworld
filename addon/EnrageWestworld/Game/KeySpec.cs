@@ -34,8 +34,15 @@ namespace EnrageWestworld.InGame
 				result.Shift = array.Any((string x) => x.Equals("Shift", StringComparison.OrdinalIgnoreCase));
 				result.Alt = array.Any((string x) => x.Equals("Alt", StringComparison.OrdinalIgnoreCase));
 				string name = array.Last();
-				// a digit is the key in the row above the letters ("0" is D0); Enum.Parse would read it as a number
-				result.Key = name.Length == 1 && char.IsDigit(name[0]) ? Keys.D0 + (name[0] - '0') : (Keys)Enum.Parse(typeof(Keys), name, ignoreCase: true);
+				Keys symbol;
+				// a digit is the key in the row above the letters ("0" is D0); Enum.Parse would read it as a number.
+				// A symbol is its key on an English keyboard ("]" is OemCloseBrackets).
+				if (name.Length == 1 && char.IsDigit(name[0]))
+					result.Key = Keys.D0 + (name[0] - '0');
+				else if (name.Length == 1 && Symbols.TryGetValue(name[0], out symbol))
+					result.Key = symbol;
+				else
+					result.Key = (Keys)Enum.Parse(typeof(Keys), name, ignoreCase: true);
 			}
 			catch
 			{
@@ -59,7 +66,24 @@ namespace EnrageWestworld.InGame
 
 		public override string ToString()
 		{
-			return (Ctrl ? "Ctrl+" : "") + (Shift ? "Shift+" : "") + (Alt ? "Alt+" : "") + Key;
+			return (Ctrl ? "Ctrl+" : "") + (Shift ? "Shift+" : "") + (Alt ? "Alt+" : "") + Name(Key);
+		}
+
+		private static readonly System.Collections.Generic.Dictionary<char, Keys> Symbols = new System.Collections.Generic.Dictionary<char, Keys>
+		{
+			{ '[', Keys.OemOpenBrackets }, { ']', Keys.OemCloseBrackets }, { '-', Keys.OemMinus }, { ',', Keys.Oemcomma },
+			{ '.', Keys.OemPeriod }, { '/', Keys.OemQuestion }, { '\\', Keys.OemPipe }, { '\'', Keys.OemQuotes }, { '`', Keys.Oemtilde }
+		};
+
+		/// How a key is written in the ini and shown: "0" and "]" rather than D0 and OemCloseBrackets.
+		public static string Name(Keys key)
+		{
+			if (key >= Keys.D0 && key <= Keys.D9)
+				return ((char)('0' + (key - Keys.D0))).ToString();
+			foreach (System.Collections.Generic.KeyValuePair<char, Keys> s in Symbols)
+				if (s.Value == key)
+					return s.Key.ToString();
+			return key.ToString();
 		}
 	}
 }

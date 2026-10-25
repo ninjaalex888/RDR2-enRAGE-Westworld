@@ -113,8 +113,8 @@ namespace EnrageWestworld.InGame
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
             _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F6);
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.F5);
-            _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.D0);
-            _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.G);
+            _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.OemCloseBrackets);
+            _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.Y);
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
         }
