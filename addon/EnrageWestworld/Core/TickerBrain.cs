@@ -24,12 +24,14 @@ namespace EnrageWestworld.Core
         public float Distance;
         public int Handle;          // the game's handle for the person, 0 if none (for a sound as the thought shows)
         public Func<string> Text;   // computed lazily, at most every ThoughtCacheMs per person
+        public bool Beside;         // right next to the player: every other turn, and a new thought every BesideCacheMs
     }
 
     public sealed class TickerBrain
     {
         public int SlotMs = 12000;
         public int ThoughtCacheMs = 90000;
+        public int BesideCacheMs = 30000;
         public int HistorySize = 14;
 
         private readonly List<TickerLine> _fresh = new List<TickerLine>();
@@ -108,6 +110,10 @@ namespace EnrageWestworld.Core
             {
                 if (!newcomer && _fresh.Count > 0 && (Current == null || Current.Kind == "near"))
                     next = TakeFresh();
+                // the person right beside the player gets every other turn
+                NearThought beside = close.FirstOrDefault(n => n.Beside);
+                if (next == null && beside != null && !(Current != null && Current.Kind == "near" && Current.Key == beside.Key))
+                    next = NearLine(beside, now);
                 for (int i = 0; next == null && i < close.Count; i++)
                 {
                     NearThought who = close[(_nearTurn + i) % close.Count];
@@ -171,7 +177,7 @@ namespace EnrageWestworld.Core
                 return null;
             // the same thought again so soon: give the slot to the news instead
             KeyValuePair<int, string> last;
-            if (_shown.TryGetValue(n.Key, out last) && last.Value == line.Text && now - last.Key < ThoughtCacheMs)
+            if (_shown.TryGetValue(n.Key, out last) && last.Value == line.Text && now - last.Key < (n.Beside ? BesideCacheMs : ThoughtCacheMs))
                 return null;
             _shown[n.Key] = new KeyValuePair<int, string>(now, line.Text);
             if (_shown.Count > 200)
@@ -183,7 +189,7 @@ namespace EnrageWestworld.Core
         {
             KeyValuePair<int, string> cached;
             string text = null;
-            if (_thoughts.TryGetValue(n.Key, out cached) && now - cached.Key < ThoughtCacheMs && now >= cached.Key)
+            if (_thoughts.TryGetValue(n.Key, out cached) && now - cached.Key < (n.Beside ? BesideCacheMs : ThoughtCacheMs) && now >= cached.Key)
             {
                 text = cached.Value;
             }

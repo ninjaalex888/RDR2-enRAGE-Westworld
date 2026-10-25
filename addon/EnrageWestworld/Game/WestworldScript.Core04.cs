@@ -17,6 +17,13 @@ namespace EnrageWestworld.InGame
     {
         private readonly TickerBrain _ticker = new TickerBrain();
         private readonly List<NearThought> _near = new List<NearThought>();
+
+        /// Game minutes between a new thought for a counter keeper or a resident: 45, about the 90 real seconds the
+        /// ticker waits before asking again (it was 600, so the same thought came back for 20 minutes).
+        private const long ThoughtEvery = 45;
+
+        /// Closer than this, a person is right beside you: every other ticker turn goes to them (TickerBrain).
+        private const float BesideMetres = 3.5f;
         private readonly Dictionary<string, int> _thoughtSoundAt = new Dictionary<string, int>();
         private readonly Reader _reader = new Reader();
         private readonly Director _director = new Director();
@@ -406,6 +413,46 @@ namespace EnrageWestworld.InGame
             return !_uiOpen;
         }
 
+        /// The day of the week and the year, for what people think about (InnerLife). In the epilogue the clock may
+        /// still say 1899, so John means 1907 either way.
+        private static void ReadClock()
+        {
+            InnerLife.Weekday = CLOCK.GET_CLOCK_DAY_OF_WEEK();
+            int year = CLOCK.GET_CLOCK_YEAR();
+            InnerLife.ClockYear = IsJohn() && year < 1900 ? 1907 : year;
+        }
+
+        /// What the residents near you are living through, for the F7 dump.
+        private string WorriesStatus()
+        {
+            Ped me = Game.Player.Character;
+            long day = _store.LastGameMin > 0 ? _store.LastGameMin / 1440 : -1;
+            List<string> parts = _resBind.Where(kv => ENTITY.DOES_ENTITY_EXIST(kv.Key) && !kv.Value.R.Dead && new Ped(kv.Key).Position.DistanceTo(me.Position) < 40f)
+                .Take(6).Select(kv => kv.Value.R.Name + ": " + InnerLife.WorryStatus(_engine.PersonOfResident(kv.Value.R), day)).ToList();
+            return "weekday " + InnerLife.Weekday + ", year " + InnerLife.ClockYear + "; " + (parts.Count == 0 ? "nobody with a name near" : string.Join("; ", parts));
+        }
+
+        /// Who the ticker counts as near you, nearest first, and what each would think right now, for the F7 dump.
+        /// The number is the ticker's ranking distance (counter keepers +2 m, enRAGE's townsfolk +3, passers-by +10).
+        private string NearStatus()
+        {
+            if (_near.Count == 0)
+                return "nobody (the ticker shows the news)";
+            return string.Join("; ", _near.OrderBy(n => n.Distance).Take(8).Select(n =>
+            {
+                string t;
+                try
+                {
+                    t = n.Text != null ? n.Text() : null;
+                }
+                catch (Exception ex)
+                {
+                    t = "FAILED: " + ex.GetType().Name + ": " + ex.Message;
+                }
+                return n.Name + " (" + (int)n.Distance + "): " + (string.IsNullOrEmpty(t) ? "(nothing)" : t);
+            }));
+        }
+
         private void RefreshNear()
         {
             _near.Clear();
@@ -415,6 +462,7 @@ namespace EnrageWestworld.InGame
             Vector3 pos = me.Position;
             float r = _cfg.TickerNearbyMetres;
             long now = Bridge.Now();
+            ReadClock();
             Ped stranger = null;
             float strangerDist = 99f;
             foreach (Ped ped in World.GetAllPeds())
@@ -445,22 +493,27 @@ namespace EnrageWestworld.InGame
                     if (!rec.IsAlive)
                         continue;
                     Person p = PersonOf(rec);
-                    _near.Add(new NearThought { Key = p.Id, Name = p.Name, Handle = h, Distance = d, Text = () => _engine.TickerThought(p, now) });
+                    _near.Add(new NearThought { Key = p.Id, Name = p.Name, Handle = h, Distance = d, Beside = d < BesideMetres, Text = () => _engine.TickerThought(p, now) });
                     continue;
                 }
+                // right beside you: a new thought every 15 game minutes (30 s), to match the ticker's quicker turn
+                long every = d < BesideMetres ? 15 : ThoughtEvery;
                 Acquaintance a = _bridge.AcquaintanceAt(h);
                 if (a != null && !string.IsNullOrEmpty(a.Name))
                 {
                     Folk f = Snapshot.Of(a);
                     Person fp = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, now);
                     PersonState st = _store.Get(fp);
+                    float fd = d;
                     _near.Add(new NearThought
                     {
                         Key = f.Key,
                         Handle = h,
                         Name = f.Name,
                         Distance = d + 3f,
-                        Text = () => _cfg.WestWorld && st.WakeStage > 0 ? Hosts.Thought(fp, st, _engine.Player, f.Key + now / 180) : Folks.Thought(f, st, _engine.Player, f.Key + now / 180, _cfg.Romance)
+                        Beside = d < BesideMetres,
+                        Text = () => _cfg.WestWorld && st.WakeStage > 0 ? Hosts.Thought(fp, st, _engine.Player, f.Key + now / 180)
+                            : _engine.FolkThought(f, fp, st, f.Key + "|" + now / every, CLOCK.GET_CLOCK_HOURS(), Look(me, fd))
                     });
                     continue;
                 }
@@ -479,11 +532,12 @@ namespace EnrageWestworld.InGame
                             Handle = h,
                             Name = holder.Name + ", " + pk.Role,
                             Distance = d + 2f,
+                            Beside = d < BesideMetres,
                             Text = () =>
                             {
                                 PersonState hs = _store.Find(holder.Id);
                                 return _cfg.WestWorld && hs != null && hs.WakeStage > 0 ? Hosts.Thought(_engine.PersonOfResident(holder), hs, _engine.Player, holder.Id + "|" + now / 180)
-                                    : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / 600);
+                                    : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / every, Look(me, near));
                             }
                         });
                     }
@@ -495,8 +549,8 @@ namespace EnrageWestworld.InGame
                     strangerDist = d;
                 }
             }
-            // nobody with a name close by: a passing stranger's thought, now and then
-            if (_near.Count == 0 && stranger != null)
+            // the nearest ordinary person gets a turn too (behind anyone with a name, unless right beside you)
+            if (stranger != null)
             {
                 bool woman = !PED.IS_PED_MALE(stranger.Handle);
                 string label = Grammar.UpperFirst(Director.Kind(stranger, woman));
@@ -509,22 +563,33 @@ namespace EnrageWestworld.InGame
                     Person rp = _engine.PersonOfResident(res);
                     key = res.Id;
                     label = res.Name;
+                    float sd = strangerDist;
+                    long every = sd < BesideMetres ? 15 : ThoughtEvery;
                     _near.Add(new NearThought
                     {
                         Key = key,
                         Name = label,
                         Handle = stranger.Handle,
                         Distance = strangerDist + 10f,
+                        Beside = sd < BesideMetres,
                         Text = () =>
                         {
                             PersonState rst = _store.Find(res.Id);
-                            return _cfg.WestWorld && rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180) : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / 600, new InnerLife.PlayerLook { Near = strangerDist < 10f, Armed = WEAPON.IS_PED_ARMED(me.Handle, 4), Mounted = PED.IS_PED_ON_MOUNT(me.Handle) });
+                            return _cfg.WestWorld && rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180) : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / every, Look(me, sd));
                         }
                     });
                     return;
                 }
-                _near.Add(new NearThought { Key = key, Name = label, Handle = stranger.Handle, Distance = strangerDist + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
+                // someone who can't be a resident: only when nobody else is near, as before
+                if (_near.Count == 0)
+                    _near.Add(new NearThought { Key = key, Name = label, Handle = stranger.Handle, Distance = strangerDist + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
             }
+        }
+
+        /// What someone this far off can see of the player, for their thought about him.
+        private static InnerLife.PlayerLook Look(Ped me, float dist)
+        {
+            return new InnerLife.PlayerLook { Near = dist < 10f, Armed = WEAPON.IS_PED_ARMED(me.Handle, 4), Mounted = PED.IS_PED_ON_MOUNT(me.Handle) };
         }
 
         /// A person's thought just came up on the ticker: if they're within a few steps, a small wordless sound (a breath,

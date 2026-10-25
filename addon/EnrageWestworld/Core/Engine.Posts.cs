@@ -127,6 +127,16 @@ namespace EnrageWestworld.Core
         {
             Post post = PostOf(r);
             PersonState st = Store.Find(r.Id);
+            // the same person at the same counter every visit: the worry they're living through shows, day by day
+            // (not while new to the counter or freshly shot down: those thoughts come first)
+            bool fresh = r.TookOverAt > 0 && Store.LastGameMin - r.TookOverAt < 3 * 1440;
+            bool hurt = r.Wounds > 0 && Store.LastGameMin - r.WoundedAt < 3 * 1440;
+            if (!fresh && !hurt && Store.LastGameMin > 0 && Voice.Chance(seed + "pw", 25))
+            {
+                string w = InnerLife.WorryThought(PersonOfResident(r), Store.LastGameMin / 1440, seed, st != null ? st.Musings : null);
+                if (w != null)
+                    return w;
+            }
             string t = post != null ? Posts.Thought(r, post, Posts.Of(post.Model), near, st != null ? st.Sightings : 0, Store.LastGameMin, seed) : null;
             return t ?? ResidentThought(PersonOfResident(r), hour, seed, look);
         }

@@ -91,8 +91,19 @@ namespace EnrageWestworld.Core
 
         public static string NameFor(bool woman, string seed)
         {
+            return FirstName(woman, seed) + " " + Surname(seed);
+        }
+
+        /// A first name or a surname alone, for the people in someone's life (a child, a creditor, a sweetheart).
+        public static string FirstName(bool woman, string seed)
+        {
             string[] first = woman ? WomenFirst : MenFirst;
-            return first[Voice.Hash(seed + "f") % first.Length] + " " + Surnames[Voice.Hash(seed + "s") % Surnames.Length];
+            return first[Voice.Hash(seed + "f") % first.Length];
+        }
+
+        public static string Surname(string seed)
+        {
+            return Surnames[Voice.Hash(seed + "s") % Surnames.Length];
         }
 
         /// A new resident for an ordinary person. The same seed always gives the same person.

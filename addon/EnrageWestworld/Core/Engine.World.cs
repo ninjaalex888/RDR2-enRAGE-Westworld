@@ -952,7 +952,36 @@ namespace EnrageWestworld.Core
         public string ResidentThought(Person p, int hour, string seed, InnerLife.PlayerLook look = null)
         {
             PersonState st = Store.Find(p.Id);
-            return StrangerThought(seed, p.Home, p.Woman, false) ?? InnerLife.Thought(p, hour, seed, st != null ? st.Musings : null, look);
+            // the world feeling unreal keeps its full RealityChance; town rumours and the player's fame get a third of
+            // the rest, so their own life (InnerLife) has most of it
+            bool reality = Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance);
+            string big = reality || Voice.Chance(seed + "talk", 35) ? StrangerThought(seed, p.Home, p.Woman, false) : null;
+            return big ?? InnerLife.Thought(p, hour, seed, st != null ? st.Musings : null, look, ThoughtDay(p.Home));
+        }
+
+        /// One of enRAGE's townsfolk: what they feel about the player, when it's strong, most of the time; else, and
+        /// now and then anyway, their own life (InnerLife: the worry they're going through, the day, their town).
+        public string FolkThought(Folk f, Person p, PersonState st, string seed, int hour, InnerLife.PlayerLook look)
+        {
+            string about = Folks.Thought(f, st, Player, seed, Cfg.Romance);
+            bool strong = about != null && (st.Heart >= 2 || st.Heart < 0 || f.FavourNotes.Count > 0 || f.Witnessed.Count > 0 || f.Grudge >= 40 || f.Fear >= 40);
+            if (about != null && Voice.Chance(seed + "fa", strong ? 70 : 30))
+                return about;
+            if (p.Personality == null)
+                p.Personality = f.Temper;
+            return InnerLife.Thought(p, hour, seed, st.Musings, look, ThoughtDay(p.Home)) ?? about;
+        }
+
+        /// The game day, for the worry a life is going through, and what the player did in this town in the last
+        /// three days (from two hours after, when word has got round), newest first.
+        public InnerLife.Context ThoughtDay(string town)
+        {
+            long now = Store.LastGameMin;
+            InnerLife.Context c = new InnerLife.Context { GameDay = now > 0 ? now / 1440 : -1 };
+            if (town != null)
+                c.TownDeeds = Store.Deeds.Where(d => d.Town == town && InnerLife.TalkedAbout.Contains(d.Kind) && now - d.At >= 120 && now - d.At < 3 * 1440)
+                                         .OrderByDescending(d => d.At).Take(3).ToList();
+            return c;
         }
 
         private static readonly string[] EverydayMen =

@@ -495,6 +495,8 @@ namespace EnrageWestworld.Core
                     r = r == "him" ? "his" : r + "'s";
                 else if (w == "yourself")
                     r = "himself";
+                else if (r == "him" && Regex.IsMatch(spoken.Substring(m.Index + m.Length), @"^\s+(should|could|would|will|can|did|was|is|has|had|must|might|may)\b"))
+                    r = "he";   // the subject: "thought you should know" is "thought he should know", not "him should"
                 bool sentenceStart = m.Index == 0 || Regex.IsMatch(spoken.Substring(0, m.Index), @"[.!?]\s*$");
                 return sentenceStart ? Grammar.UpperFirst(r) : r;
             });
