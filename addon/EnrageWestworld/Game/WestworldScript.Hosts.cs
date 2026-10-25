@@ -341,7 +341,7 @@ namespace EnrageWestworld.InGame
             int bestScore = -1;
             float bestD = 0f;
             string bestWhy = null;
-            int there = 0, close = 0, enrage = 0, busy = 0;
+            int there = 0, close = 0, enrage = 0, busy = 0, folkHeld = 0, folkBusy = 0;
             foreach (Ped ped in World.GetAllPeds())
             {
                 int h = ped.Handle;
@@ -365,6 +365,14 @@ namespace EnrageWestworld.InGame
                     Natives.InteriorType(h) != 0 || _director.Involves(h) || _wakeActs.Any(w => w.Handle == h))
                 {
                     busy++;
+                    if (_bridge.AcquaintanceAt(h) != null)
+                    {
+                        // a townsperson who knows you, passed over: the log says why (the regulars enRAGE puts in town are its own)
+                        if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h))
+                            folkHeld++;
+                        else
+                            folkBusy++;
+                    }
                     continue;
                 }
                 Folk folk = null;
@@ -392,9 +400,11 @@ namespace EnrageWestworld.InGame
                     bestWhy = (folk != null ? folk.Name : res != null ? res.Name : "a passer-by") + ": " + StalkerPick.Why(folk, st) + ", score " + score;
                 }
             }
-            why = best != null ? bestWhy
+            string skipped = folkHeld + folkBusy == 0 ? "" : "; passed over " + (folkHeld + folkBusy) + " of enRAGE's townsfolk who know you (" +
+                             (folkHeld > 0 ? folkHeld + " held by enRAGE" : "") + (folkHeld > 0 && folkBusy > 0 ? ", " : "") + (folkBusy > 0 ? folkBusy + " busy, mounted or indoors" : "") + ")";
+            why = best != null ? bestWhy + skipped
                 : there == 0 ? "nobody within " + (int)max + " m"
-                : there + " within " + (int)max + " m: " + close + " too close, " + enrage + " of enRAGE's own, " + busy + " busy, indoors, lawmen or children";
+                : there + " within " + (int)max + " m: " + close + " too close, " + enrage + " of enRAGE's own, " + busy + " busy, indoors, lawmen or children" + skipped;
             return best;
         }
 
