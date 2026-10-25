@@ -156,6 +156,23 @@ namespace EnrageWestworld.Core
             return r;
         }
 
+        /// A body with a post's model is lying there: does it mean the person keeping the post now has died?
+        /// bodyWas: who that body was bound to this session (null if nobody knew it); livingOneThere: someone of the
+        /// model is alive right now (one counter, one living person at a time). An old body (left after a reload, or
+        /// still lying there when the game staffed the counter again) never takes the successor with it.
+        public static bool BodyVacates(Resident holder, Post post, string bodyWas, bool livingOneThere, long now)
+        {
+            if (holder == null)
+                return true;   // killed before anyone knew their name
+            if (holder.Dead)
+                return false;  // already noted
+            if (bodyWas != null)
+                return bodyWas == holder.Id;
+            if (livingOneThere)
+                return false;
+            return !(holder.TookOverAt > post.VacantAt && now - holder.TookOverAt < 1440);
+        }
+
         private static string Trade(PostKind k)
         {
             return k.Role.StartsWith("the ") ? k.Role.Substring(4) : k.Role;

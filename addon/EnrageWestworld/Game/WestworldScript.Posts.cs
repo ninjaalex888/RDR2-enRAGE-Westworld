@@ -17,6 +17,7 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<uint> _outfitsLogged = new HashSet<uint>();
         private readonly Dictionary<int, int> _dressDue = new Dictionary<int, int>();   // handle -> outfit preset to put on unseen
         private readonly HashSet<int> _postDeathsSeen = new HashSet<int>();
+        private readonly Dictionary<int, string> _bodyWas = new Dictionary<int, string>();   // handle -> the holder it was bound to, this session
         private int _nextPostTick, _nextPostDeaths;
         private Action _aPosts;
 
@@ -46,6 +47,7 @@ namespace EnrageWestworld.InGame
                 return b.R;
             Resident r = _engine.HolderOf(kind, model, Bridge.Now());
             _resBind[h] = new ResBind { R = r, Model = model };
+            _bodyWas[h] = r.Id;   // kept after the binding goes, so its body is known for whose it was
             Post post = _engine.PostOf(r);
             int presets = OutfitCount(ped, kind);
             if (post != null && presets > 1)
@@ -102,10 +104,23 @@ namespace EnrageWestworld.InGame
                 if (k == null)
                     continue;
                 _postDeathsSeen.Add(h);
+                uint model = ENTITY.GET_ENTITY_MODEL(h);
+                Post post = _engine.PostFor(k);
+                Resident holder = post.HolderId != null ? _store.FindResident(post.HolderId) : null;
+                string was;
+                _bodyWas.TryGetValue(h, out was);
+                bool living = World.GetAllPeds().Any(x => x.Handle != h && !ENTITY.IS_ENTITY_DEAD(x.Handle) && ENTITY.GET_ENTITY_MODEL(x.Handle) == model);
+                if (!Posts.BodyVacates(holder, post, was, living, Bridge.Now()))
+                {
+                    Log.Detail("POST " + post.Town + ", " + post.Role + ": an old body (" + (was ?? "nobody we knew") + "), not " + (holder != null ? holder.Name : "anyone") + "'s");
+                    continue;
+                }
                 bool byPlayer = PED.GET_PED_SOURCE_OF_DEATH(h) == me.Handle;
-                _engine.VacatePost(k, ENTITY.GET_ENTITY_MODEL(h), byPlayer, CountPeopleNear(p.Position, h, 35f), Bridge.Now());
+                _engine.VacatePost(k, model, byPlayer, CountPeopleNear(p.Position, h, 35f), Bridge.Now());
             }
             _postDeathsSeen.RemoveWhere(h => !ENTITY.DOES_ENTITY_EXIST(h));
+            foreach (int h in _bodyWas.Keys.Where(x => !ENTITY.DOES_ENTITY_EXIST(x)).ToList())
+                _bodyWas.Remove(h);
         }
 
         /// One line for the F7 dump: who keeps which counter, and who took one over.
