@@ -29,8 +29,10 @@ NEW IN 0.6.0
   they do when you stand still (StalkerWhenStill: circle you close, watch you from where they are,
   run straight at you and stop a few steps short, do odd things, or a mix - they never attack).
 - A new settings panel on Alt+F11, with larger text: RealNPCs, West World, Stalkers and every enRAGE
-  setting in one place. Up/Down choose, Left/Right change (Shift: ten at a time), Q/E turn the
-  page, Tab jumps between RealNPCs and enRAGE, Enter sets a key, Backspace closes. Greyed-out
+  setting in one place. Every key, RealNPCs' and enRAGE's, is on one Hotkeys page, and all of
+  enRAGE's settings are on one enRAGE page, section by section. Up/Down choose (Shift: the next
+  section), Left/Right change (Shift: ten at a time), Q/E turn the page, Tab jumps between
+  RealNPCs and enRAGE, Enter sets a key, Backspace closes. Greyed-out
   settings need their master switch on first. Changes apply at once. NemesisMod.ini is backed up
   to Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\backup before the first change.
   ReplaceEnrageSettings = false gives Alt+F11 back to enRAGE's own panel; Ctrl+F7 (SettingsKey)

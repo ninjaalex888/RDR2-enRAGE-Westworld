@@ -1,11 +1,12 @@
 // The RealNPCs settings panel: every RealNPCs setting and every enRAGE setting on one larger, easier-to-read panel.
-// Pages: West World, Stalkers and the rest of RealNPCs first, then each section of NemesisMod.ini. A setting whose
-// master switch is off is greyed out and can't be changed until the switch is on. Changes are written to the ini
-// at once (only that one value; see IniDoc) and take effect: RealNPCs reloads its settings, and enRAGE is asked to
-// reload its own. If enRAGE corrects a value it doesn't accept, the panel shows what it kept. NemesisMod.ini is
+// Pages: West World, Stalkers and the rest of RealNPCs first, then Hotkeys (every key of RealNPCs and of enRAGE, in
+// one place), then enRAGE (all of NemesisMod.ini on one page, section by section under small headings). A setting
+// whose master switch is off is greyed out and can't be changed until the switch is on. Changes are written to the
+// ini at once (only that one value; see IniDoc) and take effect: RealNPCs reloads its settings, and enRAGE is asked
+// to reload its own. If enRAGE corrects a value it doesn't accept, the panel shows what it kept. NemesisMod.ini is
 // copied to RealNPCs\backup once per session before the first change.
-// Keys: Up / Down choose, Left / Right change (Shift: ten steps), Q / E or Page Up / Down turn the page, Tab jumps
-// between RealNPCs and enRAGE, Enter sets a key, Backspace or Escape closes. Keyboard only for now.
+// Keys: Up / Down choose (Shift: the next section), Left / Right change (Shift: ten steps), Q / E or Page Up / Down
+// turn the page, Tab jumps between RealNPCs and enRAGE, Enter sets a key, Backspace or Escape closes.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -20,13 +21,19 @@ namespace EnrageWestworld.InGame
 {
     internal sealed class SettingsPanel
     {
+        private sealed class Row
+        {
+            public IniEntry E;        // null for a section heading
+            public string Heading;
+            public bool Theirs;       // a line of NemesisMod.ini, not of RealNPCs.ini
+        }
+
         private sealed class Page
         {
             public string Title;
             public bool Enrage;
-            public string Section;
             public string Message;   // a page with nothing to change, only this to say
-            public List<IniEntry> Rows = new List<IniEntry>();
+            public List<Row> Rows = new List<Row>();
         }
 
         // the pad's menu buttons (used only while a pad is the last thing touched, so keys don't count twice)
@@ -44,7 +51,7 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
         {
             { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
-            { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Voices", "Voices" }, { "Pacing", "Pacing" }, { "Output", "Keys and notices" }
+            { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Voices", "Voices" }, { "Pacing", "Pacing" }, { "Output", "Notices and the panel" }
         };
 
         // a setting that only matters while another is on
@@ -72,18 +79,23 @@ namespace EnrageWestworld.InGame
 
         private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "TickerNextKey", "StalkerKey" };
 
+        // the order RealNPCs' keys are listed in on the Hotkeys page
+        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "WakeKey", "StalkerKey", "TickerNextKey", "TestKey", "SettingsKey" };
+
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
             { "TickerY", "Ticker height on screen" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMetres", "How far off he does odd things" },
-            { "StalkerKey", "Make a stalker now (key)" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
+            { "StalkerKey", "Make a stalker now" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
             { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres)" },
             { "StalkerStrangers", "A stranger if nobody near" },
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
             { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
-            { "SelfDefenceNoBounty", "No bounty for self-defence" }
+            { "SelfDefenceNoBounty", "No bounty for self-defence" },
+            { "ReaderKey", "Letters, diaries and clippings" }, { "FlirtKey", "Flirt" }, { "WakeKey", "Wake the person you face" },
+            { "TickerNextKey", "Next line on the ticker" }, { "TestKey", "Status line and log dump" }, { "SettingsKey", "Open this panel (as well as Alt+F11)" }
         };
 
         private readonly Func<Bridge> _bridgeOf;
@@ -97,9 +109,8 @@ namespace EnrageWestworld.InGame
         private bool _backedUp;
         private int _page, _row, _scroll;
         private string _note = string.Empty;
-        private IniEntry _capture;
-        private Page _pendingPage;
-        private IniEntry _pendingEntry;
+        private Row _capture;
+        private Row _pendingRow;
         private string _pendingValue;
         private int _pendingAt;
 
@@ -125,7 +136,7 @@ namespace EnrageWestworld.InGame
             Draw.FrameBudget = PanelBudget;
             Reload();
             _page = Math.Max(0, Math.Min(_page, _pages.Count - 1));
-            _row = 0;
+            _row = _pages.Count > 0 ? Selectable(_pages[_page], 0) : 0;
             _scroll = 0;
         }
 
@@ -141,42 +152,113 @@ namespace EnrageWestworld.InGame
         {
             string keepTitle = _pages.Count > 0 && _page < _pages.Count ? _pages[_page].Title : null;
             _pages.Clear();
+            Page keys = new Page { Title = "Hotkeys" };
             _ours = IniDoc.Read(_oursPath, true);
             if (_ours.Error == null)
             {
-                foreach (string name in OurOrder)
+                IEnumerable<IniSection> ordered = OurOrder.Select(n => _ours.Sections.FirstOrDefault(x => x.Name.Equals(n, StringComparison.OrdinalIgnoreCase))).Where(s => s != null)
+                    .Concat(_ours.Sections.Where(x => x.Name.Length > 0 && !OurOrder.Contains(x.Name, StringComparer.OrdinalIgnoreCase)));
+                foreach (IniSection s in ordered)
                 {
-                    IniSection s = _ours.Sections.FirstOrDefault(x => x.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-                    if (s != null && s.Entries.Count > 0)
-                        _pages.Add(new Page { Title = OurTitles.ContainsKey(name) ? OurTitles[name] : name, Section = s.Name, Rows = s.Entries.ToList() });
+                    // the keys are all on the Hotkeys page instead
+                    List<Row> rows = s.Entries.Where(e => !OurKeys.Contains(e.Key)).Select(e => new Row { E = e }).ToList();
+                    if (rows.Count > 0)
+                        _pages.Add(new Page { Title = OurTitles.ContainsKey(s.Name) ? OurTitles[s.Name] : s.Name, Rows = rows });
                 }
-                foreach (IniSection s in _ours.Sections.Where(x => x.Name.Length > 0 && !OurOrder.Contains(x.Name, StringComparer.OrdinalIgnoreCase) && x.Entries.Count > 0))
-                    _pages.Add(new Page { Title = s.Name, Section = s.Name, Rows = s.Entries.ToList() });
+                List<IniEntry> ourKeys = KeyOrder.Select(k => _ours.FindKey(k)).Where(e => e != null)
+                    .Concat(_ours.Sections.SelectMany(s => s.Entries).Where(e => OurKeys.Contains(e.Key) && !KeyOrder.Contains(e.Key, StringComparer.OrdinalIgnoreCase)))
+                    .ToList();
+                if (ourKeys.Count > 0)
+                {
+                    keys.Rows.Add(new Row { Heading = "RealNPCs" });
+                    keys.Rows.AddRange(ourKeys.Select(e => new Row { E = e }));
+                }
             }
             _theirs = !string.IsNullOrEmpty(_theirsPath) && File.Exists(_theirsPath) ? IniDoc.Read(_theirsPath, false) : null;
-            // enRAGE's pages only when we know which of its entries are its own bookkeeping, and can ask it to reload
+            // enRAGE's settings only when we know which of its entries are its own bookkeeping, and can ask it to reload
             string why = _bridge == null ? "enRAGE hasn't been found yet (it takes a few seconds after loading a save)."
                 : !_bridge.EnrageHidesKnown || !_bridge.CanReloadEnrage ? "this version of enRAGE isn't laid out the way RealNPCs expects (the log says what was missing). Its own panel still works: set ReplaceEnrageSettings to false."
                 : _theirs == null || _theirs.Error != null ? "NemesisMod.ini couldn't be read" + (_theirs != null && _theirs.Error != null ? ": " + _theirs.Error : ".") : null;
+            Page enrage = new Page { Title = "enRAGE", Enrage = true };
             if (why != null)
-                _pages.Add(new Page { Title = "enRAGE", Enrage = true, Message = "enRAGE's settings can't be shown right now: " + why });
+                enrage.Message = "enRAGE's settings can't be shown right now: " + why;
             else
             {
+                // all of NemesisMod.ini on one page, each section under its own heading; its keys on the Hotkeys page
                 foreach (IniSection s in _theirs.Sections.Where(x => x.Name.Length > 0))
                 {
-                    List<IniEntry> rows = s.Entries.Where(e => _bridge == null || !_bridge.EnrageHides(s.Name, e.Key)).ToList();
-                    if (rows.Count > 0)
-                        _pages.Add(new Page { Title = "enRAGE: " + s.Name, Enrage = true, Section = s.Name, Rows = rows });
+                    List<IniEntry> entries = s.Entries.Where(e => _bridge == null || !_bridge.EnrageHides(s.Name, e.Key)).ToList();
+                    if (entries.Count == 0)
+                        continue;
+                    bool isKeys = s.Name.Equals("Keys", StringComparison.OrdinalIgnoreCase);
+                    Page into = isKeys ? keys : enrage;
+                    into.Rows.Add(new Row { Heading = isKeys ? "enRAGE" : s.Name });
+                    into.Rows.AddRange(entries.Select(e => new Row { E = e, Theirs = true }));
                 }
             }
+            if (keys.Rows.Count > 0)
+                _pages.Add(keys);
+            _pages.Add(enrage);
             if (keepTitle != null)
             {
                 int i = _pages.FindIndex(p => p.Title == keepTitle);
                 if (i >= 0)
                     _page = i;
             }
+            _page = Math.Max(0, Math.Min(_page, _pages.Count - 1));
             if (_pages.Count > 0)
-                _row = Math.Max(0, Math.Min(_row, _pages[_page].Rows.Count - 1));
+                _row = Selectable(_pages[_page], _row);
+        }
+
+        // ---- moving about ------------------------------------------------------------------------------
+
+        /// The nearest row at or after i that can be chosen (headings can't), wrapping round.
+        private static int Selectable(Page page, int i)
+        {
+            int n = page.Rows.Count;
+            if (n == 0)
+                return 0;
+            i = Math.Max(0, Math.Min(i, n - 1));
+            for (int k = 0; k < n; k++)
+            {
+                int j = (i + k) % n;
+                if (page.Rows[j].E != null)
+                    return j;
+            }
+            return 0;
+        }
+
+        /// The next row that can be chosen, up or down, wrapping round.
+        private static int Step(Page page, int i, int dir)
+        {
+            int n = page.Rows.Count;
+            for (int k = 1; k <= n; k++)
+            {
+                int j = ((i + dir * k) % n + n) % n;
+                if (page.Rows[j].E != null)
+                    return j;
+            }
+            return i;
+        }
+
+        /// The first setting of the next section (dir 1) or of this one, then the one before (dir -1), wrapping round.
+        private static int Section(Page page, int i, int dir)
+        {
+            List<int> heads = Enumerable.Range(0, page.Rows.Count).Where(j => page.Rows[j].Heading != null).ToList();
+            if (heads.Count == 0)
+                return dir > 0 ? Selectable(page, page.Rows.Count - 1) : Selectable(page, 0);
+            int cur = heads.FindLastIndex(h => h < i);   // the section this row is in (-1: before the first heading)
+            int target;
+            if (dir > 0)
+            {
+                int nx = heads.FindIndex(h => h > i);
+                target = nx >= 0 ? heads[nx] : heads[0];
+            }
+            else if (cur >= 0 && i > Selectable(page, heads[cur] + 1))
+                target = heads[cur];   // back to the top of this section first
+            else
+                target = heads[((cur < 0 ? 0 : cur) - 1 + heads.Count) % heads.Count];
+            return Selectable(page, target + 1);
         }
 
         // ---- keys -------------------------------------------------------------------------------------
@@ -201,17 +283,18 @@ namespace EnrageWestworld.InGame
             if (!changing)
                 Flush();   // moving on: a value still settling is written first
             Page page = _pages[_page];
-            if (page.Rows.Count == 0 && key != Keys.Q && key != Keys.E && key != Keys.PageUp && key != Keys.PageDown && key != Keys.Tab)
+            bool any = page.Rows.Any(r => r.E != null);
+            if (!any && key != Keys.Q && key != Keys.E && key != Keys.PageUp && key != Keys.PageDown && key != Keys.Tab)
                 return;
             switch (key)
             {
                 case Keys.Up:
                 case Keys.W:
-                    _row = (_row + page.Rows.Count - 1) % page.Rows.Count;
+                    _row = shift ? Section(page, _row, -1) : Step(page, _row, -1);
                     break;
                 case Keys.Down:
                 case Keys.S:
-                    _row = (_row + 1) % page.Rows.Count;
+                    _row = shift ? Section(page, _row, 1) : Step(page, _row, 1);
                     break;
                 case Keys.Q:
                 case Keys.PageUp:
@@ -230,14 +313,14 @@ namespace EnrageWestworld.InGame
                 }
                 case Keys.Left:
                 case Keys.A:
-                    Change(page, page.Rows[_row], -1, shift);
+                    Change(page.Rows[_row], -1, shift);
                     break;
                 case Keys.Right:
                 case Keys.D:
-                    Change(page, page.Rows[_row], 1, shift);
+                    Change(page.Rows[_row], 1, shift);
                     break;
                 case Keys.Enter:
-                    Enter(page, page.Rows[_row]);
+                    Enter(page.Rows[_row]);
                     break;
             }
         }
@@ -245,26 +328,29 @@ namespace EnrageWestworld.InGame
         private void TurnTo(int page)
         {
             _page = page;
-            _row = 0;
+            _row = Selectable(_pages[_page], 0);
             _scroll = 0;
             _note = string.Empty;
         }
 
-        private void Enter(Page page, IniEntry e)
+        private void Enter(Row r)
         {
-            string off = OffBecause(page, e);
+            IniEntry e = r.E;
+            if (e == null)
+                return;
+            string off = OffBecause(r);
             if (off != null)
             {
                 _note = off;
                 return;
             }
-            if (!page.Enrage && OurKeys.Contains(e.Key))
+            if (!r.Theirs && OurKeys.Contains(e.Key))
             {
-                _capture = e;
+                _capture = r;
                 _note = "Waiting for a key: whatever you press next becomes " + Label(e.Key) + " (Ctrl, Shift or Alt with it is fine). Escape keeps " + e.Value + ".";
                 return;
             }
-            if (page.Enrage && _bridge != null && _bridge.EnrageRebinds(page.Section, e.Key))
+            if (r.Theirs && _bridge != null && _bridge.EnrageRebinds(e.Section, e.Key))
             {
                 // enRAGE checks its keys against each other itself: let it
                 Close();
@@ -279,15 +365,15 @@ namespace EnrageWestworld.InGame
             if (key == Keys.ShiftKey || key == Keys.ControlKey || key == Keys.Menu || key == Keys.LShiftKey || key == Keys.RShiftKey ||
                 key == Keys.LControlKey || key == Keys.RControlKey || key == Keys.LMenu || key == Keys.RMenu)
                 return;
-            IniEntry e = _capture;
+            Row r = _capture;
             _capture = null;
             if (key == Keys.Escape || key == Keys.Back)
             {
-                _note = Label(e.Key) + " stays " + e.Value + ".";
+                _note = Label(r.E.Key) + " stays " + r.E.Value + ".";
                 return;
             }
             string spec = (ctrl ? "Ctrl+" : string.Empty) + (shift ? "Shift+" : string.Empty) + (alt ? "Alt+" : string.Empty) + KeySpec.Name(key);
-            Write(_pages[_page], e, spec);
+            Write(r, spec);
             // enRAGE hears every key too: say so if this one is also one of its own
             IniSection keys = _theirs != null ? _theirs.Sections.FirstOrDefault(s => s.Name == "Keys") : null;
             IniEntry same = keys != null && !ctrl && !shift && !alt ? keys.Entries.FirstOrDefault(k => k.Value.Equals(key.ToString(), StringComparison.OrdinalIgnoreCase)) : null;
@@ -295,15 +381,18 @@ namespace EnrageWestworld.InGame
                 _note += ". Careful: enRAGE uses " + key + " too (" + Label(same.Key) + "), so both will happen.";
         }
 
-        private void Change(Page page, IniEntry e, int dir, bool big)
+        private void Change(Row r, int dir, bool big)
         {
-            string off = OffBecause(page, e);
+            IniEntry e = r.E;
+            if (e == null)
+                return;
+            string off = OffBecause(r);
             if (off != null)
             {
                 _note = off;
                 return;
             }
-            bool key = (!page.Enrage && OurKeys.Contains(e.Key)) || (page.Enrage && _bridge != null && _bridge.EnrageRebinds(page.Section, e.Key));
+            bool key = (!r.Theirs && OurKeys.Contains(e.Key)) || (r.Theirs && _bridge != null && _bridge.EnrageRebinds(e.Section, e.Key));
             if (key)
             {
                 _note = "Press Enter to set this key.";   // a key like 0 must not be stepped like a number
@@ -311,7 +400,7 @@ namespace EnrageWestworld.InGame
             }
             string next;
             string[] choice;
-            if (!page.Enrage && Choices.TryGetValue(e.Key, out choice))
+            if (!r.Theirs && Choices.TryGetValue(e.Key, out choice))
             {
                 int i = Array.FindIndex(choice, c => c.Equals(e.Value, StringComparison.OrdinalIgnoreCase));
                 next = choice[((i < 0 ? 0 : i) + dir + choice.Length) % choice.Length];
@@ -320,56 +409,54 @@ namespace EnrageWestworld.InGame
                 next = IniDoc.Step(e.Value, dir, big);
             if (next == null)
             {
-                _note = Label(e.Key) + " is text: type it in " + (page.Enrage ? "NemesisMod.ini" : "RealNPCs.ini") + ".";
+                _note = Label(e.Key) + " is text: type it in " + (r.Theirs ? "NemesisMod.ini" : "RealNPCs.ini") + ".";
                 return;
             }
-            Stage(page, e, next);
+            Stage(r, next);
         }
 
         // ---- writing ----------------------------------------------------------------------------------------
 
         /// Shows the new value at once; it is written when it settles (no change for a moment), or on moving on.
-        private void Stage(Page page, IniEntry e, string value)
+        private void Stage(Row r, string value)
         {
-            if (_pendingEntry != null && _pendingEntry != e)
+            if (_pendingRow != null && _pendingRow.E != r.E)
                 Flush();
-            IniDoc doc = page.Enrage ? _theirs : _ours;
-            if (doc == null || !doc.Set(e, value))
+            IniDoc doc = r.Theirs ? _theirs : _ours;
+            if (doc == null || !doc.Set(r.E, value))
                 return;
-            _pendingPage = page;
-            _pendingEntry = e;
+            _pendingRow = r;
             _pendingValue = value;
             _pendingAt = Environment.TickCount;
-            _note = Label(e.Key) + " = " + value;
+            _note = Label(r.E.Key) + " = " + value;
         }
 
         /// Writes the value waiting to be written, if any.
         public void Flush()
         {
-            if (_pendingEntry == null)
+            if (_pendingRow == null)
                 return;
-            Page page = _pendingPage;
-            IniEntry e = _pendingEntry;
+            Row r = _pendingRow;
             string value = _pendingValue;
-            _pendingPage = null;
-            _pendingEntry = null;
+            _pendingRow = null;
             _pendingValue = null;
-            Write(page, e, value);
+            Write(r, value);
         }
 
         /// Called every frame: writes a value once it has settled.
         public void Tick()
         {
-            if (_pendingEntry != null && unchecked(Environment.TickCount - _pendingAt) >= WriteAfterMs)
+            if (_pendingRow != null && unchecked(Environment.TickCount - _pendingAt) >= WriteAfterMs)
                 Flush();
         }
 
-        private void Write(Page page, IniEntry e, string value)
+        private void Write(Row r, string value)
         {
-            IniDoc doc = page.Enrage ? _theirs : _ours;
-            if (doc == null)
+            IniEntry e = r.E;
+            IniDoc doc = r.Theirs ? _theirs : _ours;
+            if (doc == null || e == null)
                 return;
-            if (page.Enrage && !BackUp())
+            if (r.Theirs && !BackUp())
             {
                 Reload();   // nothing was written: show the file as it is
                 return;
@@ -387,15 +474,15 @@ namespace EnrageWestworld.InGame
                 return;
             }
             string kept;
-            if (page.Enrage)
+            if (r.Theirs)
             {
                 bool reloaded = _bridge != null && _bridge.ReloadEnrageSettings();
                 Reload();
-                IniEntry now = _theirs != null ? _theirs.Find(page.Section, e.Key) : null;
+                IniEntry now = _theirs != null ? _theirs.Find(e.Section, e.Key) : null;
                 kept = now != null ? now.Value : value;
                 _note = !reloaded ? Label(e.Key) + " = " + value + " (saved; enRAGE picks it up when it next reads its settings)"
                     : kept == value ? Label(e.Key) + " = " + value : Label(e.Key) + ": enRAGE kept " + kept;
-                Log.Write("SETTINGS enRAGE [" + page.Section + "] " + e.Key + " = " + kept);
+                Log.Write("SETTINGS enRAGE [" + e.Section + "] " + e.Key + " = " + kept);
                 return;
             }
             kept = _applyOurs(e.Key);
@@ -410,7 +497,7 @@ namespace EnrageWestworld.InGame
             else
                 _note = Label(e.Key) + " = " + value;
             Reload();
-            Log.Write("SETTINGS RealNPCs [" + page.Section + "] " + e.Key + " = " + (kept ?? value));
+            Log.Write("SETTINGS RealNPCs [" + e.Section + "] " + e.Key + " = " + (kept ?? value));
         }
 
         /// One copy of NemesisMod.ini per session, before the first change.
@@ -437,18 +524,18 @@ namespace EnrageWestworld.InGame
         // ---- what depends on what ----------------------------------------------------------------------
 
         /// Why this setting can't be changed right now (its switch is off), or null.
-        private string OffBecause(Page page, IniEntry e)
+        private string OffBecause(Row r)
         {
-            if (page.Enrage || _ours == null)
+            if (r == null || r.E == null || r.Theirs || _ours == null)
                 return null;
-            string parent = Parent(page.Section, e.Key);
+            string parent = Parent(r.E.Section, r.E.Key);
             int guard = 0;
             while (parent != null && guard++ < 4)
             {
                 IniEntry p = _ours.FindKey(parent);
                 if (p != null && !IsOn(p.Value))
                     return "Turn on \"" + Label(parent) + "\" first.";
-                parent = Parent(p != null ? p.Section : page.Section, parent);
+                parent = Parent(p != null ? p.Section : r.E.Section, parent);
             }
             return null;
         }
@@ -502,8 +589,8 @@ namespace EnrageWestworld.InGame
                 return !Open;
             }
             bool big = PAD.IS_DISABLED_CONTROL_PRESSED(0, PadX);
-            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadUp)) Key(Keys.Up, false, false, false);
-            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadDown)) Key(Keys.Down, false, false, false);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadUp)) Key(Keys.Up, big, false, false);
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadDown)) Key(Keys.Down, big, false, false);
             if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLeft)) Key(Keys.Left, big, false, false);
             if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRight)) Key(Keys.Right, big, false, false);
             if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLB)) Key(Keys.Q, false, false, false);
@@ -516,8 +603,8 @@ namespace EnrageWestworld.InGame
         {
             if (_note.Length > 0)
                 Draw.Text(Draw.Fit(_note, SmallScale, W - 0.05f), left, Y + H - 0.072f, SmallScale, 236, 196, 120);
-            string keys = pad ? "D-pad choose and change   hold X: x10   LB/RB page   A: set a key (then press it on the keyboard)   B: close"
-                : "Up/Down choose   Left/Right change   Shift: x10   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
+            string keys = pad ? "D-pad choose and change   hold X: x10, or the next section   LB/RB page   A: set a key (then press it on the keyboard)   B: close"
+                : "Up/Down choose   Left/Right change   Shift: x10, or the next section   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
             Draw.Text(Draw.Fit(keys, SmallScale * 0.94f, W - 0.04f), left, Y + H - 0.04f, SmallScale * 0.94f, 140, 128, 110);
         }
 
@@ -555,7 +642,7 @@ namespace EnrageWestworld.InGame
             float rowH = Draw.LineHeight(RowScale) * 1.22f;
             float top = pageY + Draw.LineHeight(PageScale) + 0.014f;
             Draw.Rect(left - 0.006f, top - 0.006f, W - 0.032f, 0.0015f, 120, 98, 66, 200);
-            if (page.Rows.Count == 0)
+            if (!page.Rows.Any(r => r.E != null))
             {
                 float my = top + 0.01f;
                 foreach (string line in Draw.Wrap(page.Message ?? string.Empty, RowScale, W - 0.05f).Take(6))
@@ -566,16 +653,27 @@ namespace EnrageWestworld.InGame
                 DrawHints(left, pad);
                 return;
             }
+            // keep the chosen row in view, and its section's heading with it when it's the first in the section
             if (_row < _scroll)
                 _scroll = _row;
+            if (_row > 0 && page.Rows[_row - 1].Heading != null && _row - 1 < _scroll)
+                _scroll = _row - 1;
             if (_row >= _scroll + VisibleRows)
                 _scroll = _row - VisibleRows + 1;
             for (int i = _scroll; i < page.Rows.Count && i < _scroll + VisibleRows; i++)
             {
-                IniEntry e = page.Rows[i];
+                Row r = page.Rows[i];
                 float y = top + (i - _scroll) * rowH;
+                if (r.E == null)
+                {
+                    // a section's heading
+                    Draw.Text(Draw.Fit(r.Heading, SmallScale * 1.1f, W * 0.6f), left + 0.002f, y + rowH * 0.12f, SmallScale * 1.1f, 196, 156, 92);
+                    Draw.Rect(left + 0.004f + Math.Min(Draw.Width(r.Heading, SmallScale * 1.1f), W * 0.6f) + 0.01f, y + rowH * 0.5f, W * 0.5f, 0.0012f, 120, 98, 66, 160);
+                    continue;
+                }
+                IniEntry e = r.E;
                 bool sel = i == _row;
-                bool off = OffBecause(page, e) != null;
+                bool off = OffBecause(r) != null;
                 if (sel)
                 {
                     Draw.Rect(left - 0.006f, y - 0.002f, W - 0.032f, rowH, 70, 54, 32, 215);
@@ -583,7 +681,7 @@ namespace EnrageWestworld.InGame
                 }
                 int lr = off ? 105 : sel ? 255 : 226, lg = off ? 98 : sel ? 246 : 216, lb = off ? 90 : sel ? 230 : 196;
                 Draw.Text(Draw.Fit(Label(e.Key), RowScale, W * 0.58f), left + 0.006f, y, RowScale, lr, lg, lb);
-                string v = _capture == e ? "press a key..." : e.Value.Length == 0 ? "(empty)" : e.Value;
+                string v = _capture == r ? "press a key..." : e.Value.Length == 0 ? "(empty)" : e.Value;
                 v = Draw.Fit(v, RowScale, W * 0.3f);
                 int vr, vg, vb;
                 if (off) { vr = 105; vg = 98; vb = 90; }
@@ -604,9 +702,10 @@ namespace EnrageWestworld.InGame
             // what the selected setting does
             float helpY = top + VisibleRows * rowH + 0.012f;
             Draw.Rect(left - 0.006f, helpY - 0.006f, W - 0.032f, 0.0015f, 120, 98, 66, 200);
-            IniEntry sel2 = page.Rows[Math.Min(_row, page.Rows.Count - 1)];
-            string offWhy = OffBecause(page, sel2);
-            string help = (offWhy != null ? offWhy + " " : string.Empty) + (string.IsNullOrEmpty(sel2.Help) ? "No description." : sel2.Help);
+            Row chosen = page.Rows[Selectable(page, _row)];
+            string offWhy = OffBecause(chosen);
+            string section = chosen.Theirs ? "enRAGE [" + chosen.E.Section + "]. " : string.Empty;
+            string help = section + (offWhy != null ? offWhy + " " : string.Empty) + (string.IsNullOrEmpty(chosen.E.Help) ? "No description." : chosen.E.Help);
             float helpH = Draw.LineHeight(SmallScale) * 1.08f;
             foreach (string line in Draw.Wrap(help, SmallScale, W - 0.05f).Take(3))
             {
