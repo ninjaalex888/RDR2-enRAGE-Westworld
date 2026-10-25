@@ -149,7 +149,9 @@ namespace EnrageWestworld.InGame
                     _stalker.Finish(true);
                 Spawner.CleanupAll();
                 ClearRegularBlips();
-                Draw.FreeAll();
+                // the ticker's text is not freed here: text sent to the game this frame is drawn after the script has
+                // stopped, and freeing it under the game is the likeliest cause of a crash seen on an Insert reload
+                // (0.6.1). It's a few kilobytes, kept until the game closes.
             }
             catch (Exception ex)
             {

@@ -37,21 +37,30 @@ namespace EnrageWestworld.Core
     {
         public const int Max = 300;
 
-        /// What a scene does to the two in it: +1 warm, -1 hostile, 0 they know each other a little better; null
-        /// for a scene that leaves nothing between them (a song, a tale, a pitch to a crowd, the player's business).
+        /// What a scene does to the two in it: warmer above 0, colder below, 0 they know each other a little better;
+        /// null for a scene that leaves nothing between them (a song, a tale, a pitch to a crowd, the player's
+        /// business). The exchanges (Exchanges.cs) end as comfort, brushoff, snap, cheer, envy, makeup or sweet.
         public static int? Effect(string kind)
         {
             switch (kind)
             {
-                case "argue": case "brawl": case "cheat": case "debt": case "standoff":
+                case "argue": case "brawl": case "cheat": case "debt": case "standoff": case "snap": case "envy":
                     return -1;
-                case "flirt": case "propose":
+                case "flirt": case "propose": case "sweet": case "comfort": case "cheer":
                     return 1;
-                case "smalltalk": case "gossip": case "haggle": case "hosts":
+                case "makeup":
+                    return 2;   // a quarrel mended counts for more than one more kind word
+                case "smalltalk": case "gossip": case "haggle": case "hosts": case "brushoff":
                     return 0;
                 default:
                     return null;
             }
+        }
+
+        /// Courting, as opposed to a friendly word.
+        public static bool Romantic(string kind)
+        {
+            return kind == "flirt" || kind == "propose" || kind == "sweet";
         }
 
         /// Notes a scene between two people: the tie between them, made or carried on. Null if the scene leaves none.
@@ -66,6 +75,8 @@ namespace EnrageWestworld.Core
                 t = new SceneTie { A = aId, B = bId };
                 all.Add(t);
             }
+            else
+                t.Stage++;   // they meet again: their story moves on (Reasons)
             t.AName = t.A == aId ? aName : bName;
             t.BName = t.A == aId ? bName : aName;
             t.Town = town ?? t.Town;
@@ -88,7 +99,7 @@ namespace EnrageWestworld.Core
         /// the thinker's own, newest first.
         public static List<SceneTie> TalkOf(IEnumerable<SceneTie> all, string town, string notId, long now)
         {
-            return all.Where(t => t.Town == town && t.Warmth != 0 && !t.Has(notId) && now - t.At >= 0 && now - t.At < 2 * 1440L)
+            return all.Where(t => t.Town == town && (t.Warmth < 0 || Romantic(t.Kind) || t.Kind == "makeup") && !t.Has(notId) && now - t.At >= 0 && now - t.At < 2 * 1440L)
                       .OrderByDescending(t => t.At).ToList();
         }
 
@@ -127,10 +138,29 @@ namespace EnrageWestworld.Core
             "{other} said a thing I keep turning over. Clever, for a talker."
         };
 
+        private static readonly string[] Kindness =
+        {
+            "{other} asked after my trouble. Meant it, too. Didn't expect that.",
+            "{other} was glad for me. Truly glad. There's few would be."
+        };
+
+        private static readonly string[] MadeUp =
+        {
+            "Made it up with {other}. Like setting down a sack of feed I'd carried a month.",
+            "{other} said sorry first. I'd have said it second. Probably."
+        };
+
+        private static readonly string[] Shrugged =
+        {
+            "Told {other} my news. Got a shrug for it. I'll remember the shrug.",
+            "{other} couldn't get away from me fast enough. Fine. Fine."
+        };
+
         /// A thought about someone they had a scene with lately, by first name.
         public static string Thought(SceneTie t, string id, string seed)
         {
-            string[] pool = t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Warmth < 0 ? Quarrel : t.Warmth > 0 ? Sweet : Known;
+            string[] pool = t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
+                          : t.Kind == "comfort" || t.Kind == "cheer" ? Kindness : t.Warmth < 0 ? Quarrel : Romantic(t.Kind) ? Sweet : Known;
             return Voice.Pick(seed + "tie", pool).Replace("{other}", Person.FirstOf(t.Other(id)));
         }
 
@@ -154,17 +184,23 @@ namespace EnrageWestworld.Core
             "{a} and {b}, stood close as two spoons. Give it a month."
         };
 
+        private static readonly string[] TownMadeUp =
+        {
+            "{a} and {b} made it up, would you credit it. Shook on it outside the store."
+        };
+
         /// The town's talk about a tie between two others, with both their full names.
         public static string TownThought(SceneTie t, string town, string seed)
         {
-            string[] pool = t.Kind == "brawl" ? TownBlows : t.Warmth > 0 ? TownWarm : TownHostile;
+            string[] pool = t.Kind == "brawl" ? TownBlows : t.Kind == "makeup" ? TownMadeUp : Romantic(t.Kind) ? TownWarm : TownHostile;
             return Voice.Pick(seed + "tt", pool).Replace("{a}", t.AName).Replace("{b}", t.BName).Replace("{town}", town ?? "town");
         }
 
         /// Every line, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return Quarrel.Concat(Blows).Concat(Money).Concat(Sweet).Concat(Known).Concat(TownHostile).Concat(TownBlows).Concat(TownWarm);
+            return Quarrel.Concat(Blows).Concat(Money).Concat(Sweet).Concat(Known).Concat(Kindness).Concat(MadeUp).Concat(Shrugged)
+                .Concat(TownHostile).Concat(TownBlows).Concat(TownWarm).Concat(TownMadeUp);
         }
     }
 }

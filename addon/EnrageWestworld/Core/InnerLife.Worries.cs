@@ -435,6 +435,41 @@ namespace EnrageWestworld.Core
             return Fill(Pick(pool, p, seed, told), p, k, arc);
         }
 
+        /// The worry this person is living through today: its kind ("debt"), the stage (0 it begins, 1 worse, 2 the
+        /// crisis, 3 how it ended) and whether it ends well. False if nothing fits them.
+        public static bool WorryNow(Person p, long gameDay, out string kind, out int stage, out bool good)
+        {
+            kind = null;
+            stage = 0;
+            good = false;
+            if (p == null || p.Id == null || gameDay < 0)
+                return false;
+            List<WorryKind> fits = FitsFor(p);
+            if (fits.Count == 0)
+                return false;
+            int dayIn;
+            long arc = ArcOf(p, gameDay, out dayIn);
+            WorryKind k = KindAt(p, fits, arc);
+            kind = k.Key;
+            stage = StageOf(dayIn);
+            good = EndsWell(p, k, arc);
+            return true;
+        }
+
+        /// A line about the worry this person is living through today, with its people put in ({who}, {kin},
+        /// {place}): the same names their own thoughts use.
+        public static string WorryFill(Person p, long gameDay, string line)
+        {
+            if (p == null || p.Id == null || gameDay < 0 || line == null)
+                return line;
+            List<WorryKind> fits = FitsFor(p);
+            if (fits.Count == 0)
+                return line;
+            int dayIn;
+            long arc = ArcOf(p, gameDay, out dayIn);
+            return Fill(line, p, KindAt(p, fits, arc), arc);
+        }
+
         /// What this person is going through, for the log and the F7 dump: "debt (Pruitt), worse, day 4 of 8".
         public static string WorryStatus(Person p, long gameDay)
         {

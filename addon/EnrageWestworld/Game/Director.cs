@@ -109,8 +109,23 @@ namespace EnrageWestworld.InGame
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             }
             _live = l;
+            foreach (string d in Gestures.Dicts)
+                STREAMING.REQUEST_ANIM_DICT(d);   // body language for the lines (Gestures), loaded by the time they're said
             Log.Write("SCENE " + s.Kind + ": " + string.Join(" & ", l.Names));
             return true;
+        }
+
+        /// A townsfolk gesture that fits the line's tone (Core/Gestures.cs), on the upper body while they say it,
+        /// about half the time; never for someone sitting or leaning in a scenario, or before the set has loaded.
+        private static void Gesture(int h, string tone, bool woman, string seed)
+        {
+            if (!Voice.Chance(seed + "gesture", 55) || PED.IS_PED_USING_ANY_SCENARIO(h))
+                return;
+            string clip;
+            string dict = Gestures.For(tone, woman, seed, out clip);
+            if (!STREAMING.HAS_ANIM_DICT_LOADED(dict))
+                return;
+            TASK.TASK_PLAY_ANIM(h, dict, clip, 4f, -4f, -1, 8 | 16, 0f, false, 0, false, "", false);
         }
 
         /// The two swapped places (B won the fight the script gave to A): the lines still to come swap their names too,
@@ -260,7 +275,10 @@ namespace EnrageWestworld.InGame
                 Speech.SayTag(me.Handle, b.Voice, them.Handle);
             if (b.Line != null)
             {
-                Log.Write("SCENE   " + l.Names[who] + " (" + (int)me.Position.DistanceTo(new Ped(_player).Position) + " m from you): " + b.Line);
+                Log.Write("SCENE   " + l.Names[who] + " (" + (int)me.Position.DistanceTo(new Ped(_player).Position) + " m from you, " +
+                          (ENTITY.IS_ENTITY_ON_SCREEN(me.Handle) ? "on screen" : "off screen") + "): " + b.Line);
+                if ((b.Act == null || b.Act == "face") && !l.Fighting)
+                    Gesture(me.Handle, b.Voice, l.Women[who], l.Seed + l.Index);
                 say(Label(l, who), b.Line, l.Scene.Kind == "hosts", l.Women[who]);
                 wait = Math.Max(wait, 1600 + b.Line.Length * 55);
             }

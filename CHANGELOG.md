@@ -4,6 +4,23 @@
 
 - Each town keeps its own people (`[World]`: `Regulars`, `RegularsPerTown` 30, `RegularsDress`; settings version 32). When the game puts an ordinary person in the street where you can't see them, they become one of the town's regulars. It's either someone met there before, of the same build and back in their own clothes, or, while the town has room, someone new with an outfit of their own. Their names, worries and lives go on between visits, and the ones you've met know you again ("Him again. Same hat."). Nobody changes clothes in front of you: only people who haven't been on screen since they appeared, 20 m or more off and out of sight, are dressed. Nobody enRAGE has already named or fingerprinted is touched, since enRAGE knows people by their look. With `RegularsDress` off they keep their names and lives but not their looks. Not yet seen in game.
 - Up to three ordinary people near you now get turns on the ticker, not just the nearest one.
+- Street scenes happen for a reason, and where you can see them. Instead of the two people standing closest to each other, it's the two near you with the strongest reason to have something to do with each other:
+  - a quarrel between them goes on, and between two hot-tempered men it comes to blows;
+  - sweethearts flirt, and after long enough one asks (never at night);
+  - someone who owes money gets it called in;
+  - someone at the worst of a worry is short-tempered, and someone whose trouble ended well is easy company;
+  - two people who are waking talk strangely;
+  - the town talks over what you did.
+  If they're a few steps apart, one turns and the other walks over. At least one of them must be on your screen and in plain view. A pair's story moves on each time they meet instead of repeating. Anyone who has just had a scene sits out two minutes, and a pair who fought rests a full day. With nobody near having a reason, a chance meeting still happens now and then, at a third of the pace, also only where you can see it.
+- Short exchanges written for what people are going through, so what you see matches what they've been thinking:
+  - Someone at the worst of a worry snaps when spoken to, and says what's wrong, with the same names their thoughts use: "Not now. Ada's burning up, and the doctor wants two dollars to ride out."
+  - Someone whose trouble just ended tells it, good or bad: "Fever broke! Ada sat up and asked for eggs."
+  - The other person answers from their own temper and troubles: kindly ("Lord. I'm sorry, Elwood. If there's anything at all."), coldly ("Everybody's got troubles."), or sharply when they're hot-tempered or at the worst of their own ("No call to bite my head off.").
+  - A quarrel picks up again and can be made up, which mends things between them, or it ends with a dare.
+  - Sweethearts greet each other.
+  - How it went is remembered between them and shows in their thoughts ("Asked after my trouble. Meant it, too."), and the town talks about quarrels, courting and the ones who made it up.
+  - Scenes close to you count for more when picking.
+- People make the gestures that go with what they say: pointing and head-shaking in a quarrel, a wave or a hat tip in greeting, laughing at a joke.
 - Street scenes use the names the people really go by: enRAGE's name for its townsfolk, a resident's or regular's own name for anyone else. The name over each line and the names inside the lines now agree; before, "Cole" could say "You've been staring, Hank" to someone labelled "Ada". When the fight in a scene goes the other way from the script, the names in the lines still to come swap with the people.
 - Street scenes leave a trace. When two people who can be met again (town regulars, enRAGE's townsfolk) quarrel, come to blows, argue over money, flirt or just talk, it's remembered between them: how warm or hostile, how many times. For four days they think about each other by name ("Jaw still aches. Simon hits like a mule kicks."), and for two days the rest of their town talks about it ("Simon Walsh and Ezra Whitlow came to blows. Over nothing, they say."). Not yet seen in game.
 - F7 shows the town regulars around you on the map for a minute (grey marks with their names), and names the nearest one on screen with how far and which way.

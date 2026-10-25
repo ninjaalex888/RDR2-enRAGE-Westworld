@@ -48,12 +48,18 @@ namespace EnrageWestworld.InGame
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;
+            int rest;
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
-                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < 22f).ToList();
-            if (pool.Count < 2)
+                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < 22f &&
+                                                         !(_sceneAtHandle.TryGetValue(p.Handle, out rest) && now - rest < PersonRestMs && now >= rest)).ToList();
+            if (pool.Count >= 2 && now >= _nextSpecial && SpecialScene(pool, me, saloon, now))
                 return;
-            if (now >= _nextSpecial && SpecialScene(pool, me, saloon, now))
+            // first, two people near you who have a reason to have something to do with each other (Reasons.cs)
+            if (ReasonScene(me, saloon, now))
+                return;
+            // nobody with a reason: now and then a chance meeting between the two standing closest, where you can see
+            if (pool.Count < 2 || now < _nextChance)
                 return;
             Ped a = null, b = null;
             float best = 3.4f;
@@ -68,8 +74,9 @@ namespace EnrageWestworld.InGame
                         b = pool[j];
                     }
                 }
-            if (a == null)
+            if (a == null || !(ENTITY.IS_ENTITY_ON_SCREEN(a.Handle) || ENTITY.IS_ENTITY_ON_SCREEN(b.Handle)))
                 return;
+            _nextChance = now + (int)(_cfg.DramaGapSeconds * 3000);
             // the older one tells the tales
             if (Director.OldModel(b) && !Director.OldModel(a))
             {
@@ -125,6 +132,7 @@ namespace EnrageWestworld.InGame
             {
                 _nextDrama = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5));
                 NoteSceneTie(s, people);
+                NoteInScene(people, now);
             }
         }
 
