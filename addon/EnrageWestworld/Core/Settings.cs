@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 31;
+        public const int CurrentVersion = 35;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -96,6 +96,9 @@ namespace EnrageWestworld.Core
         public bool SelfDefenceNoBounty = true;
         public bool TownPosts = true;
         public string TownPostsAfterDeath = "survive";
+        public bool Regulars = true;
+        public int RegularsPerTown = 30;
+        public bool RegularsDress = true;
         public bool RumoursTravel = true;
         public bool Newspaper = true;
         public bool Letters = true;
@@ -365,7 +368,7 @@ namespace EnrageWestworld.Core
             HermitChance = Math.Max(0, Math.Min(100, HermitChance));
             GatheringChance = Math.Max(0, Math.Min(100, GatheringChance));
             TownPostsAfterDeath = (TownPostsAfterDeath ?? "").Trim().ToLowerInvariant() == "successor" ? "successor" : "survive";
-            StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
+            RegularsPerTown = Math.Max(5, Math.Min(80, RegularsPerTown));            StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
@@ -475,6 +478,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("SelfDefenceNoBounty = " + B(SelfDefenceNoBounty) + "   ; killing or hurting someone who came at you (soldiers too) doesn't raise your bounty or make you wanted: RealNPCs puts it back, unless you also hurt someone who didn't, or did another crime");
             b.AppendLine("TownPosts = " + B(TownPosts) + "   ; the shopkeepers, barkeeps, gunsmiths, doctors and station agents are each one person for good, who knows you; when one dies, a relative or a newcomer takes the counter");
             b.AppendLine("TownPostsAfterDeath = " + TownPostsAfterDeath + "   ; survive: the game brings a shot-down counter keeper back bandaged, so they lived and remember it; successor: they died, and a relative or a newcomer takes the counter");
+            b.AppendLine("Regulars = " + B(Regulars) + "   ; each town keeps its own ordinary people: the same names, faces and lives every time you're there, each going through something of their own");
+            b.AppendLine("RegularsPerTown = " + RegularsPerTown + "   ; how many regulars a town keeps (5-80)");
+            b.AppendLine("RegularsDress = " + B(RegularsDress) + "   ; regulars wear their own clothes each time you meet them (put on while nobody can see); off: they keep their names and lives, not their looks");
             b.AppendLine("RumoursTravel = " + B(RumoursTravel) + "   ; word of your deeds travels town to town and grows in the telling");
             b.AppendLine("Newspaper = " + B(Newspaper) + "   ; your deeds and the town talk turn up in enRAGE's newspapers");
             b.AppendLine("Letters = " + B(Letters) + "   ; letters wait for you at post offices (read them with ReaderKey)");

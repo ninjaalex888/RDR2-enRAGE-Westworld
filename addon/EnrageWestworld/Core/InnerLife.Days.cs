@@ -155,7 +155,7 @@ namespace EnrageWestworld.Core
         public static IEnumerable<string> AllDayLines()
         {
             foreach (string[] pool in new[] { Breakfast, Midday, Supper, LateNight, SmallHours, Sunday, Monday, Friday, Saturday, Era1899, Era1907,
-                                              TalkMurder, TalkKill, TalkLaw, TalkRobbery, TalkTheft, TalkHorse, TalkAssault })
+                                              TalkMurder, TalkKill, TalkLaw, TalkRobbery, TalkTheft, TalkHorse, TalkAssault, Again })
                 foreach (string line in pool)
                     yield return line;
         }

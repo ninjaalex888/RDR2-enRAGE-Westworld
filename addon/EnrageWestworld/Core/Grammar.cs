@@ -505,12 +505,22 @@ namespace EnrageWestworld.Core
             return string.IsNullOrEmpty(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
         }
 
+        private static readonly HashSet<string> Openers = new HashSet<string>
+        {
+            "A", "An", "The", "Some", "Two", "Three", "Four", "Five", "His", "Her", "Their", "That", "This", "Those", "These", "Every", "No", "One", "Old", "Young"
+        };
+
         public static string LowerFirst(string s)
         {
             if (string.IsNullOrEmpty(s))
                 return s;
-            string first = s.Split(' ')[0];
+            string[] words = s.Split(' ');
+            string first = words[0];
             if (first == "I" || first.StartsWith("I'") || (first.Length > 1 && char.IsUpper(first[1])))
+                return s;
+            // a name ("Arthur Morgan broke up a fight", "Saint Denis is loud") keeps its capital; an ordinary first word
+            // before a name ("A Pinkerton came", "The Braithwaites") doesn't
+            if (words.Length > 1 && words[1].Length > 0 && char.IsUpper(words[1][0]) && !Openers.Contains(first))
                 return s;
             return char.ToLowerInvariant(s[0]) + s.Substring(1);
         }

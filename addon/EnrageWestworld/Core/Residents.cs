@@ -43,6 +43,8 @@ namespace EnrageWestworld.Core
         [DataMember] public long FledAt;
         [DataMember] public bool HasCamp;          // where they live in the wilds, chosen once
         [DataMember] public float CampX, CampY, CampZ;
+        [DataMember] public bool Regular;          // one of their town's regulars (Regulars.cs): met again and again, kept
+        [DataMember] public int Outfit;            // a regular's outfit preset, put on whenever they're cast (read only when Regular)
 
         public static bool IsResident(string id)
         {

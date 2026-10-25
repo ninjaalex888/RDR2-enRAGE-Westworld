@@ -59,7 +59,7 @@ namespace EnrageWestworld.Core
             return st;
         }
 
-        public const int MaxResidents = 400;
+        public const int MaxResidents = 700;   // room for the town regulars (RegularsPerTown in each town) and the rest
 
         public Resident FindResident(string id)
         {
@@ -74,9 +74,12 @@ namespace EnrageWestworld.Core
                 Residents.Add(r);
             while (Residents.Count > MaxResidents)
             {
-                // someone keeping a post, or a hermit living at a camp, is never dropped
+                // someone keeping a post, or a hermit living at a camp, is never dropped; a town regular goes only after
+                // everyone else, and one the player has met only after every regular he hasn't
                 Resident drop = Residents.Where(x => x != r && !((x.PostId != null || x.HasCamp) && !x.Dead))
-                    .OrderBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).First();
+                    .OrderBy(x => x.Regular && !x.Dead ? 1 : 0)
+                    .ThenBy(x => { PersonState s = Find(x.Id); return x.Regular && s != null && s.Sightings > 0 ? 1 : 0; })
+                    .ThenBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).First();
                 Residents.Remove(drop);
                 People.Remove(drop.Id);
             }

@@ -61,8 +61,7 @@ namespace EnrageWestworld.InGame
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
             { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
             { "CryingWomanChance", "CryingWoman" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
-            { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }
-        };
+            { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" }        };
 
         // sections whose first setting switches the whole section on or off
         private static readonly Dictionary<string, string> Masters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -93,7 +92,8 @@ namespace EnrageWestworld.InGame
             { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres)" },
             { "StalkerStrangers", "A stranger if nobody near" },
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
-            { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
+            { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" },
+            { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
             { "SelfDefenceNoBounty", "No bounty for self-defence" },
             { "Encounters", "Night encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
             { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" },

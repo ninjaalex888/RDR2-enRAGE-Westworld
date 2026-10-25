@@ -189,7 +189,19 @@ namespace EnrageWestworld.Core
             public bool Near;       // close enough to study
             public bool Armed;      // a gun in hand
             public bool Mounted;    // on a horse
+            public int Seen;        // times this person has met him (a town regular), counting now
         }
+
+        /// A town regular who has met him before, seeing him again.
+        private static readonly string[] Again =
+        {
+            "Him again. Same hat. Same way of standing, like the street owes him money.",
+            "Seen this one before. I don't forget a man who looks at me that long.",
+            "Back in {town}, is he. I'd started to think I dreamed him.",
+            "That stranger again. Nodded at me last time. Will he this time?",
+            "I know that face. Know it from here. Every time, from right here.",
+            "Third time, or fourth. I've stopped pretending I don't notice him."
+        };
 
         private static readonly string[] SeenArmed =
         {
@@ -236,6 +248,9 @@ namespace EnrageWestworld.Core
         /// brings the worry they're living through and the town's news (may be null: then only the timeless pools).
         public static string Thought(Person p, int hour, string seed, List<string> told, PlayerLook look = null, Context day = null)
         {
+            // a regular who has met him before knows him again
+            if (look != null && look.Near && look.Seen >= 2 && Voice.Hash(seed + "again") % 100 < 22)
+                return Pick(Again, p, seed, told);
             // the stranger close by is worth a thought of its own
             if (look != null && look.Near && Voice.Hash(seed + "look") % 100 < 28)
                 return Pick(look.Armed && Voice.Chance(seed + "la", 55) ? SeenArmed : look.Mounted && Voice.Chance(seed + "lm", 55) ? SeenMounted : Seen, p, seed, told);

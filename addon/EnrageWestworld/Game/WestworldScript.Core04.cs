@@ -148,6 +148,7 @@ namespace EnrageWestworld.InGame
                 if (_stalker != null)
                     _stalker.Finish(true);
                 Spawner.CleanupAll();
+                ClearRegularBlips();
                 Draw.FreeAll();
             }
             catch (Exception ex)
@@ -463,8 +464,7 @@ namespace EnrageWestworld.InGame
             float r = _cfg.TickerNearbyMetres;
             long now = Bridge.Now();
             ReadClock();
-            Ped stranger = null;
-            float strangerDist = 99f;
+            List<KeyValuePair<Ped, float>> strangers = new List<KeyValuePair<Ped, float>>();
             foreach (Ped ped in World.GetAllPeds())
             {
                 int h = ped.Handle;
@@ -543,46 +543,47 @@ namespace EnrageWestworld.InGame
                     }
                     continue;
                 }
-                if (d < 12f && (stranger == null || d < strangerDist) && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && ResidentEligible(ped))
-                {
-                    stranger = ped;
-                    strangerDist = d;
-                }
+                if (d < 12f && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && ResidentEligible(ped))
+                    strangers.Add(new KeyValuePair<Ped, float>(ped, d));
             }
-            // the nearest ordinary person gets a turn too (behind anyone with a name, unless right beside you)
-            if (stranger != null)
+            // the three nearest ordinary people get turns too (behind anyone with a name, unless right beside you)
+            bool named = _near.Count > 0;
+            foreach (KeyValuePair<Ped, float> s in strangers.OrderBy(x => x.Value).Take(3))
             {
+                Ped stranger = s.Key;
+                float sd = s.Value;
                 bool woman = !PED.IS_PED_MALE(stranger.Handle);
-                string label = Grammar.UpperFirst(Director.Kind(stranger, woman));
-                string key = "stranger:" + stranger.Handle;
-                string town = _placeTown;
                 Resident res = ResidentOf(stranger);
                 if (res != null)
                 {
-                    // an ordinary person, but with a name, a trade and a town: and a mind that may be waking
+                    // an ordinary person, but with a name, a trade and a town: and a mind that may be waking. A town
+                    // regular counts each time you meet them, and may know you again.
                     Person rp = _engine.PersonOfResident(res);
-                    key = res.Id;
-                    label = res.Name;
-                    float sd = strangerDist;
+                    int met = res.Regular ? NoteRegularMet(res, stranger.Handle, rp) : 0;
                     long every = sd < BesideMetres ? 15 : ThoughtEvery;
                     _near.Add(new NearThought
                     {
-                        Key = key,
-                        Name = label,
+                        Key = res.Id,
+                        Name = res.Name,
                         Handle = stranger.Handle,
-                        Distance = strangerDist + 10f,
+                        Distance = sd + 10f,
                         Beside = sd < BesideMetres,
                         Text = () =>
                         {
                             PersonState rst = _store.Find(res.Id);
-                            return _cfg.WestWorld && rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180) : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / every, Look(me, sd));
+                            InnerLife.PlayerLook look = Look(me, sd);
+                            look.Seen = met;
+                            return _cfg.WestWorld && rst != null && rst.WakeStage > 0 ? Hosts.Thought(rp, rst, _engine.Player, res.Id + "|" + now / 180) : _engine.ResidentThought(rp, CLOCK.GET_CLOCK_HOURS(), res.Id + "|" + now / every, look);
                         }
                     });
-                    return;
                 }
-                // someone who can't be a resident: only when nobody else is near, as before
-                if (_near.Count == 0)
-                    _near.Add(new NearThought { Key = key, Name = label, Handle = stranger.Handle, Distance = strangerDist + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
+                else if (!named && _near.Count == 0)
+                {
+                    // someone who can't be a resident: only when nobody else is near, as before
+                    string key = "stranger:" + stranger.Handle;
+                    string town = _placeTown;
+                    _near.Add(new NearThought { Key = key, Name = Grammar.UpperFirst(Director.Kind(stranger, woman)), Handle = stranger.Handle, Distance = sd + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
+                }
             }
         }
 
@@ -666,6 +667,7 @@ namespace EnrageWestworld.InGame
                 return;
             QuietStep(now);
             PostsStep(now);
+            RegularsStep(now);
             EncountersStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);

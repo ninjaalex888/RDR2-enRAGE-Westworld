@@ -347,6 +347,7 @@ namespace EnrageWestworld.InGame
 				{
 					Log.Write("STALKER acts: couldn't look up the animation sets (" + ex.Message + "); each is checked when first used");
 				}
+				Log.Write("REGULARS: " + (_cfg.Regulars ? "kept: " + Regulars.Count(_store.Residents) : "off") + "; " + _store.Residents.Count + " residents saved (up to " + Store.MaxResidents + ")");
 				Log.Write("CLOCK: year " + CLOCK.GET_CLOCK_YEAR() + ", day of the week " + CLOCK.GET_CLOCK_DAY_OF_WEEK() + " (thoughts take 0 as Sunday), " +
 					CLOCK.GET_CLOCK_DAY_OF_MONTH() + "/" + (CLOCK.GET_CLOCK_MONTH() + 1) + ", " + CLOCK.GET_CLOCK_HOURS() + ":" + CLOCK.GET_CLOCK_MINUTES().ToString("00") + (IsJohn() ? ", playing John" : ""));
 				Feed.Notice("RealNPCs", "listening. " + list.Count + " people in the world" + ((num > 0) ? (", " + num + " who know you.") : "."));
@@ -999,6 +1000,8 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST stalker acts: " + Stalker.ActsStatus);
 			Log.Write("TEST worries: " + WorriesStatus());
 			Log.Write("TEST near: " + NearStatus());
+			Log.Write("TEST regulars: " + RegularsStatus());
+			MarkRegulars();
 			Log.Write("TEST posts: " + PostsStatus());
 			Log.Write("TEST encounters: " + EncountersStatus());
 			if (nemesisRecord == null)
