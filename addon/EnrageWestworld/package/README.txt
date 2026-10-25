@@ -51,8 +51,10 @@ NEW IN 0.6.0
   after another with a stare between: digging a grave, scrubbing blood from the ground, kneeling
   as at a graveside, lying down like the dead, writing in a notebook, pointing at the eyes and then
   at you, a finger to the lips, a slow wave, beckoning, howling at night, laughing, a jig. Some
-  gestures are done twice exactly alike, stop dead partway, or go slow. Move and it stops at once
-  and runs off. StalkerWhenStill is now mix by default (odd things most times, else circling,
+  gestures are done twice exactly alike, stop dead partway, or go slow. Two play on not being seen:
+  it creeps closer while it is off your screen and stops dead the moment you look, or each time
+  you look away and back it is standing somewhere else round you. Move and it stops at once and
+  runs off. StalkerWhenStill is now mix by default (odd things most times, else circling,
   watching or rushing); eerie is odd things only. An ini still on the old default (circle) is
   moved to mix.
 

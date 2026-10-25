@@ -115,7 +115,7 @@ namespace EnrageWestworld.InGame
             }
             if (now < _nextThink)
                 return;
-            _nextThink = now + 250;
+            _nextThink = now + (QuickTicks ? 50 : 250);
 
             int h = _ped.Handle;
             Vector3 me = _ped.Position, pp = player.Position;
@@ -149,7 +149,7 @@ namespace EnrageWestworld.InGame
                     if (active)
                         EndEerie(player, now);
                     else
-                        EerieStep(player, now);
+                        EerieStep(player, now, onScreen && clear);
                     break;
 
                 case Mode.Circle:

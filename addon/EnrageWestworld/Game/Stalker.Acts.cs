@@ -1,7 +1,8 @@
 // The eerie acts (StalkerWhenStill = eerie, or mix): he comes to about StalkerActMetres from you, faces you and does
 // odd things from the game's own emotes and scenarios (Core/StalkerActs.cs), one after another with a stare between,
 // moving round you now and then, until you move. A gesture may be done twice exactly alike, stop dead partway, or
-// go slow. Each act is checked: an animation that doesn't load or play, or a scenario that doesn't start, is tried
+// go slow. Two play on not being seen: he creeps closer while he's off your screen and stops dead when you look
+// (creep), or he is standing somewhere else round you each time you look back (shift). Each act is checked: an animation that doesn't load or play, or a scenario that doesn't start, is tried
 // once more and then dropped for the session, and the log says which.
 using System;
 using System.Collections.Generic;
@@ -14,7 +15,7 @@ namespace EnrageWestworld.InGame
 {
     internal sealed partial class Stalker
     {
-        private enum ActStep { Go, Pause, Load, Face, Play, Back }
+        private enum ActStep { Go, Pause, Load, Face, Play, Back, Creep, Shift }
 
         // acts that didn't play, kept apart for men and women (a man's animation may not play on a woman)
         private static readonly HashSet<string> BadForMen = new HashSet<string>(), BadForWomen = new HashSet<string>();
@@ -24,8 +25,11 @@ namespace EnrageWestworld.InGame
         private ActStep _step;
         private EerieAct _act;
         private string _dict, _clip, _twist;
-        private int _stepUntil, _checkAt, _actsSinceMove, _moveAfter, _repeats, _clipMs, _freezeAt, _unfreezeAt;
-        private bool _checked, _frozen, _actWoman;
+        private int _stepUntil, _checkAt, _actsSinceMove, _moveAfter, _repeats, _clipMs, _freezeAt, _unfreezeAt, _shifts, _nextShiftAt;
+        private bool _checked, _frozen, _actWoman, _moving, _foundSinceShift;
+
+        /// Creeping or shifting: he reacts to the camera within a frame or two, not a quarter second later.
+        private bool QuickTicks { get { return _mode == Mode.Act && (_step == ActStep.Creep || _step == ActStep.Shift); } }
         private float _frozeAt;
 
         private void StartEerie(Ped player, int now)
@@ -52,10 +56,12 @@ namespace EnrageWestworld.InGame
             else
                 TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, true);
             _frozen = false;
+            if (_step == ActStep.Creep)
+                PED.SET_PED_STEALTH_MOVEMENT(h, false, 0, 0);
             StartRetreat(player, now);
         }
 
-        private void EerieStep(Ped player, int now)
+        private void EerieStep(Ped player, int now, bool seen)
         {
             int h = _ped.Handle;
             Vector3 me = _ped.Position, pp = player.Position;
@@ -188,7 +194,134 @@ namespace EnrageWestworld.InGame
                     if (now >= _stepUntil)
                         Pause(player, now, 1000 + _rng.Next(1500));
                     break;
+
+                case ActStep.Creep:
+                    if (!_checked && now >= _checkAt)
+                    {
+                        _checked = true;
+                        Log.Write("STALKER creeping " + (PED.GET_PED_STEALTH_MOVEMENT(h) ? "crouched" : "upright (the crouch didn't take)"));
+                    }
+                    float dist = me.DistanceTo(pp);
+                    if (dist <= 4.5f || now > _stepUntil)
+                    {
+                        if (_moving)
+                            TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, false);
+                        PED.SET_PED_STEALTH_MOVEMENT(h, false, 0, 0);
+                        _moving = false;
+                        Log.Write("STALKER " + Label + (dist <= 4.5f ? " has crept up to " + (int)dist + " m from you" : " stops creeping, " + (int)dist + " m away"));
+                        Pause(player, now, 4000 + _rng.Next(3000));
+                        break;
+                    }
+                    if (seen)
+                    {
+                        if (_moving)
+                        {
+                            // caught moving: stops dead, mid-step
+                            _moving = false;
+                            TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, false);
+                            TASK.TASK_STAND_STILL(h, 20000);
+                            TASK.TASK_LOOK_AT_ENTITY(h, player.Handle, -1, 0, 51, 0);
+                        }
+                    }
+                    else if (!_moving || now >= _nextOrder)
+                    {
+                        _moving = true;
+                        _nextOrder = now + 1000;
+                        Vector3 near = pp + (me - pp).Normalized * 4f;
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, near.X, near.Y, near.Z, 1f, -1, 0.5f, 0, 0f);
+                    }
+                    break;
+
+                case ActStep.Shift:
+                    if (seen && !_foundSinceShift)
+                    {
+                        _foundSinceShift = true;   // you found him: he stares a moment before he goes again
+                        _nextShiftAt = now + 2000 + _rng.Next(2500);
+                    }
+                    if (now > _stepUntil || (_shifts == 0 && _foundSinceShift && now >= _nextShiftAt))
+                    {
+                        Pause(player, now, 2500 + _rng.Next(2500));
+                        break;
+                    }
+                    if (_shifts > 0 && !seen && _foundSinceShift && now >= _nextShiftAt)
+                    {
+                        _nextShiftAt = now + 1000;
+                        Vector3 at;
+                        if (ShiftSpot(player, out at))
+                        {
+                            double turned = Math.Abs(Turn(HeadingTo(pp, me), HeadingTo(pp, at)));
+                            TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, true);
+                            ENTITY.SET_ENTITY_COORDS(h, at.X, at.Y, at.Z, false, false, false, false);
+                            if (ENTITY.IS_ENTITY_IN_WATER(h))
+                            {
+                                ENTITY.SET_ENTITY_COORDS(h, me.X, me.Y, me.Z, false, false, false, false);
+                                break;
+                            }
+                            ENTITY.SET_ENTITY_HEADING(h, HeadingTo(at, pp));
+                            TASK.TASK_STAND_STILL(h, 40000);
+                            TASK.TASK_LOOK_AT_ENTITY(h, player.Handle, -1, 0, 51, 0);
+                            _shifts--;
+                            _foundSinceShift = false;
+                            Log.Write("STALKER " + Label + " is somewhere else when you look back: " + (int)at.DistanceTo(pp) + " m from you, " + (int)turned + " degrees round");
+                        }
+                    }
+                    break;
             }
+        }
+
+        private void StartCreep(Ped player, int now)
+        {
+            int h = _ped.Handle;
+            TASK.CLEAR_PED_TASKS(h, true, false);
+            TASK.TASK_LOOK_AT_ENTITY(h, player.Handle, -1, 0, 51, 0);
+            PED.SET_PED_STEALTH_MOVEMENT(h, true, 0, 0);   // crouched, if the game takes it (the log says)
+            _step = ActStep.Creep;
+            _stepUntil = now + 30000 + _rng.Next(15000);
+            _moving = false;
+            _nextOrder = 0;
+            _checkAt = now + 1500;
+            _checked = false;
+            Log.Write("STALKER " + Label + " " + _act.Does + " (" + (int)_ped.Position.DistanceTo(player.Position) + " m away)");
+        }
+
+        private void StartShift(Ped player, int now)
+        {
+            int h = _ped.Handle;
+            TASK.TASK_STAND_STILL(h, 40000);
+            TASK.TASK_LOOK_AT_ENTITY(h, player.Handle, -1, 0, 51, 0);
+            _step = ActStep.Shift;
+            _shifts = 1 + _rng.Next(3);
+            _foundSinceShift = true;   // he's standing in plain view: the first look away is his chance
+            _nextShiftAt = now + 800;
+            _stepUntil = now + 40000;
+            Log.Write("STALKER " + Label + " " + _act.Does + " (up to " + _shifts + " times)");
+        }
+
+        /// A spot round the player at about the act distance, well round from where he is, that neither the camera
+        /// nor the player can see right now: he can be put there without anyone seeing it happen.
+        private bool ShiftSpot(Ped player, out Vector3 at)
+        {
+            Vector3 pp = player.Position, me = _ped.Position;
+            Vector3 cam = CAM.GET_FINAL_RENDERED_CAM_COORD();
+            double from = Math.Atan2(me.Y - pp.Y, me.X - pp.X);
+            for (int i = 0; i < 10; i++)
+            {
+                double a = from + (_rng.Next(2) == 0 ? 1 : -1) * (60 + _rng.Next(121)) * Math.PI / 180.0;
+                float r = Math.Max(5f, _cfg.StalkerActMetres - 3f + (float)_rng.NextDouble() * 6f);
+                Vector3 c = pp + new Vector3((float)Math.Cos(a) * r, (float)Math.Sin(a) * r, 0f);
+                Vector3 safe;
+                if (!Natives.StandSpot(c, pp.Z, out safe))
+                    continue;
+                float sx, sy;
+                bool visible = ScreenPoint(safe + new Vector3(0f, 0f, 1f), out sx, out sy) && sx > -0.05f && sx < 1.05f && sy > -0.05f && sy < 1.05f &&
+                               !Natives.Blocked(cam, safe + new Vector3(0f, 0f, 1.2f), player.Handle);
+                if (visible)
+                    continue;
+                at = safe;
+                return true;
+            }
+            at = Vector3.Zero;
+            return false;
         }
 
         private void GoToActSpot(Ped player, int now, double angle)
@@ -254,6 +387,10 @@ namespace EnrageWestworld.InGame
             }
             else if (_act.Scenario != null)
                 Face(player, now);
+            else if (_act.Special == "creep")
+                StartCreep(player, now);
+            else if (_act.Special == "shift")
+                StartShift(player, now);
             else
             {
                 // turns his back on you, and later looks over his shoulder

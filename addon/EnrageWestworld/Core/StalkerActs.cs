@@ -1,5 +1,6 @@
 // The odd things a stalker does while you stand still (StalkerWhenStill = eerie, or mix): the game's own emotes and
-// scenarios, by their names in the game's files. The game side plays them, checks that each really played, and drops
+// scenarios, by their names in the game's files, and a few that play on not being seen (creeping closer, standing
+// somewhere else when you look back). The game side plays them, checks that each really played, and drops
 // any that don't. Nothing here draws or fires a weapon: he never attacks.
 using System;
 using System.Collections.Generic;
@@ -16,7 +17,8 @@ namespace EnrageWestworld.Core
         public bool WomanDict;      // the game has a women's version of this emote
         public string Scenario;     // ...or a scenario played where he stands, facing you
         public int Ms;              // a scenario's length
-        public bool TurnAway;       // ...or he turns his back on you
+        public string Special;      // ...or "back" (turns his back on you), "creep" (closer while you can't see him),
+                                    // "shift" (somewhere else each time you look back)
         public char Sex = 'b';      // 'b' anyone, 'm' men only, 'f' women only (the game has no other version)
         public bool NightOnly;
 
@@ -77,7 +79,9 @@ namespace EnrageWestworld.Core
             S("statue", "stands like a statue", "WORLD_HUMAN_STARE_STOIC", 11000, 'b'),
             S("smoke", "smokes, much too fast", "WORLD_HUMAN_SMOKE_NERVOUS_STRESSED", 15000, 'm'),
 
-            new EerieAct { Key = "back", Does = "turns its back on you, then looks over the shoulder", TurnAway = true }
+            new EerieAct { Key = "back", Does = "turns its back on you, then looks over the shoulder", Special = "back" },
+            new EerieAct { Key = "creep", Does = "comes closer whenever you look away, and stops dead when you look", Special = "creep" },
+            new EerieAct { Key = "shift", Does = "stands somewhere else each time you look back", Special = "shift" }
         };
 
         /// The next act for this stalker: one the game has for a man or a woman, at this hour, not one of the last few,
@@ -91,9 +95,13 @@ namespace EnrageWestworld.Core
                 fresh = ok;
             if (fresh.Count == 0)
                 return null;
-            // scenarios take longer, so emotes come up a little more often
-            List<EerieAct> emotes = fresh.Where(a => a.Emote != null).ToList(), others = fresh.Where(a => a.Emote == null).ToList();
-            List<EerieAct> pool = emotes.Count > 0 && (others.Count == 0 || rng.Next(100) < 60) ? emotes : others;
+            // a quarter of the time something odd happens when you aren't looking (creep, shift) or he turns away; of the
+            // rest, three in five are gestures (they're short), the others scenarios. An empty pool gives its turn to the next.
+            List<EerieAct> specials = fresh.Where(a => a.Special != null).ToList(), emotes = fresh.Where(a => a.Emote != null).ToList(),
+                           scenarios = fresh.Where(a => a.Scenario != null).ToList();
+            int r = rng.Next(100);
+            List<EerieAct>[] order = r < 25 ? new[] { specials, emotes, scenarios } : r < 70 ? new[] { emotes, scenarios, specials } : new[] { scenarios, emotes, specials };
+            List<EerieAct> pool = order.First(p => p.Count > 0);
             return pool[rng.Next(pool.Count)];
         }
 
