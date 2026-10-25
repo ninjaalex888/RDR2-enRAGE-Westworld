@@ -80,7 +80,9 @@ NEW IN 0.6.0
 - Self-defence isn't a crime. Kill or hurt someone who came at you, or who was hostile to you
   (red), and RealNPCs notes no crime: no witnesses remember it, no rumour, no posse talk, no
   newspaper. Someone you shot or drew on first still counts, even if they fire back, and so do
-  lawmen and anyone who begged. enRAGE judges its own witnesses the same way, and resets the
+  lawmen and anyone who begged. enRAGE's fighters (red on your map) count as having come at
+  you even if you fire first. While you fight them off, the game isn't allowed to call it a crime
+  at all, so no witness runs to report it. enRAGE judges its own witnesses the same way, and resets the
   bounty after fights with its own outlaws. For everyone else who comes at you, soldiers too,
   RealNPCs puts back any bounty or wanted level the fight gave you (SelfDefenceNoBounty), unless
   you also hurt someone who hadn't come at you or did another crime in the last few minutes.

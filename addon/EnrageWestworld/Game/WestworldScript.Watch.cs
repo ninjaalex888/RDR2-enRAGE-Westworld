@@ -68,6 +68,7 @@ namespace EnrageWestworld.InGame
 
         private unsafe void PollWorldEventsImpl(int now)
         {
+            ShieldDefence(now);
             int count = SCRIPTS.GET_NUMBER_OF_EVENTS(0);
             if (count <= 0)
                 return;
@@ -117,7 +118,10 @@ namespace EnrageWestworld.InGame
                             h.At = now;
                             h.Weapon = (uint)p[2];
                             if (h.CameAtYou)
+                            {
                                 Defending(now);   // every hit on them keeps the fight going, not just the first
+                                _lastDefenceHitAt = now;
+                            }
                         }
                     }
                     else if (ev == EventLootComplete)
@@ -135,6 +139,8 @@ namespace EnrageWestworld.InGame
                     Log.Detail("event " + ev + " failed: " + ex.Message);
                 }
             }
+            if (_lastDefenceHitAt == now)
+                ShieldDefence(now);   // the first shot back: shielded this very frame, not the next
         }
 
         /// A fight, not a murder: they were fighting him, or armed and fighting anyone, or hostile to him
@@ -158,6 +164,8 @@ namespace EnrageWestworld.InGame
                 return false;
             if (_bridge != null && _bridge.EnrageSaysCameAtYou(victim))
                 why = "enRAGE saw them come at you";
+            else if (_bridge != null && _bridge.EnrageFighter(victim))
+                why = "one of enRAGE's fighters, red on your map";
             else if (_cameAtYouSeen.ContainsKey(victim))
                 why = "they were fighting you before you hurt them";
             else if (PED.GET_RELATIONSHIP_BETWEEN_PEDS(victim, player) == 5)
@@ -273,6 +281,48 @@ namespace EnrageWestworld.InGame
                     break;
             }
             _lastBounty = bounty;
+        }
+
+        // the crimes the game would charge him with for fighting back: murder, assault (armed, unarmed, with a lasso),
+        // threatening (aiming at them) and the disturbance of the shots. Never the ones against lawmen or animals.
+        private static readonly uint[] DefenceCrimes = { 0xE28ECE7Eu, 0x0BADC882u, 0x5098CC5Au, 0x56EE5D5Au, 0x941C985Au, 0x5011F613u };
+        private int _lastDefenceHitAt = -1000000, _lastShieldLog;
+        private bool _shieldOn;
+
+        /// Every frame: while he fights off people who came at him, the game isn't allowed to call it a crime, so no
+        /// witness runs to report it and no bounty comes of it. Only right after he hits one of them, while one he hit
+        /// is still alive, or while he aims at one; never once he has hurt anyone who hadn't come at him (from five
+        /// minutes before the fight on) or a crime of his was confirmed; never in story missions (SelfDefenceNoBounty).
+        private unsafe void ShieldDefence(int now)
+        {
+            bool on = false;
+            if (_cfg.SelfDefenceNoBounty && !MISC.GET_MISSION_FLAG() && now - _lastOffenceAt > DefenceLaw.LookbackMs && now - _lastRealCrimeAt > DefenceLaw.LookbackMs &&
+                (_defendSince < 0 || (_lastOffenceAt < _defendSince - DefenceLaw.LookbackMs && _lastRealCrimeAt < _defendSince - DefenceLaw.LookbackMs)))
+            {
+                on = now - _lastDefenceHitAt < 1500 || _hits.Values.Any(x => x.CameAtYou && !x.Done && now - x.At < 20000);
+                if (!on)
+                {
+                    ulong slot = 0;   // out-parameters take 8 bytes
+                    int aimed = PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, (int*)&slot) ? (int)slot : 0;
+                    if (aimed == 0)
+                    {
+                        slot = 0;
+                        aimed = PLAYER.GET_PLAYER_TARGET_ENTITY(Game.Player.Handle, (int*)&slot) ? (int)slot : 0;
+                    }
+                    on = aimed != 0 && PED.IS_PED_HUMAN(aimed) && !Natives.IsLaw(new Ped(aimed)) && !_youStarted.ContainsKey(aimed) &&
+                         (_cameAtYouSeen.ContainsKey(aimed) || PED.GET_RELATIONSHIP_BETWEEN_PEDS(aimed, Game.Player.Character.Handle) == 5 ||
+                          (_bridge != null && (_bridge.EnrageSaysCameAtYou(aimed) || _bridge.EnrageFighter(aimed))));
+                }
+            }
+            if (on)
+                foreach (uint c in DefenceCrimes)
+                    LAW.SUPPRESS_CRIME_THIS_FRAME(Game.Player.Handle, c, 0, 0, 0);
+            if (on != _shieldOn && now - _lastShieldLog > 5000)
+            {
+                _lastShieldLog = now;
+                Log.Detail("SELF-DEFENCE: " + (on ? "fighting back isn't a crime right now (no witness, no bounty)" : "the law sees everything again"));
+            }
+            _shieldOn = on;
         }
 
         /// A hit or a kill on someone who came at him: the fight starts (or goes on). Not in story missions.
