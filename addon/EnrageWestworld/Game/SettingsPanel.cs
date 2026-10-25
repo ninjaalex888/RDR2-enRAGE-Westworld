@@ -81,7 +81,8 @@ namespace EnrageWestworld.InGame
             { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres)" },
             { "StalkerStrangers", "A stranger if nobody near" },
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
-            { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }
+            { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" },
+            { "SelfDefenceNoBounty", "No bounty for self-defence" }
         };
 
         private readonly Func<Bridge> _bridgeOf;

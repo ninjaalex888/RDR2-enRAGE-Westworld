@@ -1,0 +1,148 @@
+// Town posts in the game (see Core/Posts.cs). The person the game puts behind each counter is one person for good,
+// named and remembering the player. When they die, by anyone's hand, the post passes to a relative or a newcomer the
+// next time the game puts someone there. If the model has other outfits, a successor is dressed in one of them, only
+// while nobody can see it happen (the outfit probe logs how many each model has). Nothing here moves them: they stay
+// at their counters, out of scenes, stalking and the wake acts that walk people about. Not during story missions.
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using EnrageWestworld.Core;
+using RDR2;
+using RDR2.Native;
+
+namespace EnrageWestworld.InGame
+{
+    public partial class WestworldScript
+    {
+        private readonly HashSet<uint> _outfitsLogged = new HashSet<uint>();
+        private readonly Dictionary<int, int> _dressDue = new Dictionary<int, int>();   // handle -> outfit preset to put on unseen
+        private readonly HashSet<int> _postDeathsSeen = new HashSet<int>();
+        private int _nextPostTick, _nextPostDeaths;
+        private Action _aPosts;
+
+        private void PostsStep(int now)
+        {
+            if (_aPosts == null)
+                _aPosts = () => PostsTick(_now);
+            Safe("town posts", _aPosts);
+        }
+
+        private bool PostsOn { get { return _cfg.TownPosts && !MISC.GET_MISSION_FLAG(); } }
+
+        private static PostKind PostKindOf(Ped p)
+        {
+            return p != null && p.Exists() ? Posts.Of(Natives.ModelName(p)) : null;
+        }
+
+        /// The person keeping this post, bound to this ped. Null if posts are off or the ped is dead.
+        private Resident HolderAt(Ped ped, PostKind kind)
+        {
+            int h = ped.Handle;
+            if (!PostsOn || ENTITY.IS_ENTITY_DEAD(h))
+                return null;
+            uint model = ENTITY.GET_ENTITY_MODEL(h);
+            ResBind b;
+            if (_resBind.TryGetValue(h, out b) && b.Model == model && !b.R.Dead && b.R.PostId != null)
+                return b.R;
+            Resident r = _engine.HolderOf(kind, model, Bridge.Now());
+            _resBind[h] = new ResBind { R = r, Model = model };
+            Post post = _engine.PostOf(r);
+            int presets = OutfitCount(ped, kind);
+            if (post != null && presets > 1)
+            {
+                if (post.Outfit < 0 && r.TookOverAt > 0)
+                    post.Outfit = 1 + Voice.Hash(r.Id + "|outfit") % (presets - 1);   // the one who took over looks like someone else
+                if (post.Outfit >= 0)
+                    _dressDue[h] = post.Outfit;   // the game brings them back as it made them: dress them again, unseen
+            }
+            return r;
+        }
+
+        private int OutfitCount(Ped ped, PostKind kind)
+        {
+            int n = PED.GET_NUM_META_PED_OUTFITS(ped.Handle);
+            if (_outfitsLogged.Add(ENTITY.GET_ENTITY_MODEL(ped.Handle)))
+                Log.Write("OUTFIT probe: " + kind.Model + " (" + kind.Town + ", " + kind.Role + ") has " + n + " outfit preset" + (n == 1 ? "" : "s"));
+            return n;
+        }
+
+        /// Once a second: dress anyone due a new look while nobody can see; every few seconds, a death at a post
+        /// (by any hand) vacates it. The player's own kills are noted at once (PostKilled).
+        private void PostsTick(int now)
+        {
+            if (now < _nextPostTick)
+                return;
+            _nextPostTick = now + 1000;
+            Ped me = Game.Player.Character;
+            foreach (KeyValuePair<int, int> kv in _dressDue.ToList())
+            {
+                int h = kv.Key;
+                if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                {
+                    _dressDue.Remove(h);
+                    continue;
+                }
+                if (ENTITY.IS_ENTITY_ON_SCREEN(h) || ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17))
+                    continue;
+                PED._EQUIP_META_PED_OUTFIT_PRESET(h, kv.Value, false);
+                PED._UPDATE_PED_VARIATION(h, false, true, true, true, false);
+                _dressDue.Remove(h);
+                ResBind b;
+                Log.Write("OUTFIT probe: dressed " + (_resBind.TryGetValue(h, out b) ? b.R.Name : "someone") + " in preset " + kv.Value + ", out of sight");
+            }
+            if (!PostsOn || now < _nextPostDeaths)
+                return;
+            _nextPostDeaths = now + 3000;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                int h = p.Handle;
+                if (!ENTITY.IS_ENTITY_DEAD(h) || _postDeathsSeen.Contains(h))
+                    continue;
+                PostKind k = PostKindOf(p);
+                if (k == null)
+                    continue;
+                _postDeathsSeen.Add(h);
+                bool byPlayer = PED.GET_PED_SOURCE_OF_DEATH(h) == me.Handle;
+                _engine.VacatePost(k, ENTITY.GET_ENTITY_MODEL(h), byPlayer, CountPeopleNear(p.Position, h, 35f), Bridge.Now());
+            }
+            _postDeathsSeen.RemoveWhere(h => !ENTITY.DOES_ENTITY_EXIST(h));
+        }
+
+        /// One line for the F7 dump: who keeps which counter, and who took one over.
+        private string PostsStatus()
+        {
+            if (!_cfg.TownPosts)
+                return "off";
+            List<string> parts = _store.Posts.OrderBy(p => p.Town).Select(p =>
+            {
+                Resident r = _store.FindResident(p.HolderId);
+                return p.Town + " " + p.Role.Replace("the ", "") + ": " + (r == null ? "nobody yet" : r.Name + (r.Dead ? " (died, awaiting a successor)" : Posts.Story(r) != null ? " (" + Posts.Story(r) + ")" : "")) +
+                       (p.Outfit >= 0 ? ", outfit " + p.Outfit : "");
+            }).ToList();
+            return parts.Count == 0 ? "none met yet" : parts.Count + " known: " + string.Join("; ", parts);
+        }
+
+        /// The player killed someone: if they kept a post, it's vacated now (seen: how many saw it).
+        private void PostKilled(Ped victim, int seen)
+        {
+            PostKind k = PostKindOf(victim);
+            if (k == null || !PostsOn || !_postDeathsSeen.Add(victim.Handle))
+                return;
+            _engine.VacatePost(k, ENTITY.GET_ENTITY_MODEL(victim.Handle), true, seen, Bridge.Now());
+        }
+
+        /// The player is at their counter: counted once a game hour, so they know a new face from a regular.
+        private void NotePostVisit(Resident r, float dist)
+        {
+            if (dist > 8f)
+                return;
+            long g = Bridge.Now();
+            PersonState st = _store.Get(_engine.PersonOfResident(r));
+            if (g - st.LastSeenAt < 60)
+                return;
+            st.Sightings++;
+            st.LastSeenAt = g;
+            _engine.KeepResident(r, g);
+        }
+    }
+}

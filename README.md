@@ -12,7 +12,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 
 ## What it does
 
-**People with lives.** Over several meetings, the people enRAGE tracks tell you about themselves: their name, their work, their past, their family. They remember what you did, think about you, keep diaries, gossip, fall in love (adults only), marry, mourn, owe each other money, and come after you. Their personality (hothead, coward, proud, cold, greedy...) colours what they say.
+**People with lives.** The same people keep the same counters: every gunsmith, store keeper, barkeep and doctor is one person who remembers you, and when one dies a relative or a newcomer takes over. Over several meetings, the people enRAGE tracks tell you about themselves: their name, their work, their past, their family. They remember what you did, think about you, keep diaries, gossip, fall in love (adults only), marry, mourn, owe each other money, and come after you. Their personality (hothead, coward, proud, cold, greedy...) colours what they say.
 
 **The ticker.** A thin line at the bottom of the screen shows what the people near you are privately thinking. When nobody is near, it shows a summary of the world and the latest news.
 

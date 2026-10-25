@@ -47,8 +47,9 @@ namespace EnrageWestworld.InGame
             if (!PED.IS_PED_HUMAN(h)) return "not human";
             if (PED.IS_PED_A_PLAYER(h)) return "a player";
             if (Natives.IsChild(ped)) return "a child";
-            if (Natives.StoryModel(ped)) return "a story or unique character";
-            if (!IsGrownUp(ped)) return "not a grown-up";
+            bool post = PostsOn && PostKindOf(ped) != null;   // a counter's person: unique to the game, one person to us
+            if (!post && Natives.StoryModel(ped)) return "a story or unique character";
+            if (!post && !IsGrownUp(ped)) return "not a grown-up";
             if (_bridge.RecordAt(h) != null) return "one of enRAGE's people";
             if (_bridge.AcquaintanceAt(h) != null) return "one of enRAGE's townsfolk";
             return null;
@@ -68,6 +69,9 @@ namespace EnrageWestworld.InGame
                     return b.R;
                 _resBind.Remove(h);   // the game reused the handle for someone else
             }
+            PostKind postKind = PostKindOf(ped);
+            if (postKind != null)
+                return ResidentEligible(ped) ? HolderAt(ped, postKind) : null;   // the post's one person, never recast
             if (!ResidentEligible(ped))
                 return null;
             bool woman = !PED.IS_PED_MALE(h);
@@ -109,7 +113,8 @@ namespace EnrageWestworld.InGame
                     gone.Add(h);
                 else if (ENTITY.IS_ENTITY_DEAD(h))
                 {
-                    kv.Value.R.Dead = true;
+                    if (kv.Value.R.PostId == null)
+                        kv.Value.R.Dead = true;   // a post's person is vacated by the posts code, which notes how they died
                     gone.Add(h);
                 }
             }

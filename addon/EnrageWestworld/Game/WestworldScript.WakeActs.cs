@@ -84,6 +84,8 @@ namespace EnrageWestworld.InGame
                 res = ResidentOf(ped);
             if (res == null || res.Dead)
                 return false;
+            if (res.PostId != null)
+                passive = true;   // a counter's person stays at the counter
             p = _engine.PersonOfResident(res);
             st = _store.Find(res.Id);
             return st != null && st.WakeStage > 0;
@@ -217,7 +219,7 @@ namespace EnrageWestworld.InGame
                 EndWakeAct(old, "replaced by the next stage");
                 _wakeActs.Remove(old);
             }
-            bool passive = !CanDirect(ped) || _bridge.RecordAt(handle) != null;
+            bool passive = !CanDirect(ped) || _bridge.RecordAt(handle) != null || PostKindOf(ped) != null;
             string kind;
             int r = _rng.Next(100);
             switch (st.WakeStage)
@@ -723,7 +725,7 @@ namespace EnrageWestworld.InGame
         /// else owns, with no one near enough to stop them.
         private bool DespairRoll(WakeAct act, Ped me, float dist)
         {
-            if (act.Res == null || act.Passive || _cfg.AwakeningDespair <= 0 || act.St.Has("despair:rolled") || dist < 3f || MISC.GET_MISSION_FLAG() ||
+            if (act.Res == null || act.Res.PostId != null || act.Passive || _cfg.AwakeningDespair <= 0 || act.St.Has("despair:rolled") || dist < 3f || MISC.GET_MISSION_FLAG() ||
                 PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, act.Handle) || ENTITY.IS_ENTITY_A_MISSION_ENTITY(act.Handle))
                 return false;
             act.St.Mark("despair:rolled");

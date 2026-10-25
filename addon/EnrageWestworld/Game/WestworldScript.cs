@@ -990,6 +990,7 @@ namespace EnrageWestworld.InGame
 				", deeds " + _store.Deeds.Count + ", rumours " + _store.TownRumours.Count + ", papers " + _store.Papers.Count(x => x.Delivered) + "/" + _store.Papers.Count +
 				", fallen " + _store.Fallen.Count + ", reveries " + _store.Reveries.Values.Count(x => x.Woke) + "/" + _store.Reveries.Count + ", avengers " + _store.Avengers.Count + ", weddings " + _store.Weddings.Count);
 			Log.Write("TEST stalker: " + StalkerStatus());
+			Log.Write("TEST posts: " + PostsStatus());
 			if (nemesisRecord == null)
 			{
 				int num3 = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);

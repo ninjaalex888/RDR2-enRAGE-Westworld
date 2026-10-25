@@ -381,6 +381,7 @@ namespace EnrageWestworld.InGame
             string place = town ?? zone;
             List<string> witnesses = WitnessesNear(pos, h, 35f);
             int seen = CountPeopleNear(pos, h, 35f);
+            PostKilled(victim, seen);   // someone who kept a counter: the post passes on
             NemesisRecord rec = null;
             if (hit.RecordId == null || !_recById.TryGetValue(hit.RecordId, out rec))
                 rec = _bridge.RecordAt(h);

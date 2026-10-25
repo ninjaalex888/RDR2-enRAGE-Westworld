@@ -43,6 +43,7 @@ namespace EnrageWestworld.Core
         [DataMember] public int DiaryDayKey;
         [DataMember] public List<Resident> Residents = new List<Resident>();   // ordinary people something has happened to (see Residents.cs)
         [DataMember] public int NextResident;
+        [DataMember] public List<Post> Posts = new List<Post>();   // the counters with one person each, who pass them on (see Posts.cs)
 
         public long WasAt;
 
@@ -73,7 +74,9 @@ namespace EnrageWestworld.Core
                 Residents.Add(r);
             while (Residents.Count > MaxResidents)
             {
-                Resident drop = Residents.Where(x => x != r).OrderBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).First();
+                // someone keeping a post now is never dropped
+                Resident drop = Residents.Where(x => x != r && !(x.PostId != null && !x.Dead))
+                    .OrderBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).First();
                 Residents.Remove(drop);
                 People.Remove(drop.Id);
             }
@@ -228,6 +231,10 @@ namespace EnrageWestworld.Core
             if (Counts == null) Counts = new Dictionary<string, int>();
             if (TownVisits == null) TownVisits = new Dictionary<string, long>();
             if (Residents == null) Residents = new List<Resident>();
+            if (Posts == null) Posts = new List<Post>();
+            foreach (Post p in Posts)
+                if (p.Former == null)
+                    p.Former = new List<string>();
             foreach (Affair a in Affairs)
                 if (a.Said == null)
                     a.Said = new List<string>();

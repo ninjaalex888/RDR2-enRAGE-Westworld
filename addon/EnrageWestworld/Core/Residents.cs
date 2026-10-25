@@ -30,6 +30,11 @@ namespace EnrageWestworld.Core
         [DataMember] public long MetAt;            // game minute they were made
         [DataMember] public long TouchedAt;        // game minute something last happened to them
         [DataMember] public bool Dead;
+        [DataMember] public string PostId;         // the counter they keep (see Posts.cs), if any
+        [DataMember] public string Kin;            // how they're related to the one who kept it before ("son"), null for a newcomer
+        [DataMember] public string KinOf;          // the one who kept it before, by name
+        [DataMember] public string From;           // a newcomer's old town
+        [DataMember] public long TookOverAt;       // game minute they took the post over, 0 for the first
 
         public static bool IsResident(string id)
         {

@@ -451,6 +451,30 @@ namespace EnrageWestworld.InGame
                     });
                     continue;
                 }
+                // the person at a counter: one person for good, who knows you
+                PostKind pk = _cfg.TownPosts ? Posts.Of(Natives.ModelName(ped)) : null;
+                if (pk != null)
+                {
+                    Resident holder = HolderAt(ped, pk);
+                    if (holder != null)
+                    {
+                        NotePostVisit(holder, d);
+                        float near = d;
+                        _near.Add(new NearThought
+                        {
+                            Key = holder.Id,
+                            Name = holder.Name + ", " + pk.Role,
+                            Distance = d + 2f,
+                            Text = () =>
+                            {
+                                PersonState hs = _store.Find(holder.Id);
+                                return _cfg.WestWorld && hs != null && hs.WakeStage > 0 ? Hosts.Thought(_engine.PersonOfResident(holder), hs, _engine.Player, holder.Id + "|" + now / 180)
+                                    : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / 600);
+                            }
+                        });
+                    }
+                    continue;
+                }
                 if (d < 12f && (stranger == null || d < strangerDist) && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && ResidentEligible(ped))
                 {
                     stranger = ped;
@@ -540,6 +564,7 @@ namespace EnrageWestworld.InGame
             if (!PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;
             QuietStep(now);
+            PostsStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);
             Safe("arrivals", _aArrival);
