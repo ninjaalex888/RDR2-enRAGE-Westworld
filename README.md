@@ -8,7 +8,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-**Version 0.5.5.** Stable in play so far. Stalkers, the posse scene, the wake key and the Awakening's first stages have been seen in game; the newest parts (the fuller wake acts, voices matched to feeling, the gang news pop-ups) have had only a short test. One content note: an adjustable chance (`AwakeningDespair`, default 10 percent, 0 turns it off) that a fully awake, armed ordinary person ends their own life. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/issues) and attach your log.
+**Version 0.5.5.** Stable in play so far. Stalkers, the posse scene, the wake key and the Awakening's first stages have been seen in game; the newest parts (the fuller wake acts, voices matched to feeling, the gang news pop-ups) have had only a short test. One content note: an adjustable chance (`AwakeningDespair`, default 75 percent, 0 turns it off) that a fully awake, armed ordinary person ends their own life. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RDR2-enRAGE-Westworld/issues) and attach your log.
 
 ## What it does
 

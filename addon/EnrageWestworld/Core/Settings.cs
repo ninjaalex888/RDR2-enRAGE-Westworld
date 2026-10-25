@@ -1,6 +1,7 @@
 // RealNPCs.ini. Read by field name (key = value ; comment), so a new option only needs a field
 // here and a line in ToIni(). Older files are upgraded in place: values kept, new options added.
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -10,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 16;
+        public const int CurrentVersion = 17;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -45,7 +46,7 @@ namespace EnrageWestworld.Core
         public int AwakeningShare = 5;
         public int AwakeningDays = 1;
         public int AwakeningBreakdown = 90;
-        public int AwakeningDespair = 10;
+        public int AwakeningDespair = 75;
         public bool HostsQuestionReality = true;
         public int RealityChance = 15;
         public bool Glitches = true;
@@ -194,6 +195,19 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// An ini still holding an old default gets the new one; a value of the player's own is kept.
+        private static void RaiseOldDefaults(Settings s, Action<string> log)
+        {
+            List<string> raised = new List<string>();
+            if (s.AwakeningDays == 6) { s.AwakeningDays = 1; raised.Add("AwakeningDays 6 -> 1"); }
+            if (s.AwakeningBreakdown == 35) { s.AwakeningBreakdown = 90; raised.Add("AwakeningBreakdown 35 -> 90"); }
+            if (s.AwakeningDespair == 2 || s.AwakeningDespair == 10) { raised.Add("AwakeningDespair " + s.AwakeningDespair + " -> 75"); s.AwakeningDespair = 75; }
+            if (s.ReturnChance == 15) { s.ReturnChance = 35; raised.Add("ReturnChance 15 -> 35"); }
+            if (s.StrangerReturnChance == 5) { s.StrangerReturnChance = 15; raised.Add("StrangerReturnChance 5 -> 15"); }
+            if (raised.Count > 0)
+                log?.Invoke("Settings: old defaults raised to the new ones: " + string.Join(", ", raised) + ".");
+        }
+
         public static Settings Load(string path, Action<string> log)
         {
             Settings s = new Settings();
@@ -255,6 +269,8 @@ namespace EnrageWestworld.Core
                     s.StalkerChance = 20;   // the old default: stalkers were too rare to ever meet
                 if (s.SettingsVersion < 8 && (s.StalkerMinutes == 8 || s.StalkerMinutes == 60))
                     s.StalkerMinutes = 120; // the old default and the old ceiling: a stalker now stays up to two hours
+                if (s.SettingsVersion < 17)
+                    RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
                 log?.Invoke("Settings: updated " + Path.GetFileName(path) + " to this version (your values kept, new options added).");

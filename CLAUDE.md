@@ -73,8 +73,8 @@ There is no way to run the game in CI. Play-test in game and read the log at `Do
 ## Wake acts (0.5.5)
 
 - Identity vs direction: `ResidentEligible` (identity) accepts any adult human incl. soldiers, lawmen, script-owned; `CanDirect` decides movement. enRAGE records and script-owned peds only get passive acts (look-at, ticker thought, voice; no task clears). The army models are enRAGE gang models, so script-owned soldiers are probably enRAGE extras.
-- Acts live in `WestworldScript.WakeActs.cs`; each act's words are in `Core/WakeBeats.cs`. Awake (stage 4) is a state: approach, talk, then an ending (plead, escape, wake someone, kneel, or the rare despair). `WakeDemo` (G) ends the current act and starts the new stage's.
-- Despair: `AwakeningDespair` percent, rolled once per awake person (`despair:rolled` in `PersonState.Told`), residents only, free ambient peds only, armed only (`IS_PED_ARMED(h, 4)`); the bullet's owner is the ped itself so `Watch.cs` (which only counts events whose attacker is the player) books nothing as the player's. Unarmed -> kneel. Knife / head-against-wall endings are NOT built (no verified animations).
+- Acts live in `WestworldScript.WakeActs.cs`; each act's words are in `Core/WakeBeats.cs`. Awake (stage 4) is a state: approach, talk, then an ending (plead, escape, wake someone, kneel, or despair, `AwakeningDespair`, default 75). `WakeDemo` (G) ends the current act and starts the new stage's.
+- Despair: `AwakeningDespair` percent, default 75 since 0.6.0 (old inis holding 2 or 10 are raised by `Settings.RaiseOldDefaults`, with the other 0.6.0 defaults), rolled once per awake person (`despair:rolled` in `PersonState.Told`), residents only, free ambient peds only, armed only (`IS_PED_ARMED(h, 4)`); the bullet's owner is the ped itself so `Watch.cs` (which only counts events whose attacker is the player) books nothing as the player's. Unarmed -> kneel. Knife / head-against-wall endings are NOT built (no verified animations).
 
 ## Writing brief for thoughts
 

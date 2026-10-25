@@ -41,8 +41,11 @@ NEW IN 0.6.0
 - The ticker is always one line high, so it never overlaps the game's subtitles.
 - T (TickerNextKey) shows the next line on the ticker now; on a long line shown in parts, the
   next part first. T is also enRAGE's telegraph key: near a telegraph clerk, both happen.
-- New defaults: AwakeningDays 1, AwakeningBreakdown 90, AwakeningDespair 10, ReturnChance 35,
-  StrangerReturnChance 15. If your ini already has these, your own values are kept.
+- New defaults: AwakeningDays 1, AwakeningBreakdown 90, AwakeningDespair 75, ReturnChance 35,
+  StrangerReturnChance 15. If your ini still has the old defaults (6, 35, 2, 15, 5), they are
+  raised to these, and the log says which; values you chose yourself are kept.
+- CONTENT NOTE: AwakeningDespair is now 75 percent by default, so most fully awake, armed
+  ordinary people end their own life. Set it to 0 if you would rather not see it.
 
 
 NEW IN 0.5.5
@@ -68,7 +71,7 @@ NEW IN 0.5.5
 - Ordinary people's thoughts are now written from real psychology: the body, status anxiety, loss and threat bias, the worries of 1899, the mask over what they feel, and what they notice about you when you are close.
 - Every adult can now be a person with a mind, soldiers and lawmen too. Ordinary people get the full acts; enRAGE's own people and soldiers in its camps only turn their heads, think and speak (their movement is enRAGE's).
 - Fuller acts. Stirring: double-takes. Questioning: standing perfectly still, pacing, walking out to see where the town ends, asking a neighbour if they feel it too. Unravelling: freezing mid-step, shouting at the sky, kneeling, running with no goal. Awake is a lasting state: they come to you, say a few things (who is writing this, is there an outside) and end by pleading, trying to leave town, trying to wake someone or refusing to get up.
-- CONTENT NOTE: a chance (AwakeningDespair, default 10 percent, 0 turns it off) that a fully awake, armed ordinary person cannot bear it and ends their own life. It never happens to enRAGE's people or townsfolk, and it is not counted as anything you did. Set it to 0 if you would rather not see it.
+- CONTENT NOTE: a chance (AwakeningDespair, default 75 percent since 0.6.0, 0 turns it off) that a fully awake, armed ordinary person cannot bear it and ends their own life. It never happens to enRAGE's people or townsfolk, and it is not counted as anything you did. Set it to 0 if you would rather not see it.
 - Acts and words belong together now: people who pace count their steps in their heads, people who freeze lose their sentence halfway, and the one walking up to you thinks about why. The thoughts appear on the ticker as it happens.
 - Ordinary people have inner lives of their own: what a passer-by thinks now comes from their trade, town, temperament, faith or the hour of the day.
 - Gang and faction news (wars, feuds, clashes, rivalries) now appears as the game's pop-up on the right of the screen, away from the bottom ticker, which keeps what people think and do. WarNewsTo in the ini (right or ticker) switches it back.
@@ -364,7 +367,7 @@ in the file. The new ones:
             TickerNextKey (T): the next line now
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
             AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
-            or awake person falls apart), AwakeningDespair (10, 0-100, see the content note above),
+            or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
             Reveries (true), ReturnChance (35), StrangerReturnChance (15)
 [Stalkers]  Stalkers (true): the master switch. StalkerChance (20, percent per day),

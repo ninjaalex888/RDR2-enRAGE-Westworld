@@ -10,7 +10,7 @@
 - The ini is reorganised into `[WestWorld]`, `[Stalkers]` and `[Voices]` (settings version 13); values are kept. The game runs on a copy with the master switches applied; the ini always keeps the player's own values.
 - The ticker is always one line high now, so it no longer overlaps the game's subtitles just above it. Text a little too long is set slightly smaller; text much too long is shown in parts, one after another, in the same bar.
 - `TickerNextKey` (T) in `[Ticker]` shows the next line on the ticker now; on a line shown in parts, the next part first. From someone's thought it moves on to the news, so pressing it again near the same person doesn't bring the same thought back. T is also enRAGE's telegraph key, which only does something within a few steps of a telegraph clerk; there, both happen. Settings version 16.
-- New defaults, from play-testing: `AwakeningDays` 1 (was 6), `AwakeningBreakdown` 90 (was 35), `AwakeningDespair` 10 (was 2), `ReturnChance` 35 (was 15), `StrangerReturnChance` 15 (was 5). An ini that already has these keeps its own values.
+- New defaults, from play-testing: `AwakeningDays` 1 (was 6), `AwakeningBreakdown` 90 (was 35), `AwakeningDespair` 75 (was 2), `ReturnChance` 35 (was 15), `StrangerReturnChance` 15 (was 5). An ini that still holds an old default is raised to the new one when it is updated, and the log lists which; values set by the player are kept. Settings version 17.
 
 ## 0.5.5
 
