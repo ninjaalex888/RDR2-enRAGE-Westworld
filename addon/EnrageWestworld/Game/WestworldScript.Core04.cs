@@ -423,6 +423,13 @@ namespace EnrageWestworld.InGame
                         HermitNear(ped, hd);
                     continue;
                 }
+                if (IsGatherer(h))
+                {
+                    float gd = ped.Position.DistanceTo(pos);
+                    if (gd <= r && !ENTITY.IS_ENTITY_DEAD(h))
+                        GatherNear(ped, gd);
+                    continue;
+                }
                 if (h == me.Handle || Spawner.IsOurs(h))
                     continue;
                 float d = ped.Position.DistanceTo(pos);

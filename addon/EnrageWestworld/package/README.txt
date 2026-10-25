@@ -128,6 +128,13 @@ NEW IN 0.6.0
   to five. They stand and watch as you come, warn you off if you come closer, and tell you how it
   was if you keep your distance (each thing once). Crowd them, aim at them or hurt them and they
   run, and are back another time. They are never armed. Killing one counts like any killing.
+- The gathering (West World). From midnight to half past three in the wilds, on a roll
+  (GatheringChance, 15 percent, at most once a night), four to seven of the awake stand in a
+  silent ring somewhere off in the dark, facing in: people who have begun to come apart or are
+  fully awake, as they looked when you met them, and strangers. Come near and every head turns to
+  you. Look away and they are closer; look back and they stop dead, never nearer than a few
+  steps. Stand in the middle and they speak at once. Aim at one, shoot, or hit one and they
+  scatter. They never attack.
 
 
 NEW IN 0.5.5
@@ -466,7 +473,8 @@ in the file. The new ones:
 [Encounters] Encounters (true): the master switch. EncounterEveryMinutes (12): real minutes
             between rolls, CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
             4 am in the wilds), Hermits (true, needs WestWorld), HermitChance (25, a new
-            camp's chance per roll in the wilds)
+            camp's chance per roll in the wilds), Gatherings (true, needs WestWorld),
+            GatheringChance (15, percent per roll, midnight to 3:30 am in the wilds)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)

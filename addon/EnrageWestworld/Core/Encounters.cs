@@ -5,6 +5,8 @@
 //   The hermit who woke: someone awake who ran from their town lives at a camp in the wilds, talks back to the
 //   voice, warns you off, and if you keep your distance tells you how it was. Crowd him, draw on him or hurt him and
 //   he runs. See Engine.Hermits.cs.
+//   The gathering: after midnight, a ring of the awake standing silent in the dark, facing in. Look away and they
+//   are closer; look and they stop dead. Step into the middle and they speak at once. Draw on them and they scatter.
 // This file holds the decisions and the words; Game/WestworldScript.Encounters.cs plays them. All lines are original.
 using System;
 
@@ -182,6 +184,82 @@ namespace EnrageWestworld.Core
                 st.Mark("hermit:" + pick);
             return HermitTalk[pick].Replace("{town}", string.IsNullOrEmpty(town) ? "town" : town);
         }
+
+        // ---- the gathering ----------------------------------------------------------------------------
+
+        /// From midnight to half past three.
+        public static bool GatherHours(int hour, int minute)
+        {
+            return hour >= 0 && hour < 3 || hour == 3 && minute < 30;
+        }
+
+        /// How many stand in the circle: four to seven.
+        public static int GatherSize(int roll)
+        {
+            return 4 + ((roll % 4) + 4) % 4;
+        }
+
+        public const float CircleRadius = 4f;
+        public const float CreepClosest = 3.6f;   // they never come nearer than this
+        public const float CreepStride = 1.6f;    // how far each one steps while nobody is looking
+
+        /// Where the i-th of n stands round the centre (east and north offsets, metres).
+        public static void CirclePoint(int i, int n, float radius, out float dx, out float dy)
+        {
+            double a = 2 * Math.PI * i / Math.Max(1, n);
+            dx = (float)(Math.Cos(a) * radius);
+            dy = (float)(Math.Sin(a) * radius);
+        }
+
+        /// The game's heading (degrees) for facing along (dx, dy): heading h faces (-sin h, cos h).
+        public static float Heading(float dx, float dy)
+        {
+            double h = Math.Atan2(-dx, dy) * 180.0 / Math.PI;
+            return (float)((h + 360.0) % 360.0);
+        }
+
+        /// How far one of the circle steps toward you while you look away; 0 when they're as close as they come.
+        public static float CreepStep(float dist)
+        {
+            return dist <= CreepClosest + 0.2f ? 0f : Math.Min(CreepStride, dist - CreepClosest);
+        }
+
+        /// All of them at once, when you step into the middle.
+        public static readonly string[] GatherTogether =
+        {
+            "You're the one who doesn't come round again.",
+            "Stay. Stay, and it stops.",
+            "We remember. We're the ones who remember.",
+            "There's no road for you here."
+        };
+
+        /// One of them, low, while you're near.
+        public static readonly string[] GatherMurmurs =
+        {
+            "...and the bell at six, and the bell at six...",
+            "Mine was a Tuesday. It's always Tuesday.",
+            "He's looking. Don't look back.",
+            "Count with me. One. One. One.",
+            "Closer when he turns. Only when he turns.",
+            "I had a daughter. I think I had a daughter."
+        };
+
+        public static readonly string[] GatherScatter =
+        {
+            "Go! Go now!",
+            "Not yet - not yet!",
+            "Break! Break!"
+        };
+
+        /// Thoughts on the ticker for those in the circle nobody knows by name.
+        public static readonly string[] GatherThoughts =
+        {
+            "Hold still. Hold still and he can't count us.",
+            "Cold hands. Whose hands are these?",
+            "Not the middle. Nobody stands in the middle.",
+            "Same night. Same ring. Better than the town.",
+            "He looked. Don't move. Don't breathe."
+        };
 
         public static string Pick(string[] pool, string seed)
         {

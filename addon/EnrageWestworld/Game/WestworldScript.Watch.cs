@@ -407,8 +407,8 @@ namespace EnrageWestworld.InGame
             int h = victim.Handle;
             if (hit.CameAtYou)
                 Defending(now);   // the kill is what usually brings the bounty, and reports lag: the fight goes on from here
-            if (Spawner.IsOurs(h) && !IsHermit(h))
-                return;           // the add-on's own (an encounter's attackers): no deed, but the defence above still counts. A hermit is a person like any other
+            if (Spawner.IsOurs(h) && !IsHermit(h) && !IsGatherer(h))
+                return;           // the add-on's own (an encounter's attackers): no deed, but the defence above still counts. A hermit or one of a gathering is a person like any other
             Vector3 pos = victim.Position;
             string town = _bridge.TownAt(pos);
             string zone = ZoneAt(pos);
