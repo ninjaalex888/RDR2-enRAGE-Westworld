@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 17;
+        public const int CurrentVersion = 18;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -70,8 +70,9 @@ namespace EnrageWestworld.Core
         public int StalkerFollowMetres = 26;
         public int StalkerStareMetres = 34;
         public int StalkerStillSeconds = 20;
-        public string StalkerWhenStill = "circle";
+        public string StalkerWhenStill = "mix";
         public int StalkerCircleMetres = 8;
+        public int StalkerActMetres = 12;
         public int StalkerHideMin = 45;
         public int StalkerHideMax = 70;
         public bool StalkerMutters = true;
@@ -199,11 +200,15 @@ namespace EnrageWestworld.Core
         private static void RaiseOldDefaults(Settings s, Action<string> log)
         {
             List<string> raised = new List<string>();
-            if (s.AwakeningDays == 6) { s.AwakeningDays = 1; raised.Add("AwakeningDays 6 -> 1"); }
-            if (s.AwakeningBreakdown == 35) { s.AwakeningBreakdown = 90; raised.Add("AwakeningBreakdown 35 -> 90"); }
-            if (s.AwakeningDespair == 2 || s.AwakeningDespair == 10) { raised.Add("AwakeningDespair " + s.AwakeningDespair + " -> 75"); s.AwakeningDespair = 75; }
-            if (s.ReturnChance == 15) { s.ReturnChance = 35; raised.Add("ReturnChance 15 -> 35"); }
-            if (s.StrangerReturnChance == 5) { s.StrangerReturnChance = 15; raised.Add("StrangerReturnChance 5 -> 15"); }
+            if (s.SettingsVersion < 17)
+            {
+                if (s.AwakeningDays == 6) { s.AwakeningDays = 1; raised.Add("AwakeningDays 6 -> 1"); }
+                if (s.AwakeningBreakdown == 35) { s.AwakeningBreakdown = 90; raised.Add("AwakeningBreakdown 35 -> 90"); }
+                if (s.AwakeningDespair == 2 || s.AwakeningDespair == 10) { raised.Add("AwakeningDespair " + s.AwakeningDespair + " -> 75"); s.AwakeningDespair = 75; }
+                if (s.ReturnChance == 15) { s.ReturnChance = 35; raised.Add("ReturnChance 15 -> 35"); }
+                if (s.StrangerReturnChance == 5) { s.StrangerReturnChance = 15; raised.Add("StrangerReturnChance 5 -> 15"); }
+            }
+            if (s.SettingsVersion < 18 && s.StalkerWhenStill == "circle") { s.StalkerWhenStill = "mix"; raised.Add("StalkerWhenStill circle -> mix (the new odd acts, among the rest)"); }
             if (raised.Count > 0)
                 log?.Invoke("Settings: old defaults raised to the new ones: " + string.Join(", ", raised) + ".");
         }
@@ -269,8 +274,7 @@ namespace EnrageWestworld.Core
                     s.StalkerChance = 20;   // the old default: stalkers were too rare to ever meet
                 if (s.SettingsVersion < 8 && (s.StalkerMinutes == 8 || s.StalkerMinutes == 60))
                     s.StalkerMinutes = 120; // the old default and the old ceiling: a stalker now stays up to two hours
-                if (s.SettingsVersion < 17)
-                    RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on
+                RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
                 log?.Invoke("Settings: updated " + Path.GetFileName(path) + " to this version (your values kept, new options added).");
@@ -303,7 +307,8 @@ namespace EnrageWestworld.Core
             StalkerHideMin = Math.Max(20, Math.Min(150, StalkerHideMin));
             StalkerHideMax = Math.Max(StalkerHideMin, Math.Min(200, StalkerHideMax));
             string still = (StalkerWhenStill ?? "").Trim().ToLowerInvariant();
-            StalkerWhenStill = still == "watch" || still == "rush" ? still : "circle";
+            StalkerWhenStill = still == "circle" || still == "watch" || still == "rush" || still == "eerie" ? still : "mix";
+            StalkerActMetres = Math.Max(5, Math.Min(30, StalkerActMetres));
             VoiceVolume = Math.Max(0, Math.Min(100, VoiceVolume));
             StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerDayOnly = Math.Max(0, Math.Min(1000, StalkerDayOnly));
@@ -392,8 +397,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("StalkerFollowMetres = " + StalkerFollowMetres + "   ; how close he follows");
             b.AppendLine("StalkerStareMetres = " + StalkerStareMetres + "   ; within this distance he stops and stares (more than StalkerFollowMetres)");
             b.AppendLine("StalkerStillSeconds = " + StalkerStillSeconds + "   ; stand still this long and he does what StalkerWhenStill says");
-            b.AppendLine("StalkerWhenStill = " + StalkerWhenStill + "   ; circle: runs in close and circles you; watch: keeps his distance and stares; rush: runs straight at you and stops a few steps short (he never attacks)");
+            b.AppendLine("StalkerWhenStill = " + StalkerWhenStill + "   ; circle: runs in close and circles you; watch: keeps his distance and stares; rush: runs straight at you and stops a few steps short; eerie: comes to StalkerActMetres and does odd things (digs a grave, kneels, waves, beckons, freezes mid-gesture); mix: a different one each time (he never attacks)");
             b.AppendLine("StalkerCircleMetres = " + StalkerCircleMetres + "   ; how close he circles (3-15)");
+            b.AppendLine("StalkerActMetres = " + StalkerActMetres + "   ; how far from you he does his odd things (5-30)");
             b.AppendLine("StalkerHideMin = " + StalkerHideMin + "   ; when you move, he runs back out at least this far...");
             b.AppendLine("StalkerHideMax = " + StalkerHideMax + "   ; ... and at most, behind a tree or a building if there is one");
             b.AppendLine("StalkerMutters = " + B(StalkerMutters) + "   ; he mutters now and then");

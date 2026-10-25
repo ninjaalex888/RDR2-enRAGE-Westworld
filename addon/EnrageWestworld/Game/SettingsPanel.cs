@@ -64,7 +64,7 @@ namespace EnrageWestworld.InGame
 
         private static readonly Dictionary<string, string[]> Choices = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
-            { "StalkerWhenStill", new[] { "circle", "watch", "rush" } },
+            { "StalkerWhenStill", new[] { "mix", "eerie", "circle", "watch", "rush" } },
             { "NewsTo", new[] { "ticker", "subtitles", "enrage", "gamefeed" } },
             { "WarNewsTo", new[] { "right", "ticker" } }
         };
@@ -76,7 +76,7 @@ namespace EnrageWestworld.InGame
             { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
             { "TickerY", "Ticker height on screen" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
-            { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }
+            { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMetres", "How far off he does odd things" }
         };
 
         private readonly Func<Bridge> _bridgeOf;

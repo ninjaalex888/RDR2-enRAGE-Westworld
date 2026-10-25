@@ -1,7 +1,8 @@
 // Someone following the player at a distance. Never attacks. Stands and stares when he thinks he's unseen,
 // freezes when looked at, then slips out of sight; turns up behind you again when you've ridden off.
 // Stand still a while (StalkerStillSeconds) and he does what StalkerWhenStill says: circles you close, keeps his
-// distance and stares, or runs straight at you and stops a few steps short; take a step and he runs back out
+// distance and stares, runs straight at you and stops a few steps short, or does odd things (Stalker.Acts.cs); or a
+// different one each time (mix). Take a step and he runs back out
 // (StalkerHideMin-Max), behind a tree or a corner if there is one. Never attacks; runs for good when threatened.
 // Every distance and time comes from the [Stalkers] settings, read live.
 using System;
@@ -12,9 +13,9 @@ using RDR2.Native;
 
 namespace EnrageWestworld.InGame
 {
-    internal sealed class Stalker
+    internal sealed partial class Stalker
     {
-        private enum Mode { Follow, Stare, Watched, Hide, Circle, Retreat, Lurk, Still, Rush, Flee }
+        private enum Mode { Follow, Stare, Watched, Hide, Circle, Retreat, Lurk, Still, Rush, Act, Flee }
 
         private const uint MoveLR = 1301263553u, MoveUD = 4255658384u, HorseMoveLR = 308778731u, HorseMoveUD = 1002303471u;
 
@@ -126,7 +127,7 @@ namespace EnrageWestworld.InGame
             bool active = PlayerActive(player);
             if (active)
                 _stillSince = now;
-            bool close = _mode == Mode.Circle || _mode == Mode.Retreat || _mode == Mode.Rush;   // he chose to be near: no "caught" flight
+            bool close = _mode == Mode.Circle || _mode == Mode.Retreat || _mode == Mode.Rush || _mode == Mode.Act;   // he chose to be near: no "caught" flight
 
             if (_mode != Mode.Flee && (threatened || (dist < 7f && !close) || now > _endsAt))
             {
@@ -139,11 +140,18 @@ namespace EnrageWestworld.InGame
                 return;
             }
 
-            if (_mode != Mode.Flee && _mode != Mode.Circle && _mode != Mode.Rush && _mode != Mode.Still && now - _stillSince >= _cfg.StalkerStillSeconds * 1000)
+            if (_mode != Mode.Flee && _mode != Mode.Circle && _mode != Mode.Rush && _mode != Mode.Still && _mode != Mode.Act && now - _stillSince >= _cfg.StalkerStillSeconds * 1000)
                 StartStill(player, now);
 
             switch (_mode)
             {
+                case Mode.Act:   // he wants to be seen: being watched changes nothing
+                    if (active)
+                        EndEerie(player, now);
+                    else
+                        EerieStep(player, now);
+                    break;
+
                 case Mode.Circle:
                     if (active)
                     {
@@ -275,7 +283,7 @@ namespace EnrageWestworld.InGame
                     break;
             }
 
-            if (_cfg.StalkerMutters && _mode != Mode.Flee && (!watched || _mode == Mode.Circle || _mode == Mode.Rush) && dist < 50f && now >= _nextMutter)
+            if (_cfg.StalkerMutters && _mode != Mode.Flee && (!watched || _mode == Mode.Circle || _mode == Mode.Rush || _mode == Mode.Act) && dist < 50f && now >= _nextMutter)
             {
                 _nextMutter = now + 40000 + _rng.Next(30000);
                 say(Label, Hosts.StalkerMutter(Revenant, you, Revenant != null, Label + now / 1000), Revenant != null);
@@ -364,8 +372,11 @@ namespace EnrageWestworld.InGame
         {
             _stillSince = now;
             int dist = (int)_ped.Position.DistanceTo(player.Position);
-            switch (_cfg.StalkerWhenStill)
+            switch (_cfg.StalkerWhenStill == "mix" ? StalkerActs.Mix(_rng) : _cfg.StalkerWhenStill)
             {
+                case "eerie":
+                    StartEerie(player, now);
+                    break;
                 case "watch":
                     _mode = Mode.Still;
                     Face(player, true);
@@ -481,6 +492,7 @@ namespace EnrageWestworld.InGame
             Done = true;
             if (_ped != null)
             {
+                ReleaseAnims();
                 bool seen = _ped.Exists() && ENTITY.IS_ENTITY_ON_SCREEN(_ped.Handle);
                 Spawner.Release(_ped, vanish || !seen);
             }

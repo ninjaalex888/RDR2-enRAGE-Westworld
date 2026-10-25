@@ -27,7 +27,7 @@ NEW IN 0.6.0
   Stalkers is its own switch now, with its own settings: the chance, the hours they turn up, how
   far back they follow, how close they come, how far they run off, whether they mutter, and what
   they do when you stand still (StalkerWhenStill: circle you close, watch you from where they are,
-  or run straight at you and stop a few steps short - they never attack).
+  run straight at you and stop a few steps short, do odd things, or a mix - they never attack).
 - A new settings panel on Alt+F11, with larger text: RealNPCs, West World, Stalkers and every enRAGE
   setting in one place. Up/Down choose, Left/Right change (Shift: ten at a time), Q/E turn the
   page, Tab jumps between RealNPCs and enRAGE, Enter sets a key, Backspace closes. Greyed-out
@@ -46,6 +46,15 @@ NEW IN 0.6.0
   raised to these, and the log says which; values you chose yourself are kept.
 - CONTENT NOTE: AwakeningDespair is now 75 percent by default, so most fully awake, armed
   ordinary people end their own life. Set it to 0 if you would rather not see it.
+- Stalkers do odd things now. Stand still and, more often than not, the stalker comes to about
+  12 m (StalkerActMetres), faces you and works through the game's own gestures and tasks, one
+  after another with a stare between: digging a grave, scrubbing blood from the ground, kneeling
+  as at a graveside, lying down like the dead, writing in a notebook, pointing at the eyes and then
+  at you, a finger to the lips, a slow wave, beckoning, howling at night, laughing, a jig. Some
+  gestures are done twice exactly alike, stop dead partway, or go slow. Move and it stops at once
+  and runs off. StalkerWhenStill is now mix by default (odd things most times, else circling,
+  watching or rushing); eerie is odd things only. An ini still on the old default (circle) is
+  moved to mix.
 
 
 NEW IN 0.5.5
@@ -293,8 +302,9 @@ Strangers you kill are remembered too, and a few (StrangerReturnChance, 15%) com
 
 Stalkers. Rarely, by day or by night, someone follows you. They keep their distance, stand and stare when they think
 you can't see, freeze when you look at them and slip out of sight, and somehow turn up behind you
-again after you've ridden off. Stand still for 20 seconds and they run in close and circle you;
-move and they run back out, behind a tree or a building if there is one. They
+again after you've ridden off. Stand still for 20 seconds and they come closer and do something:
+odd gestures and tasks (digging a grave, a finger to the lips, a slow wave), circling you, or
+just watching; move and they run back out, behind a tree or a building if there is one. They
 never attack. Draw on them and they run for good. One can follow you for up to two hours.
 Sometimes it's someone you killed.
 
@@ -376,8 +386,9 @@ in the file. The new ones:
             StalkerNightFrom (18) / StalkerNightTo (4): when a night stalker turns up,
             StalkerMinutes (120), StalkerAppearMin (45) / StalkerAppearMax (70): how far behind you
             he first turns up, StalkerFollowMetres (26), StalkerStareMetres (34),
-            StalkerStillSeconds (20), StalkerWhenStill (circle | watch | rush): what he does when
-            you stand still, StalkerCircleMetres (8), StalkerHideMin (45) / StalkerHideMax (70):
+            StalkerStillSeconds (20), StalkerWhenStill (mix | eerie | circle | watch | rush): what he
+            does when you stand still, StalkerCircleMetres (8), StalkerActMetres (12): how far off
+            he does odd things, StalkerHideMin (45) / StalkerHideMax (70):
             how far he runs off when you move, StalkerMutters (true). He never attacks.
 [Voices]    SpokenVoice (true), VoiceVolume (80), VoiceMan, VoiceWoman (part of a Windows voice's
             name; empty = any), VoiceVariety (true)
