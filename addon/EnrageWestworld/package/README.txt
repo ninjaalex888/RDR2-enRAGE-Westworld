@@ -59,7 +59,7 @@ NEW IN 0.6.0
   runs off. StalkerWhenStill is now mix by default (odd things most times, else circling,
   watching or rushing); eerie is odd things only. An ini still on the old default (circle) is
   moved to mix.
-- Who stalks you has changed. Every StalkerEveryMinutes (10) real minutes of play there is a roll
+- Who stalks you has changed. Every StalkerEveryMinutes (34) real minutes of play there is a roll
   at StalkerChance (20 percent). On a hit, someone already near you (within StalkerNearbyMetres,
   60) stops what they're doing, stares at you, and starts following you: whoever has the most
   history with you, such as an enRAGE townsperson with a grudge or who saw what you did, or someone
@@ -433,7 +433,7 @@ in the file. The new ones:
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
             Reveries (true), ReturnChance (35), StrangerReturnChance (15)
 [Stalkers]  Stalkers (true): the master switch. StalkerKey (]): make one now,
-            StalkerEveryMinutes (10): real minutes between rolls, StalkerChance (20, percent per roll),
+            StalkerEveryMinutes (34): real minutes between rolls, StalkerChance (20, percent per roll),
             StalkerNearbyMetres (60): someone this close becomes the stalker, StalkerStrangers (true):
             a stranger if nobody near can, StalkerMinutes (120), StalkerAppearMin (45) /
             StalkerAppearMax (70): how far behind you a stranger first turns up, StalkerFollowMetres (26), StalkerStareMetres (34),

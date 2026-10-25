@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 27;
+        public const int CurrentVersion = 28;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -57,7 +57,7 @@ namespace EnrageWestworld.Core
         // [Stalkers]
         public bool Stalkers = true;
         public string StalkerKey = "]";
-        public int StalkerEveryMinutes = 10;
+        public int StalkerEveryMinutes = 34;
         public int StalkerChance = 20;
         public int StalkerNearbyMetres = 60;
         public bool StalkerStrangers = true;
@@ -229,6 +229,11 @@ namespace EnrageWestworld.Core
             {
                 s.ReaderKey = "N";   // ...and on to N (a key of your own is kept)
                 raised.Add("ReaderKey - -> N");
+            }
+            if (s.SettingsVersion < 28 && s.StalkerEveryMinutes == 10)
+            {
+                s.StalkerEveryMinutes = 34;   // the roll for a stalker comes less often now (a value of your own is kept)
+                raised.Add("StalkerEveryMinutes 10 -> 34");
             }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
