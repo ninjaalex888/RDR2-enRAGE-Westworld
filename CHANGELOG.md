@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.1 (not released yet)
+
+- The stalker's odd acts, from the 0.6.0 log. 22 of the 28 emotes were Online ones that Story Mode doesn't have, so he never made them. In their place are the gestures townsfolk make as they talk: a hat tip, a hand up for quiet, a slow head-shake, spitting, a nod, laughing at nothing, a salute and more, 21 in all for men and women. They are played on the upper body only, so he should stay standing; if the game doesn't report them playing that way, they are tried over the whole body, and the log says which. The three Online emotes Story Mode does have are kept (the bow, pointing and laughing, the jig). At load the log says which animation sets the game has (`STALKER acts:`, also in the F7 dump); in game, all four gesture sets are there. The gestures themselves are not yet seen playing.
+- Scenarios with props (digging a grave, hammering, scrubbing) count as started as soon as they are, up to 6 seconds in, instead of being checked once at 2 seconds. The log says when one took longer than 2. Gestures are checked the same way, up to 1.5 seconds.
+- Creeping up on you, he tries the game's own crouch first, then the stealth walk (which never took on anyone in 0.6.0), and the log says which took. Anyone handed back to the world is stood up first.
+
 ## 0.6.0
 
 - New name: enRAGE Westworld is now **RealNPCs** (`RealNPCs.dll`, data folder `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs`). On first start the old `enRAGE-Westworld` folder is copied over (saves, diaries, voice files; the ini is renamed `RealNPCs.ini`), and the old folder is left as it was. If `EnrageWestworld.dll` is still in the scripts folder, RealNPCs stays off and says so, so two copies never run together.

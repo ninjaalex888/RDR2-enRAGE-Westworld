@@ -1,7 +1,9 @@
-// The odd things a stalker does while you stand still (StalkerWhenStill = eerie, or mix): the game's own emotes and
-// scenarios, by their names in the game's files, and a few that play on not being seen (creeping closer, standing
-// somewhere else when you look back). The game side plays them, checks that each really played, and drops
+// The odd things a stalker does while you stand still (StalkerWhenStill = eerie, or mix): the game's own gestures,
+// emotes and scenarios, by their names in the game's files, and a few that play on not being seen (creeping closer,
+// standing somewhere else when you look back). The game side plays them, checks that each really played, and drops
 // any that don't. Nothing here draws or fires a weapon: he never attacks.
+// Being in the rdr3_discoveries dumps doesn't mean Story Mode has it: most of Online's emotes aren't there (22 of 28
+// were missing in game, 0.6.0). The game side checks every animation set at load and logs which are missing.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,9 +14,10 @@ namespace EnrageWestworld.Core
     {
         public string Key;          // short name, for the log and the list of ones that didn't play
         public string Does;         // what it looks like, for the log
-        public string Emote;        // an emote played as an animation (script_mp@emotes@<name>@male@unarmed@full)...
+        public string Emote;        // an Online emote that Story Mode has too (script_mp@emotes@<name>@male@unarmed@full)...
         public string[] Clips;
-        public bool WomanDict;      // the game has a women's version of this emote
+        public string Gesture;     // ...or a townsfolk gesture (ai_gestures@gen_male@standing@<Gesture>, gen_female for women),
+        public string[] ClipsF;     // with Clips for men and ClipsF for women
         public string Scenario;     // ...or a scenario played where he stands, facing you
         public int Ms;              // a scenario's length
         public string Special;      // ...or "back" (turns his back on you), "creep" (closer while you can't see him),
@@ -22,9 +25,19 @@ namespace EnrageWestworld.Core
         public char Sex = 'b';      // 'b' anyone, 'm' men only, 'f' women only (the game has no other version)
         public bool NightOnly;
 
+        /// An animation (a gesture or an emote), not a scenario or a special.
+        public bool Anim { get { return Emote != null || Gesture != null; } }
+
         public string Dict(bool woman)
         {
-            return Emote == null ? null : "script_mp@emotes@" + Emote + (woman && WomanDict ? "@female" : "@male") + "@unarmed@full";
+            if (Gesture != null)
+                return "ai_gestures@gen_" + (woman ? "female" : "male") + "@standing@" + Gesture;
+            return Emote == null ? null : "script_mp@emotes@" + Emote + "@male@unarmed@full";   // the men's version, for anyone
+        }
+
+        public string[] ClipsFor(bool woman)
+        {
+            return Gesture != null && woman ? ClipsF : Clips;
         }
     }
 
@@ -34,34 +47,34 @@ namespace EnrageWestworld.Core
 
         public static readonly EerieAct[] All =
         {
-            E("watching", "points two fingers at the eyes, then at you", "im_watching_you", "fullbody", "fullbody_alt1"),
-            E("hush", "puts a finger to the lips", "hush_your_mouth", "fullbody", "fullbody_alt_1", "fullbody_alt_2"),
-            E("wave", "waves at you", "gentlewave", "fullbody", "fullbody_alt1", "fullbody_alt2"),
-            E("smallwave", "gives a small wave", "subtle_wave"),
-            E("beckon", "beckons you closer", "beckon", "fullbody", "fullbody_alt1"),
-            E("comehere", "waves you over", "get_over_here"),
-            E("follow", "waves for you to follow", "follow_me", "fullbody", "fullbody_alt1"),
-            E("spooky", "makes a ghost-story gesture", "spooky"),
-            E("scare", "lunges as if to give you a fright, from where it stands", "scare"),
-            E("hypnosis", "swings a pocket watch at you, slowly", "hypnosis_pocket_watch"),
-            E("wagfinger", "wags a finger at you", "wagfinger"),
-            E("distance", "shades the eyes and looks far past you", "look_distance"),
-            E("yonder", "looks off at something behind you", "look_yonder"),
-            E("cuckoo", "circles a finger by the temple", "cuckoo"),
-            Night(E("howl", "howls", "howl")),
-            E("tiphat", "tips a hat to you", "tiphat"),
+            // the only Online emotes Story Mode has, of the 28 tried in game
             E("bow", "bows to you", "respectful_bow"),
-            E("prayer", "prays", "prayer", "fullbody", "fullbody_alt1"),
-            E("sniff", "sniffs the air, like a dog on a trail", "sniffing"),
-            E("snarl", "snarls like a cougar", "cougar_snarl"),
-            E("laugh", "laughs", "jovial_laugh"),
             E("pointlaugh", "points at you and laughs", "pointlaugh"),
-            E("applause", "applauds you", "applause"),
-            Woman(E("notes", "takes notes, looking up at you between lines", "take_notes", "fullbody", "fullbody_alt1")),
-            Woman(E("watch", "checks a pocket watch", "check_pocket_watch")),
             E("jig", "dances a jig", "prospector_jig", "fullbody", "fullbody_alt1"),
-            E("shuffle", "shuffles in a little dance", "shuffle"),
-            E("listen", "cups a hand to the ear, listening to you", "listen"),
+
+            // the gestures townsfolk make as they talk, aimed at you (the _f_ clips face front; _l_ and _r_ only where
+            // that's all there is, as for a hat tip). Null: that sex has no clip for it.
+            G("tiphat", "tips a hat to you", "silent", "silent_neutral_hat_tip_l_001 silent_neutral_hat_tip_r_001 silent_neutral_hat_tip_l_004 silent_neutral_hat_tip_r_004", null),
+            G("farwave", "raises a hand to you from where it stands", "silent", "silent_greet_distance_l_001 silent_greet_distance_r_001", "silent_greet_distance_l_001 silent_greet_distance_r_001"),
+            G("salute", "salutes you", "silent", "silent_casual_salute_l_001 silent_casual_salute_r_001", "silent_sarcastic_salute_l_001 silent_sarcastic_salute_r_001"),
+            G("chin", "lifts the chin at you", "silent", "silent_neutral_chin_up_f_001", "silent_neutral_chin_up_f_001"),
+            G("spit", "spits, eyes on you the whole time", "silent", "silent_neutral_spit_f_001 silent_neutral_spit_f_002", "silent_negative_spit_f_001"),
+            G("headshake", "shakes the head at you", "silent", "silent_negative_headshake_f_002 silent_negative_headshake_f_003", "silent_negative_headshake_f_001 silent_negative_headshake_f_002 silent_negative_headshake_f_003"),
+            G("lookround", "looks all round, as if someone called", "silent", "silent_alert_lookaround_f_001 silent_alert_lookaround_f_002", "silent_avoid_lookaround_f_001 silent_avoid_lookaround_f_004"),
+            G("cantplace", "looks at you as if it can't place you", "silent", "silent_confused_look_f_001 silent_confused_look_f_002", "silent_confused_look_f_001 silent_confused_look_f_002"),
+            G("sky", "looks up at the sky, then back at you", "silent", "silent_frustrated_lookup_f_001 silent_frustrated_lookup_f_002", null),
+            G("start", "starts, as if you'd come from nowhere", "silent", "silent_surprised_react_f_001 silent_surprised_react_f_002 silent_surprised_react_f_003", "silent_surprised_react_f_002"),
+            G("taunt", "taunts you without taking a step", "silent", "silent_aggressive_taunt_f_001", null),
+            G("hush", "holds up a hand for quiet", "speaker", "neutral_halt_quiet_l_001 neutral_halt_quiet_r_001", null),
+            G("beckon", "waves to get your attention", "speaker", "neutral_get_attention_l_001 neutral_get_attention_r_001 neutral_get_attention_l_002 neutral_get_attention_r_002", "neutral_get_attention_l_001 neutral_get_attention_r_001 neutral_get_attention_l_002 neutral_get_attention_r_002"),
+            G("waveat", "waves at you", "speaker", "neutral_wave_fl_001 neutral_wave_fr_001 neutral_wave_fl_002 neutral_wave_fr_002", "neutral_wave_fl_002 neutral_wave_fr_002"),
+            G("point", "points at you", "speaker", null, "neutral_point_fl_002 neutral_point_fr_002"),
+            G("laugh", "laughs at nothing", "speaker", "happy_laugh_f_001 happy_laugh_f_002 happy_laugh_f_003", "happy_laugh_f_001 happy_laugh_f_002 happy_chuckle_f_001"),
+            G("cheer", "cheers at nothing", "speaker", "happy_cheer_f_001 happy_cheer_f_002 happy_cheer_f_003", "happy_cheer_f_001 happy_cheer_f_002 happy_cheer_f_003"),
+            G("nod", "nods at you, as if you'd agreed to something", "speaker", "positive_nod_f_001 positive_nod_f_002 positive_nod_f_003", "positive_nod_f_001 positive_nod_f_002 positive_nod_f_005"),
+            G("thanks", "thanks you for nothing you did", "speaker", "thank_you_f_001 thank_you_f_002", null),
+            G("cuckoo", "taps a finger to the head", "speaker", null, "neutral_pointhead_l_001 neutral_pointhead_r_001"),
+            G("calm", "motions you to stay calm", "speaker", "calm_down_f_002 calm_down_f_003", null),
 
             S("gravedig", "digs a grave", "WORLD_HUMAN_GRAVEDIG", 22000, 'm'),
             S("scrub", "kneels and scrubs blood from the ground", "WORLD_HUMAN_TWNREC_SCRUB_BLOOD_FLOOR_BUCKET", 18000, 'b'),
@@ -97,7 +110,7 @@ namespace EnrageWestworld.Core
                 return null;
             // a quarter of the time something odd happens when you aren't looking (creep, shift) or he turns away; of the
             // rest, three in five are gestures (they're short), the others scenarios. An empty pool gives its turn to the next.
-            List<EerieAct> specials = fresh.Where(a => a.Special != null).ToList(), emotes = fresh.Where(a => a.Emote != null).ToList(),
+            List<EerieAct> specials = fresh.Where(a => a.Special != null).ToList(), emotes = fresh.Where(a => a.Anim).ToList(),
                            scenarios = fresh.Where(a => a.Scenario != null).ToList();
             int r = rng.Next(100);
             List<EerieAct>[] order = r < 25 ? new[] { specials, emotes, scenarios } : r < 70 ? new[] { emotes, scenarios, specials } : new[] { scenarios, emotes, specials };
@@ -125,6 +138,18 @@ namespace EnrageWestworld.Core
             return new EerieAct { Key = key, Does = does, Emote = emote, Clips = clips.Length > 0 ? clips : One };
         }
 
+        /// A townsfolk gesture: clips for men and for women, space-separated; null where that sex has none.
+        private static EerieAct G(string key, string does, string sub, string men, string women)
+        {
+            return new EerieAct
+            {
+                Key = key, Does = does, Gesture = sub,
+                Clips = men == null ? null : men.Split(' '),
+                ClipsF = women == null ? null : women.Split(' '),
+                Sex = men == null ? 'f' : women == null ? 'm' : 'b'
+            };
+        }
+
         private static EerieAct S(string key, string does, string scenario, int ms, char sex)
         {
             return new EerieAct { Key = key, Does = does, Scenario = scenario, Ms = ms, Sex = sex };
@@ -133,12 +158,6 @@ namespace EnrageWestworld.Core
         private static EerieAct Night(EerieAct a)
         {
             a.NightOnly = true;
-            return a;
-        }
-
-        private static EerieAct Woman(EerieAct a)
-        {
-            a.WomanDict = true;
             return a;
         }
     }

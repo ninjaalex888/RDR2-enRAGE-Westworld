@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 30;
+        public const int CurrentVersion = 31;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -70,7 +70,8 @@ namespace EnrageWestworld.Core
         public int StalkerStillSeconds = 20;
         public string StalkerWhenStill = "mix";
         public int StalkerCircleMetres = 8;
-        public int StalkerActMetres = 12;
+        public int StalkerActMin = 2;
+        public int StalkerActMax = 30;
         public int StalkerHideMin = 45;
         public int StalkerHideMax = 70;
         public bool StalkerMutters = true;
@@ -356,7 +357,8 @@ namespace EnrageWestworld.Core
             StalkerHideMax = Math.Max(StalkerHideMin, Math.Min(200, StalkerHideMax));
             string still = (StalkerWhenStill ?? "").Trim().ToLowerInvariant();
             StalkerWhenStill = still == "circle" || still == "watch" || still == "rush" || still == "eerie" ? still : "mix";
-            StalkerActMetres = Math.Max(5, Math.Min(30, StalkerActMetres));
+            StalkerActMin = Math.Max(2, Math.Min(40, StalkerActMin));
+            StalkerActMax = Math.Max(StalkerActMin, Math.Min(40, StalkerActMax));
             QuietStillSeconds = Math.Max(1, Math.Min(60, QuietStillSeconds));
             EncounterEveryMinutes = Math.Max(2, Math.Min(120, EncounterEveryMinutes));
             CryingWomanChance = Math.Max(0, Math.Min(100, CryingWomanChance));
@@ -445,9 +447,10 @@ namespace EnrageWestworld.Core
             b.AppendLine("StalkerFollowMetres = " + StalkerFollowMetres + "   ; how close he follows");
             b.AppendLine("StalkerStareMetres = " + StalkerStareMetres + "   ; within this distance he stops and stares (more than StalkerFollowMetres)");
             b.AppendLine("StalkerStillSeconds = " + StalkerStillSeconds + "   ; stand still this long and he does what StalkerWhenStill says");
-            b.AppendLine("StalkerWhenStill = " + StalkerWhenStill + "   ; circle: runs in close and circles you; watch: keeps his distance and stares; rush: runs straight at you and stops a few steps short; eerie: comes to StalkerActMetres and does odd things (digs a grave, kneels, waves, beckons, freezes mid-gesture); mix: a different one each time (he never attacks)");
+            b.AppendLine("StalkerWhenStill = " + StalkerWhenStill + "   ; circle: runs in close and circles you; watch: keeps his distance and stares; rush: runs straight at you and stops a few steps short; eerie: sprints in to between StalkerActMin and StalkerActMax and does odd things (digs a grave, kneels, waves, beckons, freezes mid-gesture); mix: a different one each time (he never attacks)");
             b.AppendLine("StalkerCircleMetres = " + StalkerCircleMetres + "   ; how close he circles (3-15)");
-            b.AppendLine("StalkerActMetres = " + StalkerActMetres + "   ; how far from you he does his odd things (5-30)");
+            b.AppendLine("StalkerActMin = " + StalkerActMin + "   ; he sprints in and does his odd things at least this many metres from you...");
+            b.AppendLine("StalkerActMax = " + StalkerActMax + "   ; ... and at most (a new distance each time he comes in; 2-40)");
             b.AppendLine("StalkerHideMin = " + StalkerHideMin + "   ; when you move, he runs back out at least this far...");
             b.AppendLine("StalkerHideMax = " + StalkerHideMax + "   ; ... and at most, behind a tree or a building if there is one");
             b.AppendLine("StalkerMutters = " + B(StalkerMutters) + "   ; he mutters now and then");

@@ -505,6 +505,7 @@ namespace EnrageWestworld.InGame
             _mode = Mode.Flee;
             _fleeSince = Game.GameTime;
             int h = _ped.Handle;
+            Spawner.StandUp(h);
             TASK.CLEAR_PED_TASKS(h, true, false);
             TASK.TASK_SMART_FLEE_PED(h, player.Handle, 120f, -1, 0, 3f, 0);
         }

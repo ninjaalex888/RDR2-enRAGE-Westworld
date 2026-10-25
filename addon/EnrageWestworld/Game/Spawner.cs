@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
             Borrowed.Remove(h);
             if (!ENTITY.DOES_ENTITY_EXIST(h))
                 return;
+            StandUp(h);
             TASK.CLEAR_PED_TASKS(h, true, false);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             PED.SET_PED_KEEP_TASK(h, false);
@@ -102,9 +103,19 @@ namespace EnrageWestworld.InGame
             }
             else
             {
+                StandUp(h);
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                 ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
             }
+        }
+
+        /// Out of a crouch or a stealth walk (the stalker's creep), so nobody goes back to the world still crouching.
+        public static void StandUp(int h)
+        {
+            if (PED.GET_PED_CROUCH_MOVEMENT(h))
+                PED._SET_PED_CROUCH_MOVEMENT(h, false, 0, false);
+            if (PED.GET_PED_STEALTH_MOVEMENT(h))
+                PED.SET_PED_STEALTH_MOVEMENT(h, false, 0, 0);
         }
 
         public static void CleanupAll()

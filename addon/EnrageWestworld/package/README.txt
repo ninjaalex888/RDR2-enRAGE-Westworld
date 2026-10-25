@@ -48,11 +48,12 @@ NEW IN 0.6.0
   raised to these, and the log says which; values you chose yourself are kept.
 - CONTENT NOTE: AwakeningDespair is now 75 percent by default, so most fully awake, armed
   ordinary people end their own life. Set it to 0 if you would rather not see it.
-- Stalkers do odd things now. Stand still and, more often than not, the stalker comes to about
-  12 m (StalkerActMetres), faces you and works through the game's own gestures and tasks, one
-  after another with a stare between: digging a grave, scrubbing blood from the ground, kneeling
-  as at a graveside, lying down like the dead, writing in a notebook, pointing at the eyes and then
-  at you, a finger to the lips, a slow wave, beckoning, howling at night, laughing, a jig. Some
+- Stalkers do odd things now. Stand still and, more often than not, the stalker sprints in to
+  somewhere between 2 and 30 m (StalkerActMin / StalkerActMax), faces you and works through the
+  game's own gestures and tasks, one after another with a stare between: digging a grave,
+  scrubbing blood from the ground, kneeling as at a graveside, lying down like the dead, writing in
+  a notebook, tipping a hat, a hand up for quiet, a slow head-shake, spitting, laughing at
+  nothing, a bow, a jig. Some
   gestures are done twice exactly alike, stop dead partway, or go slow. Two play on not being seen:
   it creeps closer while it is off your screen and stops dead the moment you look, or each time
   you look away and back it is standing somewhere else round you. Move and it stops at once and
@@ -474,8 +475,8 @@ in the file. The new ones:
             a stranger if nobody near can, StalkerMinutes (120), StalkerAppearMin (45) /
             StalkerAppearMax (70): how far behind you a stranger first turns up, StalkerFollowMetres (26), StalkerStareMetres (34),
             StalkerStillSeconds (20), StalkerWhenStill (mix | eerie | circle | watch | rush): what he
-            does when you stand still, StalkerCircleMetres (8), StalkerActMetres (12): how far off
-            he does odd things, StalkerHideMin (45) / StalkerHideMax (70):
+            does when you stand still, StalkerCircleMetres (8), StalkerActMin (2) / StalkerActMax
+            (30): how far off he does odd things, StalkerHideMin (45) / StalkerHideMax (70):
             how far he runs off when you move, StalkerMutters (true). He never attacks.
 [Quiet]     QuietWhenStill (true): while you stand still, enRAGE sends nothing after you and its
             tension stops building, QuietStillSeconds (3), QuietInCinematic (true): the same in the

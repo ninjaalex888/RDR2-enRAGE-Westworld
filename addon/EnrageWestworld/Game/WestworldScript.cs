@@ -339,6 +339,14 @@ namespace EnrageWestworld.InGame
 				Observe();
 				int num = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);
 				Log.Write("Ready: enRAGE " + _bridge.Version + ", " + list.Count + " people, playing as " + PlayerName() + ", " + _store.People.Count + " people in the add-on's memory.");
+				try
+				{
+					Stalker.ProbeActs();
+				}
+				catch (Exception ex)
+				{
+					Log.Write("STALKER acts: couldn't look up the animation sets (" + ex.Message + "); each is checked when first used");
+				}
 				Feed.Notice("RealNPCs", "listening. " + list.Count + " people in the world" + ((num > 0) ? (", " + num + " who know you.") : "."));
 			}
 		}
@@ -986,6 +994,7 @@ namespace EnrageWestworld.InGame
 				", deeds " + _store.Deeds.Count + ", rumours " + _store.TownRumours.Count + ", papers " + _store.Papers.Count(x => x.Delivered) + "/" + _store.Papers.Count +
 				", fallen " + _store.Fallen.Count + ", reveries " + _store.Reveries.Values.Count(x => x.Woke) + "/" + _store.Reveries.Count + ", avengers " + _store.Avengers.Count + ", weddings " + _store.Weddings.Count);
 			Log.Write("TEST stalker: " + StalkerStatus());
+			Log.Write("TEST stalker acts: " + Stalker.ActsStatus);
 			Log.Write("TEST posts: " + PostsStatus());
 			Log.Write("TEST encounters: " + EncountersStatus());
 			if (nemesisRecord == null)
