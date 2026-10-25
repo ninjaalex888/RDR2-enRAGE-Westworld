@@ -275,7 +275,7 @@ namespace EnrageWestworld.InGame
                         if (!_defenceWantedNoted)
                         {
                             _defenceWantedNoted = true;
-                            Log.Write("SELF-DEFENCE: wanted level cleared: you were fighting off " + (_lastDefenceWho ?? "someone") + " who came at you (kept clear while the fight lasts)");
+                            Log.Write("SELF-DEFENCE: wanted level cleared: you were fighting off " + (_lastDefenceWho ?? "someone") + ", who attacked first. Any new one is cleared too until the fight is over.");
                         }
                     }
                     break;

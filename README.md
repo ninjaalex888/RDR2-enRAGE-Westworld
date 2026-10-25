@@ -8,7 +8,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-**The download is 0.5.5**, stable in play so far. **0.6.0 is on `main` and being tested**, not yet in the download: the new name, a settings panel, the same people at the counters, self-defence that isn't a crime, stalkers who do odd things, more of the game's own voice lines, and night encounters. The hermits have been seen working in game; the crying woman and the gathering not yet. Content notes: an adjustable chance (`AwakeningDespair`, default 75 percent, 0 turns it off) that a fully awake, armed ordinary person ends their own life; and in 0.6.0 the crying woman's knife and ambush are violent (`CryingWoman = false` turns her off). If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RealNPCs/issues) and attach your log.
+**Version 0.6.0.** New in it: the new name, a settings panel, the same people at the counters, self-defence that isn't a crime, stalkers who do odd things, more of the game's own voice lines, and night encounters. Seen working in game so far: the settings panel, self-defence, the quiet while you stand still, stalkers and the hermits. The crying woman, the gathering and the new voice lines haven't had an in-game test yet. Content notes: an adjustable chance (`AwakeningDespair`, default 75 percent, 0 turns it off) that a fully awake, armed ordinary person ends their own life; and in 0.6.0 the crying woman's knife and ambush are violent (`CryingWoman = false` turns her off). If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RealNPCs/issues) and attach your log.
 
 ## What it does
 
@@ -33,7 +33,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 ## Install
 
 1. Install [enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967) 0.9.5.2 and what it needs (Script Hook RDR2 and Script Hook RDR2 .NET V2), and make sure it works.
-2. Download **[enRAGE-Westworld-0.5.5.zip](https://github.com/ninjaalex888/RealNPCs/raw/main/release/enRAGE-Westworld-0.5.5.zip)** (it's also in the [release](release) folder). It holds `EnrageWestworld.dll` and a README.txt that explains every feature and setting.
+2. Download **[RealNPCs-0.6.0.zip](https://github.com/ninjaalex888/RealNPCs/releases/latest/download/RealNPCs-0.6.0.zip)** from the [latest release](https://github.com/ninjaalex888/RealNPCs/releases/latest) (it's also in the [release](release) folder). It holds `RealNPCs.dll` and a README.txt that explains every feature and setting.
 3. Copy `RealNPCs.dll` into your game's `scripts` folder, next to enRAGE's `NemesisMod.dll`. To update, just replace the file: what people remember carries over, and your settings are kept. **Coming from enRAGE Westworld** (the old name): delete `EnrageWestworld.dll` from the scripts folder. RealNPCs won't run next to it, and copies your saves, diaries and settings over from the old folder the first time it starts.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
 
