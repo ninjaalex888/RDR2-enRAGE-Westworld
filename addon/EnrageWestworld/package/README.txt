@@ -73,7 +73,7 @@ NEW IN 0.6.0
   or a stranger if nobody near can be. It replaces Shift+F7.
 - The wake key is now Y (WakeKey, was G) and the stalker key ] (was 0). An ini still on G or 0 is
   moved over and the log says so; a key you chose yourself is kept.
-- The reader for letters, diaries and clippings is now the - key (ReaderKey, was F5). An ini
+- The reader for letters, diaries and clippings is now the N key (ReaderKey, was F5). An ini
   still on F5 moves over; a key you chose yourself is kept.
 - Quiet while you stand still. Stand still for 3 seconds (QuietStillSeconds), or turn on the
   cinematic camera, and enRAGE's tension stops building and no nemesis, gang or faction is sent
@@ -211,7 +211,7 @@ NEW IN 0.4
 - Letters wait for you at post offices: from the kin of people you killed, from people you were
   good to, from sweethearts, from people who suspect the truth, and wedding invitations.
 - Diaries: loot a body (or search a gang camp) and you may find the diary they kept. Read it, and
-  your letters and clippings, with the - key. People write about their work, their town, their family,
+  your letters and clippings, with the N key. People write about their work, their town, their family,
   their faith and habits, what's on their mind, and you.
 - Kin far away hear when you kill someone. Some write. Some come west for you, as one of enRAGE's
   own people with a grudge.
@@ -272,13 +272,13 @@ when you ride into town.
 The newspapers enRAGE sells pick up the talk too, in the small items about town.
 
 
-LETTERS, DIARIES AND THE READER (-)
+LETTERS, DIARIES AND THE READER (N)
 -----------------------------------
 Letters are held at the post office. Ride into a town with one (most towns) and the clerk hands
-them over. Press - (the minus key) to read them.
+them over. Press N to read them.
 Diaries: loot the body of someone enRAGE knows who kept a diary, and you'll be offered it ("You
-find a diary on ... [-] take it"). Searching an empty gang camp can turn up a diary too.
-The - key opens your papers: Left/Right turn pages, Up/Down go to the next paper, Backspace closes.
+find a diary on ... [N] take it"). Searching an empty gang camp can turn up a diary too.
+N opens your papers: Left/Right turn pages, Up/Down go to the next paper, Backspace closes.
 Diaries are also saved as text files (see FILES).
 
 
@@ -452,7 +452,7 @@ in the file. The new ones:
                 enrage: enRAGE's own notice line (its message settings decide) and its feed;
                 gamefeed: EXPERIMENTAL top-left toasts
             WarNewsTo (right | ticker): where gang and faction news goes
-            TestKey (F7), FlirtKey (F6), WakeKey (Y), ReaderKey (-), ReloadIni (true),
+            TestKey (F7), FlirtKey (F6), WakeKey (Y), ReaderKey (N), ReloadIni (true),
             ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel, SettingsKey (Ctrl+F7)
 All the older options are still there and work the same.
 
@@ -461,7 +461,7 @@ KEYS
 ----
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log)
 F6  flirt with the person you're looking at
--         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
+N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)
 Alt+F11   the RealNPCs settings panel (all RealNPCs and enRAGE settings); Ctrl+F7 opens it too
 Y         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
@@ -469,7 +469,7 @@ T         the next line on the ticker now (on a long line, its next part first; 
           T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
 None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
 console (F8) or Faster Looting (F9, F10). If the game or another mod already uses one, change it
-in the ini or the panel (e.g. ReaderKey = Ctrl+-).
+in the ini or the panel (e.g. ReaderKey = Ctrl+N).
 
 
 CREDITS

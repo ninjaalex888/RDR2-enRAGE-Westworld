@@ -43,7 +43,7 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 |---|---|
 | F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log |
 | F6 | Flirt with the person you're looking at |
-| - | Read your letters, diaries and clippings, or take a diary you've just found (the minus key) |
+| N | Read your letters, diaries and clippings, or take a diary you've just found |
 | ] | Make a stalker now: someone near you (someone with a history with you first), or a stranger if nobody near can be. The log says what it's waiting for |
 | Y | Wake the person you are facing one stage (West World), so you can see what each stage does |
 | T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |

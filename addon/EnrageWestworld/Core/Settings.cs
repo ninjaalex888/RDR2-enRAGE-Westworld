@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 25;
+        public const int CurrentVersion = 26;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -139,7 +139,7 @@ namespace EnrageWestworld.Core
         public string WarNewsTo = "right";
         public string FlirtKey = "F6";
         public string WakeKey = "Y";
-        public string ReaderKey = "-";
+        public string ReaderKey = "N";
         public bool ReloadIni = true;
         public bool ReplaceEnrageSettings = true;
         public string SettingsKey = "Ctrl+F7";
@@ -231,6 +231,11 @@ namespace EnrageWestworld.Core
             {
                 s.ReaderKey = "-";   // the reader moved from F5 to the minus key (a key of your own is kept)
                 raised.Add("ReaderKey F5 -> -");
+            }
+            if (s.SettingsVersion < 26 && (KeyIs(s.ReaderKey, "-") || KeyIs(s.ReaderKey, "OemMinus")))
+            {
+                s.ReaderKey = "N";   // ...and on to N (a key of your own is kept)
+                raised.Add("ReaderKey - -> N");
             }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");

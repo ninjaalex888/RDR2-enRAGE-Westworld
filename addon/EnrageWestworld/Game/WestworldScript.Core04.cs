@@ -28,7 +28,7 @@ namespace EnrageWestworld.InGame
         private DateTime _iniStamp;
         private int _nextNear, _nextIni, _nextUi, _controlOffAt = -1;
         private bool _uiOpen;
-        private string _hint;          // a prompt shown above the ticker ("[-] take the diary")
+        private string _hint;          // a prompt shown above the ticker ("[N] take the diary")
         private int _hintUntil;
         private int _now, _nextTickerUpdate;
         private TickerLine _tickerLine;
@@ -112,7 +112,7 @@ namespace EnrageWestworld.InGame
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
             _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F6);
-            _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.OemMinus);
+            _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.N);
             _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.OemCloseBrackets);
             _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.Y);
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);

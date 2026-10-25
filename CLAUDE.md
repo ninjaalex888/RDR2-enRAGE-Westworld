@@ -35,7 +35,7 @@ Needs `refs/ScriptHookRDRNetAPI.dll` and `original/NemesisMod.dll`, both from Le
 
 ## Testing
 
-There is no way to run the game in CI. Play-test in game and read the log at `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\RealNPCs.log`. Hotkeys: F7 (status and log dump), ] (make a stalker now; `StalkerKey`), Y (wake the person you face one stage; `WakeKey`), T (next ticker line; `TickerNextKey`, also enRAGE's telegraph key near a clerk), F6 (flirt), - (letters and diaries; `ReaderKey`).
+There is no way to run the game in CI. Play-test in game and read the log at `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\RealNPCs.log`. Hotkeys: F7 (status and log dump), ] (make a stalker now; `StalkerKey`), Y (wake the person you face one stage; `WakeKey`), T (next ticker line; `TickerNextKey`, also enRAGE's telegraph key near a clerk), F6 (flirt), N (letters and diaries; `ReaderKey`).
 
 ## Stalkers (current design, 0.6.0)
 
