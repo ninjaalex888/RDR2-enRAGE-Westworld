@@ -80,6 +80,10 @@ There is no way to run the game in CI. Play-test in game and read the log at `Do
 
 Lex's brief is saved at `C:\mods\prompts\You are an expert Behavioral Psycho.txt` (outside the repo). Inner-life lines follow it: short fragmented sentences, one sensory detail, period vocabulary, and the frames: immediate bodily needs, status anxiety (the looking-glass self), negativity and loss bias and the just-world excuse, the gap between the outside and the inside, 1899 anxieties, and granular observation of the player. Pools live in `Core/InnerLife.cs`.
 
+## Quiet while still (0.6.0)
+
+- `Game/WestworldScript.Quiet.cs` + `Game/Bridge.Calm.cs`: after `QuietStillSeconds` without moving (position within 0.4 m, no move input; camera ignored) or while `CAM._IS_IN_CINEMATIC_MODE()` / `IS_CINEMATIC_CAM_RENDERING()`, call enRAGE's private `Grace(int seconds, string why)` by reflection: 10 s, renewed every 7 s. enRAGE's `NoSpawnReason` then returns "settling in", which holds `UpdateTension` and is checked by `RunRandomEncounter` (not the F10 test), `UpdateRaids`, `UpdateWarPatrolRoll`, `UpdateWarEncounterRoll`, `UpdateRoadAmbush`, faction responses and town arrivals. Grace only lengthens, so the quiet ends up to 10 s after moving. It does nothing if enRAGE's `[Calm] Enabled` is false (`Bridge.EnrageCalmOn`, warned once). Each Grace call writes a "CALM grace" line to enRAGE's own log. Runs after the player-control check in `Tick04`, so not during missions or cutscenes (enRAGE is calm there anyway).
+
 ## Master switches and gating (0.6.0)
 
 - `Settings.Gated()` applies the masters to a copy: `WestWorld` false zeroes AwakeningShare/Despair, HostsQuestionReality, Glitches, Reveries, ReturnChance, StrangerReturnChance. `_cfg` (game and engine) is always the gated copy (`Load(...).Gated()`, `CopyFrom(fresh.Gated())`); nothing writes `_cfg` back to disk, so the ini keeps the player's values. Settings.Load ignores sections, so moving keys between sections needs no migration.

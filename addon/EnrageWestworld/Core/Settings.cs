@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 20;
+        public const int CurrentVersion = 21;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -73,6 +73,11 @@ namespace EnrageWestworld.Core
         public int StalkerHideMin = 45;
         public int StalkerHideMax = 70;
         public bool StalkerMutters = true;
+
+        // [Quiet]
+        public bool QuietWhenStill = true;
+        public int QuietStillSeconds = 3;
+        public bool QuietInCinematic = true;
 
         // [Voices]
         public bool SpokenVoice = true;
@@ -322,6 +327,7 @@ namespace EnrageWestworld.Core
             string still = (StalkerWhenStill ?? "").Trim().ToLowerInvariant();
             StalkerWhenStill = still == "circle" || still == "watch" || still == "rush" || still == "eerie" ? still : "mix";
             StalkerActMetres = Math.Max(5, Math.Min(30, StalkerActMetres));
+            QuietStillSeconds = Math.Max(1, Math.Min(60, QuietStillSeconds));
             VoiceVolume = Math.Max(0, Math.Min(100, VoiceVolume));
             StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
@@ -410,6 +416,11 @@ namespace EnrageWestworld.Core
             b.AppendLine("StalkerHideMin = " + StalkerHideMin + "   ; when you move, he runs back out at least this far...");
             b.AppendLine("StalkerHideMax = " + StalkerHideMax + "   ; ... and at most, behind a tree or a building if there is one");
             b.AppendLine("StalkerMutters = " + B(StalkerMutters) + "   ; he mutters now and then");
+            b.AppendLine();
+            b.AppendLine("[Quiet]");
+            b.AppendLine("QuietWhenStill = " + B(QuietWhenStill) + "   ; while you stand still, enRAGE's tension stops building and no nemesis, gang or faction comes for you (through enRAGE's own calm period)");
+            b.AppendLine("QuietStillSeconds = " + QuietStillSeconds + "   ; how long you must stand still first (1-60)");
+            b.AppendLine("QuietInCinematic = " + B(QuietInCinematic) + "   ; the same while the cinematic camera is on, moving or not");
             b.AppendLine();
             b.AppendLine("[Voices]");
             b.AppendLine("SpokenVoice = " + B(SpokenVoice) + "   ; uncanny lines are also read aloud with the Windows voice");

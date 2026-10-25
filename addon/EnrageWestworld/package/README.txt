@@ -71,6 +71,12 @@ NEW IN 0.6.0
   or a stranger if nobody near can be. It replaces Shift+F7.
 - The wake key is now Y (WakeKey, was G) and the stalker key ] (was 0). An ini still on G or 0 is
   moved over and the log says so; a key you chose yourself is kept.
+- Quiet while you stand still. Stand still for 3 seconds (QuietStillSeconds), or turn on the
+  cinematic camera, and enRAGE's tension stops building and no nemesis, gang or faction is sent
+  after you, through enRAGE's own calm period (the one it uses after a load or a fast travel).
+  It carries on within about 10 seconds of you moving again. A fight already going on carries
+  on, and enRAGE's town regulars wait too. QuietWhenStill and QuietInCinematic in [Quiet] turn
+  each off. It needs enRAGE's own [Calm] Enabled (on by default).
 
 
 NEW IN 0.5.5
@@ -406,6 +412,9 @@ in the file. The new ones:
             does when you stand still, StalkerCircleMetres (8), StalkerActMetres (12): how far off
             he does odd things, StalkerHideMin (45) / StalkerHideMax (70):
             how far he runs off when you move, StalkerMutters (true). He never attacks.
+[Quiet]     QuietWhenStill (true): while you stand still, enRAGE sends nothing after you and its
+            tension stops building, QuietStillSeconds (3), QuietInCinematic (true): the same in the
+            cinematic camera
 [Voices]    SpokenVoice (true), VoiceVolume (80), VoiceMan, VoiceWoman (part of a Windows voice's
             name; empty = any), VoiceVariety (true)
 [World]     Deeds, RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),

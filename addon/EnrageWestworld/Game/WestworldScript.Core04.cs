@@ -539,6 +539,7 @@ namespace EnrageWestworld.InGame
             Safe("lines", _aLater);
             if (!PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;
+            QuietStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);
             Safe("arrivals", _aArrival);

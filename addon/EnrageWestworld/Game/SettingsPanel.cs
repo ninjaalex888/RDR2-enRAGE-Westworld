@@ -40,10 +40,10 @@ namespace EnrageWestworld.InGame
         private const int VisibleRows = 16;
         private const int PanelBudget = 120;
 
-        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Features", "World", "Scenes", "Romance", "Ticker", "Voices", "Pacing", "Output" };
+        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Quiet", "Features", "World", "Scenes", "Romance", "Ticker", "Voices", "Pacing", "Output" };
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
         {
-            { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
+            { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
             { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Voices", "Voices" }, { "Pacing", "Pacing" }, { "Output", "Keys and notices" }
         };
 
@@ -53,7 +53,7 @@ namespace EnrageWestworld.InGame
             { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
             { "VoiceVolume", "SpokenVoice" }, { "VoiceMan", "SpokenVoice" }, { "VoiceWoman", "SpokenVoice" }, { "VoiceVariety", "SpokenVoice" },
-            { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }
+            { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" }
         };
 
         // sections whose first setting switches the whole section on or off
@@ -79,7 +79,9 @@ namespace EnrageWestworld.InGame
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMetres", "How far off he does odd things" },
             { "StalkerKey", "Make a stalker now (key)" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
             { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres)" },
-            { "StalkerStrangers", "A stranger if nobody near" }
+            { "StalkerStrangers", "A stranger if nobody near" },
+            { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
+            { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }
         };
 
         private readonly Func<Bridge> _bridgeOf;
