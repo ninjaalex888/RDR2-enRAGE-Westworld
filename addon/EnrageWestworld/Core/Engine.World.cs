@@ -980,7 +980,7 @@ namespace EnrageWestworld.Core
         public InnerLife.Context ThoughtDay(string town, string id = null)
         {
             long now = Store.LastGameMin;
-            InnerLife.Context c = new InnerLife.Context { GameDay = now > 0 ? now / 1440 : -1 };
+            InnerLife.Context c = new InnerLife.Context { GameDay = now > 0 ? now / 1440 : -1, Dead = HasDied };
             if (town != null)
             {
                 c.TownDeeds = Store.Deeds.Where(d => d.Town == town && InnerLife.TalkedAbout.Contains(d.Kind) && now - d.At >= 120 && now - d.At < 3 * 1440)
@@ -991,9 +991,24 @@ namespace EnrageWestworld.Core
             {
                 c.Ties = Ties.Of(Store.Ties, id, now, 4);
                 if (c.GameDay >= 0)
-                    c.Linked = Links.Against(Store.Links, id, c.GameDay);
+                    c.Linked = Links.Against(Store.Links, id, c.GameDay).Where(l => !HasDied(l.Id)).ToList();   // a worrier who has died worries nobody now
             }
             return c;
+        }
+
+        /// Someone the add-on knows of has died: a resident or regular, one of enRAGE's townsfolk (asked of enRAGE),
+        /// or one of enRAGE's people.
+        public bool HasDied(string id)
+        {
+            if (id == null)
+                return false;
+            if (id.StartsWith("folk:"))
+                return FolkDead != null && FolkDead(id);
+            Resident r = Resident.IsResident(id) ? Store.FindResident(id) : null;
+            if (r != null)
+                return r.Dead;
+            Person p;
+            return _byId.TryGetValue(id, out p) && !p.IsAlive;
         }
 
         // ---- the real people at the other end of worries (Links.cs) ------------------------------------------------
@@ -1044,6 +1059,13 @@ namespace EnrageWestworld.Core
         {
             WorryLink l = Links.Of(Store.Links, p.Id, kind, arc);
             return l != null ? Links.WhoName(l) : null;
+        }
+
+        /// Whether the one linked to this worry has died (InnerLife then sets the worry aside).
+        private bool LinkedDead(Person p, string kind, long arc)
+        {
+            WorryLink l = Links.Of(Store.Links, p.Id, kind, arc);
+            return l != null && HasDied(l.OtherId);
         }
 
         private static readonly string[] EverydayMen =

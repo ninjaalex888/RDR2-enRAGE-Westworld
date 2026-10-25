@@ -484,6 +484,25 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
+		/// One of enRAGE's townsfolk (by our key, "folk:" + their id or name) has died, as enRAGE has it. Read only.
+		public bool FolkDead(string folkKey)
+		{
+			if (_people == null || folkKey == null || !folkKey.StartsWith("folk:"))
+			{
+				return false;
+			}
+			try
+			{
+				string id = folkKey.Substring(5);
+				Acquaintance acquaintance = ((_people.GetValue(Mod, null) is List<Acquaintance> source) ? source.FirstOrDefault((Acquaintance x) => x != null && (x.Id ?? x.FullName) == id) : null);
+				return acquaintance != null && acquaintance.Dead;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
 		public void LikeMore(string acquaintanceId, int delta)
 		{
 			if (_people == null || acquaintanceId == null)

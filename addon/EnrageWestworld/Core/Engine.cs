@@ -37,6 +37,8 @@ namespace EnrageWestworld.Core
 
 		public Func<Person, string[]> IntelFor;
 
+		public Func<string, bool> FolkDead;   // one of enRAGE's townsfolk has died, by "folk:" key (the game side asks enRAGE)
+
 		private static readonly string[] Towns = new string[7] { "Valentine", "Saint Denis", "Rhodes", "Strawberry", "Annesburg", "Blackwater", "Armadillo" };
 
 		public IEnumerable<Person> People => _byId.Values;
@@ -48,6 +50,7 @@ namespace EnrageWestworld.Core
 			Cfg = cfg;
 			_rng = new Random(seed);
 			InnerLife.Counterpart = LinkedName;   // worries name the real person linked to them (Links.cs)
+			InnerLife.CounterpartDead = LinkedDead;
 		}
 
 		public Person Find(string id)

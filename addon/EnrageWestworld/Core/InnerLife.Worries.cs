@@ -430,9 +430,13 @@ namespace EnrageWestworld.Core
             {
                 // a new worry, and the last one still on their mind
                 WorryKind last = KindAt(p, fits, arc - 1);
+                if (LinkedDead(p, last, arc - 1))
+                    return null;
                 return Fill(Pick(EndsWell(p, last, arc - 1) ? last.AfterGood : last.AfterBad, p, seed, told), p, last, arc - 1);
             }
             WorryKind k = KindAt(p, fits, arc);
+            if (LinkedDead(p, k, arc))
+                return null;
             string[] pool = stage == 0 ? k.Begin : stage == 1 ? k.Worse : stage == 2 ? k.Crisis : EndsWell(p, k, arc) ? k.Good : k.Bad;
             return Fill(Pick(pool, p, seed, told), p, k, arc);
         }
@@ -452,6 +456,8 @@ namespace EnrageWestworld.Core
             int dayIn;
             long arc = ArcOf(p, gameDay, out dayIn);
             WorryKind k = KindAt(p, fits, arc);
+            if (LinkedDead(p, k, arc))
+                return false;   // set aside: no scenes over it either
             kind = k.Key;
             stage = StageOf(dayIn);
             good = EndsWell(p, k, arc);
@@ -461,6 +467,15 @@ namespace EnrageWestworld.Core
         /// The real person at the other end of a worry (a creditor, a neighbour, a sweetheart), when the engine has
         /// linked one (Links.cs): the name to put for {who}, or null for one made up. Only reads; never makes a link.
         public static Func<Person, string, long, string> Counterpart;
+
+        /// Whether the real person linked to this worry has died since (the engine knows). A worry over someone dead
+        /// is set aside for the rest of its run: no thoughts, no scenes. Their name stays, for anything already said.
+        public static Func<Person, string, long, bool> CounterpartDead;
+
+        private static bool LinkedDead(Person p, WorryKind k, long arc)
+        {
+            return CounterpartDead != null && k != null && (k.Key == "debt" || k.Key == "feud" || k.Key == "courting") && CounterpartDead(p, k.Key, arc);
+        }
 
         /// Which run of WorryDays this game day is in for this person (by their id alone).
         public static long ArcFor(string id, long gameDay)

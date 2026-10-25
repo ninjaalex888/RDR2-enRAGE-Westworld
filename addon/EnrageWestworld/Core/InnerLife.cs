@@ -19,6 +19,12 @@ namespace EnrageWestworld.Core
             public List<SceneTie> Ties;                 // street scenes this person had lately, with whom (Ties.cs), newest first
             public List<SceneTie> TownTies;             // the town's talk: scenes between two others here lately, newest first
             public List<WorryLink> Linked;              // someone else's worry this person is the other end of (Links.cs)
+            public Func<string, bool> Dead;             // whether someone in those has died since, by id (may be null)
+
+            public bool IsDead(string id)
+            {
+                return Dead != null && id != null && Dead(id);
+            }
         }
 
         /// Set by the game side from the clock: 0 Sunday .. 6 Saturday (-1 unknown), and the year (1907 in the epilogue).
@@ -264,7 +270,7 @@ namespace EnrageWestworld.Core
             {
                 // someone they had words with (or a sweetheart) lately shares this slot with the worry
                 if (day != null && day.Ties != null && day.Ties.Count > 0 && Voice.Chance(seed + "tb", 45))
-                    own = Ties.Thought(day.Ties[0], p.Id, seed);
+                    own = Ties.Thought(day.Ties[0], p.Id, seed, day.IsDead(day.Ties[0].OtherId(p.Id)));
                 else if (day != null && day.Linked != null && day.Linked.Count > 0 && Voice.Chance(seed + "lb", 40))
                     own = Links.OtherThought(day.Linked[Voice.Hash(seed + "lw") % day.Linked.Count], day.GameDay, seed);   // the other end of someone's worry
                 else
@@ -274,7 +280,10 @@ namespace EnrageWestworld.Core
             {
                 bool deeds = day != null && day.TownDeeds != null && day.TownDeeds.Count > 0, ties = day != null && day.TownTies != null && day.TownTies.Count > 0;
                 if (ties && (!deeds || Voice.Chance(seed + "tw", 50)))
-                    own = Ties.TownThought(day.TownTies[Voice.Hash(seed + "twp") % Math.Min(3, day.TownTies.Count)], p.Home, seed);
+                {
+                    SceneTie tt = day.TownTies[Voice.Hash(seed + "twp") % Math.Min(3, day.TownTies.Count)];
+                    own = Ties.TownThought(tt, p.Home, seed, day.IsDead(tt.A), day.IsDead(tt.B));
+                }
                 else
                     own = deeds ? TownTalk(p, day.TownDeeds, seed, told) : null;
             }

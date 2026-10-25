@@ -386,7 +386,8 @@ namespace EnrageWestworld.InGame
 				DateText = (long m) => GameDate.FromMinutes(m).ToString("MMMM d, yyyy", CultureInfo.InvariantCulture),
 				Log = Log.Write,
 				John = flag,
-				IntelFor = IntelFor
+				IntelFor = IntelFor,
+				FolkDead = (string key) => _bridge != null && _bridge.FolkDead(key)
 			};
 		}
 

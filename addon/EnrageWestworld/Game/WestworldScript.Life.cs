@@ -122,6 +122,7 @@ namespace EnrageWestworld.InGame
                 return;
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
                 AddJobTalk(s, seed);
+            AddBystander(s, people, cast, seed, now);
             StartScene(s, people, cast, seed, now);
         }
 
@@ -134,6 +135,7 @@ namespace EnrageWestworld.InGame
                 _nextDrama = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5));
                 NoteSceneTie(s, people);
                 NoteInScene(people, now);
+                Onlookers(people);
             }
         }
 

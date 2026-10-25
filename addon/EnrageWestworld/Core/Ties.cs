@@ -31,6 +31,11 @@ namespace EnrageWestworld.Core
         {
             return A == id ? BName : AName;
         }
+
+        public string OtherId(string id)
+        {
+            return A == id ? B : A;
+        }
     }
 
     public static class Ties
@@ -156,9 +161,27 @@ namespace EnrageWestworld.Core
             "{other} couldn't get away from me fast enough. Fine. Fine."
         };
 
-        /// A thought about someone they had a scene with lately, by first name.
-        public static string Thought(SceneTie t, string id, string seed)
+        // the other one has died since
+        private static readonly string[] DeadFoe =
         {
+            "Last thing I ever gave {other} was trouble. Now {other}'s dead, and I can't take it back.",
+            "{other}'s in the ground, and I'm still angry. Angry at the dead. What does that make me?"
+        };
+        private static readonly string[] DeadFriend =
+        {
+            "{other}'s dead. I keep turning round to tell {other} things.",
+            "Can't walk past where {other} used to stand. Go the long way now."
+        };
+        private static readonly string[] DeadKnown =
+        {
+            "Talked with {other} only the other day. Now {other}'s gone. That's how quick it is."
+        };
+
+        /// A thought about someone they had a scene with lately, by first name; about their death if they've died since.
+        public static string Thought(SceneTie t, string id, string seed, bool otherDead = false)
+        {
+            if (otherDead)
+                return Voice.Pick(seed + "tdead", t.Warmth < 0 ? DeadFoe : t.Warmth > 0 ? DeadFriend : DeadKnown).Replace("{other}", Person.FirstOf(t.Other(id)));
             string[] pool = t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
                           : t.Kind == "comfort" || t.Kind == "cheer" ? Kindness : t.Warmth < 0 ? Quarrel : Romantic(t.Kind) ? Sweet : Known;
             return Voice.Pick(seed + "tie", pool).Replace("{other}", Person.FirstOf(t.Other(id)));
@@ -189,9 +212,30 @@ namespace EnrageWestworld.Core
             "{a} and {b} made it up, would you credit it. Shook on it outside the store."
         };
 
-        /// The town's talk about a tie between two others, with both their full names.
-        public static string TownThought(SceneTie t, string town, string seed)
+        // one of the two has died since: {a} is the one left, {b} the dead ({af}, {bf}: first names, said again)
+        private static readonly string[] TownDeadFoe =
         {
+            "Everybody knew {a} couldn't stand {b}. Now {bf}'s dead, and folks are careful what they say about it.",
+            "They say {b} never got over that business with {a}. Now {bf}'s buried, and {af} won't speak of it."
+        };
+        private static readonly string[] TownDeadWarm =
+        {
+            "{a} was sweet on {b}, and now {bf}'s gone. Somebody ought to look in on {af}."
+        };
+        private static readonly string[] TownDeadMended =
+        {
+            "{a} and {b} only just made it up, and now {bf}'s gone. Glad they got to, I suppose."
+        };
+
+        /// The town's talk about a tie between two others, with both their full names; deadA/deadB: that one has died since.
+        public static string TownThought(SceneTie t, string town, string seed, bool deadA = false, bool deadB = false)
+        {
+            if (deadA || deadB)
+            {
+                string left = deadB ? t.AName : t.BName, gone = deadB ? t.BName : t.AName;
+                string[] dead = t.Kind == "makeup" ? TownDeadMended : Romantic(t.Kind) ? TownDeadWarm : TownDeadFoe;
+                return Voice.Pick(seed + "ttd", dead).Replace("{af}", Person.FirstOf(left)).Replace("{bf}", Person.FirstOf(gone)).Replace("{a}", left).Replace("{b}", gone);
+            }
             string[] pool = t.Kind == "brawl" ? TownBlows : t.Kind == "makeup" ? TownMadeUp : Romantic(t.Kind) ? TownWarm : TownHostile;
             return Voice.Pick(seed + "tt", pool).Replace("{a}", t.AName).Replace("{b}", t.BName).Replace("{town}", town ?? "town");
         }
@@ -200,7 +244,9 @@ namespace EnrageWestworld.Core
         public static IEnumerable<string> AllLines()
         {
             return Quarrel.Concat(Blows).Concat(Money).Concat(Sweet).Concat(Known).Concat(Kindness).Concat(MadeUp).Concat(Shrugged)
-                .Concat(TownHostile).Concat(TownBlows).Concat(TownWarm).Concat(TownMadeUp);
+                .Concat(DeadFoe).Concat(DeadFriend).Concat(DeadKnown)
+                .Concat(TownHostile).Concat(TownBlows).Concat(TownWarm).Concat(TownMadeUp)
+                .Concat(TownDeadFoe).Concat(TownDeadWarm).Concat(TownDeadMended);
         }
     }
 }

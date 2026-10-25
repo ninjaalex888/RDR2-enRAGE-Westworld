@@ -24,10 +24,19 @@
   - The man owed calls in the same eleven dollars, and the answer moves with the worry: "soon", then "a week, just a week", then "Saturday, I swear it". At the end it's "Here. Eleven dollars. Count it.", or bitterness over the mule.
   - Neighbours go at it over the fence post, then the dog in the hens, then a threat, and at the end they shake on it or stop talking for good.
   - A courtship goes from a nervous good morning, to an offer to carry something, to "there's a thing I've been meaning to ask". The other one warms to it only if it's going to end in a yes, and at the end it's a yes or a kind no.
+- People notice. When a scene plays, those standing nearby turn their heads to look. Sometimes one of them with a name calls out once, from what's between them and the two in it and from their own temper:
+  - A friend of one takes their side: "Don't let Simon talk to you like that, Ezra."
+  - A friend of both tries to calm it: "Leave it, the pair of you. Not in the street."
+  - Someone who dislikes both eggs it on.
+  - The cold want it gone: "Somebody fetch the sheriff before this gets stupid."
+  - A fight draws a cheer or a cry for help.
+  - A courtship draws a smile ("About time, the pair of you.") or a tut ("In broad daylight. Lord.").
+  - Bad news draws a "Poor soul."
 - Someone reading the paper aloud no longer answers good news ("...sent both men home without a shot fired") as if it were a killing. They no longer say "Thank God it wasn't here" about something that happened in the town they're standing in.
 - People make the gestures that go with what they say: pointing and head-shaking in a quarrel, a wave or a hat tip in greeting, laughing at a joke.
 - Street scenes use the names the people really go by: enRAGE's name for its townsfolk, a resident's or regular's own name for anyone else. The name over each line and the names inside the lines now agree; before, "Cole" could say "You've been staring, Hank" to someone labelled "Ada". When the fight in a scene goes the other way from the script, the names in the lines still to come swap with the people.
 - Street scenes leave a trace. When two people who can be met again (town regulars, enRAGE's townsfolk) quarrel, come to blows, argue over money, flirt or just talk, it's remembered between them: how warm or hostile, how many times. For four days they think about each other by name ("Jaw still aches. Simon hits like a mule kicks."), and for two days the rest of their town talks about it ("Simon Walsh and Ezra Whitlow came to blows. Over nothing, they say."). Not yet seen in game.
+- When one of the two has died since, the other's thoughts turn to that: guilt after a quarrel or a fight ("Last thing I ever gave Abner was trouble. Now Abner's dead, and I can't take it back."), grief for a friend or sweetheart. Before, someone could still be thinking "Abner hits like a mule kicks" about a man who died just after the fight. The town talks about the death instead of the fight. A worry over a debt, a feud or a courtship whose other person has died is set aside: no more thoughts or scenes about it.
 - F7 shows the town regulars around you on the map for a minute (grey marks with their names), and names the nearest one on screen with how far and which way.
 - Rumours on the ticker keep a name's capital: "Heard Arthur Morgan broke up a fight", not "Heard arthur Morgan".
 

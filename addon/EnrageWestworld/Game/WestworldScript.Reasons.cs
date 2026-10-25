@@ -156,10 +156,78 @@ namespace EnrageWestworld.InGame
                 }
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
                           " (strength " + pr.Why.Strength + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
-                StartScene(s, new List<Ped> { first, second }, cast, seed, now);
+                List<Ped> cast2 = new List<Ped> { first, second };
+                AddBystander(s, cast2, cast, seed, now);
+                StartScene(s, cast2, cast, seed, now);
                 return true;
             }
             return false;
+        }
+
+        /// One named person watching close by may call out once (Crowd.cs): they join the scene as its third person,
+        /// with a single line after the second thing said, chosen from what's between them and the two (a friend of
+        /// one sides with them) and their own temper. Only for scenes of two that draw a word (a quarrel, a fight, a
+        /// courtship, bad news).
+        private void AddBystander(Scene s, List<Ped> people, SceneCast cast, string seed, int now)
+        {
+            string mood = Crowd.Mood(s.Kind);
+            if (s.Cast != 2 || people.Count != 2 || mood == null || !Voice.Chance(seed + "by", Crowd.Chance(mood)))
+                return;
+            Ped me = Game.Player.Character;
+            Vector3 mid = (people[0].Position + people[1].Position) * 0.5f;
+            Someone a = SomeoneOf(people[0]), b = SomeoneOf(people[1]);
+            string an = cast.Names[0] ?? (a != null ? Person.FirstOf(a.Name) : "friend"), bn = cast.Names[1] ?? (b != null ? Person.FirstOf(b.Name) : "friend");
+            // not someone of the same first name as either: the labels over the lines must tell the three apart
+            List<Candidate> watching = ReasonCandidates(me, now).Where(c => c.Ped.Handle != people[0].Handle && c.Ped.Handle != people[1].Handle &&
+                                                                          c.Ped.Position.DistanceTo(mid) < 10f && Person.FirstOf(c.Who.Name) != an && Person.FirstOf(c.Who.Name) != bn).ToList();
+            if (watching.Count == 0)
+                return;
+            // someone with history with either of them speaks first; else whoever is nearest
+            Candidate by = watching.OrderByDescending(c => TieWarmth(c.Who.Id, a) != 0 || TieWarmth(c.Who.Id, b) != 0 ? 1 : 0)
+                                   .ThenBy(c => c.Ped.Position.DistanceTo(mid)).First();
+            CrowdLine word = Crowd.Word(s.Kind, TieWarmth(by.Who.Id, a), TieWarmth(by.Who.Id, b), Exchanges.Manner(by.Who, false), an, bn, !cast.AWoman && !cast.BWoman, seed);
+            if (word == null)
+                return;
+            int spoken = 0, at = s.Beats.Count;
+            for (int i = 0; i < s.Beats.Count; i++)
+                if (s.Beats[i].Line != null && ++spoken == 2)
+                {
+                    at = i + 1;
+                    break;
+                }
+            s.Beats.Insert(at, new Beat(2, word.Line, word.Voice));
+            s.Cast = 3;
+            people.Add(by.Ped);
+            cast.Names[2] = Person.FirstOf(by.Who.Name);
+            cast.CWoman = by.Who.Woman;
+            Log.Write("BYSTANDER " + by.Who.Name + " watches " + an + " & " + bn + " (" + s.Kind + ") and calls out");
+        }
+
+        private int TieWarmth(string id, Someone other)
+        {
+            if (id == null || other == null)
+                return 0;
+            SceneTie t = _store.Ties.FirstOrDefault(x => x.Has(id) && x.Has(other.Id));
+            return t != null ? t.Warmth : 0;
+        }
+
+        /// Everyone else close by turns to look at a scene (a head turn only, nothing more), up to six of them.
+        private void Onlookers(List<Ped> people)
+        {
+            Ped me = Game.Player.Character;
+            Ped first = people[0];
+            int n = 0;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                if (n >= 6)
+                    break;
+                int h = p.Handle;
+                if (people.Any(x => x.Handle == h) || !Natives.Bystander(p, me.Handle) || Spawner.IsOurs(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
+                    p.Position.DistanceTo(first.Position) > 12f)
+                    continue;
+                TASK.TASK_LOOK_AT_ENTITY(h, first.Handle, 9000, 0, 51, 0);
+                n++;
+            }
         }
 
         /// Notes everyone in a scene, so they sit the next PersonRestMs out.

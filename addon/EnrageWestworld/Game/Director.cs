@@ -269,7 +269,10 @@ namespace EnrageWestworld.InGame
                 }
                 else if (now > l.MeetUntil)
                 {
-                    Abort("they never got close enough to talk");
+                    Ped walker = l.Cast[1];   // why, for the log: how far off, and whether a scenario (a bench, a rail) held them
+                    Abort("they never got close enough to talk (still " + l.Cast[0].Position.DistanceTo(walker.Position).ToString("0.0") + " m apart" +
+                          (PED.IS_PED_USING_ANY_SCENARIO(walker.Handle) ? ", a scenario held the walker" : "") +
+                          (PED.IS_PED_USING_ANY_SCENARIO(l.Cast[0].Handle) ? ", a scenario held the other" : "") + ")");
                     return;
                 }
                 else
