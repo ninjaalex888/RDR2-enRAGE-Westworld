@@ -47,11 +47,11 @@ namespace EnrageWestworld.InGame
         private const int VisibleRows = 16;
         private const int PanelBudget = 120;
 
-        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Encounters", "Quiet", "Features", "World", "Scenes", "Romance", "Ticker", "Pacing", "Output" };
+        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Encounters", "Quiet", "Features", "World", "Scenes", "Romance", "Ticker", "Display", "Pacing", "Output" };
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
         {
             { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Encounters", "Night encounters" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
-            { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Pacing", "Pacing" }, { "Output", "Notices and the panel" }
+            { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Display", "Bars and meter" }, { "Pacing", "Pacing" }, { "Output", "Notices and the panel" }
         };
 
         // a setting that only matters while another is on
@@ -61,7 +61,8 @@ namespace EnrageWestworld.InGame
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
             { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
             { "CryingWomanChance", "CryingWoman" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
-            { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" }        };
+            { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" },
+            { "FeelingBarsMetres", "FeelingBars" }, { "FeelingBarsShowEmpty", "FeelingBars" }        };
 
         // sections whose first setting switches the whole section on or off
         private static readonly Dictionary<string, string> Masters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -95,6 +96,7 @@ namespace EnrageWestworld.InGame
             { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" },
             { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
             { "SelfDefenceNoBounty", "No bounty for self-defence" },
+            { "FeelingBars", "Bars under people: fear, liking, anger" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
             { "Encounters", "Night encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
             { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" },
             { "Hermits", "Hermits who woke" }, { "HermitChance", "A new camp's chance (percent)" },

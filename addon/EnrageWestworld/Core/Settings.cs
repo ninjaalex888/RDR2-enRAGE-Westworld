@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 35;
+        public const int CurrentVersion = 37;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -41,6 +41,12 @@ namespace EnrageWestworld.Core
         public bool NoticesAsSubtitles;
         public string TickerNextKey = "T";
         public bool ThoughtSounds = true;
+
+        // [Display] - drawn on screen besides the ticker
+        public bool FeelingBars = true;
+        public float FeelingBarsMetres = 15f;
+        public bool FeelingBarsShowEmpty;
+        public bool GrudgeMeter = true;
 
         // [WestWorld] - the master switch and everything under it
         public bool WestWorld = true;
@@ -377,6 +383,7 @@ namespace EnrageWestworld.Core
             TickerScale = Math.Max(0.15f, Math.Min(0.8f, TickerScale));
             TickerWidth = Math.Max(0.2f, Math.Min(1f, TickerWidth));
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
+            FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
         }
 
         private static void Write(string path, Settings s)
@@ -423,6 +430,12 @@ namespace EnrageWestworld.Core
             b.AppendLine("NoticesAsSubtitles = " + B(NoticesAsSubtitles) + "   ; also flash new notices as subtitles");
             b.AppendLine("TickerNextKey = " + TickerNextKey + "   ; shows the next line on the ticker now (on a long line, its next part first)");
             b.AppendLine("ThoughtSounds = " + B(ThoughtSounds) + "   ; when a thought of someone within a few steps comes up on the ticker, they make a small wordless sound (at most every 3 minutes each)");
+            b.AppendLine();
+            b.AppendLine("[Display]");
+            b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, liking and anger, as enRAGE keeps them");
+            b.AppendLine("FeelingBarsMetres = " + F(FeelingBarsMetres) + "   ; how close they must be (the nearest three in plain view get bars)");
+            b.AppendLine("FeelingBarsShowEmpty = " + B(FeelingBarsShowEmpty) + "   ; also show the empty part of each bar, so a low value reads as a little out of a whole bar");
+            b.AppendLine("GrudgeMeter = " + B(GrudgeMeter) + "   ; top right: strangers whose grudge against you is building, with the mark where they'd become a nemesis, and the nemesis after you");
             b.AppendLine();
             b.AppendLine("[WestWorld]");
             b.AppendLine("WestWorld = " + B(WestWorld) + "   ; master switch: the people who start to see their world is made. false turns off everything in this section");

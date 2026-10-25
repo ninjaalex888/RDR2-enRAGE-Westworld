@@ -346,6 +346,7 @@ namespace EnrageWestworld.InGame
         {
             _now = now;
             Safe("ticker", _aFrame);
+            FeelingsStep(now);
         }
 
         private void FrameImpl(int now)
