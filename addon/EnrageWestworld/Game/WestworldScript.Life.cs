@@ -227,9 +227,7 @@ namespace EnrageWestworld.InGame
 
         private void SceneSay(string label, string line, bool uncanny, bool woman)
         {
-            Feed.Say(label, line);
-            if (uncanny)
-                Tts.Say(line, woman, 0.8f, true, label);
+            Feed.Say(label, line);   // the director plays the speakers' own recorded lines
         }
 
         /// Loose talk in a saloon about a gang job nobody's supposed to know about.

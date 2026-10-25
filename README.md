@@ -26,7 +26,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 
 **West World (one switch turns it all on or off).** Some people begin to suspect their world is made. At first it's deja vu and odd dreams; later they notice the loops, the same faces, "the music that comes before trouble". Now and then someone glitches. Some of the people you kill wake up days later and remember how they died and who did it. Now and then someone near you, often someone who knows you, starts following you at a distance and hides when you look. Stand still and they come closer and do odd things: dig a grave, kneel as at a graveside, put a finger to their lips, wave slowly, beckon.
 
-**Voices.** Most lines come with a fitting recorded line in the speaker's own in-game voice. The stranger lines are read aloud by any Windows voice you have installed, and each speaker keeps their own voice, pitch and pace.
+**Voices.** Lines are spoken in the speaker's own recorded game voice: the recording that best fits the feeling of what they say, an unsettled one for the uncanny lines. The game can't say new words, so the subtitle carries the meaning; where the words of a recording are known, the subtitle shows them and the written line becomes the person's thought on the ticker.
 
 ## Install
 

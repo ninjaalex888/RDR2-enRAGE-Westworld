@@ -775,7 +775,7 @@ namespace EnrageWestworld.InGame
 						Remark remark = _engine.RemarkFor(person, now2);
 						if (remark != null)
 						{
-							Show(person.Name, person.Woman, remark, Speech.For(handle, remark.Text, character.Handle, person.Hate, person.Fear, person.Friendly));
+							Show(person.Name, person.Woman, remark, Speech.For(handle, remark.Text, character.Handle, person.Hate, person.Fear, person.Friendly, remark.Uncanny ? "uneasy" : null));
 							_remarked[person.Id] = now;
 							_lastRemarkAt = now;
 							flag = false;
@@ -805,7 +805,7 @@ namespace EnrageWestworld.InGame
 						Remark remark2 = Townsfolk.RemarkFor(folk, personState, folk.Key + personState.Told.Count, _cfg.Romance, _engine.Player);
 						if (remark2 != null)
 						{
-							Show(folk.Name, folk.Woman, remark2, Speech.For(handle, remark2.Text, character.Handle, folk.Grudge));
+							Show(folk.Name, folk.Woman, remark2, Speech.For(handle, remark2.Text, character.Handle, folk.Grudge, 0, false, remark2.Uncanny ? "uneasy" : null));
 							_remarked[folk.Key] = now;
 							_lastRemarkAt = now;
 							flag = false;
@@ -824,22 +824,18 @@ namespace EnrageWestworld.InGame
 			return false;
 		}
 
-		/// A passing remark. Uncanny ones are read by the Windows voice; muttered ones stay silent; the rest
-		/// get the speaker's recorded voice when it fits.
+		/// A passing remark. Muttered ones stay silent; the rest get the speaker's recorded voice when one fits (uncanny ones
+		/// an unsettled one).
 		private static void Show(string name, bool woman, Remark r, Func<string> voice = null)
 		{
 			Log.Write("REMARK " + name + (r.Muttered ? " (muttered)" : "") + ": " + r.Text);
-			if (r.Uncanny)
-			{
-				Tts.Say(r.Text, woman, 1f, true, name);
-			}
 			if (r.Muttered)
 			{
 				Feed.Mutter(name, woman, r.Text);
 			}
 			else
 			{
-				Feed.Say(name, r.Text, r.Uncanny ? null : voice);
+				Feed.Say(name, r.Text, voice);
 			}
 		}
 
@@ -983,9 +979,9 @@ namespace EnrageWestworld.InGame
 				}
 			}
 			Log.Write("TEST: scene " + (_director.CurrentKind ?? "none") + ", plea " + (_plea != null ? _plea.Plea.Name : "none") + ", pickpocket " + (_theft != null ? "running" : "none") +
-				", arrival queued " + (_arrival != null) + ", scene reactions " + (_cfg.SceneReactions ? "on" : "off") + ", voices man '" + (_cfg.VoiceMan ?? "") + "' woman '" + (_cfg.VoiceWoman ?? "") + "'" +
+				", arrival queued " + (_arrival != null) + ", scene reactions " + (_cfg.SceneReactions ? "on" : "off") +
 				", host tier " + TownHostTier() + ", mourners due " + _store.Fallen.Count(f => !f.Mourned && f.Returned == 0) + ", bounty " + LAW.GET_BOUNTY(Game.Player.Handle));
-			Log.Write("TEST 0.4: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", enRAGE menu open " + _uiOpen + ", voice " + (_cfg.SpokenVoice ? "on" : "off") +
+			Log.Write("TEST 0.4: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", enRAGE menu open " + _uiOpen +
 				", stalker " + (_stalker != null ? _stalker.Label : "none") + ", scene " + (_director.Busy ? "playing" : "none") + ", town " + (_placeTown ?? "-") + ", place " + (_placeKind ?? "-") +
 				", deeds " + _store.Deeds.Count + ", rumours " + _store.TownRumours.Count + ", papers " + _store.Papers.Count(x => x.Delivered) + "/" + _store.Papers.Count +
 				", fallen " + _store.Fallen.Count + ", reveries " + _store.Reveries.Values.Count(x => x.Woke) + "/" + _store.Reveries.Count + ", avengers " + _store.Avengers.Count + ", weddings " + _store.Weddings.Count);

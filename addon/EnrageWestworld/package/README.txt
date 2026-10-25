@@ -73,6 +73,13 @@ NEW IN 0.6.0
   or a stranger if nobody near can be. It replaces Shift+F7.
 - The wake key is now Y (WakeKey, was G) and the stalker key ] (was 0). An ini still on G or 0 is
   moved over and the log says so; a key you chose yourself is kept.
+- No more Windows voice. Every line is now spoken, when it is spoken, in the person's own recorded
+  game voice: a line that fits the feeling of what the subtitle says. The uncanny lines (people
+  wondering if their world is real, glitches, stalkers muttering behind you) get the game's
+  unsettled or taunting reactions instead. The game can't say new words, so the subtitle carries
+  the meaning; where the words of a recording are known (voices\words.txt), the subtitle shows
+  what they really say and the line written for them goes to the ticker as their thought.
+  The [Voices] settings (SpokenVoice, VoiceVolume, VoiceMan, VoiceWoman, VoiceVariety) are gone.
 - The reader for letters, diaries and clippings is now the N key (ReaderKey, was F5). An ini
   still on F5 moves over; a key you chose yourself is kept.
 - Quiet while you stand still. Stand still for 3 seconds (QuietStillSeconds), or turn on the
@@ -338,8 +345,8 @@ WESTWORLD
 Hosts. Some people start to suspect their world is made. At first it's deja vu and odd dreams.
 Later they notice the loops: the same words, the same faces, the music that comes before trouble.
 The ones who've died and come back, or who watched you die and get up again, say stranger things
-still. Strangers in the street wonder out loud too. These lines are read aloud by the Windows
-voice (SpokenVoice). Rarely, someone glitches: freezes and stares, or says the same greeting three
+still. Strangers in the street wonder out loud too, in their own recorded voices, unsettled.
+Rarely, someone glitches: freezes and stares, or says the same greeting three
 times exactly alike.
 
 Reveries. When you kill one of enRAGE's people (not story characters), there's a chance
@@ -362,9 +369,6 @@ REQUIREMENTS
 - Script Hook RDR2 and Script Hook RDR2 .NET (V2), the same ones enRAGE needs
 - enRAGE 0.9.5.2 installed and working. If a later enRAGE changes something, the parts that need it
   turn off and the log says which.
-- For the spoken lines: the Windows speech voice (part of Windows). If it isn't there, the lines
-  just stay as subtitles. Any installed Windows voice works: the log lists them, and VoiceMan /
-  VoiceWoman pick one (Windows 11's natural voices need a free adapter to show up there).
 
 
 INSTALL
@@ -440,8 +444,6 @@ in the file. The new ones:
 [Quiet]     QuietWhenStill (true): while you stand still, enRAGE sends nothing after you and its
             tension stops building, QuietStillSeconds (3), QuietInCinematic (true): the same in the
             cinematic camera
-[Voices]    SpokenVoice (true), VoiceVolume (80), VoiceMan, VoiceWoman (part of a Windows voice's
-            name; empty = any), VoiceVariety (true)
 [World]     Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)

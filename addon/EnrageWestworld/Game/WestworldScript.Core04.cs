@@ -90,8 +90,7 @@ namespace EnrageWestworld.InGame
             LoadVoices();
             Feed.Thinking = (who, text) => _ticker.Push(who + ", thinking", text, "near");
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
-                      ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min" : "off") +
-                      ", voice " + (_cfg.SpokenVoice ? "on" : "off") + ".");
+                      ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min" : "off") + ".");
             Log.Write("West World " + (_cfg.WestWorld ? "on (awakening " + _cfg.AwakeningShare + "%, breakdown " + _cfg.AwakeningBreakdown + "%, despair " + _cfg.AwakeningDespair + "%)" : "off") +
                       ", Stalkers " + (_cfg.Stalkers ? "on (" + _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min, key " + _stalkerKey + ", when you stand still: " + _cfg.StalkerWhenStill + ")" : "off") + ".");
             Log.Write("0.5 features: scene reactions " + (_cfg.SceneReactions ? "on" : "off") + ", standoffs " + (_cfg.Standoffs ? "on" : "off") + ", songs " + (_cfg.Songs ? "on" : "off") +
@@ -104,11 +103,6 @@ namespace EnrageWestworld.InGame
             Log.Debug = _cfg.DebugLog;
             Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
             Feed.UseGameFeed = _cfg.NewsRoute == "gamefeed";
-            Tts.Enabled = _cfg.SpokenVoice;
-            Tts.Volume = _cfg.VoiceVolume;
-            Tts.ManVoice = _cfg.VoiceMan ?? string.Empty;
-            Tts.WomanVoice = _cfg.VoiceWoman ?? string.Empty;
-            Tts.Variety = _cfg.VoiceVariety;
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
             _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F6);
@@ -145,7 +139,6 @@ namespace EnrageWestworld.InGame
                 if (_stalker != null)
                     _stalker.Finish(true);
                 Spawner.CleanupAll();
-                Tts.Stop();
                 Draw.FreeAll();
             }
             catch (Exception ex)
@@ -549,7 +542,6 @@ namespace EnrageWestworld.InGame
             _now = now;
             Safe("settings reload", _aIni);
             Safe("places", _aPlaces);
-            Tts.Enabled = _cfg.SpokenVoice;
             if (MISC.GET_MISSION_FLAG())
             {
                 Safe("mission pause", _aMission);

@@ -52,6 +52,7 @@ namespace EnrageWestworld.InGame
         public static readonly string[] Harmed = { "PLAYER_HARMED_TOWN", "WRONGED_RECENTLY", "TROUBLE_RECENTLY", "WAS_THIS_YOU", "SHAME_ON_YOU" };
         public static readonly string[] Helped = { "PLAYER_HELPED_TOWN", "HELPED_RECENTLY", "GENERIC_THANKS" };
         public static readonly string[] Weird = { "PLAYER_ACTING_WEIRD", "PLAYER_LOOKING_WEIRD", "WHATS_GOING_ON" };
+        public static readonly string[] Uneasy = { "WHATS_GOING_ON", "GENERIC_SHOCKED_MED", "NO_IDEA", "GENERIC_SHOCKED_DISBELIEF" };   // the uncanny lines: someone unsettled by their own world
         public static readonly string[] FightTalk = { "MELEE_BRING_IT_ON", "FIGHT", "FIGHT_RESPONSE", "GENERIC_ANGRY_SHOUT" };
         public static readonly string[] Chat = { "HOWS_IT_GOING", "CHAT_GOOD_WEATHER", "COMMENT_WORKING_HARD", "GREET_GENERAL_FAMILIAR" };
         public static readonly string[] ChatBad = { "CHAT_BAD_WEATHER", "HOWS_IT_GOING" };
@@ -109,6 +110,7 @@ namespace EnrageWestworld.InGame
                 case "harmed": return Harmed;
                 case "helped": return Helped;
                 case "weird": return Weird;
+                case "uneasy": return Uneasy;
                 case "fight": return FightTalk;
                 case "chat": return Chat;
                 case "chatbad": return ChatBad;

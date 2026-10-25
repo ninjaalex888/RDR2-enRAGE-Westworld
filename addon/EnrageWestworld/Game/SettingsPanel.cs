@@ -47,11 +47,11 @@ namespace EnrageWestworld.InGame
         private const int VisibleRows = 16;
         private const int PanelBudget = 120;
 
-        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Quiet", "Features", "World", "Scenes", "Romance", "Ticker", "Voices", "Pacing", "Output" };
+        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Quiet", "Features", "World", "Scenes", "Romance", "Ticker", "Pacing", "Output" };
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
         {
             { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
-            { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Voices", "Voices" }, { "Pacing", "Pacing" }, { "Output", "Notices and the panel" }
+            { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Pacing", "Pacing" }, { "Output", "Notices and the panel" }
         };
 
         // a setting that only matters while another is on
@@ -59,7 +59,6 @@ namespace EnrageWestworld.InGame
         {
             { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
-            { "VoiceVolume", "SpokenVoice" }, { "VoiceMan", "SpokenVoice" }, { "VoiceWoman", "SpokenVoice" }, { "VoiceVariety", "SpokenVoice" },
             { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" }
         };
 

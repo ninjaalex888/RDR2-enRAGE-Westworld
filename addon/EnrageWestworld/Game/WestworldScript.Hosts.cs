@@ -92,8 +92,7 @@ namespace EnrageWestworld.InGame
             string line = Hosts.StrangerAloud(tier, p.Handle + "|" + Game.GameTime / 60000);
             string label = Grammar.UpperFirst(Director.Kind(p, woman));
             TASK.TASK_LOOK_AT_ENTITY(p.Handle, Game.Player.Character.Handle, 5000, 0, 51, 0);
-            Feed.Say(label + ", to nobody in particular", line);
-            Tts.Say(line, woman, Natives.Night() ? 0.8f : 0.9f, true, "ped" + p.Handle);
+            Feed.Say(label + ", to nobody in particular", line, Speech.For(p.Handle, line, 0, 0, 0, false, "uneasy"));   // their own voice, unsettled
             Log.Write("MUSING " + label + ": " + line);
         }
 
@@ -134,8 +133,7 @@ namespace EnrageWestworld.InGame
                 else
                 {
                     string line = Hosts.Glitch(h + "|g");
-                    Feed.Say(g.Name, line);
-                    Tts.Say(line, !PED.IS_PED_MALE(h), 0.8f, true, "ped" + h);
+                    Feed.Say(g.Name, line, Speech.When(h, "uneasy", me));
                     g.Step = 99;
                 }
             }
@@ -151,8 +149,7 @@ namespace EnrageWestworld.InGame
                 else
                 {
                     string line = Hosts.Glitch(h + "|f");
-                    Feed.Say(g.Name, line);
-                    Tts.Say(line, !PED.IS_PED_MALE(h), 0.8f, true, "ped" + h);
+                    Feed.Say(g.Name, line, Speech.When(h, "uneasy", me));
                     g.Step = 99;
                 }
             }
@@ -486,8 +483,9 @@ namespace EnrageWestworld.InGame
 
         private void StalkerSay(string label, string line, bool revenant)
         {
-            Feed.Say(label + ", somewhere behind you", line);
-            Tts.Say(line, _stalkerWoman, 0.55f, true, label);
+            // his own voice, from wherever he is: a recorded line that fits, else a taunt
+            int h = _stalker != null ? _stalker.Handle : 0;
+            Feed.Say(label + ", somewhere behind you", line, h != 0 ? Speech.For(h, line, Game.Player.Character.Handle, 40, 0, false, "mock") : null);
             Log.Write("STALKER " + label + ": " + line);
         }
     }

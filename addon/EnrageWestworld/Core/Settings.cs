@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 26;
+        public const int CurrentVersion = 27;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -78,13 +78,6 @@ namespace EnrageWestworld.Core
         public bool QuietWhenStill = true;
         public int QuietStillSeconds = 3;
         public bool QuietInCinematic = true;
-
-        // [Voices]
-        public bool SpokenVoice = true;
-        public int VoiceVolume = 80;
-        public string VoiceMan = string.Empty;
-        public string VoiceWoman = string.Empty;
-        public bool VoiceVariety = true;
 
         // [World]
         public bool Deeds = true;
@@ -342,7 +335,6 @@ namespace EnrageWestworld.Core
             StalkerActMetres = Math.Max(5, Math.Min(30, StalkerActMetres));
             QuietStillSeconds = Math.Max(1, Math.Min(60, QuietStillSeconds));
             TownPostsAfterDeath = (TownPostsAfterDeath ?? "").Trim().ToLowerInvariant() == "successor" ? "successor" : "survive";
-            VoiceVolume = Math.Max(0, Math.Min(100, VoiceVolume));
             StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
@@ -435,13 +427,6 @@ namespace EnrageWestworld.Core
             b.AppendLine("QuietWhenStill = " + B(QuietWhenStill) + "   ; while you stand still, enRAGE's tension stops building and no nemesis, gang or faction comes for you (through enRAGE's own calm period)");
             b.AppendLine("QuietStillSeconds = " + QuietStillSeconds + "   ; how long you must stand still first (1-60)");
             b.AppendLine("QuietInCinematic = " + B(QuietInCinematic) + "   ; the same while the cinematic camera is on, moving or not");
-            b.AppendLine();
-            b.AppendLine("[Voices]");
-            b.AppendLine("SpokenVoice = " + B(SpokenVoice) + "   ; uncanny lines are also read aloud with the Windows voice");
-            b.AppendLine("VoiceVolume = " + VoiceVolume + "   ; 0-100");
-            b.AppendLine("VoiceMan = " + (VoiceMan ?? "") + "   ; part of the name of the Windows voice for men (the log lists the installed ones); empty = any man's voice");
-            b.AppendLine("VoiceWoman = " + (VoiceWoman ?? "") + "   ; the same for women");
-            b.AppendLine("VoiceVariety = " + B(VoiceVariety) + "   ; each speaker keeps their own voice, pitch and pace");
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");
