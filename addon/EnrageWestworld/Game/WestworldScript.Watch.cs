@@ -405,10 +405,10 @@ namespace EnrageWestworld.InGame
         private void OnKilled(Ped victim, Hit hit, uint weapon, int now)
         {
             int h = victim.Handle;
-            if (Spawner.IsOurs(h))
-                return;
             if (hit.CameAtYou)
                 Defending(now);   // the kill is what usually brings the bounty, and reports lag: the fight goes on from here
+            if (Spawner.IsOurs(h))
+                return;           // the add-on's own (an encounter's attackers): no deed, but the defence above still counts
             Vector3 pos = victim.Position;
             string town = _bridge.TownAt(pos);
             string zone = ZoneAt(pos);

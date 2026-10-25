@@ -72,23 +72,46 @@ namespace EnrageWestworld.InGame
             if (why != null)
             {
                 _encounterWait = why;
-                Log.Detail("Encounter roll skipped: " + why);
+                Log.Write("Encounter roll skipped: " + why);
                 return;
             }
-            _encounterWait = null;
-            Ped me = Game.Player.Character;
-            int hour = CLOCK.GET_CLOCK_HOURS();
-            bool wild = _bridge.TownAt(me.Position) == null && _interiorType == 0;
-            if (_cfg.CryingWoman && wild && Encounters.Night(hour, 22, 4) && !DoneToday("crying"))
+            List<string> notNow = new List<string>();   // each kind that's on but can't happen here and now, and why
+            if (_cfg.CryingWoman)
             {
-                bool hit = _rng.Next(100) < _cfg.CryingWomanChance;
-                Log.Write("Encounter roll, the crying woman (" + _cfg.CryingWomanChance + "%): " + (hit ? "yes" : "no"));
-                if (hit)
+                string not = CryingNotNow();
+                if (not != null)
+                    notNow.Add("the crying woman: " + not);
+                else if (EncounterRoll("the crying woman", _cfg.CryingWomanChance))
                 {
+                    _encounterWait = null;
                     StartCrying(now);
                     return;
                 }
             }
+            _encounterWait = notNow.Count > 0 ? string.Join("; ", notNow) : null;
+            if (_encounterWait != null)
+                Log.Write("Encounter roll skipped: " + _encounterWait);
+        }
+
+        private bool EncounterRoll(string what, int chance)
+        {
+            bool hit = _rng.Next(100) < chance;
+            Log.Write("Encounter roll, " + what + " (" + chance + "%): " + (hit ? "yes" : "no"));
+            return hit;
+        }
+
+        /// Why the crying woman can't come here and now; null when she can.
+        private string CryingNotNow()
+        {
+            string town = _bridge.TownAt(Game.Player.Character.Position);
+            if (town != null)
+                return "you're in " + town + " (she's only out in the wilds)";
+            int hour = CLOCK.GET_CLOCK_HOURS();
+            if (!Encounters.Night(hour, 22, 4))
+                return "it's " + hour.ToString("00") + ":00 (she's out from 22:00 to 04:00)";
+            if (DoneToday("crying"))
+                return "she was out already tonight";
+            return null;
         }
 
         /// What keeps an encounter from starting now, in words; null when nothing does.
@@ -198,7 +221,12 @@ namespace EnrageWestworld.InGame
                 case "knife":
                     if (now >= c.PhaseUntil)
                     {
-                        // the lunge is over: she runs for the trees
+                        // the lunge is over: she runs for the trees. Out of the fight first, or the combat AI pulls her
+                        // straight back in; shooting her as she runs is still self-defence (_cameAtYouSeen)
+                        PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, false);
+                        PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, false);
+                        PED.SET_PED_RELATIONSHIP_GROUP_HASH(h, c.OwnGroup);
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
                         TASK.CLEAR_PED_TASKS(h, true, false);
                         TASK.TASK_SMART_FLEE_PED(h, me.Handle, 300f, -1, 0, 3f, 0);
                         c.Phase = "fled";
@@ -208,9 +236,9 @@ namespace EnrageWestworld.InGame
                 case "fled":
                     if ((!seen && dist > 35f) || now >= c.PhaseUntil)
                     {
-                        if (c.Moved)
+                        if (c.Moved || seen)
                         {
-                            EndCrying("she ran off for good");
+                            EndCrying(c.Moved ? "she ran off for good" : "she ran off");   // never moved in front of him
                             return;
                         }
                         Vector3 at;
@@ -345,6 +373,8 @@ namespace EnrageWestworld.InGame
                         return;
                     }
                     Feed.Say("The crying woman", Encounters.Pick(Encounters.AmbushCall, h + "a"), Speech.When(h, "mock", me.Handle));
+                    _cameAtYouSeen[h] = now;   // she brought them: shooting her as she runs is self-defence too
+                    PED.SET_PED_KEEP_TASK(h, true);
                     TASK.TASK_SMART_FLEE_PED(h, me.Handle, 300f, -1, 0, 3f, 0);
                     c.Phase = "ambush";
                     c.PhaseUntil = now;
@@ -399,7 +429,8 @@ namespace EnrageWestworld.InGame
                 bool seen = alive && ENTITY.IS_ENTITY_ON_SCREEN(p.Handle);
                 Spawner.Release(p, alive && (!seen || p.Position.DistanceTo(me.Position) > 120f));
             }
-            MarkDone("crying");
+            if (c.Phase != "spawn")
+                MarkDone("crying");   // nowhere to put her doesn't use up the night
             Log.Write("ENCOUNTER crying woman: over (" + why + ")");
         }
 

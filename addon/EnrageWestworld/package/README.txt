@@ -115,7 +115,7 @@ NEW IN 0.6.0
   help in her own voice. Go close, or point a gun at her, and she may lunge at you with a knife
   and run (and later cry again somewhere else), or two or three armed men may step out of the
   brush, or she may say something that makes no sense and walk off into the night. Anyone who
-  attacks is hostile from the start, so fighting them off is self-defence. Never in towns,
+  attacks is hostile from the start, so fighting them off (her too) is self-defence. Never in towns,
   indoors, in missions, while you're wanted or fighting, or while a stalker is out.
   CONTENT NOTE: the knife and the ambush are violent. CryingWoman = false, or Encounters =
   false for the whole section, turns it off.
