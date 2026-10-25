@@ -50,9 +50,11 @@ namespace EnrageWestworld.InGame
                 _quietStillSince = now;   // moving (on foot or on horseback); turning the camera doesn't count
                 _quietAt = pos;
             }
-            bool cinematic = _cfg.QuietInCinematic && (CAM._IS_IN_CINEMATIC_MODE() || CAM.IS_CINEMATIC_CAM_RENDERING());
+            // the cinematic view you turn on, or any other cinematic shot the game is showing (the log says which)
+            bool mode = _cfg.QuietInCinematic && CAM._IS_IN_CINEMATIC_MODE();
+            bool shot = _cfg.QuietInCinematic && !mode && CAM.IS_CINEMATIC_CAM_RENDERING();
             bool still = _cfg.QuietWhenStill && now - _quietStillSince >= _cfg.QuietStillSeconds * 1000;
-            string why = cinematic ? "the cinematic camera is on" : still ? "you're standing still" : null;
+            string why = mode ? "the cinematic camera is on" : shot ? "the cinematic camera is on (a cinematic shot)" : still ? "you're standing still" : null;
             if (why == null)
             {
                 EndQuiet();
