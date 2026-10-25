@@ -135,6 +135,7 @@ namespace EnrageWestworld.InGame
             try
             {
                 _director.Abort("stopping");
+                EndEncounters("the add-on stopped");
                 WakeActsAbort();
                 if (_stalker != null)
                     _stalker.Finish(true);
@@ -513,6 +514,7 @@ namespace EnrageWestworld.InGame
                 return;
             _missionPaused = true;
             _director.Abort("a mission started");
+            EndEncounters("a mission started");
             WakeActsAbort();
             _glitch = null;
             if (_stalker != null)
@@ -557,6 +559,7 @@ namespace EnrageWestworld.InGame
                 return;
             QuietStep(now);
             PostsStep(now);
+            EncountersStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);
             Safe("arrivals", _aArrival);

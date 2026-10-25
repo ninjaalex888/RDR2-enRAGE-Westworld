@@ -184,6 +184,8 @@ namespace EnrageWestworld.InGame
                 return "you're in the water";
             if (!Spawner.SafeToSpawn())
                 return "the screen is fading or loading";
+            if (EncounterLive)
+                return "a night encounter is going on";
             return null;
         }
 

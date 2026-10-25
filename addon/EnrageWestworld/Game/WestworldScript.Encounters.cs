@@ -1,0 +1,446 @@
+// Encounters in the game (see Core/Encounters.cs). Every EncounterEveryMinutes of play, when the time and place are
+// right, a roll for each kind that's switched on; at most one runs at a time, never during a mission, a stalker, a
+// street scene, a wedding, a plea or a theft, and never indoors, wanted, fighting or in water.
+//   The crying woman: spawned out of sight 30-55 m off in the wilds at night, kneeling and sobbing, calling for help
+//   in her own recorded voice. Within a few steps (or with a gun on her) she lunges with a knife and runs, and later
+//   cries again somewhere else; or two or three men step out of the brush and attack; or she says something that
+//   makes no sense and walks off into the dark. Anyone who attacks is hostile to the player from the start, so
+//   fighting them off is self-defence (see Watch.cs).
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using EnrageWestworld.Core;
+using RDR2;
+using RDR2.Math;
+using RDR2.Native;
+
+namespace EnrageWestworld.InGame
+{
+    public partial class WestworldScript
+    {
+        private sealed class Crying
+        {
+            public string Phase = "spawn";   // spawn, crying, knife, fled, crying2, ambush, dark, leaving
+            public Ped Woman;
+            public readonly List<Ped> Men = new List<Ped>();
+            public uint WomanModel, ManModel;
+            public uint OwnGroup;
+            public int StartedAt, NextCry, PhaseUntil, Tries;
+            public bool Moved;
+        }
+
+        private static readonly string[] HelpLines = { "SCARED_HELP", "PANIC_HELP", "GENERIC_FRIGHTENED_HIGH" };
+        private const string Kneel = "WORLD_HUMAN_GRAVE_MOURNING_KNEEL";
+
+        private Crying _crying;
+        private int _nextEncounterRoll, _nextEncounterTick;
+        private uint _hostileGroup;
+        private string _encounterWait;
+        private Action _aEncounters;
+
+        private void EncountersStep(int now)
+        {
+            if (_aEncounters == null)
+                _aEncounters = () => EncountersTick(_now);
+            Safe("encounters", _aEncounters);
+        }
+
+        private bool EncounterLive { get { return _crying != null; } }
+
+        private void EncountersTick(int now)
+        {
+            if (now < _nextEncounterTick)
+                return;
+            _nextEncounterTick = now + (EncounterLive ? 250 : 2000);
+            if (_crying != null)
+            {
+                CryingStep(now);
+                return;
+            }
+            if (!_cfg.Encounters)
+                return;
+            int every = _cfg.EncounterEveryMinutes * 60000;
+            if (_nextEncounterRoll == 0 || _nextEncounterRoll - now > every)
+            {
+                _nextEncounterRoll = now + every;   // the first, or the interval was made shorter
+                return;
+            }
+            if (now < _nextEncounterRoll)
+                return;
+            _nextEncounterRoll = now + every;
+            string why = EncounterBlocker();
+            if (why != null)
+            {
+                _encounterWait = why;
+                Log.Detail("Encounter roll skipped: " + why);
+                return;
+            }
+            _encounterWait = null;
+            Ped me = Game.Player.Character;
+            int hour = CLOCK.GET_CLOCK_HOURS();
+            bool wild = _bridge.TownAt(me.Position) == null && _interiorType == 0;
+            if (_cfg.CryingWoman && wild && Encounters.Night(hour, 22, 4) && !DoneToday("crying"))
+            {
+                bool hit = _rng.Next(100) < _cfg.CryingWomanChance;
+                Log.Write("Encounter roll, the crying woman (" + _cfg.CryingWomanChance + "%): " + (hit ? "yes" : "no"));
+                if (hit)
+                {
+                    StartCrying(now);
+                    return;
+                }
+            }
+        }
+
+        /// What keeps an encounter from starting now, in words; null when nothing does.
+        private string EncounterBlocker()
+        {
+            string b = StalkBlocker();
+            if (b != null)
+                return b;
+            if (_stalker != null)
+                return "a stalker is out";
+            if (_director.Busy || _wedding != null || _plea != null || _theft != null)
+                return "something else is going on";
+            if (Game.Player.Character.IsDead)
+                return "you're dead";
+            return null;
+        }
+
+        /// Encounters keep to once a night: nights run noon to noon, so ten at night and two in the morning are the same one.
+        private static int NightIndex()
+        {
+            return (int)((Bridge.Now() - 720) / 1440);
+        }
+
+        private bool DoneToday(string kind)
+        {
+            int c;
+            return _store.Counts.TryGetValue("enc:" + kind, out c) && c == NightIndex();
+        }
+
+        private void MarkDone(string kind)
+        {
+            _store.Counts["enc:" + kind] = NightIndex();
+        }
+
+        // ---- the crying woman ---------------------------------------------------------------------------
+
+        private void StartCrying(int now)
+        {
+            _crying = new Crying
+            {
+                StartedAt = now,
+                WomanModel = Spawner.ModelFor(null, true, _rng.Next()),
+                ManModel = Spawner.ModelFor(null, false, _rng.Next())
+            };
+            Log.Write("ENCOUNTER crying woman: begins, game time " + Clock(Bridge.Now()));
+        }
+
+        private void CryingStep(int now)
+        {
+            Crying c = _crying;
+            Ped me = Game.Player.Character;
+            if (MISC.GET_MISSION_FLAG() || me.IsDead)
+            {
+                EndCrying(MISC.GET_MISSION_FLAG() ? "a mission started" : "you died");
+                return;
+            }
+            if (c.Phase == "spawn")
+            {
+                CryingSpawn(now);
+                return;
+            }
+            Ped w = c.Woman;
+            if (w == null || !w.Exists() || w.IsDead)
+            {
+                if (c.Phase != "ambush" || c.Men.All(m => m == null || !m.Exists() || m.IsDead))
+                {
+                    EndCrying(w != null && w.Exists() && w.IsDead ? "she's dead" : "she's gone");
+                    return;
+                }
+            }
+            // in an ambush the men are what matters, not the woman running off
+            Ped near = c.Phase == "ambush"
+                ? c.Men.Where(m => m != null && m.Exists() && !m.IsDead).OrderBy(m => m.Position.DistanceTo(me.Position)).FirstOrDefault()
+                : w;
+            float dist = near != null && near.Exists() ? near.Position.DistanceTo(me.Position) : 999f;
+            bool waiting = c.Phase == "crying" || c.Phase == "crying2";
+            if (dist > 160f || (waiting && now - c.StartedAt > 8 * 60000))
+            {
+                EndCrying(dist > 160f ? "you rode away" : "the night moved on");
+                return;
+            }
+            int h = w != null && w.Exists() ? w.Handle : 0;
+            bool seen = h != 0 && ENTITY.IS_ENTITY_ON_SCREEN(h) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17);
+            switch (c.Phase)
+            {
+                case "crying":
+                case "crying2":
+                {
+                    Spawner.Ready(c.ManModel);   // keeps the men's model streaming in, in case she isn't alone
+                    if (now >= c.NextCry)
+                    {
+                        c.NextCry = now + 7000 + _rng.Next(5000);
+                        Speech.Say(h, HelpLines[_rng.Next(HelpLines.Length)], 0);
+                        if (dist < 90f)
+                            Feed.Say(dist > 15f ? "A woman, somewhere in the dark" : "The crying woman", Encounters.Pick(Encounters.Cries, h + "|" + now / 9000));
+                    }
+                    bool aimed = PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, h);
+                    if (dist < 6f || (dist < 25f && aimed))
+                    {
+                        string outcome = c.Phase == "crying2" ? "dark" : Encounters.CryingOutcome(_rng.Next(100));
+                        if (outcome == "ambush" && !Spawner.Ready(c.ManModel))
+                            outcome = "knife";   // the men weren't ready: she manages on her own
+                        CryingOutcome(c, outcome, now);
+                    }
+                    break;
+                }
+                case "knife":
+                    if (now >= c.PhaseUntil)
+                    {
+                        // the lunge is over: she runs for the trees
+                        TASK.CLEAR_PED_TASKS(h, true, false);
+                        TASK.TASK_SMART_FLEE_PED(h, me.Handle, 300f, -1, 0, 3f, 0);
+                        c.Phase = "fled";
+                        c.PhaseUntil = now + 30000;
+                    }
+                    break;
+                case "fled":
+                    if ((!seen && dist > 35f) || now >= c.PhaseUntil)
+                    {
+                        if (c.Moved)
+                        {
+                            EndCrying("she ran off for good");
+                            return;
+                        }
+                        Vector3 at;
+                        if (!EncounterSpot(me, 50f, 80f, out at))
+                        {
+                            EndCrying("she ran off");
+                            return;
+                        }
+                        // somewhere else in the dark, as if nothing happened
+                        TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, true);
+                        WEAPON.REMOVE_ALL_PED_WEAPONS(h, true, true);
+                        ENTITY.SET_ENTITY_COORDS(h, at.X, at.Y, at.Z, false, false, false, false);
+                        PED.SET_PED_RELATIONSHIP_GROUP_HASH(h, c.OwnGroup);
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
+                        TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(Kneel), -1, true, 0u, -1f, false);
+                        c.Moved = true;
+                        c.Phase = "crying2";
+                        c.NextCry = now + 4000;
+                        Log.Write("ENCOUNTER crying woman: crying again somewhere else, " + (int)at.DistanceTo(me.Position) + " m away");
+                    }
+                    break;
+                case "ambush":
+                    if (c.Men.All(m => m == null || !m.Exists() || m.IsDead))
+                    {
+                        EndCrying("the men are down");
+                        return;
+                    }
+                    if (now - c.PhaseUntil > 4 * 60000)
+                    {
+                        EndCrying("the fight went on too long");
+                        return;
+                    }
+                    if (h != 0 && !seen && !w.IsDead && w.Position.DistanceTo(me.Position) > 60f)
+                    {
+                        Spawner.Release(w, true);   // she got away
+                        c.Woman = null;
+                    }
+                    break;
+                case "dark":
+                    if (now >= c.PhaseUntil)
+                    {
+                        Vector3 away = w.Position + (w.Position - me.Position).Normalized * 70f;
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, away.X, away.Y, away.Z, 1f, -1, 1f, 0, 0f);
+                        c.Phase = "leaving";
+                        c.PhaseUntil = now + 40000;
+                    }
+                    break;
+                case "leaving":
+                    if ((!seen && dist > 30f) || now >= c.PhaseUntil)
+                    {
+                        EndCrying("she walked into the dark");
+                        return;
+                    }
+                    break;
+            }
+        }
+
+        private void CryingSpawn(int now)
+        {
+            Crying c = _crying;
+            Ped me = Game.Player.Character;
+            if (now - c.StartedAt > 20000 || c.Tries > 8)
+            {
+                EndCrying("nowhere hidden to put her");
+                return;
+            }
+            if (!Spawner.Ready(c.WomanModel))
+                return;
+            Vector3 at;
+            if (!EncounterSpot(me, 30f, 55f, out at))   // near enough to hear
+            {
+                c.Tries++;
+                return;
+            }
+            Ped w = Spawner.Spawn(c.WomanModel, at, _rng.Next(360));
+            if (w == null)
+            {
+                c.Tries++;
+                return;
+            }
+            int h = w.Handle;
+            if (ENTITY.IS_ENTITY_IN_WATER(h))
+            {
+                Spawner.Release(w, true);
+                c.Tries++;
+                return;
+            }
+            c.Woman = w;
+            c.OwnGroup = PED.GET_PED_RELATIONSHIP_GROUP_HASH(h);
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
+            PED.SET_PED_KEEP_TASK(h, true);
+            TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(Kneel), -1, true, 0u, -1f, false);
+            c.Phase = "crying";
+            c.NextCry = now + 1500;
+            Log.Write("ENCOUNTER crying woman: sobbing " + (int)at.DistanceTo(me.Position) + " m away");
+        }
+
+        private void CryingOutcome(Crying c, string outcome, int now)
+        {
+            Ped me = Game.Player.Character;
+            int h = c.Woman.Handle;
+            TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, true, true);
+            switch (outcome)
+            {
+                case "knife":
+                    MakeHostile(c.Woman, now);
+                    c.Woman.GiveWeapon(eWeapon.MeleeKnife, 1, eWeaponAttachPoint.Knife, true);
+                    TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);
+                    Feed.Say("The crying woman", Encounters.Pick(Encounters.KnifeTurn, h + "k"));
+                    c.Phase = "knife";
+                    c.PhaseUntil = now + 4000;
+                    break;
+                case "ambush":
+                {
+                    int n = Encounters.AmbushMen(_rng.Next(100));
+                    for (int i = 0; i < n; i++)
+                    {
+                        Vector3 at;
+                        if (!EncounterSpot(me, 14f, 26f, out at))
+                            continue;
+                        Ped m = Spawner.Spawn(c.ManModel, at, 0f);
+                        if (m == null)
+                            continue;
+                        m.GiveWeapon(eWeapon.RevolverCattleman, 60, eWeaponAttachPoint.PistolR, true);
+                        MakeHostile(m, now);
+                        TASK.TASK_COMBAT_PED(m.Handle, me.Handle, 0, 16);
+                        c.Men.Add(m);
+                    }
+                    if (c.Men.Count == 0)
+                    {
+                        CryingOutcome(c, "knife", now);   // nowhere for them to come from: she manages on her own
+                        return;
+                    }
+                    Feed.Say("The crying woman", Encounters.Pick(Encounters.AmbushCall, h + "a"), Speech.When(h, "mock", me.Handle));
+                    TASK.TASK_SMART_FLEE_PED(h, me.Handle, 300f, -1, 0, 3f, 0);
+                    c.Phase = "ambush";
+                    c.PhaseUntil = now;
+                    break;
+                }
+                default:
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 3000, 0f, 0f, 0f);
+                    TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 6000, 0, 51, 0);
+                    Feed.Say("The crying woman", Encounters.Pick(Encounters.IntoTheDark, h + "d"), Speech.When(h, "uneasy", me.Handle));
+                    c.Phase = "dark";
+                    c.PhaseUntil = now + 3500;
+                    outcome = "dark";
+                    break;
+            }
+            Log.Write("ENCOUNTER crying woman: " + (outcome == "ambush" ? "ambush (" + c.Men.Count + " men)" : outcome == "dark" ? "walks into the dark" : "knife"));
+        }
+
+        /// Hostile to the player from the start: fighting them off is self-defence, at once.
+        private unsafe void MakeHostile(Ped p, int now)
+        {
+            int h = p.Handle;
+            int me = Game.Player.Character.Handle;
+            if (_hostileGroup == 0)
+            {
+                ulong slot = 0;   // out-parameters take 8 bytes
+                PED.ADD_RELATIONSHIP_GROUP("REALNPCS_HOSTILE", (uint*)&slot);
+                _hostileGroup = (uint)slot;
+            }
+            uint playerGroup = PED.GET_PED_RELATIONSHIP_GROUP_HASH(me);
+            PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, _hostileGroup, playerGroup);
+            PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, playerGroup, _hostileGroup);
+            PED.SET_PED_RELATIONSHIP_GROUP_HASH(h, _hostileGroup);
+            PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, true);    // fights even against the armed
+            PED.SET_PED_COMBAT_ATTRIBUTES(h, 46, true);   // always fights
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            _cameAtYouSeen[h] = now;
+        }
+
+        private void EndCrying(string why)
+        {
+            Crying c = _crying;
+            _crying = null;
+            if (c == null)
+                return;
+            Ped me = Game.Player.Character;
+            foreach (Ped p in new[] { c.Woman }.Concat(c.Men))
+            {
+                if (p == null)
+                    continue;
+                // the living vanish only where nobody sees it; the dead stay where they fell
+                bool alive = p.Exists() && !p.IsDead;
+                bool seen = alive && ENTITY.IS_ENTITY_ON_SCREEN(p.Handle);
+                Spawner.Release(p, alive && (!seen || p.Position.DistanceTo(me.Position) > 120f));
+            }
+            MarkDone("crying");
+            Log.Write("ENCOUNTER crying woman: over (" + why + ")");
+        }
+
+        /// A spot behind the camera between min and max metres from the player, on open ground the camera can't
+        /// see right now: somewhere for someone to be without anyone seeing them arrive.
+        private bool EncounterSpot(Ped player, float min, float max, out Vector3 at)
+        {
+            Vector3 cam = CAM.GET_FINAL_RENDERED_CAM_COORD();
+            for (int tries = 0; tries < 8; tries++)
+            {
+                float d = min + (float)_rng.NextDouble() * (max - min);
+                Vector3 c = Natives.BehindCamera(player.Position, d, 100f, _rng);
+                Vector3 safe;
+                if (!Natives.StandSpot(c, player.Position.Z, out safe))
+                    continue;
+                if (!Natives.Blocked(cam, safe + new Vector3(0f, 0f, 1.2f), player.Handle) && Natives.Looking(safe + new Vector3(0f, 0f, 1f), 50f))
+                    continue;
+                at = safe;
+                return true;
+            }
+            at = Vector3.Zero;
+            return false;
+        }
+
+        /// Ends whatever encounter is running (a mission started, the add-on is stopping).
+        private void EndEncounters(string why)
+        {
+            if (_crying != null)
+                EndCrying(why);
+        }
+
+        /// One line for the F7 dump.
+        private string EncountersStatus()
+        {
+            if (!_cfg.Encounters)
+                return "off";
+            int now = Game.GameTime;
+            string live = _crying != null ? "the crying woman (" + _crying.Phase + ")" : "none";
+            return "live: " + live + ", next roll in " + Math.Max(0, (_nextEncounterRoll - now) / 1000) + " s every " + _cfg.EncounterEveryMinutes + " min" +
+                   ", crying woman " + (_cfg.CryingWoman ? _cfg.CryingWomanChance + "% (10 pm - 4 am, the wilds)" + (DoneToday("crying") ? ", done today" : "") : "off") +
+                   (_encounterWait != null ? ", last roll skipped: " + _encounterWait : "");
+        }
+    }
+}

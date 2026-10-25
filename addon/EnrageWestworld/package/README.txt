@@ -109,6 +109,16 @@ NEW IN 0.6.0
   they're back. TownPostsAfterDeath = successor makes a death final instead: the counter passes to
   a relative or a newcomer who bought the business. Sheriffs, preachers and anyone a story mission
   names are left alone. TownPosts = false turns it off.
+- Night encounters ([Encounters]). Out in the wilds between ten at night and four in the morning,
+  you may hear a woman crying somewhere off the road (CryingWomanChance, 15 percent on each roll
+  every EncounterEveryMinutes, 12, at most once a night). She kneels in the dark and calls for
+  help in her own voice. Go close, or point a gun at her, and she may lunge at you with a knife
+  and run (and later cry again somewhere else), or two or three armed men may step out of the
+  brush, or she may say something that makes no sense and walk off into the night. Anyone who
+  attacks is hostile from the start, so fighting them off is self-defence. Never in towns,
+  indoors, in missions, while you're wanted or fighting, or while a stalker is out.
+  CONTENT NOTE: the knife and the ambush are violent. CryingWoman = false, or Encounters =
+  false for the whole section, turns it off.
 
 
 NEW IN 0.5.5
@@ -444,7 +454,10 @@ in the file. The new ones:
 [Quiet]     QuietWhenStill (true): while you stand still, enRAGE sends nothing after you and its
             tension stops building, QuietStillSeconds (3), QuietInCinematic (true): the same in the
             cinematic camera
-[World]     Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+[Encounters] Encounters (true): the master switch. EncounterEveryMinutes (12): real minutes
+            between rolls, CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
+            4 am in the wilds)
+[World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,

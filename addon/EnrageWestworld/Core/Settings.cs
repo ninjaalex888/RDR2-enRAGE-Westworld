@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 28;
+        public const int CurrentVersion = 29;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -78,6 +78,16 @@ namespace EnrageWestworld.Core
         public bool QuietWhenStill = true;
         public int QuietStillSeconds = 3;
         public bool QuietInCinematic = true;
+
+        // [Encounters]
+        public bool Encounters = true;
+        public int EncounterEveryMinutes = 12;
+        public bool CryingWoman = true;
+        public int CryingWomanChance = 15;
+        public bool Hermits = true;
+        public int HermitChance = 25;
+        public bool Gatherings = true;
+        public int GatheringChance = 15;
 
         // [World]
         public bool Deeds = true;
@@ -170,6 +180,14 @@ namespace EnrageWestworld.Core
                 g.Reveries = false;
                 g.ReturnChance = 0;
                 g.StrangerReturnChance = 0;
+                g.Hermits = false;      // the hermits and the gatherings are the awake: West World things
+                g.Gatherings = false;
+            }
+            if (!g.Encounters)
+            {
+                g.CryingWoman = false;
+                g.Hermits = false;
+                g.Gatherings = false;
             }
             return g;
         }
@@ -339,6 +357,10 @@ namespace EnrageWestworld.Core
             StalkerWhenStill = still == "circle" || still == "watch" || still == "rush" || still == "eerie" ? still : "mix";
             StalkerActMetres = Math.Max(5, Math.Min(30, StalkerActMetres));
             QuietStillSeconds = Math.Max(1, Math.Min(60, QuietStillSeconds));
+            EncounterEveryMinutes = Math.Max(2, Math.Min(120, EncounterEveryMinutes));
+            CryingWomanChance = Math.Max(0, Math.Min(100, CryingWomanChance));
+            HermitChance = Math.Max(0, Math.Min(100, HermitChance));
+            GatheringChance = Math.Max(0, Math.Min(100, GatheringChance));
             TownPostsAfterDeath = (TownPostsAfterDeath ?? "").Trim().ToLowerInvariant() == "successor" ? "successor" : "survive";
             StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
@@ -432,6 +454,16 @@ namespace EnrageWestworld.Core
             b.AppendLine("QuietWhenStill = " + B(QuietWhenStill) + "   ; while you stand still, enRAGE's tension stops building and no nemesis, gang or faction comes for you (through enRAGE's own calm period)");
             b.AppendLine("QuietStillSeconds = " + QuietStillSeconds + "   ; how long you must stand still first (1-60)");
             b.AppendLine("QuietInCinematic = " + B(QuietInCinematic) + "   ; the same while the cinematic camera is on, moving or not");
+            b.AppendLine();
+            b.AppendLine("[Encounters]");
+            b.AppendLine("Encounters = " + B(Encounters) + "   ; master switch: rare, unsettling things out in the wilds at night (a woman crying in the dark, hermits, gatherings). false turns off everything in this section");
+            b.AppendLine("EncounterEveryMinutes = " + EncounterEveryMinutes + "   ; real minutes of play between rolls for an encounter, when the time and place are right (2-120)");
+            b.AppendLine("CryingWoman = " + B(CryingWoman) + "   ; at night in the wilds, a woman sobbing in the dark. Go close and she may draw a knife, or not be alone");
+            b.AppendLine("CryingWomanChance = " + CryingWomanChance + "   ; percent on each roll, between ten at night and four in the morning");
+            b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
+            b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
+            b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: around midnight in the wilds, the awake stand in a silent circle");
+            b.AppendLine("GatheringChance = " + GatheringChance + "   ; percent on each roll, between midnight and half past three");
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");

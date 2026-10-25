@@ -47,10 +47,10 @@ namespace EnrageWestworld.InGame
         private const int VisibleRows = 16;
         private const int PanelBudget = 120;
 
-        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Quiet", "Features", "World", "Scenes", "Romance", "Ticker", "Pacing", "Output" };
+        private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Encounters", "Quiet", "Features", "World", "Scenes", "Romance", "Ticker", "Pacing", "Output" };
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
         {
-            { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
+            { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Encounters", "Night encounters" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
             { "Romance", "Romance" }, { "Ticker", "The ticker" }, { "Pacing", "Pacing" }, { "Output", "Notices and the panel" }
         };
 
@@ -59,13 +59,15 @@ namespace EnrageWestworld.InGame
         {
             { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
-            { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" }
+            { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
+            { "CryingWomanChance", "CryingWoman" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
+            { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }
         };
 
         // sections whose first setting switches the whole section on or off
         private static readonly Dictionary<string, string> Masters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "WestWorld", "WestWorld" }, { "Stalkers", "Stalkers" }, { "Ticker", "Ticker" }
+            { "WestWorld", "WestWorld" }, { "Stalkers", "Stalkers" }, { "Ticker", "Ticker" }, { "Encounters", "Encounters" }
         };
 
         private static readonly Dictionary<string, string[]> Choices = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
@@ -93,6 +95,10 @@ namespace EnrageWestworld.InGame
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
             { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
             { "SelfDefenceNoBounty", "No bounty for self-defence" },
+            { "Encounters", "Night encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
+            { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" },
+            { "Hermits", "Hermits who woke" }, { "HermitChance", "A new camp's chance (percent)" },
+            { "Gatherings", "Gatherings of the awake" }, { "GatheringChance", "A gathering's chance (percent)" },
             { "ReaderKey", "Letters, diaries and clippings" }, { "FlirtKey", "Flirt" }, { "WakeKey", "Wake the person you face" },
             { "TickerNextKey", "Next line on the ticker" }, { "TestKey", "Status line and log dump" }, { "SettingsKey", "Open this panel (as well as Alt+F11)" }
         };

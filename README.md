@@ -24,6 +24,8 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 
 **Quiet when you stop.** Stand still for a few seconds, or watch through the cinematic camera, and enRAGE's tension stops building and no nemesis, gang or faction is sent after you. It uses enRAGE's own calm period, the one it uses after a fast travel, and picks up again soon after you move.
 
+**Night encounters.** Out in the wilds late at night you may hear a woman crying somewhere off the road. Go close and she may come at you with a knife and run, or men may step out of the brush, or she may say something that makes no sense and walk off into the dark. Violent; one switch turns it off.
+
 **West World (one switch turns it all on or off).** Some people begin to suspect their world is made. At first it's deja vu and odd dreams; later they notice the loops, the same faces, "the music that comes before trouble". Now and then someone glitches. Some of the people you kill wake up days later and remember how they died and who did it. Now and then someone near you, often someone who knows you, starts following you at a distance and hides when you look. Stand still and they come closer and do odd things: dig a grave, kneel as at a graveside, put a finger to their lips, wave slowly, beckon.
 
 **Voices.** Lines are spoken in the speaker's own recorded game voice: the recording that best fits the feeling of what they say, an unsettled one for the uncanny lines. The game can't say new words, so the subtitle carries the meaning; where the words of a recording are known, the subtitle shows them and the written line becomes the person's thought on the ticker.

@@ -117,3 +117,11 @@ Lex's brief is saved at `C:\mods\prompts\You are an expert Behavioral Psycho.txt
 - Pad: frontend controls (FrontendUp/Down/Left/Right, LB/RB, Accept, Cancel, X held for x10) only while `IS_USING_KEYBOARD_AND_MOUSE` is false, so keys never count twice. No mouse.
 - Safety: enRAGE pages only when `EnrageHidesKnown` and `CanReloadEnrage` (else a message page; its bookkeeping like Seeded/Cleared/*Day must never become editable). Left/Right changes are staged and written after 450 ms without change, or on moving on or closing (`Flush`). If the "settings panel" feature switches itself off, `PanelOpen` is false and the panel is closed so keys and the ticker come back.
 - A new key setting goes in `SettingsPanel.OurKeys` (so the panel sets it by key press) and in `HeldKeyRepeat` (one action per press). `TickerNextKey` (T, 0.6.0): `Ticker.NextPart` jumps a line shown in parts to its next part, else `TickerBrain.Skip()` moves on (from a thought to the news).
+
+## Night encounters (0.6.0)
+
+- `[Encounters]` with its own master (`Encounters`); `Gated()` turns all kinds off with it, and the hermits and gatherings (awake people) off with `WestWorld` too. Decisions and lines in `Core/Encounters.cs`, the game side in `Game/WestworldScript.Encounters.cs` (`EncountersStep` in `Tick04`, `EndEncounters` in `MissionPause` and `Shutdown04`).
+- One roll per kind every `EncounterEveryMinutes`, gated by `EncounterBlocker` (StalkBlocker plus stalker, scenes, wedding, plea, theft); `StalkBlocker` returns "a night encounter is going on" while one runs. Once a night per kind (`NightIndex`: noon to noon, in `_store.Counts["enc:<kind>"]`).
+- The crying woman (built): hidden spot via `EncounterSpot` (BehindCamera + StandSpot, not visible), kneel scenario, help lines, then knife / ambush / dark. Attackers go into `REALNPCS_HOSTILE` (hostile both ways with the player's group) and `_cameAtYouSeen`, so Watch.cs counts it as self-defence. The dead are never deleted.
+- Not yet built: the hermit who woke (a resident who fled in the WakeActs escape ending, living at a saved camp) and the gathering (awake residents in a silent circle). Their settings exist but do nothing yet.
+- Not yet seen in game.

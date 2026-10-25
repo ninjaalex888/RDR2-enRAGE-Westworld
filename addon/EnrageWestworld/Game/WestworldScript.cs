@@ -987,6 +987,7 @@ namespace EnrageWestworld.InGame
 				", fallen " + _store.Fallen.Count + ", reveries " + _store.Reveries.Values.Count(x => x.Woke) + "/" + _store.Reveries.Count + ", avengers " + _store.Avengers.Count + ", weddings " + _store.Weddings.Count);
 			Log.Write("TEST stalker: " + StalkerStatus());
 			Log.Write("TEST posts: " + PostsStatus());
+			Log.Write("TEST encounters: " + EncountersStatus());
 			if (nemesisRecord == null)
 			{
 				int num3 = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);
