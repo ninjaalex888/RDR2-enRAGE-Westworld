@@ -92,11 +92,12 @@ NEW IN 0.6.0
   barkeep, hotel keeper, undertaker, photographer, station agent, trader and stable hand in
   every town is one person for good, with a name, a life of their own and a memory of you: a new
   face at first, a regular later. Get near and the ticker shows what they're thinking, about the
-  work, the town, and you. When one dies, by any hand, the counter passes on the next time the
-  game puts someone there: to a son, a brother, a nephew or a cousin (a daughter or a sister for
-  a woman), or to a newcomer who bought the business. They grieve and remember, and if you killed
-  the one before and somebody saw, they know it was you. Sheriffs, preachers and anyone a story
-  mission names are left alone. TownPosts = false turns it off.
+  work, the town, and you. Shoot one down and the game brings them back bandaged: they survived.
+  The same person, who talks about the wound, and who is frightened of you (or bitter, or coldly
+  polite, by temperament) if they know it was you. Anyone who saw them fall finds it uncanny that
+  they're back. TownPostsAfterDeath = successor makes a death final instead: the counter passes to
+  a relative or a newcomer who bought the business. Sheriffs, preachers and anyone a story mission
+  names are left alone. TownPosts = false turns it off.
 
 
 NEW IN 0.5.5
@@ -437,7 +438,7 @@ in the file. The new ones:
             cinematic camera
 [Voices]    SpokenVoice (true), VoiceVolume (80), VoiceMan, VoiceWoman (part of a Windows voice's
             name; empty = any), VoiceVariety (true)
-[World]     Deeds, SelfDefenceNoBounty (true), TownPosts (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+[World]     Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,

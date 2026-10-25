@@ -1,9 +1,11 @@
 // Town posts: the people who stand at the same counter every day (the general store, the gunsmith, the butcher,
 // the doctor, the barber, the barkeep, the station agent...). The game plays each of them with a model of its own,
-// so each post keeps one person, with a name, a life and a memory of the player. When the person at a post dies,
-// the post passes on: to a relative of the same sex as the model the game plays them with (a son, a brother, a
-// nephew...), or else to a newcomer who bought the business. Sheriffs, preachers and anyone a mission may name are
-// left alone. All lines are original to this add-on.
+// so each post keeps one person, with a name, a life and a memory of the player. The game brings a shot-down
+// counter keeper back bandaged, so by default (TownPostsAfterDeath = survive) they survived: the same person, who
+// remembers the wound and who gave it, and whom those who saw them fall find uncanny. Set to successor, the post
+// passes on instead: to a relative of the same sex as the model (a son, a brother, a nephew...), or else to a
+// newcomer who bought the business. Sheriffs, preachers and anyone a mission may name are left alone. All lines
+// are original to this add-on.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,6 +27,9 @@ namespace EnrageWestworld.Core
         [DataMember] public bool KilledByPlayer;
         [DataMember] public bool KillerKnown;     // somebody saw him do it
         [DataMember] public int Outfit = -1;      // the outfit preset the holder is dressed in, -1 = as the game made them
+        [DataMember] public long FellAt;          // game minute the holder was last shot down (the game brings them back bandaged)
+        [DataMember] public long BackAt;          // ...and when they were seen back at the counter
+        [DataMember] public List<string> SawFall = new List<string>();   // who saw them fall, to find it uncanny
     }
 
     public sealed class PostKind
@@ -154,6 +159,22 @@ namespace EnrageWestworld.Core
                     r.From = "Kansas City";
             }
             return r;
+        }
+
+        /// TownPostsAfterDeath = survive: a body with a post's model is lying there. Is it the person keeping the post,
+        /// shot down just now (the game will bring them back bandaged)? Once per fall: not while they're still down,
+        /// and an old body (after a reload, or from before they came back) doesn't count.
+        public static bool BodyFells(Resident holder, Post post, string bodyWas, bool livingOneThere, long now)
+        {
+            if (holder == null)
+                return true;   // shot before anyone knew their name
+            if (post.FellAt > post.BackAt)
+                return false;  // already down: the same fall
+            if (bodyWas != null)
+                return bodyWas == holder.Id;
+            if (livingOneThere)
+                return false;
+            return !(post.BackAt > 0 && now - post.BackAt < 1440);
         }
 
         /// A body with a post's model is lying there: does it mean the person keeping the post now has died?
@@ -360,6 +381,50 @@ namespace EnrageWestworld.Core
             "Every stranger who comes through that door, I wonder. Him? Him?"
         };
 
+        // shot down at the counter and back (the game's bandages): in the first days, and later
+        private static readonly string[] WoundFresh =
+        {
+            "Doc dug the ball out with a spoon and a prayer. Says I'm lucky. Doesn't feel lucky.",
+            "Every breath pulls the stitches. Smile for the customers anyway.",
+            "Bandage wants changing. Can't reach it. Won't ask.",
+            "Should be dead. Lay on those boards and heard them say so. Then I wasn't.",
+            "Laudanum takes the edge off the arm and puts it on everything else."
+        };
+
+        private static readonly string[] WoundSettled =
+        {
+            "Scar itches when it rains. Reminds me I'm still here.",
+            "Jump at every bell now. Every single bell.",
+            "Scrubbed my own blood off these boards. You never get it all out of the grain.",
+            "Folk stare as if a ghost were minding the shop.",
+            "Dream of that floor most nights. Wake up counting the change."
+        };
+
+        // the one who shot them is standing at the counter: by temperament
+        private static readonly string[] ShooterAfraid =
+        {
+            "That's the man who shot me. Don't look at him. Don't look at the gun.",
+            "Hands shaking on the counter. Serve him. Let him go. Let him go.",
+            "If he does it again, no doctor will be quick enough."
+        };
+
+        private static readonly string[] ShooterBitter =
+        {
+            "Shot me, and walks back in to buy. Some men have no shame. I have a long memory.",
+            "Keep smiling. One day the law catches up with him, and I'll be there to watch."
+        };
+
+        private static readonly string[] ShooterCold =
+        {
+            "He shot me once. Still a paying customer. The business holds no grudges. I do."
+        };
+
+        /// The town hears that someone shot down at their counter is back at it. Null if nothing to say.
+        public static string BackNews(Resident r, Post post)
+        {
+            return r == null ? null : r.Name + " is back behind the counter in " + post.Town + ", bandaged. Those who saw " + (r.Woman ? "her" : "him") + " fall don't like to look.";
+        }
+
         // how well they know the player by now
         private static readonly string[] NewFace =
         {
@@ -378,6 +443,19 @@ namespace EnrageWestworld.Core
         /// Null if nothing of the post's own comes up (then they think like anyone else).
         public static string Thought(Resident r, Post post, PostKind kind, bool near, int seen, long now, string seed)
         {
+            if (r.Wounds > 0)
+            {
+                // shot down here and brought back: the wound, and the one who gave it
+                if (near && r.WoundedByPlayer && r.KnowsShooter && Voice.Chance(seed + "sh", 70))
+                {
+                    string[] by = r.Personality == "Hothead" || r.Personality == "Proud" ? ShooterBitter
+                                : r.Personality == "Cold" || r.Personality == "Greedy" ? ShooterCold : ShooterAfraid;
+                    return Voice.Pick(seed + "shp", by);
+                }
+                bool raw = now - r.WoundedAt < 3 * 1440;
+                if (Voice.Chance(seed + "w", raw ? 55 : 20))
+                    return Voice.Pick(seed + "wp", raw ? WoundFresh : WoundSettled);
+            }
             string before = r.KinOf != null ? Before(r) : null;
             Func<string, string> fill = s => before == null ? s : s.Replace("{before}", before).Replace("{Before}", Upper(before));
             bool fresh = r.TookOverAt > 0 && now - r.TookOverAt < 3 * 1440;
@@ -402,7 +480,7 @@ namespace EnrageWestworld.Core
         /// Every line of the posts, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return ByKind.Values.SelectMany(x => x).Concat(KinFresh).Concat(KinSettled).Concat(NewcomerLines).Concat(KnowsKiller).Concat(NobodySaw).Concat(NewFace).Concat(Regular);
+            return ByKind.Values.SelectMany(x => x).Concat(WoundFresh).Concat(WoundSettled).Concat(ShooterAfraid).Concat(ShooterBitter).Concat(ShooterCold).Concat(KinFresh).Concat(KinSettled).Concat(NewcomerLines).Concat(KnowsKiller).Concat(NobodySaw).Concat(NewFace).Concat(Regular);
         }
 
         public static bool HasPool(string kind)

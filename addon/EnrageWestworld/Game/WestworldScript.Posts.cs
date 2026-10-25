@@ -1,7 +1,8 @@
 // Town posts in the game (see Core/Posts.cs). The person the game puts behind each counter is one person for good,
-// named and remembering the player. When they die, by anyone's hand, the post passes to a relative or a newcomer the
-// next time the game puts someone there. If the model has other outfits, a successor is dressed in one of them, only
-// while nobody can see it happen (the outfit probe logs how many each model has). Nothing here moves them: they stay
+// named and remembering the player. Shot down, by anyone's hand, they come back bandaged the next time the game puts
+// them at the counter, remembering who did it (TownPostsAfterDeath = survive); or the post passes to a relative or a
+// newcomer (successor), who is dressed in another of the model's outfits, only while nobody can see it happen (the
+// outfit probe logs how many each model has). Nothing here moves them: they stay
 // at their counters, out of scenes, stalking and the wake acts that walk people about. Not during story missions.
 using System;
 using System.Collections.Generic;
@@ -49,6 +50,13 @@ namespace EnrageWestworld.InGame
             _resBind[h] = new ResBind { R = r, Model = model };
             _bodyWas[h] = r.Id;   // kept after the binding goes, so its body is known for whose it was
             Post post = _engine.PostOf(r);
+            if (post != null && post.FellAt > post.BackAt && _cfg.TownPostsAfterDeath != "successor")
+            {
+                // shot down here, and the game has brought them back bandaged
+                string news = _engine.PostBack(post, r, Bridge.Now());
+                if (news != null)
+                    News(post.Town, news, "news");
+            }
             int presets = OutfitCount(ped, kind);
             if (post != null && presets > 1)
             {
@@ -110,13 +118,13 @@ namespace EnrageWestworld.InGame
                 string was;
                 _bodyWas.TryGetValue(h, out was);
                 bool living = World.GetAllPeds().Any(x => x.Handle != h && !ENTITY.IS_ENTITY_DEAD(x.Handle) && ENTITY.GET_ENTITY_MODEL(x.Handle) == model);
-                if (!Posts.BodyVacates(holder, post, was, living, Bridge.Now()))
+                bool counts = _cfg.TownPostsAfterDeath == "successor" ? Posts.BodyVacates(holder, post, was, living, Bridge.Now()) : Posts.BodyFells(holder, post, was, living, Bridge.Now());
+                if (!counts)
                 {
                     Log.Detail("POST " + post.Town + ", " + post.Role + ": an old body (" + (was ?? "nobody we knew") + "), not " + (holder != null ? holder.Name : "anyone") + "'s");
                     continue;
                 }
-                bool byPlayer = PED.GET_PED_SOURCE_OF_DEATH(h) == me.Handle;
-                _engine.VacatePost(k, model, byPlayer, CountPeopleNear(p.Position, h, 35f), Bridge.Now());
+                PostFell(p, k, PED.GET_PED_SOURCE_OF_DEATH(h) == me.Handle, CountPeopleNear(p.Position, h, 35f));
             }
             _postDeathsSeen.RemoveWhere(h => !ENTITY.DOES_ENTITY_EXIST(h));
             foreach (int h in _bodyWas.Keys.Where(x => !ENTITY.DOES_ENTITY_EXIST(x)).ToList())
@@ -132,18 +140,31 @@ namespace EnrageWestworld.InGame
             {
                 Resident r = _store.FindResident(p.HolderId);
                 return p.Town + " " + p.Role.Replace("the ", "") + ": " + (r == null ? "nobody yet" : r.Name + (r.Dead ? " (died, awaiting a successor)" : Posts.Story(r) != null ? " (" + Posts.Story(r) + ")" : "")) +
+                       (r != null && r.Wounds > 0 ? (p.FellAt > p.BackAt ? ", shot down, not back yet" : ", shot down " + r.Wounds + (r.Wounds == 1 ? " time" : " times") + " and back") : "") +
                        (p.Outfit >= 0 ? ", outfit " + p.Outfit : "");
             }).ToList();
             return parts.Count == 0 ? "none met yet" : parts.Count + " known: " + string.Join("; ", parts);
         }
 
-        /// The player killed someone: if they kept a post, it's vacated now (seen: how many saw it).
+        /// The player killed someone: if they kept a post, they're shot down now (seen: how many saw it).
         private void PostKilled(Ped victim, int seen)
         {
             PostKind k = PostKindOf(victim);
             if (k == null || !PostsOn || !_postDeathsSeen.Add(victim.Handle))
                 return;
-            _engine.VacatePost(k, ENTITY.GET_ENTITY_MODEL(victim.Handle), true, seen, Bridge.Now());
+            Post post = _engine.PostFor(k);
+            if (_cfg.TownPostsAfterDeath != "successor" && post.HolderId != null && post.FellAt > post.BackAt)
+                return;   // already down: the same fall
+            PostFell(victim, k, true, seen);
+        }
+
+        /// A counter's person fell: shot down to come back bandaged (survive), or dead and succeeded (successor).
+        /// They know it was the player if anyone saw, or if he was close enough to see him themselves.
+        private void PostFell(Ped body, PostKind k, bool byPlayer, int seen)
+        {
+            Ped me = Game.Player.Character;
+            bool knew = byPlayer && (seen > 0 || body.Position.DistanceTo(me.Position) < 25f);
+            _engine.PostShot(k, ENTITY.GET_ENTITY_MODEL(body.Handle), byPlayer, knew, seen, WitnessesNear(body.Position, body.Handle, 35f), Bridge.Now());
         }
 
         /// The player is at their counter: counted once a game hour, so they know a new face from a regular.

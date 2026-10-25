@@ -35,6 +35,10 @@ namespace EnrageWestworld.Core
         [DataMember] public string KinOf;          // the one who kept it before, by name
         [DataMember] public string From;           // a newcomer's old town
         [DataMember] public long TookOverAt;       // game minute they took the post over, 0 for the first
+        [DataMember] public int Wounds;            // times they were shot down at their counter and the game brought them back
+        [DataMember] public long WoundedAt;
+        [DataMember] public bool WoundedByPlayer;
+        [DataMember] public bool KnowsShooter;     // they saw, or someone told them, that it was the player
 
         public static bool IsResident(string id)
         {

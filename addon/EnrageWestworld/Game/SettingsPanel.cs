@@ -66,7 +66,8 @@ namespace EnrageWestworld.InGame
         {
             { "StalkerWhenStill", new[] { "mix", "eerie", "circle", "watch", "rush" } },
             { "NewsTo", new[] { "ticker", "subtitles", "enrage", "gamefeed" } },
-            { "WarNewsTo", new[] { "right", "ticker" } }
+            { "WarNewsTo", new[] { "right", "ticker" } },
+            { "TownPostsAfterDeath", new[] { "survive", "successor" } }
         };
 
         private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "TickerNextKey", "StalkerKey" };
@@ -81,7 +82,7 @@ namespace EnrageWestworld.InGame
             { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres)" },
             { "StalkerStrangers", "A stranger if nobody near" },
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
-            { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" },
+            { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
             { "SelfDefenceNoBounty", "No bounty for self-defence" }
         };
 

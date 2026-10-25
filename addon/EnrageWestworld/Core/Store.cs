@@ -233,8 +233,12 @@ namespace EnrageWestworld.Core
             if (Residents == null) Residents = new List<Resident>();
             if (Posts == null) Posts = new List<Post>();
             foreach (Post p in Posts)
+            {
                 if (p.Former == null)
                     p.Former = new List<string>();
+                if (p.SawFall == null)
+                    p.SawFall = new List<string>();
+            }
             foreach (Affair a in Affairs)
                 if (a.Said == null)
                     a.Said = new List<string>();
