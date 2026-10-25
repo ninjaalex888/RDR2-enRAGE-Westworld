@@ -77,6 +77,11 @@ NEW IN 0.6.0
   It carries on within about 10 seconds of you moving again. A fight already going on carries
   on, and enRAGE's town regulars wait too. QuietWhenStill and QuietInCinematic in [Quiet] turn
   each off. It needs enRAGE's own [Calm] Enabled (on by default).
+- Self-defence isn't a crime. Kill or hurt someone who came at you, or who was hostile to you
+  (red), and RealNPCs notes no crime: no witnesses remember it, no rumour, no posse talk, no
+  newspaper. Someone you shot or drew on first still counts, even if they fire back, and so do
+  lawmen and anyone who begged. enRAGE judges its own witnesses the same way, and resets the
+  bounty after fights with its own outlaws. RealNPCs never changes your bounty.
 
 
 NEW IN 0.5.5

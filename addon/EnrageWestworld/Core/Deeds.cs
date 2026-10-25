@@ -172,6 +172,23 @@ namespace EnrageWestworld.Core
             return kind != null && Kinds.TryGetValue(kind, out k) && k.Shop;
         }
 
+        /// What killing someone counts as, or null when it isn't a crime at all: they came at you (or were hostile to
+        /// you) before you hurt them, so it was self-defence and nobody remembers it as a killing. A lawman is always
+        /// a lawman, and shooting someone who begged is an execution, whoever started it. cameAtYou is decided at the
+        /// first hit; fighting may also mean they only fought back after it (then it's a killing, not a murder).
+        public static string KillKind(bool law, bool thief, bool begged, bool cameAtYou, bool fighting)
+        {
+            if (law)
+                return "lawkill";
+            if (begged)
+                return "execution";
+            if (cameAtYou)
+                return null;
+            if (thief || fighting)
+                return "kill";
+            return "murder";
+        }
+
         public static bool IsViolent(string kind)
         {
             Kind k;

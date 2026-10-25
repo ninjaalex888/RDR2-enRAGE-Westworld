@@ -1,6 +1,7 @@
 // What the player does, read from the game: who he hurts and kills (and with what), what he loots, which
 // crimes are seen, which towns and shops he walks into. Turned into deeds, deaths for the reveries,
-// diaries to pick up, letters to collect, and the town talk waiting for him when he rides in.
+// diaries to pick up, letters to collect, and the town talk waiting for him when he rides in. Killing or hurting
+// someone who came at him (or was hostile to him) is self-defence: no crime, no witnesses, no rumour.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,6 +24,9 @@ namespace EnrageWestworld.InGame
             public int At;
             public uint Weapon;
             public bool Fighting;   // the victim was fighting the player when hit
+            public bool CameAtYou;  // ...and started it, or was hostile to him: self-defence, not a crime (set once, at the first hit)
+            public bool Human;
+            public string Why;
             public bool Done;
             public string RecordId; // who enRAGE says they are (read while alive: enRAGE forgets dead peds fast)
             public string AcqName;
@@ -38,6 +42,11 @@ namespace EnrageWestworld.InGame
         }
 
         private readonly Dictionary<int, Hit> _hits = new Dictionary<int, Hit>();
+        private readonly Dictionary<int, int> _cameAtYouSeen = new Dictionary<int, int>();   // fighting him before he hurt them
+        private readonly Dictionary<int, int> _aimedAt = new Dictionary<int, int>();         // he had a gun on them, when
+        private readonly Dictionary<int, int> _youStarted = new Dictionary<int, int>();      // he hurt them before they came at him
+        private int _nextDefenceScan, _lastBounty = -1, _lastRealCrimeAt = -1000000, _lastDefenceAt = -1000000, _lastOffenceAt = -1000000;
+        private string _lastDefenceWho;
         private readonly HashSet<string> _campOffered = new HashSet<string>();
         private Pickup _pickup;
         private int _nextPlaces, _nextDeaths, _lastCrimeAt;
@@ -82,6 +91,20 @@ namespace EnrageWestworld.InGame
                                 h = new Hit { Fighting = WasFight(victim, player) };
                                 if (PED.IS_PED_HUMAN(victim))
                                 {
+                                    string why;
+                                    h.Human = true;
+                                    h.CameAtYou = CameAtYou(victim, player, out why);
+                                    h.Why = why;
+                                    if (h.CameAtYou)
+                                    {
+                                        _lastDefenceAt = now;
+                                        _lastDefenceWho = Director.Kind(new Ped(victim), !PED.IS_PED_MALE(victim));
+                                    }
+                                    else
+                                    {
+                                        _lastOffenceAt = now;       // someone who hadn't come at him: any bounty now may be his own doing
+                                        _youStarted[victim] = now;  // and however long they fight back, he started it
+                                    }
                                     NemesisRecord who = _bridge.RecordAt(victim);
                                     h.RecordId = who != null ? who.Id : null;
                                     Acquaintance acq = who == null ? _bridge.AcquaintanceAt(victim) : null;
@@ -121,9 +144,79 @@ namespace EnrageWestworld.InGame
             return PED.GET_RELATIONSHIP_BETWEEN_PEDS(victim, player) == 5;   // hate: rival gangs and the like
         }
 
+        /// Self-defence, decided at the first hit and never changed after: enRAGE saw them come at him, or they were
+        /// fighting him before he hurt them (and he hadn't drawn on them first), or they're hostile to him (red: rival
+        /// gangs and the like), or it's a story mission. A lawman never is: he's doing his job.
+        private bool CameAtYou(int victim, int player, out string why)
+        {
+            why = null;
+            if (Natives.IsLaw(new Ped(victim)) || _youStarted.ContainsKey(victim))
+                return false;
+            if (_bridge != null && _bridge.EnrageSaysCameAtYou(victim))
+                why = "enRAGE saw them come at you";
+            else if (_cameAtYouSeen.ContainsKey(victim))
+                why = "they were fighting you before you hurt them";
+            else if (PED.GET_RELATIONSHIP_BETWEEN_PEDS(victim, player) == 5)
+                why = "hostile to you";
+            else if (MISC.GET_MISSION_FLAG())
+                why = "a story mission";
+            return why != null;
+        }
+
+        /// A few times a second: who is fighting him that he hasn't hurt or drawn on (they came at him), and whether
+        /// his bounty rose right after he fought off someone who did.
+        private unsafe void DefenceScan(int now)
+        {
+            if (now < _nextDefenceScan)
+                return;
+            _nextDefenceScan = now + 400;
+            Ped me = Game.Player.Character;
+            int player = me.Handle;
+            ulong slot = 0;   // out-parameters take 8 bytes
+            if (PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, (int*)&slot) && (int)slot != 0)
+                _aimedAt[(int)slot] = now;
+            slot = 0;
+            if (PLAYER.GET_PLAYER_TARGET_ENTITY(Game.Player.Handle, (int*)&slot) && (int)slot != 0)
+                _aimedAt[(int)slot] = now;
+            Vector3 pos = me.Position;
+            foreach (Ped ped in World.GetAllPeds())
+            {
+                int h = ped.Handle;
+                if (h == player || _hits.ContainsKey(h) || _youStarted.ContainsKey(h) || _cameAtYouSeen.ContainsKey(h) || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
+                    continue;
+                if (!PED.IS_PED_IN_COMBAT(h, player) || ped.Position.DistanceTo(pos) > 150f || Natives.IsLaw(ped))
+                    continue;
+                int at;
+                if (_aimedAt.TryGetValue(h, out at) && now - at < 10000)
+                    continue;   // he drew on them first: they're answering him
+                _cameAtYouSeen[h] = now;
+            }
+            foreach (int h in _cameAtYouSeen.Where(kv => now - kv.Value > 300000 || !ENTITY.DOES_ENTITY_EXIST(kv.Key)).Select(kv => kv.Key).ToList())
+                _cameAtYouSeen.Remove(h);
+            foreach (int h in _aimedAt.Where(kv => now - kv.Value > 30000).Select(kv => kv.Key).ToList())
+                _aimedAt.Remove(h);
+            foreach (int h in _youStarted.Where(kv => now - kv.Value > 300000 || !ENTITY.DOES_ENTITY_EXIST(kv.Key)).Select(kv => kv.Key).ToList())
+                _youStarted.Remove(h);
+
+            // the game's bounty is the game's (and enRAGE resets it after fights with its own outlaws): only noted here
+            int bounty = LAW.GET_BOUNTY(Game.Player.Handle);
+            if (_lastBounty >= 0 && bounty > _lastBounty && now - _lastDefenceAt < 60000 && now - _lastOffenceAt > 120000 && now - _lastRealCrimeAt > 120000)
+                Log.Write("SELF-DEFENCE: your bounty rose $" + _lastBounty / 100 + " -> $" + bounty / 100 + " within " + (now - _lastDefenceAt) / 1000 + " s of fighting off " +
+                          (_lastDefenceWho ?? "someone") + " who came at you, and you'd hurt nobody else (left as the game set it)");
+            _lastBounty = bounty;
+        }
+
+        /// Everyone he hurt in the last while came at him (and he hurt somebody).
+        private bool OnlyDefending(int now, int ms)
+        {
+            List<Hit> recent = _hits.Values.Where(x => x.Human && now - x.At < ms).ToList();
+            return recent.Count > 0 && recent.All(x => x.CameAtYou);
+        }
+
         /// Checks the people the player hurt: who died, how.
         private void Deaths(int now)
         {
+            DefenceScan(now);
             if (now < _nextDeaths || _hits.Count == 0)
                 return;
             _nextDeaths = now + 400;
@@ -184,9 +277,11 @@ namespace EnrageWestworld.InGame
             if (rec != null)
             {
                 _engine.NoteDeath(rec.Id, place, how, headshot);
-                if (_cfg.Deeds)
+                bool defended = hit.CameAtYou && !Natives.IsLaw(victim);
+                if (_cfg.Deeds && !defended)
                     _engine.OnDeed(Deeds.Make("namedkill", rec.Name, town, zone, gameMin, pos.X, pos.Y, pos.Z, seen), witnesses, gameMin);
-                Log.Write("KILLED " + rec.Name + (how != null ? " with " + how : "") + (headshot ? " (head)" : "") + " near " + place);
+                Log.Write("KILLED " + rec.Name + (how != null ? " with " + how : "") + (headshot ? " (head)" : "") + " near " + place +
+                          (defended ? "; self-defence (" + hit.Why + "): no crime noted" : ""));
                 return;
             }
             bool woman = !PED.IS_PED_MALE(h);
@@ -199,9 +294,11 @@ namespace EnrageWestworld.InGame
             bool begged = !thief && DiedBegging(h, now, out beggarName);
             if (begged && known == null)
                 known = beggarName;
-            if (_cfg.Deeds)
+            string kind = Deeds.KillKind(law, thief, begged, hit.CameAtYou, hit.Fighting);
+            if (kind == null)
+                Log.Write("SELF-DEFENCE: killed " + (known ?? label) + " near " + place + ", who came at you (" + hit.Why + "): no crime noted, no witnesses, no rumour");
+            if (_cfg.Deeds && kind != null)
             {
-                string kind = law ? "lawkill" : thief ? "kill" : begged ? "execution" : hit.Fighting ? "kill" : "murder";
                 Deed d = Deeds.Make(kind, thief ? "a pickpocket" : begged ? label : known ?? label, town, zone, gameMin, pos.X, pos.Y, pos.Z, seen);
                 Deed last = _store.Deeds.LastOrDefault();
                 if (last != null && last.Kind == kind && gameMin - last.At <= 10 && last.Where == d.Where)
@@ -249,7 +346,15 @@ namespace EnrageWestworld.InGame
         private void OnCrime(uint crime, int witness, int now)
         {
             string kind = CrimeKind(crime);
-            if (kind == null || !_cfg.Deeds)
+            if (kind == null)
+                return;
+            if (kind == "assault" && OnlyDefending(now, 30000))
+            {
+                Log.Write("SELF-DEFENCE: the game called it an assault, but everyone you hurt just now came at you: no crime noted");
+                return;
+            }
+            _lastRealCrimeAt = now;
+            if (!_cfg.Deeds)
                 return;
             if (kind == _lastCrimeKind && now - _lastCrimeAt < 120000)
                 return;
