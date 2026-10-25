@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using NemesisSystem;
 using RDR2.Math;
+using RDR2.Native;
 
 namespace EnrageWestworld.InGame
 {
@@ -250,6 +251,22 @@ namespace EnrageWestworld.InGame
                 Fail("TownCore", ex);
                 return false;
             }
+        }
+
+        /// The town at pos, or null anywhere outside one. Unlike TownAt, never the region's name ("the Heartlands"):
+        /// enRAGE's own town lookup, else the game's town zone (map zone type 1) if enRAGE's can't be reached.
+        public string TownOnly(Vector3 pos)
+        {
+            try
+            {
+                if (_townAt != null)
+                    return _townAt.Invoke(Mod, new object[] { pos }) as string;
+            }
+            catch (Exception ex)
+            {
+                Fail("TownAt", ex);
+            }
+            return ZONE._GET_MAP_ZONE_AT_COORDS(pos.X, pos.Y, pos.Z, 1) != 0 ? "a town" : null;
         }
 
         public string ZoneName(Vector3 pos)

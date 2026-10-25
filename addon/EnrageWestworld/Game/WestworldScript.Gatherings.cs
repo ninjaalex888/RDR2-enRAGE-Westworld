@@ -44,7 +44,7 @@ namespace EnrageWestworld.InGame
         /// Why a gathering can't happen here and now; null when it can.
         private string GatherNotNow()
         {
-            string town = _bridge.TownAt(Game.Player.Character.Position);
+            string town = _bridge.TownOnly(Game.Player.Character.Position);   // TownAt gives the region out in the wilds
             if (town != null)
                 return "you're in " + town + " (only out in the wilds)";
             int hour = CLOCK.GET_CLOCK_HOURS(), minute = CLOCK.GET_CLOCK_MINUTES();

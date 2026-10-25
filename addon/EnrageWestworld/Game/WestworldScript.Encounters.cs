@@ -140,7 +140,7 @@ namespace EnrageWestworld.InGame
         /// Why the crying woman can't come here and now; null when she can.
         private string CryingNotNow()
         {
-            string town = _bridge.TownAt(Game.Player.Character.Position);
+            string town = _bridge.TownOnly(Game.Player.Character.Position);   // TownAt gives the region out in the wilds
             if (town != null)
                 return "you're in " + town + " (she's only out in the wilds)";
             int hour = CLOCK.GET_CLOCK_HOURS();

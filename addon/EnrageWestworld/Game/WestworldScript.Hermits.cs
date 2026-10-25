@@ -72,7 +72,7 @@ namespace EnrageWestworld.InGame
         /// Why a new hermit's camp can't turn up here and now; null when it can.
         private string HermitNotNow()
         {
-            string town = _bridge.TownAt(Game.Player.Character.Position);
+            string town = _bridge.TownOnly(Game.Player.Character.Position);   // TownAt gives the region out in the wilds
             if (town != null)
                 return "you're in " + town + " (camps are only out in the wilds)";
             if (DoneToday("hermit"))
