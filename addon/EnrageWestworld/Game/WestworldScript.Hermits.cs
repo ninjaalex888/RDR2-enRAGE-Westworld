@@ -1,6 +1,6 @@
 // The hermits who woke, in the game (see Core/Engine.Hermits.cs; the lines and his next move are in Core/Encounters.cs).
-// A roll out in the wilds gives the next one who fled (or one made for it) a camp 50-80 m off, out of sight, saved.
-// From then on, whenever the player comes within 120 m of a living hermit's camp and the spot is out of view, he is
+// A roll out in the wilds gives the next one who fled (or one made for it) a camp 60-140 m off, out of sight, saved.
+// From then on, whenever the player comes within 150 m of a living hermit's camp and the spot is out of view, he is
 // there: sitting by a fire talking back to the voice, or asleep beside it from midnight to five. He gets up and
 // watches as you come; closer and he warns you off in his own recorded voice; keep your distance and he tells you how
 // it was; crowd him, draw on him or hurt him and he runs, and is back at his fire another time. Never armed.
@@ -32,7 +32,7 @@ namespace EnrageWestworld.InGame
         private static readonly string[] FireModels = { "p_campfire01x", "p_campfire05x" };
         private const string SitScenario = "WORLD_CAMP_FIRE_SIT_GROUND", SleepScenario = "WORLD_CAMP_FIRE_LAY_GROUND_SIDE";
         private const string SitFallback = "WORLD_HUMAN_SIT_GROUND", SleepFallback = "WORLD_HUMAN_SLEEP_GROUND_ARM";   // if the camp ones don't play in place
-        private const float CampNear = 120f, CampFar = 180f;
+        private const float CampNear = 150f, CampFar = 200f;   // there within 150 m, gone past 200 m (a new camp is 60-140 m off)
 
         private HermitOut _hermit;
         private int _nextCampCheck;
@@ -86,7 +86,7 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             Vector3 at;
-            if (!EncounterSpot(me, 50f, 80f, out at))
+            if (!EncounterSpot(me, 60f, 140f, out at))
             {
                 Log.Write("ENCOUNTER hermit: nowhere out of sight for a camp");
                 return false;
@@ -229,7 +229,7 @@ namespace EnrageWestworld.InGame
             }
             float dist = p.Position.DistanceTo(me.Position);
             bool seen = ENTITY.IS_ENTITY_ON_SCREEN(h) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17);
-            if (dist > CampFar && (!seen || dist > 250f))
+            if (dist > CampFar && (!seen || dist > 270f))
             {
                 EndHermit("stays at " + Their(o.R) + " camp (you rode on)");
                 return;
@@ -331,7 +331,7 @@ namespace EnrageWestworld.InGame
             {
                 case "camp":
                     o.NextLine = now + 14000 + _rng.Next(8000);
-                    if (o.R.Id == _newCampId && !o.Asleep && dist < 90f)
+                    if (o.R.Id == _newCampId && !o.Asleep && dist < CampNear)
                     {
                         _newCampId = null;   // once: shouting at the voice, loud enough to carry
                         Feed.Say("Someone, off in the trees", Encounters.Pick(Encounters.HermitMutters, o.R.Id + "|shout"), Speech.When(h, "unseen"));   // calling out to the voice he hears

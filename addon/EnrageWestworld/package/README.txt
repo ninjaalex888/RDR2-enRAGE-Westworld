@@ -10,7 +10,7 @@ and some people begin to wonder whether any of this is real. A few of the dead d
 
 It's free, and it's not made by the enRAGE author. It needs enRAGE to work and doesn't change
 enRAGE's files. enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemption2/mods/10967
-Source code and bug reports: https://github.com/ninjaalex888/RDR2-enRAGE-Westworld
+Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
@@ -130,12 +130,13 @@ NEW IN 0.6.0
 - The hermits who woke (West World). Someone fully awake who runs from their town in the end
   of a wake act never comes back to it: they live rough in the wilds now. Out there, on a roll
   (HermitChance, 25 percent, at most one new camp a day, up to 8), one of them makes camp out of
-  sight nearby and shouts once at the voice they hear; nobody who fled yet, and someone who
-  walked out before you came by is made instead. The camp is saved: come within about 120 m
-  and they are there, by a fire, talking back to the voice, or asleep beside it from midnight
-  to five. They stand and watch as you come, warn you off if you come closer, and tell you how it
-  was if you keep your distance (each thing once). Crowd them, aim at them or hurt them and they
-  run, and are back another time. They are never armed. Killing one counts like any killing.
+  sight 60 to 140 m away and shouts once at the voice they hear (if nobody has fled yet,
+  someone who walked out before you came by is made instead). The camp is saved: come within
+  about 150 m and they are there, by a fire, talking back to the voice, or asleep beside it
+  from midnight to five. They stand and watch as you come, warn you off if you come closer, and
+  tell you how it was if you keep your distance (each thing once). Crowd them, aim at them or
+  hurt them and they run, and are back another time. They are never armed. Killing one counts
+  like any killing.
 - The gathering (West World). From midnight to half past three in the wilds, on a roll
   (GatheringChance, 15 percent, at most once a night), four to seven of the awake stand in a
   silent ring somewhere off in the dark, facing in: people who have begun to come apart or are
