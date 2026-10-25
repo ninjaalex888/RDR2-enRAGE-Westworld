@@ -775,7 +775,7 @@ namespace EnrageWestworld.InGame
 						Remark remark = _engine.RemarkFor(person, now2);
 						if (remark != null)
 						{
-							Show(person.Name, person.Woman, remark, Speech.For(handle, remark.Text, character.Handle, person.Hate, person.Fear, person.Friendly, remark.Uncanny ? "uneasy" : null));
+							Show(person.Name, person.Woman, remark, Speech.For(handle, remark.Text, character.Handle, person.Hate, person.Fear, person.Friendly, remark.Uncanny ? "uneasy" : null), handle);
 							_remarked[person.Id] = now;
 							_lastRemarkAt = now;
 							flag = false;
@@ -824,14 +824,14 @@ namespace EnrageWestworld.InGame
 			return false;
 		}
 
-		/// A passing remark. Muttered ones stay silent; the rest get the speaker's recorded voice when one fits (uncanny ones
-		/// an unsettled one).
-		private static void Show(string name, bool woman, Remark r, Func<string> voice = null)
+		/// A passing remark. Muttered ones get a wordless sound at most; the rest get the speaker's recorded voice when one
+		/// fits (uncanny ones an unsettled one).
+		private static void Show(string name, bool woman, Remark r, Func<string> voice = null, int ped = 0)
 		{
 			Log.Write("REMARK " + name + (r.Muttered ? " (muttered)" : "") + ": " + r.Text);
 			if (r.Muttered)
 			{
-				Feed.Mutter(name, woman, r.Text);
+				Feed.Mutter(name, woman, r.Text, Speech.When(ped, "hum"));
 			}
 			else
 			{

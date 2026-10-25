@@ -22,6 +22,7 @@ namespace EnrageWestworld.Core
         public string Key;
         public string Name;
         public float Distance;
+        public int Handle;          // the game's handle for the person, 0 if none (for a sound as the thought shows)
         public Func<string> Text;   // computed lazily, at most every ThoughtCacheMs per person
     }
 

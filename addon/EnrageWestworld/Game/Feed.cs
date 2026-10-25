@@ -109,12 +109,14 @@ namespace EnrageWestworld.InGame
 				_speech.Enqueue(l);
 		}
 
-		public static void Mutter(string speaker, bool woman, string text)
+		/// onShow: a sound to play as it appears (a wordless one: what's muttered isn't for anyone to hear).
+		public static void Mutter(string speaker, bool woman, string text, Func<string> onShow = null)
 		{
 			_speech.Enqueue(new Line
 			{
 				Text = speaker + ", under " + (woman ? "her" : "his") + " breath: \"" + text + "\"",
-				Ms = Duration(text)
+				Ms = Duration(text),
+				OnShow = onShow
 			});
 		}
 

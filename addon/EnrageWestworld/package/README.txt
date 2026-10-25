@@ -82,6 +82,14 @@ NEW IN 0.6.0
   The [Voices] settings (SpokenVoice, VoiceVolume, VoiceMan, VoiceWoman, VoiceVariety) are gone.
 - The reader for letters, diaries and clippings is now the N key (ReaderKey, was F5). An ini
   still on F5 moves over; a key you chose yourself is kept.
+- More of the game's own recordings, chosen to fit what the subtitle says: "get away from me",
+  "what are you looking at", "are you following me", "who's there", a sentence that trails off.
+  The hermit's warnings get sharper each time, and he uses the game's own words for someone
+  coming up to a camp. What people mutter under their breath, and the gathering's murmurs, get a
+  wordless sound instead of words that wouldn't match. When the ticker shows the thought of
+  someone within a few steps, they make a small wordless sound too, at most every 3 minutes each
+  (ThoughtSounds in [Ticker]; false turns it off). The words are still the game's own: the
+  subtitle carries the meaning.
 - Quiet while you stand still. Stand still for 3 seconds (QuietStillSeconds), or turn on the
   cinematic camera, and enRAGE's tension stops building and no nemesis, gang or faction is sent
   after you, through enRAGE's own calm period (the one it uses after a load or a fast travel).
@@ -452,7 +460,8 @@ in the file. The new ones:
 
 [Ticker]    Ticker (true), TickerNearbyMetres (30), TickerSeconds (12), TickerY (0.962, height on
             screen), TickerScale (0.30, text size), TickerWidth (0.60), NoticesAsSubtitles (false),
-            TickerNextKey (T): the next line now
+            TickerNextKey (T): the next line now, ThoughtSounds (true): a small sound from someone
+            near as their thought shows
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
             AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),

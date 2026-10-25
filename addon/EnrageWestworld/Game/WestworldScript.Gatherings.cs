@@ -211,7 +211,7 @@ namespace EnrageWestworld.InGame
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 3000, 0f, 0f, 0f);
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, -1, 0, 51, 0);
-                    Speech.Say(h, Speech.Uneasy[_rng.Next(Speech.Uneasy.Length)], me.Handle);
+                    Speech.SayAny(h, Speech.Hum, me.Handle);   // a wordless sound from every one of them at once
                 }
                 Feed.Say("All of them, at once", Encounters.Pick(Encounters.GatherTogether, "gather|" + NightIndex()));
                 Log.Write("ENCOUNTER gathering: you stood in the middle; they spoke at once");
@@ -252,7 +252,7 @@ namespace EnrageWestworld.InGame
                 g.NextMurmur = now + 10000 + _rng.Next(6000);
                 Gatherer m = live[_rng.Next(live.Count)];
                 string who = m.R != null && m.Ped.Position.DistanceTo(pos) < 10f ? m.R.Name + ", low" : "One of them, low";
-                Feed.Say(who, Encounters.Pick(Encounters.GatherMurmurs, "murmur|" + now / 10000), Speech.When(m.Ped.Handle, "uneasy"));
+                Feed.Say(who, Encounters.Pick(Encounters.GatherMurmurs, "murmur|" + now / 10000), Speech.When(m.Ped.Handle, "hum"));
             }
         }
 
@@ -304,6 +304,7 @@ namespace EnrageWestworld.InGame
             PersonState st = r != null ? _store.Find(r.Id) : null;
             _near.Add(new NearThought
             {
+                Handle = ped.Handle,
                 Key = r != null ? r.Id : "ring:" + ped.Handle,
                 Name = r != null ? r.Name : "One of the ring",
                 Distance = d + 2f,

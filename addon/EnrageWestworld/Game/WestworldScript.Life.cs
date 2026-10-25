@@ -658,8 +658,8 @@ namespace EnrageWestworld.InGame
                 lines.Add(Grammar.Sentence(r.Line != null ? "I " + r.Line.Replace("{p}", first) + ", if you ever need anything" : "Take care of yourself"));
                 Speech.SayAny(handle, Speech.Greet, Game.Player.Character.Handle);
             }
-            foreach (string l in lines)
-                Feed.Say(r.Name, l);
+            for (int i = 0; i < lines.Count; i++)
+                Feed.Say(r.Name, lines[i], i == 0 ? null : Speech.For(handle, lines[i], Game.Player.Character.Handle));   // the first one's voice played above
             return true;
         }
 

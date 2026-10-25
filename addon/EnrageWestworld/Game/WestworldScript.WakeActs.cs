@@ -252,7 +252,7 @@ namespace EnrageWestworld.InGame
             {
                 string lost = WakeBeats.Lost(p, st, _engine.Player, seed + "lost");
                 if (lost != null)
-                    Feed.Mutter(p.Name, p.Woman, lost);
+                    Feed.Mutter(p.Name, p.Woman, lost, Speech.When(act.Handle, "trail"));   // the sentence stops partway
             }
             _wakeActs.Add(act);
             _lastWakeActAt = now;
@@ -502,7 +502,7 @@ namespace EnrageWestworld.InGame
                         act.NextThought = 0;
                         string sob = WakeBeats.Aloud("sob", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|sob|" + now / 1000);
                         if (sob != null)
-                            Feed.Mutter(act.Name, act.P.Woman, sob);
+                            Feed.Mutter(act.Name, act.P.Woman, sob, Speech.When(act.Handle, "hum"));
                         Think(act, WakeBeats.Opening("kneel", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|kneel2|" + now / 1000));
                     }
                     break;
@@ -712,7 +712,7 @@ namespace EnrageWestworld.InGame
                         string pool = act.Ending == "giveup" ? "giveup" : "sob";
                         string sob = WakeBeats.Aloud(pool, act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|" + pool + "|" + now / 1000);
                         if (sob != null)
-                            Feed.Mutter(act.Name, act.P.Woman, sob);
+                            Feed.Mutter(act.Name, act.P.Woman, sob, Speech.When(act.Handle, "hum"));
                     }
                     break;
                 case "despair":

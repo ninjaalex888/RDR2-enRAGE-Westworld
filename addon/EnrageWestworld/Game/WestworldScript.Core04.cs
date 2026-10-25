@@ -17,6 +17,7 @@ namespace EnrageWestworld.InGame
     {
         private readonly TickerBrain _ticker = new TickerBrain();
         private readonly List<NearThought> _near = new List<NearThought>();
+        private readonly Dictionary<string, int> _thoughtSoundAt = new Dictionary<string, int>();
         private readonly Reader _reader = new Reader();
         private readonly Director _director = new Director();
         private readonly Queue<Keys> _readerKeys = new Queue<Keys>();
@@ -365,7 +366,10 @@ namespace EnrageWestworld.InGame
             if (now >= _nextTickerUpdate || _tickerLine == null)
             {
                 _nextTickerUpdate = now + 200;
+                TickerLine was = _tickerLine;
                 _tickerLine = _ticker.Update(now, _near, () => _engine.Summary());
+                if (_tickerLine != was)
+                    Safe("thought sound", () => ThoughtSound(_tickerLine, now));
             }
             TickerLine line = _tickerLine;
             Ticker.Render(line, _cfg, now);
@@ -441,7 +445,7 @@ namespace EnrageWestworld.InGame
                     if (!rec.IsAlive)
                         continue;
                     Person p = PersonOf(rec);
-                    _near.Add(new NearThought { Key = p.Id, Name = p.Name, Distance = d, Text = () => _engine.TickerThought(p, now) });
+                    _near.Add(new NearThought { Key = p.Id, Name = p.Name, Handle = h, Distance = d, Text = () => _engine.TickerThought(p, now) });
                     continue;
                 }
                 Acquaintance a = _bridge.AcquaintanceAt(h);
@@ -453,6 +457,7 @@ namespace EnrageWestworld.InGame
                     _near.Add(new NearThought
                     {
                         Key = f.Key,
+                        Handle = h,
                         Name = f.Name,
                         Distance = d + 3f,
                         Text = () => _cfg.WestWorld && st.WakeStage > 0 ? Hosts.Thought(fp, st, _engine.Player, f.Key + now / 180) : Folks.Thought(f, st, _engine.Player, f.Key + now / 180, _cfg.Romance)
@@ -471,6 +476,7 @@ namespace EnrageWestworld.InGame
                         _near.Add(new NearThought
                         {
                             Key = holder.Id,
+                            Handle = h,
                             Name = holder.Name + ", " + pk.Role,
                             Distance = d + 2f,
                             Text = () =>
@@ -507,6 +513,7 @@ namespace EnrageWestworld.InGame
                     {
                         Key = key,
                         Name = label,
+                        Handle = stranger.Handle,
                         Distance = strangerDist + 10f,
                         Text = () =>
                         {
@@ -516,8 +523,29 @@ namespace EnrageWestworld.InGame
                     });
                     return;
                 }
-                _near.Add(new NearThought { Key = key, Name = label, Distance = strangerDist + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
+                _near.Add(new NearThought { Key = key, Name = label, Handle = stranger.Handle, Distance = strangerDist + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
             }
+        }
+
+        /// A person's thought just came up on the ticker: if they're within a few steps, a small wordless sound (a breath,
+        /// a "hm"), at most once every three minutes each. The words stay on the ticker; nothing is said aloud.
+        private void ThoughtSound(TickerLine line, int now)
+        {
+            if (!_cfg.ThoughtSounds || line == null || line.Kind != "near" || line.Key == null)
+                return;
+            NearThought n = _near.FirstOrDefault(x => x.Key == line.Key);
+            if (n == null || n.Handle == 0 || !ENTITY.DOES_ENTITY_EXIST(n.Handle) || ENTITY.IS_ENTITY_DEAD(n.Handle) || Speech.Busy(n.Handle))
+                return;
+            if (new Ped(n.Handle).Position.DistanceTo(Game.Player.Character.Position) > 8f)
+                return;
+            int at;
+            if (_thoughtSoundAt.TryGetValue(line.Key, out at) && now - at < 180000 && now >= at)
+                return;
+            if (_thoughtSoundAt.Count > 200)
+                foreach (string k in _thoughtSoundAt.Where(kv => now - kv.Value > 180000 || now < kv.Value).Select(kv => kv.Key).ToList())
+                    _thoughtSoundAt.Remove(k);
+            _thoughtSoundAt[line.Key] = now;
+            Speech.SayAny(n.Handle, Speech.Hum);
         }
 
         /// A story mission started: give back everyone the add-on borrowed or made, and keep out of the way until

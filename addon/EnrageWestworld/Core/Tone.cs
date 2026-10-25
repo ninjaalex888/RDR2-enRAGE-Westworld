@@ -26,6 +26,12 @@ namespace EnrageWestworld.Core
         private static readonly Regex Agreeing = new Regex(@"^(yes|yeah|aye|sure|of course|reckon so|i suppose|right you are|fair enough)\b", Opt);
         private static readonly Regex Refusing = new Regex(@"^(no[,.! ]|nope|never\b|not a chance|i don't think so)", Opt);
         private static readonly Regex Mocking = new Regex(@"\b(ha(h|ha)?!|you\? a|what a fool|look at you|pathetic|ain't you something)\b", Opt);
+        private static readonly Regex GetAway = new Regex(@"\b(get away from me|keep away from me|get back from me|leave me alone|let me alone|don't come (any )?closer|come no closer|don't touch me)\b|^(get back|stay back|keep back|stay where you are)\b", Opt);
+        private static readonly Regex Afraid = new Regex(@"\b(i'm (so )?(scared|frightened|afraid)|i (am|was) (so )?(scared|frightened))\b", Opt);
+        private static readonly Regex Staring = new Regex(@"\b(stop (staring|looking at me)|what are you (looking|staring|gawking) at|quit (staring|gawking)|why are you (looking|staring) at me|you('re| are) staring|don't look at me)\b", Opt);
+        private static readonly Regex Following = new Regex(@"\b(following me|been following|why are you following|stop following)\b", Opt);
+        private static readonly Regex Heard = new Regex(@"^(what was that|did you hear (that|it)|hear that|listen!|who's there|is (someone|somebody|anyone|anybody) (there|out there))", Opt);
+        private static readonly Regex TrailsOff = new Regex(@"(\.\.\.|\u2026|-|\u2013|\u2014)$", Opt);   // only at the very end: "Please... somebody" doesn't trail
 
         /// The voice tag for a line. hate and fear are how the speaker feels about whoever they're talking to
         /// (0-100); friendly is their nature. Order matters: the strongest feeling in the line wins.
@@ -36,12 +42,22 @@ namespace EnrageWestworld.Core
             string s = line.Trim().Trim('"');
             if (Begging.IsMatch(s))
                 return "plead";
+            if (GetAway.IsMatch(s))
+                return "getaway";   // before threats, which also match "get away from"
             if (Threatening.IsMatch(s))
                 return fear >= 50 ? "scared" : hate >= 30 ? "threat" : "mild";
             if (Cursing.IsMatch(s))
                 return "angry";
+            if (Afraid.IsMatch(s))
+                return "scared";
+            if (Staring.IsMatch(s))
+                return "staring";
+            if (Following.IsMatch(s))
+                return "following";
             if (Hearsay.IsMatch(s))
                 return "news";   // passing on what others say, even when it's about a killing
+            if (Heard.IsMatch(s))
+                return s.IndexOf("there", System.StringComparison.OrdinalIgnoreCase) >= 0 ? "unseen" : "heard";   // "who's there?" calls out to someone
             if (Accusing.IsMatch(s))
                 return hate >= 30 ? "shame" : "stare";
             if (BrushOff.IsMatch(s))
@@ -66,6 +82,8 @@ namespace EnrageWestworld.Core
                 return "yes";
             if (Refusing.IsMatch(s))
                 return "no";
+            if (TrailsOff.IsMatch(s))
+                return "trail";   // a sentence that stops partway
             if (hate >= 60)
                 return "angry";
             if (hate >= 30)

@@ -272,7 +272,13 @@ namespace EnrageWestworld.InGame
                     if (o.Asleep)
                     {
                         o.Asleep = false;   // woken with a start
-                        Speech.Say(h, Speech.Scared[0], me);
+                        Speech.SayAny(h, Speech.Startled, me);
+                    }
+                    else
+                    {
+                        // the game's own words for someone coming up to your camp; no subtitle needed
+                        int hour = CLOCK.GET_CLOCK_HOURS();
+                        Speech.SayAny(h, Speech.Camp(hour >= 20 || hour < 5), me);
                     }
                     break;
                 case "warn":
@@ -286,7 +292,7 @@ namespace EnrageWestworld.InGame
                     _hermitAway.Add(o.R.Id);
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.TASK_SMART_FLEE_PED(h, me, 150f, -1, 0, 3f, 0);
-                    Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitFlee, o.R.Id + "|f|" + now / 1000), Speech.When(h, "scared", me));
+                    Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitFlee, o.R.Id + "|f|" + now / 1000), Speech.When(h, "getaway", me));
                     break;
             }
             Log.Detail("ENCOUNTER hermit: " + o.R.Name + " " + was + " -> " + phase);
@@ -328,18 +334,18 @@ namespace EnrageWestworld.InGame
                     if (o.R.Id == _newCampId && !o.Asleep && dist < 90f)
                     {
                         _newCampId = null;   // once: shouting at the voice, loud enough to carry
-                        Feed.Say("Someone, off in the trees", Encounters.Pick(Encounters.HermitMutters, o.R.Id + "|shout"), Speech.When(h, "angry"));
+                        Feed.Say("Someone, off in the trees", Encounters.Pick(Encounters.HermitMutters, o.R.Id + "|shout"), Speech.When(h, "unseen"));   // calling out to the voice he hears
                         break;
                     }
                     if (!o.Asleep && dist < 35f)
-                        Feed.Say(dist > 15f ? "Someone by a fire" : o.R.Name, Encounters.Pick(Encounters.HermitMutters, o.R.Id + "|m|" + now / 14000), Speech.When(h, "uneasy"));
+                        Feed.Say(dist > 15f ? "Someone by a fire" : o.R.Name, Encounters.Pick(Encounters.HermitMutters, o.R.Id + "|m|" + now / 14000), Speech.When(h, "hum"));   // to himself: no words
                     break;
                 case "warn":
                     if (o.Warned >= 3)
                         return;
                     o.Warned++;
                     o.NextLine = now + 6000;
-                    Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitWarns, o.R.Id + "|w|" + o.Warned + "|" + now / 60000), Speech.When(h, "threat", me.Handle));
+                    Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitWarns, o.R.Id + "|w|" + o.Warned + "|" + now / 60000), Speech.When(h, o.Warned == 1 ? "threat" : o.Warned == 2 ? "warned" : "final", me.Handle));   // sharper each time
                     break;
                 case "talk":
                 {
@@ -348,7 +354,7 @@ namespace EnrageWestworld.InGame
                     PersonState st = _store.Get(_engine.PersonOfResident(o.R));
                     string line = Encounters.HermitTalkNext(o.R.Id, o.R.Town, st);
                     _engine.KeepResident(o.R, Bridge.Now());
-                    Feed.Say(o.R.Name, line, Speech.For(h, line, me.Handle, fear: 30));
+                    Feed.Say(o.R.Name, line, Speech.For(h, line, me.Handle, fear: 30, fallback: "hum"));
                     break;
                 }
             }
@@ -389,6 +395,7 @@ namespace EnrageWestworld.InGame
             long now = Bridge.Now();
             _near.Add(new NearThought
             {
+                Handle = ped.Handle,
                 Key = r.Id,
                 Name = Encounters.HermitLabel(r.Name),
                 Distance = d + 2f,

@@ -61,6 +61,30 @@ namespace EnrageWestworld.InGame
         public static readonly string[] Wanted = { "GET_THE_LAW", "WAS_THIS_YOU", "GENERIC_SHOCKED_HIGH" };
         public static readonly string[] Buy = { "GENERIC_BUY", "GENERIC_YES" };
 
+        // 0.6.0, from the decoded bank list (which voices carry which lines). Specific lines first; a voice without one
+        // falls through to the next in the same call. The rough travellers (the encounters' strangers) carry the camp,
+        // unseen and warning lines; most townsfolk carry the wordless sounds, which the rough travellers mostly don't.
+        public static readonly string[] GetAway = { "GET_AWAY_FROM_ME", "LEAVE_ME", "GENERIC_FRIGHTENED_HIGH" };
+        public static readonly string[] Staring = { "PLAYER_STARING", "WHATS_YOUR_PROBLEM" };
+        public static readonly string[] Following = { "PLAYER_FOLLOWING", "PLAYER_STARING" };
+        public static readonly string[] Loiter = { "PLAYER_LOITERING", "IGNORING_YOU" };
+        public static readonly string[] CampWary = { "RT_HEADS_UP_WARY_CAMP", "PLAYER_LOITERING", "GET_OUT" };    // someone coming up to your camp
+        public static readonly string[] CampNight = { "RT_HEADS_UP_NIGHT_CAMP", "RT_HEADS_UP_WARY_CAMP", "PLAYER_LOITERING", "GET_OUT" };
+        public static readonly string[] Warned = { "WARNED_ALREADY", "GET_LOST", "LEAVE_NOW", "GET_OUT" };      // the second warning
+        public static readonly string[] Final = { "FINAL_WARNING", "TIME_TO_GO", "GET_OUT", "LEAVE_NOW" };      // the last
+        public static readonly string[] Unseen = { "CONFRONT_UNSEEN", "WHAT_WAS_THAT", "WHAT_IS_THAT", "WHATS_GOING_ON" };   // calling out to someone they can't see
+        public static readonly string[] Heard = { "WHAT_WAS_THAT", "WHAT_IS_THAT", "WHATS_GOING_ON" };
+        public static readonly string[] TailOff = { "CONVO_TAIL_OFF", "VOCAL_FX_RESPOND" };   // a sentence that trails away
+        public static readonly string[] Hum = { "VOCAL_FX_RESPOND", "VOCAL_FX_DISAPPROVE" };   // no words: for what's muttered or only thought
+        public static readonly string[] Tut = { "VOCAL_FX_DISAPPROVE", "VOCAL_FX_RESPOND" };
+        public static readonly string[] Startled = { "VOCAL_FX_SURPRISED", "GENERIC_FRIGHTENED_MED", "GENERIC_SHOCKED_MED" };
+
+        /// Someone coming up to a camp, by day or by night.
+        public static string[] Camp(bool night)
+        {
+            return night ? CampNight : CampWary;
+        }
+
         /// A greeting that fits the time of day.
         public static string[] GreetNow()
         {
@@ -116,6 +140,18 @@ namespace EnrageWestworld.InGame
                 case "chatbad": return ChatBad;
                 case "reply": return ChatReply;
                 case "replybad": return ChatReplyBad;
+                case "getaway": return GetAway;
+                case "staring": return Staring;
+                case "following": return Following;
+                case "loiter": return Loiter;
+                case "warned": return Warned;
+                case "final": return Final;
+                case "unseen": return Unseen;
+                case "heard": return Heard;
+                case "trail": return TailOff;
+                case "hum": return Hum;
+                case "tut": return Tut;
+                case "startled": return Startled;
                 case "wanted": return Wanted;
                 case "buy": return Buy;
                 default: return null;

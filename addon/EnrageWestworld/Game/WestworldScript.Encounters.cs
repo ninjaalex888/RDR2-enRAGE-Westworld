@@ -385,7 +385,7 @@ namespace EnrageWestworld.InGame
                     MakeHostile(c.Woman, now);
                     c.Woman.GiveWeapon(eWeapon.MeleeKnife, 1, eWeaponAttachPoint.Knife, true);
                     TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);
-                    Feed.Say("The crying woman", Encounters.Pick(Encounters.KnifeTurn, h + "k"));
+                    Feed.Say("The crying woman", Encounters.Pick(Encounters.KnifeTurn, h + "k"), Speech.When(h, "mock", me.Handle));
                     c.Phase = "knife";
                     c.PhaseUntil = now + 4000;
                     break;
@@ -422,7 +422,7 @@ namespace EnrageWestworld.InGame
                 default:
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 3000, 0f, 0f, 0f);
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 6000, 0, 51, 0);
-                    Feed.Say("The crying woman", Encounters.Pick(Encounters.IntoTheDark, h + "d"), Speech.When(h, "uneasy", me.Handle));
+                    Feed.Say("The crying woman", Encounters.Pick(Encounters.IntoTheDark, h + "d"), Speech.When(h, "hum", me.Handle));   // no words of the game's would fit
                     c.Phase = "dark";
                     c.PhaseUntil = now + 3500;
                     outcome = "dark";

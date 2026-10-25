@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 29;
+        public const int CurrentVersion = 30;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -40,6 +40,7 @@ namespace EnrageWestworld.Core
         public float TickerWidth = 0.60f;
         public bool NoticesAsSubtitles;
         public string TickerNextKey = "T";
+        public bool ThoughtSounds = true;
 
         // [WestWorld] - the master switch and everything under it
         public bool WestWorld = true;
@@ -416,6 +417,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TickerWidth = " + F(TickerWidth) + "   ; share of the screen width it may use");
             b.AppendLine("NoticesAsSubtitles = " + B(NoticesAsSubtitles) + "   ; also flash new notices as subtitles");
             b.AppendLine("TickerNextKey = " + TickerNextKey + "   ; shows the next line on the ticker now (on a long line, its next part first)");
+            b.AppendLine("ThoughtSounds = " + B(ThoughtSounds) + "   ; when a thought of someone within a few steps comes up on the ticker, they make a small wordless sound (at most every 3 minutes each)");
             b.AppendLine();
             b.AppendLine("[WestWorld]");
             b.AppendLine("WestWorld = " + B(WestWorld) + "   ; master switch: the people who start to see their world is made. false turns off everything in this section");
