@@ -18,6 +18,7 @@ namespace EnrageWestworld.InGame
     {
         private const float ReasonRange = 16f;     // from the player
         private const float ReasonApart = 7f;      // the two at most this far from each other
+        private const float LinkedApart = 18f;     // ...or this far, when one is at the other end of the other's worry
         private const int PersonRestMs = 120000;   // real time before someone is in another scene
         private readonly Dictionary<int, int> _sceneAtHandle = new Dictionary<int, int>();
         private int _nextChance;
@@ -93,11 +94,13 @@ namespace EnrageWestworld.InGame
                 for (int j = i + 1; j < people.Count; j++)
                 {
                     float apart = people[i].Ped.Position.DistanceTo(people[j].Ped.Position);
-                    if (apart > ReasonApart)
-                        continue;
                     Someone a = people[i].Who, b = people[j].Who;
+                    // one is the real person at the other end of the other's worry: they'll cross a street for it
+                    WorryLink link = _store.Links.FirstOrDefault(l => ((l.Id == a.Id && l.OtherId == b.Id) || (l.Id == b.Id && l.OtherId == a.Id)) && InnerLife.ArcFor(l.Id, day) == l.Arc);
+                    if (apart > (link != null ? LinkedApart : ReasonApart))
+                        continue;
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(a.Id) && t.Has(b.Id));
-                    Reason why = Reasons.Between(a, b, tie, day, now, where);
+                    Reason why = Reasons.Between(a, b, tie, day, now, where, link);
                     if (why != null)
                         found.Add(new PairReason { A = people[i], B = people[j], Why = why, Apart = apart });
                 }
@@ -135,7 +138,10 @@ namespace EnrageWestworld.InGame
                     bool wg;
                     bool atWorst = InnerLife.WorryNow(sw.P, day, out wk, out wst, out wg) && wst == 2;
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(fw.Id) && t.Has(sw.Id));
-                    s = Exchanges.Make(kind, fw, sw, cast.Names[0] ?? Person.FirstOf(fw.Name), cast.Names[1] ?? Person.FirstOf(sw.Name), day, atWorst, tie, seed);
+                    string fn = cast.Names[0] ?? Person.FirstOf(fw.Name), sn = cast.Names[1] ?? Person.FirstOf(sw.Name);
+                    s = kind == "x:debt" || kind == "x:feud" || kind == "x:courting"
+                        ? Exchanges.MakeLinked(kind, fw, sw, fn, sn, day, seed)   // the worrier (A) and the one at the other end (B)
+                        : Exchanges.Make(kind, fw, sw, fn, sn, day, atWorst, tie, seed);
                 }
                 else
                     s = Scenes.Make(kind, cast, seed);
@@ -143,9 +149,9 @@ namespace EnrageWestworld.InGame
                     continue;
                 if (pr.Apart > 2.6f)
                 {
-                    // a few steps apart: they turn to each other, and the second walks over before a word is said
-                    int walk = (int)Math.Max(0f, pr.Apart / 1.3f * 1000f - 2600f);
-                    s.Beats.Insert(0, new Beat(1, null, null, "approach", Math.Min(4000, walk)));
+                    // apart: one turns to the other, the second walks over, and not a word until they're face to face
+                    // (the Director's "meet" waits for it, and gives up if they never get there)
+                    s.Beats.Insert(0, new Beat(1, null, null, "meet"));
                     s.Beats.Insert(0, new Beat(0, null, null, "face"));
                 }
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
@@ -165,6 +171,28 @@ namespace EnrageWestworld.InGame
             if (_sceneAtHandle.Count > 200)
                 foreach (int h in _sceneAtHandle.Where(kv => now - kv.Value > PersonRestMs || now < kv.Value).Select(kv => kv.Key).ToList())
                     _sceneAtHandle.Remove(h);
+        }
+
+        /// The worries with a real person at the other end, in the town you're in (all towns elsewhere): who, the
+        /// stage, and whether either of them is around (within 60 m), for the F7 dump.
+        private string LinksStatus()
+        {
+            long day = Bridge.Now() / 1440;
+            List<WorryLink> current = _store.Links.Where(l => InnerLife.ArcFor(l.Id, day) == l.Arc && (_placeTown == null || l.Town == _placeTown)).ToList();
+            if (current.Count == 0)
+                return "none current" + (_placeTown != null ? " in " + _placeTown : "") + " (" + _store.Links.Count + " kept)";
+            Ped me = Game.Player.Character;
+            HashSet<string> around = new HashSet<string>(_resBind.Where(kv => ENTITY.DOES_ENTITY_EXIST(kv.Key) && new Ped(kv.Key).Position.DistanceTo(me.Position) < 60f).Select(kv => kv.Value.R.Id));
+            foreach (Ped p in World.GetAllPeds().Where(p => p.Position.DistanceTo(me.Position) < 60f))
+            {
+                Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+                if (ac != null && !string.IsNullOrEmpty(ac.Name))
+                    around.Add(Snapshot.Of(ac).Key);
+            }
+            string[] stages = { "it begins", "worse", "the crisis", "ended" };
+            return current.Count + " current; " + string.Join("; ", current.Take(8).Select(l => l.Name + " " + (l.Kind == "debt" ? "owes" : l.Kind == "feud" ? "is at odds with" : "is sweet on") + " " +
+                l.OtherName + " (" + stages[InnerLife.StageFor(l.Id, day)] + (around.Contains(l.Id) ? "; " + Person.FirstOf(l.Name) + " is here" : "") +
+                (around.Contains(l.OtherId) ? "; " + Person.FirstOf(l.OtherName) + " is here" : "") + ")"));
         }
 
         /// The reasons near you right now, for the F7 dump (seen: on screen and in plain view).

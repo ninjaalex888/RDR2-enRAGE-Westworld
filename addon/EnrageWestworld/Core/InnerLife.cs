@@ -18,6 +18,7 @@ namespace EnrageWestworld.Core
             public List<Deed> TownDeeds;           // the player's recent bad deeds in this person's town, newest first
             public List<SceneTie> Ties;                 // street scenes this person had lately, with whom (Ties.cs), newest first
             public List<SceneTie> TownTies;             // the town's talk: scenes between two others here lately, newest first
+            public List<WorryLink> Linked;              // someone else's worry this person is the other end of (Links.cs)
         }
 
         /// Set by the game side from the clock: 0 Sunday .. 6 Saturday (-1 unknown), and the year (1907 in the epilogue).
@@ -264,6 +265,8 @@ namespace EnrageWestworld.Core
                 // someone they had words with (or a sweetheart) lately shares this slot with the worry
                 if (day != null && day.Ties != null && day.Ties.Count > 0 && Voice.Chance(seed + "tb", 45))
                     own = Ties.Thought(day.Ties[0], p.Id, seed);
+                else if (day != null && day.Linked != null && day.Linked.Count > 0 && Voice.Chance(seed + "lb", 40))
+                    own = Links.OtherThought(day.Linked[Voice.Hash(seed + "lw") % day.Linked.Count], day.GameDay, seed);   // the other end of someone's worry
                 else
                     own = day != null && day.GameDay >= 0 ? WorryThought(p, day.GameDay, seed, told) : null;
             }

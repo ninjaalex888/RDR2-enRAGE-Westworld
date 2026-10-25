@@ -100,6 +100,116 @@ namespace EnrageWestworld.Core
         private static readonly string[] SweetHello = { "There you are, {b}.", "Afternoon, {b}. You look well.", "I was hoping I'd pass you." };
         private static readonly string[] SweetBack = { "Were you, now?", "I took the long way round. Don't ask why.", "You'll make me blush in the street." };
 
+        // ---- the worrier and the real person at the other end (Links.cs): by the worry's stage, steered by its end ----
+
+        // a debt: B (the one owed) calls it in, A (the debtor) answers by stage; the same eleven dollars as their thoughts
+        private static readonly string[] CallIn =
+        {
+            "No hurry, {a}, but I'll want that eleven dollars by and by.",
+            "Eleven dollars, {a}. I've been patient.",
+            "Saturday, {a}. Eleven dollars Saturday, or I take it out in mule."
+        };
+        private static readonly string[] Owe =
+        {
+            "You'll have it. Soon as I'm paid.",
+            "I need more time. A week. Just a week.",
+            "Saturday. I swear it on my mother's grave."
+        };
+        // the one owed answers, by stage, from their own manner
+        private static readonly string[] OwedKind = { "No rush. Just don't forget it.", "...A week, then.", "Saturday it is. I'll come by the house for it." };
+        private static readonly string[] OwedCold = { "Mind you don't forget it.", "One week. I'll be counting.", "I'll hold you to it." };
+        private static readonly string[] OwedSharp = { "Soon ain't a day of the week.", "You said that last week.", "Don't swear. Pay." };
+        private static readonly string[] Paid = { "Here. Eleven dollars, {b}. Count it.", "...Square, then. Square and glad of it." };
+        private static readonly string[] Mule = { "Working my mule hard, {b}? Sleeping well?", "I didn't want it this way, {a}. You know I didn't.", "Owed is owed, {a}." };
+
+        // a feud: A (the one worrying) at the neighbour, by stage; mended or not at the end
+        private static readonly string[] Fence =
+        {
+            "{b}. That post's a foot onto my side again.", "It's where it's always been.",
+            "Your dog was in my hens again, {b}.", "Prove it was my dog.",
+            "Next time I see that post moved, I'm burning it.", "Burn it and see what follows."
+        };
+        private static readonly string[] Shake = { "I'll shake on it if you will, {b}. Fence and all.", "Aye. I will. It's been a long, stupid summer." };
+        private static readonly string[] Done = { "There's no more talking between us, {b}.", "Suits me." };
+
+        // courting: A courts B; B warms to it only if it will end well
+        private static readonly string[] Court =
+        {
+            "Morning, {b}. Fine morning. Isn't it a fine morning?",
+            "I could carry that for you, {b}. If you'd like.",
+            "{b}, there's a thing I've been meaning to ask..."
+        };
+        private static readonly string[] CourtWarm = { "It is now.", "I'd like that.", "Then ask it, before you burst." };
+        private static readonly string[] CourtCool = { "It's a morning.", "I can manage, thank you.", "Best not, {a}. Best not." };
+        private static readonly string[] Yes = { "I'm asking, {b}. Will you walk out with me? Proper?", "Yes. Yes, you fool. Yes." };
+        private static readonly string[] No = { "So it's no, then.", "It's no. I'm sorry, {a}. Truly." };
+
+        /// A meeting between a worrier (A) and the real person at the other end of their worry (B): "x:debt", "x:feud",
+        /// "x:courting". The stage and how it will end come from the worrier's own run (the same as their thoughts).
+        public static Scene MakeLinked(string kind, Someone a, Someone b, string aName, string bName, long day, string seed)
+        {
+            string worry = kind.Substring(2);
+            long arc = InnerLife.ArcFor(a.Id, day);
+            int stage = InnerLife.StageFor(a.Id, day);
+            bool good = InnerLife.EndsWellFor(a.Id, worry, arc);
+            System.Func<string, string> fill = line => line.Replace("{a}", aName).Replace("{b}", bName);
+            Scene s = new Scene();
+            int st = System.Math.Min(stage, 2);
+            switch (worry)
+            {
+                case "debt":
+                    if (stage < 3)
+                    {
+                        string manner = Manner(b, false);
+                        s.Add(1, fill(CallIn[st]), st == 0 ? "familiar" : "angry", "face").Add(0, fill(Owe[st]), st == 0 ? "mild" : "plead");
+                        string[] back = manner == "kind" ? OwedKind : manner == "cold" ? OwedCold : OwedSharp;
+                        s.Add(1, fill(back[st]), manner == "sharp" ? "angry" : "mild", "walkaway");
+                        s.Kind = "debt";
+                    }
+                    else if (good)
+                    {
+                        s.Add(0, fill(Paid[0]), "relieved", "face").Add(1, fill(Paid[1]), "thanks");
+                        s.Kind = "cheer";
+                    }
+                    else
+                    {
+                        s.Add(0, fill(Mule[0]), "angry", "face").Add(1, fill(Manner(b, false) == "kind" ? Mule[1] : Mule[2]), "mild", "walkaway");
+                        s.Kind = "argue";
+                    }
+                    break;
+                case "feud":
+                    if (stage < 3)
+                    {
+                        s.Add(0, fill(Fence[st * 2]), st == 2 ? "threat" : "angry", "face").Add(1, fill(Fence[st * 2 + 1]), st == 2 ? "threat" : "tut", st == 2 ? "walkaway" : null);
+                        s.Kind = "argue";
+                    }
+                    else
+                    {
+                        string[] end = good ? Shake : Done;
+                        s.Add(0, fill(end[0]), good ? "defuse" : "angry", "face").Add(1, fill(end[1]), good ? "relieved" : "mild", good ? null : "walkaway");
+                        s.Kind = good ? "makeup" : "argue";
+                    }
+                    break;
+                case "courting":
+                    if (stage < 3)
+                    {
+                        s.Add(0, fill(Court[st]), "flatter", "face").Add(1, fill((good ? CourtWarm : CourtCool)[st]), good ? "cheer" : "mild", good ? null : "walkaway");
+                        s.Kind = good ? "sweet" : "brushoff";
+                    }
+                    else
+                    {
+                        string[] end = good ? Yes : No;
+                        s.Add(0, fill(end[0]), good ? "flatter" : "shame", "face").Add(1, fill(end[1]), good ? "cheer" : "sorry");
+                        s.Kind = good ? "propose" : "brushoff";
+                    }
+                    break;
+                default:
+                    return null;
+            }
+            s.Summary = aName + " and " + bName + ": " + worry;
+            return s;
+        }
+
         /// How the other one answers: kind, cold or sharp, from their temper and whether they're at the worst of
         /// their own trouble. The same person answers the same way (it's who they are).
         public static string Manner(Someone b, bool bAtWorst)
@@ -187,7 +297,8 @@ namespace EnrageWestworld.Core
         {
             return Hello.Concat(Snap.Values).Concat(GoodNews.Values).Concat(BadNews.Values).Concat(KindToTrouble).Concat(ColdToTrouble).Concat(SharpToTrouble)
                 .Concat(SnapBack).Concat(KindToGood).Concat(ColdToGood).Concat(SharpToGood).Concat(KindToBad).Concat(ColdToBad).Concat(SharpToBad)
-                .Concat(QuarrelAgain).Concat(MakeUp).Concat(Accept).Concat(Refuse).Concat(Stand).Concat(Dare).Concat(SweetHello).Concat(SweetBack);
+                .Concat(QuarrelAgain).Concat(MakeUp).Concat(Accept).Concat(Refuse).Concat(Stand).Concat(Dare).Concat(SweetHello).Concat(SweetBack)
+                .Concat(CallIn).Concat(Owe).Concat(OwedKind).Concat(OwedCold).Concat(OwedSharp).Concat(Paid).Concat(Mule).Concat(Fence).Concat(Shake).Concat(Done).Concat(Court).Concat(CourtWarm).Concat(CourtCool).Concat(Yes).Concat(No);
         }
 
         /// The worry kinds every reason needs lines for, for the tests.

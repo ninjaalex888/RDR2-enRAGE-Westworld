@@ -45,6 +45,7 @@ namespace EnrageWestworld.Core
         [DataMember] public int NextResident;
         [DataMember] public List<Post> Posts = new List<Post>();   // the counters with one person each, who pass them on (see Posts.cs)
         [DataMember] public List<SceneTie> Ties = new List<SceneTie>();      // what street scenes left between two people (see Ties.cs)
+        [DataMember] public List<WorryLink> Links = new List<WorryLink>();   // the real person at the other end of a worry (see Links.cs)
 
         public long WasAt;
 
@@ -127,6 +128,7 @@ namespace EnrageWestworld.Core
             }
             n += Deeds.RemoveAll(d => d.At > cut);
             n += Ties.RemoveAll(t => t.At > cut);
+            n += Links.RemoveAll(l => l.At > cut);
             n += TownRumours.RemoveAll(r => r.At > cut);
             n += Papers.RemoveAll(p => p.At > cut);
             n += Fallen.RemoveAll(f => f.At > cut);
@@ -238,6 +240,7 @@ namespace EnrageWestworld.Core
             if (Residents == null) Residents = new List<Resident>();
             if (Posts == null) Posts = new List<Post>();
             if (Ties == null) Ties = new List<SceneTie>();
+            if (Links == null) Links = new List<WorryLink>();
             foreach (Post p in Posts)
             {
                 if (p.Former == null)

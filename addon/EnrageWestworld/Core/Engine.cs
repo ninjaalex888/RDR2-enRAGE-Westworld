@@ -47,6 +47,7 @@ namespace EnrageWestworld.Core
 			Player = player;
 			Cfg = cfg;
 			_rng = new Random(seed);
+			InnerLife.Counterpart = LinkedName;   // worries name the real person linked to them (Links.cs)
 		}
 
 		public Person Find(string id)

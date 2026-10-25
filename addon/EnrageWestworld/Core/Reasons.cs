@@ -40,7 +40,7 @@ namespace EnrageWestworld.Core
 
         /// The strongest reason between these two, either way round; null if they have none (or had their scene
         /// together too lately).
-        public static Reason Between(Someone a, Someone b, SceneTie tie, long gameDay, long now, Place where)
+        public static Reason Between(Someone a, Someone b, SceneTie tie, long gameDay, long now, Place where, WorryLink link = null)
         {
             if (a == null || b == null || a.Id == b.Id)
                 return null;
@@ -50,6 +50,17 @@ namespace EnrageWestworld.Core
                 long rest = tie.Kind == "brawl" ? 1440 : PairRest;   // after a fight, a day before the next thing between them
                 if (now - tie.At >= 0 && now - tie.At < rest)
                     return null;   // they've just had words, or a walk together
+            }
+            // one is the real person at the other end of the other's worry: the strongest reason there is (Links.cs)
+            if (link != null && Links.Linkable(link.Kind))
+            {
+                string[] what = { "it begins", "it's worse", "it's at the worst", "it's ended" };
+                int stage = InnerLife.StageFor(link.Id, gameDay);
+                return new Reason { Kind = "x:" + link.Kind, Strength = 85, BFirst = link.Id == b.Id,
+                                    Why = link.Name + "'s " + link.Kind + " with " + link.OtherName + " (" + what[stage] + ")" };
+            }
+            if (tie != null)
+            {
                 if (tie.Warmth < 0)
                 {
                     bool hot = a.Temper == "Hothead" || b.Temper == "Hothead" || a.Temper == "Proud" || b.Temper == "Proud";
@@ -84,12 +95,9 @@ namespace EnrageWestworld.Core
             int stage;
             bool good;
             bool worry = InnerLife.WorryNow(x.P, gameDay, out kind, out stage, out good);
-            // owing money, and somebody they owe close by: the other one calls it in (A in the debt scene)
-            if (worry && kind == "debt" && stage >= 1 && stage <= 2)
-                return new Reason { Kind = "debt", Strength = 50, BFirst = true, Why = x.Name + " owes money, and it's pressing" };
-            if (worry && kind == "courting" && mixed && stage <= 1)
-                return new Reason { Kind = "flirt", Strength = 45, Why = x.Name + " is sweet on somebody" };
-            // at the worst of it: spoken to, they snap, and say what's wrong (Exchanges)
+            // a debt is called in, and courting done, only with the real person at the other end (a link, above): never
+            // with whoever happens to be standing there, which would contradict their own thoughts. At the worst of it
+            // (or any other worry): spoken to, they snap, and say what's wrong (Exchanges)
             if (worry && stage == 2)
             {
                 bool hot = x.Temper == "Hothead" || x.Temper == "Proud";

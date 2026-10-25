@@ -952,6 +952,7 @@ namespace EnrageWestworld.Core
         public string ResidentThought(Person p, int hour, string seed, InnerLife.PlayerLook look = null)
         {
             PersonState st = Store.Find(p.Id);
+            EnsureLink(p);
             // the world feeling unreal keeps its full RealityChance; town rumours and the player's fame get a third of
             // the rest, so their own life (InnerLife) has most of it
             bool reality = Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance);
@@ -969,6 +970,7 @@ namespace EnrageWestworld.Core
                 return about;
             if (p.Personality == null)
                 p.Personality = f.Temper;
+            EnsureLink(p);
             return InnerLife.Thought(p, hour, seed, st.Musings, look, ThoughtDay(p.Home, p.Id)) ?? about;
         }
 
@@ -986,8 +988,62 @@ namespace EnrageWestworld.Core
                 c.TownTies = Ties.TalkOf(Store.Ties, town, id, now);
             }
             if (id != null)
+            {
                 c.Ties = Ties.Of(Store.Ties, id, now, 4);
+                if (c.GameDay >= 0)
+                    c.Linked = Links.Against(Store.Links, id, c.GameDay);
+            }
             return c;
+        }
+
+        // ---- the real people at the other end of worries (Links.cs) ------------------------------------------------
+
+        private readonly Dictionary<string, long> _noLinkUntil = new Dictionary<string, long>();
+
+        /// Someone who can be met again: one of enRAGE's townsfolk, or a resident who is saved (a regular, or kept
+        /// for something else). Only they get a real person at the other end of a worry.
+        public bool Lasting(string id)
+        {
+            return id != null && (id.StartsWith("folk:") || (Resident.IsResident(id) && Store.FindResident(id) != null));
+        }
+
+        /// Makes the link for this person's worry run if it has a real counterpart and none is made yet: the one place
+        /// links are made (thoughts only read them). A town with nobody suitable is asked again an hour later.
+        public void EnsureLink(Person p)
+        {
+            long now = Store.LastGameMin, day = now > 0 ? now / 1440 : -1;
+            if (p == null || p.Home == null || day < 0 || !Lasting(p.Id))
+                return;
+            string kind;
+            int stage;
+            bool good;
+            if (!InnerLife.WorryNow(p, day, out kind, out stage, out good) || !Links.Linkable(kind))
+                return;
+            long arc = InnerLife.ArcFor(p.Id, day);
+            if (Links.Of(Store.Links, p.Id, kind, arc) != null)
+                return;
+            string key = p.Id + "|" + arc;
+            long until;
+            if (_noLinkUntil.TryGetValue(key, out until) && now < until)
+                return;
+            Resident other = Links.Choose(p, kind, arc, Store.Residents, Store.Ties, Voice.NowYear);
+            if (other == null)
+            {
+                _noLinkUntil[key] = now + 60;
+                if (_noLinkUntil.Count > 300)
+                    _noLinkUntil.Clear();
+                return;
+            }
+            Store.Links.Add(new WorryLink { Id = p.Id, Name = p.Name, Kind = kind, Arc = arc, OtherId = other.Id, OtherName = other.Name, Town = p.Home, At = now });
+            Links.Prune(Store.Links, day);
+            Log("LINK " + p.Name + "'s " + kind + ": " + (kind == "debt" ? "owes " : kind == "feud" ? "at odds with " : "sweet on ") + other.Name + " (a regular in " + p.Home + ")");
+        }
+
+        /// The name a worry's {who} takes from its link, for InnerLife (reads only).
+        private string LinkedName(Person p, string kind, long arc)
+        {
+            WorryLink l = Links.Of(Store.Links, p.Id, kind, arc);
+            return l != null ? Links.WhoName(l) : null;
         }
 
         private static readonly string[] EverydayMen =

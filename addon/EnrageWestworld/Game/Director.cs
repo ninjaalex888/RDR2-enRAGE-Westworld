@@ -34,6 +34,7 @@ namespace EnrageWestworld.InGame
             public SceneCast Info;
             public bool Intruded;
             public bool[] Aimed = new bool[3];   // guns out in a standoff: put away if the scene is cut short
+            public int MeetUntil;                // "meet": B is walking over; nothing is said until they're close, or give up then
         }
 
         private Live _live;
@@ -258,6 +259,22 @@ namespace EnrageWestworld.InGame
             }
             if (now < l.NextAt)
                 return;
+            if (l.MeetUntil > 0)
+            {
+                // B is still walking over: the first word waits until they're face to face
+                if (l.Cast[0].Position.DistanceTo(l.Cast[1].Position) <= 2.4f)
+                {
+                    l.MeetUntil = 0;
+                    Act(l, "face", 0, 1, 0);
+                }
+                else if (now > l.MeetUntil)
+                {
+                    Abort("they never got close enough to talk");
+                    return;
+                }
+                else
+                    return;
+            }
             if (l.Index >= l.Scene.Beats.Count)
             {
                 Log.Write("SCENE over: " + l.Scene.Kind + " (" + string.Join(" & ", l.Names) + "), played to the end");
@@ -304,6 +321,12 @@ namespace EnrageWestworld.InGame
                 case "approach":
                     TASK.TASK_GO_TO_ENTITY(h, l.Cast.Length > 2 && who == 2 ? l.Cast[0].Handle : t, -1, 1.4f, 1.3f, 0f, 0);
                     return 2600;
+                case "meet":
+                    // walks over to the other, who waits; the next line waits until they're close (Tick)
+                    TASK.TASK_GO_TO_ENTITY(h, t, 20000, 1.4f, 1.3f, 0f, 0);
+                    TASK.TASK_LOOK_AT_ENTITY(t, h, 20000, 0, 51, 0);
+                    l.MeetUntil = Game.GameTime + 15000;
+                    return 300;
                 case "shove":
                     Ped victim = who == 2 ? l.Cast[0] : them;
                     PED.SET_PED_TO_RAGDOLL(victim.Handle, 900, 1600, 0, false, false, "");

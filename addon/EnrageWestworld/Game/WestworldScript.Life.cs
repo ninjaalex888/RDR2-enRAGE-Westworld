@@ -87,6 +87,7 @@ namespace EnrageWestworld.InGame
             string seed = a.Handle + "|" + b.Handle + "|" + now / 60000;
             Ped crowd = pool.Where(p => p != a && p != b && p.Position.DistanceTo(a.Position) < 9f).OrderBy(p => p.Position.DistanceTo(a.Position)).FirstOrDefault();
             SceneCast cast = BuildCast(a, b, crowd, saloon, me, now, seed);
+            cast.Off.Add("debt");   // debts come from people's own worries (Links, Reasons), never from a chance meeting
             Scene s = null;
             List<Ped> people = new List<Ped> { a, b };
             if (!cast.AWoman && cast.BWoman || cast.AWoman && !cast.BWoman)

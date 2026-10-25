@@ -381,8 +381,10 @@ namespace EnrageWestworld.Core
             if (line == null)
                 return null;
             string who = null, kin = null, place = null;
-            switch (k.Key)
+            string linked = Counterpart != null && (k.Key == "debt" || k.Key == "feud" || k.Key == "courting") ? Counterpart(p, k.Key, arc) : null;
+            switch (linked != null ? "linked" : k.Key)
             {
+                case "linked": who = linked; break;
                 case "debt": who = Residents.Surname(p.Id + "|cr" + arc); break;
                 case "feud": who = Residents.Surname(p.Id + "|ne" + arc); break;
                 case "fever": who = Residents.FirstName(Voice.Hash(p.Id + "|cw") % 2 == 0, p.Id + "|child"); break;
@@ -454,6 +456,32 @@ namespace EnrageWestworld.Core
             stage = StageOf(dayIn);
             good = EndsWell(p, k, arc);
             return true;
+        }
+
+        /// The real person at the other end of a worry (a creditor, a neighbour, a sweetheart), when the engine has
+        /// linked one (Links.cs): the name to put for {who}, or null for one made up. Only reads; never makes a link.
+        public static Func<Person, string, long, string> Counterpart;
+
+        /// Which run of WorryDays this game day is in for this person (by their id alone).
+        public static long ArcFor(string id, long gameDay)
+        {
+            int dayIn;
+            return ArcOf(new Person { Id = id }, gameDay, out dayIn);
+        }
+
+        /// The stage of this person's worry today (0 it begins .. 3 how it ended), by their id alone.
+        public static int StageFor(string id, long gameDay)
+        {
+            int dayIn;
+            ArcOf(new Person { Id = id }, gameDay, out dayIn);
+            return StageOf(dayIn);
+        }
+
+        /// Whether a worry of this kind, in this run, ends well for this person (by their id alone).
+        public static bool EndsWellFor(string id, string kind, long arc)
+        {
+            WorryKind k = Worries.FirstOrDefault(w => w.Key == kind);
+            return k != null && EndsWell(new Person { Id = id }, k, arc);
         }
 
         /// A line about the worry this person is living through today, with its people put in ({who}, {kin},

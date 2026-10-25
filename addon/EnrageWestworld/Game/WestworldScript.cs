@@ -1004,6 +1004,7 @@ namespace EnrageWestworld.InGame
 			MarkRegulars();
 			Log.Write("TEST ties: " + TiesStatus());
 			Log.Write("TEST reasons: " + ReasonsStatus());
+			Log.Write("TEST links: " + LinksStatus());
 			Log.Write("TEST posts: " + PostsStatus());
 			Log.Write("TEST encounters: " + EncountersStatus());
 			if (nemesisRecord == null)

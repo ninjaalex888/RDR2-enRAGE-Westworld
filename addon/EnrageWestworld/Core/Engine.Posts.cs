@@ -133,6 +133,7 @@ namespace EnrageWestworld.Core
             bool hurt = r.Wounds > 0 && Store.LastGameMin - r.WoundedAt < 3 * 1440;
             if (!fresh && !hurt && Store.LastGameMin > 0 && Voice.Chance(seed + "pw", 25))
             {
+                EnsureLink(PersonOfResident(r));
                 string w = InnerLife.WorryThought(PersonOfResident(r), Store.LastGameMin / 1440, seed, st != null ? st.Musings : null);
                 if (w != null)
                     return w;

@@ -234,8 +234,12 @@ namespace EnrageWestworld.Core
                 string item = c.PaperItems[Voice.Hash(seed + "item") % c.PaperItems.Count].Trim();
                 string low = item.ToLowerInvariant();
                 s.Add(0, "Listen to this. It says here: \"" + item.TrimEnd('.') + ".\"", "news", "face");
-                if (low.Contains("shot") || low.Contains("killed") || low.Contains("dead") || low.Contains("murder"))
-                    s.Add(1, Voice.Pick(seed + "v", "What's this world coming to?", "Thank God it wasn't here.", "Lord have mercy."), "shame");
+                // "without a shot fired" is good news, and a story from this very town wasn't somewhere else
+                bool here = c.Town != null && low.Contains(c.Town.ToLowerInvariant());
+                bool violent = (low.Contains("shot") || low.Contains("killed") || low.Contains("dead") || low.Contains("murder")) &&
+                               !low.Contains("without a shot") && !low.Contains("not a shot") && !low.Contains("no shot");
+                if (violent)
+                    s.Add(1, Voice.Pick(seed + "v", "What's this world coming to?", here ? "Right here in town, too." : "Thank God it wasn't here.", "Lord have mercy."), "shame");
                 else if (low.Contains("rob") || low.Contains("stole") || low.Contains("theft"))
                     s.Add(1, Voice.Pick(seed + "r", "Serves the bank right.", "Lock your doors tonight.", "Wasn't me, before you ask."), "respond");
                 else
