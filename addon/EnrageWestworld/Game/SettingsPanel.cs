@@ -69,14 +69,17 @@ namespace EnrageWestworld.InGame
             { "WarNewsTo", new[] { "right", "ticker" } }
         };
 
-        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "TickerNextKey" };
+        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "TickerNextKey", "StalkerKey" };
 
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
             { "TickerY", "Ticker height on screen" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
-            { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMetres", "How far off he does odd things" }
+            { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMetres", "How far off he does odd things" },
+            { "StalkerKey", "Make a stalker now (key)" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
+            { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres)" },
+            { "StalkerStrangers", "A stranger if nobody near" }
         };
 
         private readonly Func<Bridge> _bridgeOf;
@@ -296,6 +299,12 @@ namespace EnrageWestworld.InGame
                 _note = off;
                 return;
             }
+            bool key = (!page.Enrage && OurKeys.Contains(e.Key)) || (page.Enrage && _bridge != null && _bridge.EnrageRebinds(page.Section, e.Key));
+            if (key)
+            {
+                _note = "Press Enter to set this key.";   // a key like 0 must not be stepped like a number
+                return;
+            }
             string next;
             string[] choice;
             if (!page.Enrage && Choices.TryGetValue(e.Key, out choice))
@@ -307,8 +316,7 @@ namespace EnrageWestworld.InGame
                 next = IniDoc.Step(e.Value, dir, big);
             if (next == null)
             {
-                bool key = (!page.Enrage && OurKeys.Contains(e.Key)) || (page.Enrage && _bridge != null && _bridge.EnrageRebinds(page.Section, e.Key));
-                _note = key ? "Press Enter to set this key." : Label(e.Key) + " is text: type it in " + (page.Enrage ? "NemesisMod.ini" : "RealNPCs.ini") + ".";
+                _note = Label(e.Key) + " is text: type it in " + (page.Enrage ? "NemesisMod.ini" : "RealNPCs.ini") + ".";
                 return;
             }
             Stage(page, e, next);

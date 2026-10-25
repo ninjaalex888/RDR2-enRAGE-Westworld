@@ -24,7 +24,7 @@ NEW IN 0.6.0
 - Two master switches. WestWorld turns the whole West World side on or off: the Awakening, people
   wondering if the world is real, glitches, and the dead who wake. Off, nothing of it happens and
   people already waking go quiet (they pick up where they left off if you turn it back on).
-  Stalkers is its own switch now, with its own settings: the chance, the hours they turn up, how
+  Stalkers is its own switch now, with its own settings: how often and how likely, how
   far back they follow, how close they come, how far they run off, whether they mutter, and what
   they do when you stand still (StalkerWhenStill: circle you close, watch you from where they are,
   run straight at you and stop a few steps short, do odd things, or a mix - they never attack).
@@ -57,6 +57,18 @@ NEW IN 0.6.0
   runs off. StalkerWhenStill is now mix by default (odd things most times, else circling,
   watching or rushing); eerie is odd things only. An ini still on the old default (circle) is
   moved to mix.
+- Who stalks you has changed. Every StalkerEveryMinutes (10) real minutes of play there is a roll
+  at StalkerChance (20 percent). On a hit, someone already near you (within StalkerNearbyMetres,
+  60) stops what they're doing, stares at you, and starts following you: whoever has the most
+  history with you, such as an enRAGE townsperson with a grudge or who saw what you did, or someone
+  who saw your deeds or talked with you; a passer-by only if there's nobody like that. enRAGE's own
+  people are never taken over (enRAGE runs them). If nobody near can follow you for a few minutes, a
+  stranger turns up behind you instead (StalkerStrangers = false turns that off). Afterwards they
+  go back to their day. The daily roll and its day and night hours (StalkerDayOnly, StalkerNightOnly,
+  StalkerBoth, StalkerDayFrom/To, StalkerNightFrom/To) are gone, and StalkerChance starts again at
+  20 because it now means each roll.
+- The 0 key (StalkerKey) makes a stalker now, for testing or whenever you like: someone near you,
+  or a stranger if nobody near can be. It replaces Shift+F7.
 
 
 NEW IN 0.5.5
@@ -302,7 +314,7 @@ Reveries. When you kill one of enRAGE's people (not story characters), there's a
 killed them and who did it, and they come back the way enRAGE's people come back from the dead.
 Strangers you kill are remembered too, and a few (StrangerReturnChance, 15%) come back.
 
-Stalkers. Rarely, by day or by night, someone follows you. They keep their distance, stand and stare when they think
+Stalkers. Now and then someone near you, often someone who knows you, starts following you. They keep their distance, stand and stare when they think
 you can't see, freeze when you look at them and slip out of sight, and somehow turn up behind you
 again after you've ridden off. Stand still for 20 seconds and they come closer and do something:
 odd gestures and tasks (digging a grave, a finger to the lips, a slow wave), circling you, or
@@ -351,8 +363,9 @@ the log; the rest carries on. Bug reports (with your log) are welcome on GitHub 
 - Kill one of enRAGE's people, loot the body for a diary, then visit a post office a few days later.
 - Stand around a busy street or saloon for a few minutes. Greet someone in the middle of a quarrel.
 - Hold your gun on a passer-by in town (then lower it). Ride into a town where you've done things.
-- Press Shift+F7 to call a stalker right away. He comes once you're outdoors, off any story mission,
-  with no lawmen after you and not fighting; until then the log says what he's waiting for. Go about
+- Press 0 to make a stalker right away: someone near you, or a stranger if nobody near can be. It
+  happens once you're outdoors, off any story mission, with no lawmen after you and not fighting;
+  until then the log says what it's waiting for. Go about
   your business and look behind you now and then (he keeps 30 to 70 metres back).
 
 
@@ -382,12 +395,11 @@ in the file. The new ones:
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
             Reveries (true), ReturnChance (35), StrangerReturnChance (15)
-[Stalkers]  Stalkers (true): the master switch. StalkerChance (20, percent per day),
-            StalkerDayOnly (25), StalkerNightOnly (50), StalkerBoth (25),
-            StalkerDayFrom (6) / StalkerDayTo (17): when a daytime stalker turns up,
-            StalkerNightFrom (18) / StalkerNightTo (4): when a night stalker turns up,
-            StalkerMinutes (120), StalkerAppearMin (45) / StalkerAppearMax (70): how far behind you
-            he first turns up, StalkerFollowMetres (26), StalkerStareMetres (34),
+[Stalkers]  Stalkers (true): the master switch. StalkerKey (0): make one now,
+            StalkerEveryMinutes (10): real minutes between rolls, StalkerChance (20, percent per roll),
+            StalkerNearbyMetres (60): someone this close becomes the stalker, StalkerStrangers (true):
+            a stranger if nobody near can, StalkerMinutes (120), StalkerAppearMin (45) /
+            StalkerAppearMax (70): how far behind you a stranger first turns up, StalkerFollowMetres (26), StalkerStareMetres (34),
             StalkerStillSeconds (20), StalkerWhenStill (mix | eerie | circle | watch | rush): what he
             does when you stand still, StalkerCircleMetres (8), StalkerActMetres (12): how far off
             he does odd things, StalkerHideMin (45) / StalkerHideMax (70):
@@ -414,7 +426,7 @@ KEYS
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log)
 F6  flirt with the person you're looking at
 F5  read your letters, diaries and clippings (or take a diary you've just found)
-Shift+F7  call a stalker now (for testing)
+0         make a stalker now: someone near you, or a stranger (StalkerKey)
 Alt+F11   the RealNPCs settings panel (all RealNPCs and enRAGE settings); Ctrl+F7 opens it too
 G         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
 T         the next line on the ticker now (on a long line, its next part first; TickerNextKey).

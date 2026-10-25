@@ -33,7 +33,9 @@ namespace EnrageWestworld.InGame
 				result.Ctrl = array.Any((string x) => x.Equals("Ctrl", StringComparison.OrdinalIgnoreCase) || x.Equals("Control", StringComparison.OrdinalIgnoreCase));
 				result.Shift = array.Any((string x) => x.Equals("Shift", StringComparison.OrdinalIgnoreCase));
 				result.Alt = array.Any((string x) => x.Equals("Alt", StringComparison.OrdinalIgnoreCase));
-				result.Key = (Keys)Enum.Parse(typeof(Keys), array.Last(), ignoreCase: true);
+				string name = array.Last();
+				// a digit is the key in the row above the letters ("0" is D0); Enum.Parse would read it as a number
+				result.Key = name.Length == 1 && char.IsDigit(name[0]) ? Keys.D0 + (name[0] - '0') : (Keys)Enum.Parse(typeof(Keys), name, ignoreCase: true);
 			}
 			catch
 			{

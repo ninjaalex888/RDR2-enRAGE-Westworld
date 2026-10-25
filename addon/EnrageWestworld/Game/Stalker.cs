@@ -1,4 +1,5 @@
-// Someone following the player at a distance. Never attacks. Stands and stares when he thinks he's unseen,
+// Someone following the player at a distance: a person already near you (Adopt), or a stranger put behind you
+// (TrySpawn). Never attacks. Stands and stares when he thinks he's unseen,
 // freezes when looked at, then slips out of sight; turns up behind you again when you've ridden off.
 // Stand still a while (StalkerStillSeconds) and he does what StalkerWhenStill says: circles you close, keeps his
 // distance and stares, runs straight at you and stops a few steps short, or does odd things (Stalker.Acts.cs); or a
@@ -101,6 +102,29 @@ namespace EnrageWestworld.InGame
             _stillAt = player.Position;
             Log.Write("STALKER " + Label + " appears " + (int)at.DistanceTo(player.Position) + " m behind you" + (Revenant != null ? " (someone you killed, returned)" : ""));
             return true;
+        }
+
+        /// Someone already near you becomes the stalker: they stop what they're doing and stare, then follow. They are
+        /// handed back to the game afterwards, never deleted.
+        public void Adopt(Ped p, Ped player, string why)
+        {
+            _ped = p;
+            int h = p.Handle;
+            bool held = Spawner.Borrow(p);
+            TASK.CLEAR_PED_TASKS(h, true, false);
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
+            PED.SET_PED_KEEP_TASK(h, true);
+            _startHealth = ENTITY.GET_ENTITY_HEALTH(h);
+            int now = Game.GameTime;
+            _nextMutter = now + 25000 + _rng.Next(20000);
+            _nextRelocate = now + 20000;
+            _stillSince = now;
+            _stillAt = player.Position;
+            _mode = Mode.Stare;
+            _modeUntil = now + 6000 + _rng.Next(6000);
+            Face(player, true);
+            Log.Write("STALKER " + Label + " stops what they're doing and starts following you, " + (int)p.Position.DistanceTo(player.Position) + " m away (" + why + ")" +
+                      (held ? "" : "; the game didn't let go of them, so they may wander off"));
         }
 
         public void Tick(Ped player, PlayerRef you, Action<string, string, bool> say)

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 18;
+        public const int CurrentVersion = 19;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -56,14 +56,11 @@ namespace EnrageWestworld.Core
 
         // [Stalkers]
         public bool Stalkers = true;
+        public string StalkerKey = "0";
+        public int StalkerEveryMinutes = 10;
         public int StalkerChance = 20;
-        public int StalkerDayOnly = 25;
-        public int StalkerNightOnly = 50;
-        public int StalkerBoth = 25;
-        public int StalkerDayFrom = 6;
-        public int StalkerDayTo = 17;
-        public int StalkerNightFrom = 18;
-        public int StalkerNightTo = 4;
+        public int StalkerNearbyMetres = 60;
+        public bool StalkerStrangers = true;
         public int StalkerMinutes = 120;
         public int StalkerAppearMin = 45;
         public int StalkerAppearMax = 70;
@@ -196,7 +193,8 @@ namespace EnrageWestworld.Core
             }
         }
 
-        /// An ini still holding an old default gets the new one; a value of the player's own is kept.
+        /// An ini still holding an old default gets the new one; a value of the player's own is kept (but a setting whose
+        /// meaning changed starts again from its default).
         private static void RaiseOldDefaults(Settings s, Action<string> log)
         {
             List<string> raised = new List<string>();
@@ -209,8 +207,14 @@ namespace EnrageWestworld.Core
                 if (s.StrangerReturnChance == 5) { s.StrangerReturnChance = 15; raised.Add("StrangerReturnChance 5 -> 15"); }
             }
             if (s.SettingsVersion < 18 && s.StalkerWhenStill == "circle") { s.StalkerWhenStill = "mix"; raised.Add("StalkerWhenStill circle -> mix (the new odd acts, among the rest)"); }
+            if (s.SettingsVersion < 19 && s.StalkerChance != 20)
+            {
+                // it was a chance per in-game day; now it is per roll, every StalkerEveryMinutes: back to the default
+                raised.Add("StalkerChance " + s.StalkerChance + " -> 20 (now a chance per roll, every " + s.StalkerEveryMinutes + " minutes)");
+                s.StalkerChance = 20;
+            }
             if (raised.Count > 0)
-                log?.Invoke("Settings: old defaults raised to the new ones: " + string.Join(", ", raised) + ".");
+                log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
         }
 
         public static Settings Load(string path, Action<string> log)
@@ -293,10 +297,8 @@ namespace EnrageWestworld.Core
             AwakeningDespair = Math.Max(0, Math.Min(100, AwakeningDespair));
             AwakeningBreakdown = Math.Max(0, Math.Min(100, AwakeningBreakdown));
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
-            StalkerDayFrom = Math.Max(5, Math.Min(16, StalkerDayFrom));
-            StalkerDayTo = Math.Max(StalkerDayFrom + 1, Math.Min(18, StalkerDayTo));
-            StalkerNightFrom = Math.Max(Math.Max(17, StalkerDayTo), Math.Min(23, StalkerNightFrom));
-            StalkerNightTo = Math.Max(0, Math.Min(5, StalkerNightTo));
+            StalkerEveryMinutes = Math.Max(1, Math.Min(120, StalkerEveryMinutes));
+            StalkerNearbyMetres = Math.Max(20, Math.Min(150, StalkerNearbyMetres));
             // stalker distances, kept in a sensible order so one odd value can't break him
             StalkerAppearMin = Math.Max(20, Math.Min(150, StalkerAppearMin));
             StalkerAppearMax = Math.Max(StalkerAppearMin, Math.Min(200, StalkerAppearMax));
@@ -311,9 +313,6 @@ namespace EnrageWestworld.Core
             StalkerActMetres = Math.Max(5, Math.Min(30, StalkerActMetres));
             VoiceVolume = Math.Max(0, Math.Min(100, VoiceVolume));
             StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
-            StalkerDayOnly = Math.Max(0, Math.Min(1000, StalkerDayOnly));
-            StalkerNightOnly = Math.Max(0, Math.Min(1000, StalkerNightOnly));
-            StalkerBoth = Math.Max(0, Math.Min(1000, StalkerBoth));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
@@ -383,14 +382,11 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[Stalkers]");
             b.AppendLine("Stalkers = " + B(Stalkers) + "   ; master switch: rarely, someone follows you from a distance and hides when you look. false turns off everything in this section");
-            b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent per in-game day that someone follows you (otherwise none that day; Shift+F7 calls one to test)");
-            b.AppendLine("StalkerDayOnly = " + StalkerDayOnly + "   ; on a stalker day, weight for just a daytime stalker");
-            b.AppendLine("StalkerNightOnly = " + StalkerNightOnly + "   ; ... weight for just a night stalker");
-            b.AppendLine("StalkerBoth = " + StalkerBoth + "   ; ... weight for one by day and another at night (the three weights are relative, e.g. 25/50/25)");
-            b.AppendLine("StalkerDayFrom = " + StalkerDayFrom + "   ; a daytime stalker turns up between this hour (5-16)...");
-            b.AppendLine("StalkerDayTo = " + StalkerDayTo + "   ; ... and this one (up to 18); one who never gets a clear moment is gone by nightfall");
-            b.AppendLine("StalkerNightFrom = " + StalkerNightFrom + "   ; nightfall: a night stalker turns up from this hour (17-23)...");
-            b.AppendLine("StalkerNightTo = " + StalkerNightTo + "   ; ... until this hour after midnight (0-5)");
+            b.AppendLine("StalkerKey = " + StalkerKey + "   ; makes a stalker now: someone near you, or a stranger if nobody near can be (for testing too)");
+            b.AppendLine("StalkerEveryMinutes = " + StalkerEveryMinutes + "   ; every this many real minutes of play, a roll for a stalker (1-120)");
+            b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent chance on each roll");
+            b.AppendLine("StalkerNearbyMetres = " + StalkerNearbyMetres + "   ; on a hit, someone within this distance starts following you, someone with a history with you first (20-150)");
+            b.AppendLine("StalkerStrangers = " + B(StalkerStrangers) + "   ; if nobody near can be turned for a few minutes, a stranger turns up behind you instead");
             b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; how long a stalker keeps it up (real minutes, up to 240)");
             b.AppendLine("StalkerAppearMin = " + StalkerAppearMin + "   ; he first turns up this many metres behind you, at least...");
             b.AppendLine("StalkerAppearMax = " + StalkerAppearMax + "   ; ... and at most");

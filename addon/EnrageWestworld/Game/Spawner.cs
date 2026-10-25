@@ -1,6 +1,7 @@
 // People the add-on puts into the world (stalkers, revenants, wedding parties). Never blocks: the model is
 // requested and the spawn simply returns null until it has streamed in. Never during missions or fades.
-// Everything spawned is remembered and removed when the add-on stops.
+// Everything spawned is remembered and removed when the add-on stops. People already in the world who are taken
+// over for a while (a townsperson turned stalker) count as ours too, but are only ever handed back, never deleted.
 using System.Collections.Generic;
 using System.Linq;
 using RDR2;
@@ -12,6 +13,38 @@ namespace EnrageWestworld.InGame
     internal static class Spawner
     {
         private static readonly HashSet<int> Ours = new HashSet<int>();
+        private static readonly HashSet<int> Borrowed = new HashSet<int>();
+
+        /// Takes over someone already in the world, so the game keeps them and nothing else of ours directs them.
+        /// True if the game now treats them as ours (a mission entity).
+        public static bool Borrow(Ped p)
+        {
+            int h = p.Handle;
+            ENTITY.SET_ENTITY_AS_MISSION_ENTITY(h, true, true);
+            Ours.Add(h);
+            Borrowed.Add(h);
+            return ENTITY.IS_ENTITY_A_MISSION_ENTITY(h);
+        }
+
+        public static bool IsBorrowed(int handle)
+        {
+            return Borrowed.Contains(handle);
+        }
+
+        /// Hands someone borrowed back to the game, going about their day again.
+        private static unsafe void GiveBack(int h)
+        {
+            Ours.Remove(h);
+            Borrowed.Remove(h);
+            if (!ENTITY.DOES_ENTITY_EXIST(h))
+                return;
+            TASK.CLEAR_PED_TASKS(h, true, false);
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            PED.SET_PED_KEEP_TASK(h, false);
+            if (!ENTITY.IS_ENTITY_DEAD(h))
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);
+            ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
+        }
 
         public static bool SafeToSpawn()
         {
@@ -48,12 +81,18 @@ namespace EnrageWestworld.InGame
             return Ours.Contains(handle);
         }
 
-        /// Deletes the ped (when nobody can see it vanish) or hands it back to the game.
+        /// Deletes the ped (when nobody can see it vanish) or hands it back to the game. Someone borrowed is always
+        /// handed back.
         public static unsafe void Release(Ped p, bool delete)
         {
             if (p == null)
                 return;
             int h = p.Handle;
+            if (Borrowed.Contains(h))
+            {
+                GiveBack(h);
+                return;
+            }
             Ours.Remove(h);
             if (!ENTITY.DOES_ENTITY_EXIST(h))
                 return;
@@ -74,7 +113,9 @@ namespace EnrageWestworld.InGame
             {
                 try
                 {
-                    if (ENTITY.DOES_ENTITY_EXIST(h))
+                    if (Borrowed.Contains(h))
+                        GiveBack(h);   // someone who was already in the world: never deleted
+                    else if (ENTITY.DOES_ENTITY_EXIST(h))
                         new Ped(h).Delete();
                 }
                 catch
@@ -82,6 +123,7 @@ namespace EnrageWestworld.InGame
                 }
             }
             Ours.Clear();
+            Borrowed.Clear();
         }
 
         // ---- choosing a model ----------------------------------------------------------------------

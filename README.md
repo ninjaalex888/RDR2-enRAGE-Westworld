@@ -22,7 +22,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 
 **Life in the street.** Strangers near you flirt, quarrel, call in debts, catch cheats and propose. They square off in standoffs, sing old songs drunk, tell tall tales (some about you), read the paper aloud, haggle over horses, fall for a snake-oil pitch and pick pockets. You can step in: take a side, break up a fight (the town hears you're a peacemaker), or egg it on. Hold a gun on a stranger and they beg; lower it and word gets around that you showed mercy. Weddings happen at the church, and mourners speak at enRAGE's funerals.
 
-**West World (one switch turns it all on or off).** Some people begin to suspect their world is made. At first it's deja vu and odd dreams; later they notice the loops, the same faces, "the music that comes before trouble". Now and then someone glitches. Some of the people you kill wake up days later and remember how they died and who did it. Rarely, by day or by night, someone follows you at a distance and hides when you look. Stand still and they come closer and do odd things: dig a grave, kneel as at a graveside, put a finger to their lips, wave slowly, beckon.
+**West World (one switch turns it all on or off).** Some people begin to suspect their world is made. At first it's deja vu and odd dreams; later they notice the loops, the same faces, "the music that comes before trouble". Now and then someone glitches. Some of the people you kill wake up days later and remember how they died and who did it. Now and then someone near you, often someone who knows you, starts following you at a distance and hides when you look. Stand still and they come closer and do odd things: dig a grave, kneel as at a graveside, put a finger to their lips, wave slowly, beckon.
 
 **Voices.** Most lines come with a fitting recorded line in the speaker's own in-game voice. The stranger lines are read aloud by any Windows voice you have installed, and each speaker keeps their own voice, pitch and pace.
 
@@ -42,7 +42,7 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log |
 | F6 | Flirt with the person you're looking at |
 | F5 | Read your letters, diaries and clippings, or take a diary you've just found |
-| Shift+F7 | Call a stalker right away, to test that part (the log says what he's waiting for) |
+| 0 | Make a stalker now: someone near you (someone with a history with you first), or a stranger if nobody near can be. The log says what it's waiting for |
 | G | Wake the person you are facing one stage (West World), so you can see what each stage does |
 | T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
 | Alt+F11 | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text (Ctrl+F7 opens it too) |

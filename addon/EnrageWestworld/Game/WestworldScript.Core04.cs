@@ -90,10 +90,10 @@ namespace EnrageWestworld.InGame
             LoadVoices();
             Feed.Thinking = (who, text) => _ticker.Push(who + ", thinking", text, "near");
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
-                      ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "%/day" : "off") +
+                      ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min" : "off") +
                       ", voice " + (_cfg.SpokenVoice ? "on" : "off") + ".");
             Log.Write("West World " + (_cfg.WestWorld ? "on (awakening " + _cfg.AwakeningShare + "%, breakdown " + _cfg.AwakeningBreakdown + "%, despair " + _cfg.AwakeningDespair + "%)" : "off") +
-                      ", Stalkers " + (_cfg.Stalkers ? "on (" + _cfg.StalkerChance + "%/day, when you stand still: " + _cfg.StalkerWhenStill + ")" : "off") + ".");
+                      ", Stalkers " + (_cfg.Stalkers ? "on (" + _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min, key " + _stalkerKey + ", when you stand still: " + _cfg.StalkerWhenStill + ")" : "off") + ".");
             Log.Write("0.5 features: scene reactions " + (_cfg.SceneReactions ? "on" : "off") + ", standoffs " + (_cfg.Standoffs ? "on" : "off") + ", songs " + (_cfg.Songs ? "on" : "off") +
                       ", tall tales " + (_cfg.TallTales ? "on" : "off") + ", pickpockets " + (_cfg.Pickpockets ? "on" : "off") + ", pleading " + (_cfg.Pleading ? "on" : "off") +
                       ", arrivals " + (_cfg.ArrivalTalk ? "on" : "off") + ", mourners " + (_cfg.Mourners ? "on" : "off") + ", posses " + (_cfg.PosseTalk ? "on" : "off") + ".");
@@ -113,8 +113,7 @@ namespace EnrageWestworld.InGame
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
             _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F6);
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.F5);
-            // Shift + the test key calls a stalker right away (Ctrl+Shift if the test key already uses Shift)
-            _stalkerKey = new KeySpec { Key = _testKey.Key, Ctrl = _testKey.Ctrl || _testKey.Shift, Shift = true, Alt = _testKey.Alt };
+            _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.D0);
             _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.G);
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
