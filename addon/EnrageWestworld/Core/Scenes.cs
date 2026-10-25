@@ -63,6 +63,7 @@ namespace EnrageWestworld.Core
         public string DeadName, DeadLabel;                  // a stranger the player killed here, for the widow
         public bool DeadWoman, DeadSeen, DeadWillReturn;
         public HashSet<string> Off = new HashSet<string>(); // kinds switched off in the ini
+        public string[] Names = new string[3];              // the names A, B and C really go by (enRAGE's, or a resident's own); null: made up
     }
 
     public static partial class Scenes
@@ -130,9 +131,13 @@ namespace EnrageWestworld.Core
             }
         }
 
-        // the man is A unless A is the woman of a mixed pair
+        // the man is A unless A is the woman of a mixed pair. The name they really go by, when they have one, so the
+        // lines say the same name as the label over them; else one made up from the seed (as the director does)
         private static string N(SceneCast c, int who, string seed)
         {
+            string real = c.Names != null && who < c.Names.Length ? c.Names[who] : null;
+            if (!string.IsNullOrEmpty(real))
+                return real;
             bool woman = who == 0 ? c.AWoman : who == 1 ? c.BWoman : c.CWoman;
             return FirstName(woman, seed + who);
         }

@@ -956,7 +956,7 @@ namespace EnrageWestworld.Core
             // the rest, so their own life (InnerLife) has most of it
             bool reality = Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance);
             string big = reality || Voice.Chance(seed + "talk", 35) ? StrangerThought(seed, p.Home, p.Woman, false) : null;
-            return big ?? InnerLife.Thought(p, hour, seed, st != null ? st.Musings : null, look, ThoughtDay(p.Home));
+            return big ?? InnerLife.Thought(p, hour, seed, st != null ? st.Musings : null, look, ThoughtDay(p.Home, p.Id));
         }
 
         /// One of enRAGE's townsfolk: what they feel about the player, when it's strong, most of the time; else, and
@@ -969,18 +969,24 @@ namespace EnrageWestworld.Core
                 return about;
             if (p.Personality == null)
                 p.Personality = f.Temper;
-            return InnerLife.Thought(p, hour, seed, st.Musings, look, ThoughtDay(p.Home)) ?? about;
+            return InnerLife.Thought(p, hour, seed, st.Musings, look, ThoughtDay(p.Home, p.Id)) ?? about;
         }
 
-        /// The game day, for the worry a life is going through, and what the player did in this town in the last
-        /// three days (from two hours after, when word has got round), newest first.
-        public InnerLife.Context ThoughtDay(string town)
+        /// The game day, for the worry a life is going through; what the player did in this town in the last three
+        /// days (from two hours after, when word has got round), newest first; this person's street scenes lately,
+        /// and the ones between two others in their town.
+        public InnerLife.Context ThoughtDay(string town, string id = null)
         {
             long now = Store.LastGameMin;
             InnerLife.Context c = new InnerLife.Context { GameDay = now > 0 ? now / 1440 : -1 };
             if (town != null)
+            {
                 c.TownDeeds = Store.Deeds.Where(d => d.Town == town && InnerLife.TalkedAbout.Contains(d.Kind) && now - d.At >= 120 && now - d.At < 3 * 1440)
                                          .OrderByDescending(d => d.At).Take(3).ToList();
+                c.TownTies = Ties.TalkOf(Store.Ties, town, id, now);
+            }
+            if (id != null)
+                c.Ties = Ties.Of(Store.Ties, id, now, 4);
             return c;
         }
 

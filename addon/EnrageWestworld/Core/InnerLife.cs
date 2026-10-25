@@ -16,6 +16,8 @@ namespace EnrageWestworld.Core
         {
             public long GameDay = -1;              // whole game days, for the worry a life is going through; -1 unknown
             public List<Deed> TownDeeds;           // the player's recent bad deeds in this person's town, newest first
+            public List<SceneTie> Ties;                 // street scenes this person had lately, with whom (Ties.cs), newest first
+            public List<SceneTie> TownTies;             // the town's talk: scenes between two others here lately, newest first
         }
 
         /// Set by the game side from the clock: 0 Sunday .. 6 Saturday (-1 unknown), and the year (1907 in the epilogue).
@@ -258,9 +260,21 @@ namespace EnrageWestworld.Core
             // their own life first: the worry they're going through, what happened in town, the day and the year
             string own = null;
             if (roll < 24)
-                own = day != null && day.GameDay >= 0 ? WorryThought(p, day.GameDay, seed, told) : null;
+            {
+                // someone they had words with (or a sweetheart) lately shares this slot with the worry
+                if (day != null && day.Ties != null && day.Ties.Count > 0 && Voice.Chance(seed + "tb", 45))
+                    own = Ties.Thought(day.Ties[0], p.Id, seed);
+                else
+                    own = day != null && day.GameDay >= 0 ? WorryThought(p, day.GameDay, seed, told) : null;
+            }
             else if (roll < 34)
-                own = day != null && day.TownDeeds != null && day.TownDeeds.Count > 0 ? TownTalk(p, day.TownDeeds, seed, told) : null;
+            {
+                bool deeds = day != null && day.TownDeeds != null && day.TownDeeds.Count > 0, ties = day != null && day.TownTies != null && day.TownTies.Count > 0;
+                if (ties && (!deeds || Voice.Chance(seed + "tw", 50)))
+                    own = Ties.TownThought(day.TownTies[Voice.Hash(seed + "twp") % Math.Min(3, day.TownTies.Count)], p.Home, seed);
+                else
+                    own = deeds ? TownTalk(p, day.TownDeeds, seed, told) : null;
+            }
             else if (roll < 44)
             {
                 string[] when = ForDay(hour, Weekday, seed);

@@ -94,6 +94,7 @@ namespace EnrageWestworld.InGame
                     cast.BWoman = true;
                     cast.CWoman = false;
                     cast.HasCrowd = false;
+                    cast.Names = SceneNames(man, woman, c);   // in the new order
                     s = Scenes.Jealous(cast, seed);
                 }
             }
@@ -118,13 +119,86 @@ namespace EnrageWestworld.InGame
 
         private void StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now)
         {
-            string[] names = people.Select(p =>
-            {
-                Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
-                return ac != null && !string.IsNullOrEmpty(ac.Name) ? Person.FirstOf(ac.Name) : null;
-            }).ToArray();
+            // the labels over the lines say the names the lines were written with (cast.Names, set by BuildCast)
+            string[] names = cast.Names ?? new string[0];
             if (_director.Start(s, people, names, seed, () => { }, cast))
+            {
                 _nextDrama = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5));
+                NoteSceneTie(s, people);
+            }
+        }
+
+        /// What the scene leaves between its two people (Ties.cs), when both can be met again: a town regular, a
+        /// resident saved for something else, or one of enRAGE's townsfolk. Nobody is saved just for this.
+        private void NoteSceneTie(Scene s, List<Ped> people)
+        {
+            if (people.Count < 2 || Ties.Effect(s.Kind) == null)
+                return;
+            string aId, aName, bId, bName;
+            if (!LastingId(people[0], out aId, out aName) || !LastingId(people[1], out bId, out bName))
+                return;
+            SceneTie t = Ties.Note(_store.Ties, aId, aName, bId, bName, _placeTown, s.Kind, Bridge.Now());
+            if (t != null)
+                Log.Write("TIE " + t.AName + " & " + t.BName + ": " + s.Kind + " (" + (t.Warmth > 0 ? "warm" : t.Warmth < 0 ? "hostile" : "acquainted") + ", " +
+                          t.Count + " scene" + (t.Count == 1 ? "" : "s") + " between them)");
+        }
+
+        private bool LastingId(Ped p, out string id, out string name)
+        {
+            id = name = null;
+            if (p == null || !p.Exists())
+                return false;
+            Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+            if (ac != null && !string.IsNullOrEmpty(ac.Name))
+            {
+                Folk f = Snapshot.Of(ac);
+                id = f.Key;
+                name = f.Name;
+                return true;
+            }
+            ResBind b;
+            if (_resBind.TryGetValue(p.Handle, out b) && !b.R.Dead && (b.R.Regular || _store.Residents.Contains(b.R)))
+            {
+                id = b.R.Id;
+                name = b.R.Name;
+                return true;
+            }
+            return false;
+        }
+
+        /// The latest ties between people, for the F7 dump.
+        private string TiesStatus()
+        {
+            if (_store.Ties.Count == 0)
+                return "none yet";
+            long now = Bridge.Now();
+            return _store.Ties.Count + " kept; latest: " + string.Join("; ", _store.Ties.OrderByDescending(t => t.At).Take(5)
+                .Select(t => t.AName + " & " + t.BName + " (" + t.Kind + ", warmth " + t.Warmth + ", " + t.Count + "x, " + Math.Max(0, now - t.At) / 60 + " h ago, " + (t.Town ?? "?") + ")"));
+        }
+
+        /// The first names the people in a scene go by, in the order the scene is built with: enRAGE's name for one
+        /// of its townsfolk, a resident's own (made on the spot if need be); null for anyone else, whom the scene
+        /// names itself. Two with the same first name: the later one goes by their surname.
+        private string[] SceneNames(Ped a, Ped b, Ped c)
+        {
+            string[] full = { FullNameOf(a), FullNameOf(b), FullNameOf(c) };
+            string[] first = full.Select(n => n == null ? null : Person.FirstOf(n)).ToArray();
+            for (int i = 1; i < 3; i++)
+                for (int j = 0; j < i; j++)
+                    if (first[i] != null && first[i] == first[j])
+                        first[i] = full[i].Split(' ').Last();
+            return first;
+        }
+
+        private string FullNameOf(Ped p)
+        {
+            if (p == null || !p.Exists())
+                return null;
+            Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+            if (ac != null && !string.IsNullOrEmpty(ac.Name))
+                return ac.Name;
+            Resident r = ResidentEligible(p) ? ResidentOf(p) : null;
+            return r != null ? r.Name : null;
         }
 
         /// Everything a scene might use about these people and this place.
@@ -135,7 +209,8 @@ namespace EnrageWestworld.InGame
             {
                 AWoman = !PED.IS_PED_MALE(a.Handle), BWoman = !PED.IS_PED_MALE(b.Handle), Town = _placeTown, Saloon = saloon, Night = Natives.Night(),
                 HostTier = TownHostTier(), HasCrowd = crowd != null, CWoman = crowd != null && !PED.IS_PED_MALE(crowd.Handle), OldTimer = Director.OldModel(a),
-                PlayerNear = a.Position.DistanceTo(me.Position) < 12f
+                PlayerNear = a.Position.DistanceTo(me.Position) < 12f,
+                Names = SceneNames(a, b, crowd)
             };
             if (!saloon || _cfg.SaloonGossip)
                 cast.Rumours.AddRange(_engine.RumourPool(_placeTown, 4));

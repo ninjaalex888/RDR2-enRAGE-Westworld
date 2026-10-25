@@ -5,6 +5,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 using EnrageWestworld.Core;
 using RDR2;
 using RDR2.Math;
@@ -112,11 +113,26 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        /// The two swapped places (B won the fight the script gave to A): the lines still to come swap their names too,
+        /// so nobody calls the winner by his own name.
+        private static void SwapNamesInLines(Live l, string x, string y)
+        {
+            if (string.IsNullOrEmpty(x) || string.IsNullOrEmpty(y) || x == y)
+                return;
+            Regex both = new Regex(@"\b(" + Regex.Escape(x) + "|" + Regex.Escape(y) + @")\b");
+            for (int j = l.Index; j < l.Scene.Beats.Count; j++)
+            {
+                Beat b = l.Scene.Beats[j];
+                if (b.Line != null)
+                    b.Line = both.Replace(b.Line, m => m.Value == x ? y : x);
+            }
+        }
+
         public void Abort(string why)
         {
             if (_live == null)
                 return;
-            Log.Detail("SCENE stopped: " + why);
+            Log.Write("SCENE stopped after " + _live.Index + " of " + _live.Scene.Beats.Count + " beats: " + why);
             End();
         }
 
@@ -229,6 +245,7 @@ namespace EnrageWestworld.InGame
                 return;
             if (l.Index >= l.Scene.Beats.Count)
             {
+                Log.Write("SCENE over: " + l.Scene.Kind + " (" + string.Join(" & ", l.Names) + "), played to the end");
                 End();
                 return;
             }
@@ -243,6 +260,7 @@ namespace EnrageWestworld.InGame
                 Speech.SayTag(me.Handle, b.Voice, them.Handle);
             if (b.Line != null)
             {
+                Log.Write("SCENE   " + l.Names[who] + " (" + (int)me.Position.DistanceTo(new Ped(_player).Position) + " m from you): " + b.Line);
                 say(Label(l, who), b.Line, l.Scene.Kind == "hosts", l.Women[who]);
                 wait = Math.Max(wait, 1600 + b.Line.Length * 55);
             }
@@ -302,6 +320,7 @@ namespace EnrageWestworld.InGame
                             int sh = l.StartHealth[0]; l.StartHealth[0] = l.StartHealth[1]; l.StartHealth[1] = sh;
                         }
                         string n = l.Names[0]; l.Names[0] = l.Names[1]; l.Names[1] = n;
+                        SwapNamesInLines(l, l.Names[0], l.Names[1]);
                         string k = l.Kinds[0]; l.Kinds[0] = l.Kinds[1]; l.Kinds[1] = k;
                         bool i = l.Introduced[0]; l.Introduced[0] = l.Introduced[1]; l.Introduced[1] = i;
                     }
