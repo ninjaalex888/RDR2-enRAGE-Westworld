@@ -78,7 +78,7 @@ namespace EnrageWestworld.InGame
             string where = _placeTown ?? _town;
             // someone who woke here before, of the same build, may turn up again in this body
             Resident back = _rng.Next(100) < 35
-                ? _store.Residents.FirstOrDefault(x => !x.Dead && x.Model == model && x.Woman == woman && x.Town == where && _engine.StageOf(x.Id) > 0 && !_resBind.Values.Any(v => v.R == x))
+                ? _store.Residents.FirstOrDefault(x => !x.Dead && !x.Fled && x.Model == model && x.Woman == woman && x.Town == where && _engine.StageOf(x.Id) > 0 && !_resBind.Values.Any(v => v.R == x))
                 : null;
             if (back != null)
             {

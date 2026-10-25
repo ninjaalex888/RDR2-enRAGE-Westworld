@@ -45,19 +45,17 @@ namespace EnrageWestworld.InGame
             Safe("encounters", _aEncounters);
         }
 
-        private bool EncounterLive { get { return _crying != null; } }
+        private bool EncounterLive { get { return _crying != null || _hermit != null; } }
 
         private void EncountersTick(int now)
         {
             if (now < _nextEncounterTick)
                 return;
-            _nextEncounterTick = now + (EncounterLive ? 250 : 2000);
+            _nextEncounterTick = now + (EncounterLive ? 250 : 1000);
             if (_crying != null)
-            {
                 CryingStep(now);
-                return;
-            }
-            if (!_cfg.Encounters)
+            HermitStep(now);   // a hermit at his camp, when you come near one
+            if (EncounterLive || !_cfg.Encounters)
                 return;
             int every = _cfg.EncounterEveryMinutes * 60000;
             if (_nextEncounterRoll == 0 || _nextEncounterRoll - now > every)
@@ -85,6 +83,17 @@ namespace EnrageWestworld.InGame
                 {
                     _encounterWait = null;
                     StartCrying(now);
+                    return;
+                }
+            }
+            if (_cfg.Hermits)
+            {
+                string not = HermitNotNow();
+                if (not != null)
+                    notNow.Add("a hermit's camp: " + not);
+                else if (EncounterRoll("a hermit's camp", _cfg.HermitChance) && NewCamp(now))
+                {
+                    _encounterWait = null;
                     return;
                 }
             }
@@ -460,6 +469,8 @@ namespace EnrageWestworld.InGame
         {
             if (_crying != null)
                 EndCrying(why);
+            if (_hermit != null)
+                EndHermit("left (" + why + ")");
         }
 
         /// One line for the F7 dump.
@@ -468,9 +479,10 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Encounters)
                 return "off";
             int now = Game.GameTime;
-            string live = _crying != null ? "the crying woman (" + _crying.Phase + ")" : "none";
+            string live = _crying != null ? "the crying woman (" + _crying.Phase + ")" : _hermit != null ? "a hermit (" + _hermit.Phase + ")" : "none";
             return "live: " + live + ", next roll in " + Math.Max(0, (_nextEncounterRoll - now) / 1000) + " s every " + _cfg.EncounterEveryMinutes + " min" +
                    ", crying woman " + (_cfg.CryingWoman ? _cfg.CryingWomanChance + "% (10 pm - 4 am, the wilds)" + (DoneToday("crying") ? ", done today" : "") : "off") +
+                   ", hermits " + HermitsStatus() +
                    (_encounterWait != null ? ", last roll skipped: " + _encounterWait : "");
         }
     }

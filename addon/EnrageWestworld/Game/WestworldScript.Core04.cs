@@ -416,6 +416,13 @@ namespace EnrageWestworld.InGame
             foreach (Ped ped in World.GetAllPeds())
             {
                 int h = ped.Handle;
+                if (IsHermit(h))
+                {
+                    float hd = ped.Position.DistanceTo(pos);
+                    if (hd <= r && !ENTITY.IS_ENTITY_DEAD(h))
+                        HermitNear(ped, hd);
+                    continue;
+                }
                 if (h == me.Handle || Spawner.IsOurs(h))
                     continue;
                 float d = ped.Position.DistanceTo(pos);

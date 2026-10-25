@@ -119,6 +119,15 @@ NEW IN 0.6.0
   indoors, in missions, while you're wanted or fighting, or while a stalker is out.
   CONTENT NOTE: the knife and the ambush are violent. CryingWoman = false, or Encounters =
   false for the whole section, turns it off.
+- The hermits who woke (West World). Someone fully awake who runs from their town in the end
+  of a wake act never comes back to it: they live rough in the wilds now. Out there, on a roll
+  (HermitChance, 25 percent, at most one new camp a day, up to 8), one of them makes camp out of
+  sight nearby and shouts once at the voice they hear; nobody who fled yet, and someone who
+  walked out before you came by is made instead. The camp is saved: come within about 120 m
+  and they are there, by a fire, talking back to the voice, or asleep beside it from midnight
+  to five. They stand and watch as you come, warn you off if you come closer, and tell you how it
+  was if you keep your distance (each thing once). Crowd them, aim at them or hurt them and they
+  run, and are back another time. They are never armed. Killing one counts like any killing.
 
 
 NEW IN 0.5.5
@@ -456,7 +465,8 @@ in the file. The new ones:
             cinematic camera
 [Encounters] Encounters (true): the master switch. EncounterEveryMinutes (12): real minutes
             between rolls, CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
-            4 am in the wilds)
+            4 am in the wilds), Hermits (true, needs WestWorld), HermitChance (25, a new
+            camp's chance per roll in the wilds)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)

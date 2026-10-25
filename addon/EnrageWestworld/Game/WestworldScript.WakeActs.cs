@@ -689,6 +689,8 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_STAND_STILL(h, 7000);
                         ActSay(act, WakeBeats.Aloud("edgeShout", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|edge|" + now / 1000), me, "angry");
                         act.Until = now + 7000;
+                        if (act.Res != null && act.Stage >= Awakening.Awake)
+                            _engine.Flee(act.Res, Bridge.Now());   // gone from town for good: a camp in the wilds, one day (WestworldScript.Hermits.cs)
                     }
                     break;
                 case "wake":

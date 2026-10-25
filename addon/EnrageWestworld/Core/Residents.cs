@@ -39,6 +39,10 @@ namespace EnrageWestworld.Core
         [DataMember] public long WoundedAt;
         [DataMember] public bool WoundedByPlayer;
         [DataMember] public bool KnowsShooter;     // they saw, or someone told them, that it was the player
+        [DataMember] public bool Fled;             // woke and walked out of their town (the wake acts' escape): lives rough now, never recast on a passer-by
+        [DataMember] public long FledAt;
+        [DataMember] public bool HasCamp;          // where they live in the wilds, chosen once
+        [DataMember] public float CampX, CampY, CampZ;
 
         public static bool IsResident(string id)
         {

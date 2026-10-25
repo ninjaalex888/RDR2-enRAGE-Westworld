@@ -74,8 +74,8 @@ namespace EnrageWestworld.Core
                 Residents.Add(r);
             while (Residents.Count > MaxResidents)
             {
-                // someone keeping a post now is never dropped
-                Resident drop = Residents.Where(x => x != r && !(x.PostId != null && !x.Dead))
+                // someone keeping a post, or a hermit living at a camp, is never dropped
+                Resident drop = Residents.Where(x => x != r && !((x.PostId != null || x.HasCamp) && !x.Dead))
                     .OrderBy(x => { PersonState s = Find(x.Id); return s != null ? s.WakeStage : 0; }).ThenBy(x => x.TouchedAt).First();
                 Residents.Remove(drop);
                 People.Remove(drop.Id);
