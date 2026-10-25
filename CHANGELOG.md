@@ -2,6 +2,10 @@
 
 ## 0.6.1 (not released yet)
 
+- Built for enRAGE 0.9.5.3. Everything RealNPCs reads from enRAGE is still there. enRAGE's new settings (such as TownsfolkReactions) should show on its pages in the RealNPCs panel (Alt+F11) once enRAGE has written them to NemesisMod.ini. Not yet played on.
+- Standing still no longer holds up enRAGE's funerals or someone's evening at the saloon. Since enRAGE 0.9.5.3, its calm (which RealNPCs asks for while you stand still) also makes planned events wait, so a funeral could wait for as long as you stood at the graveside. Now, while one of those is due near you, RealNPCs doesn't ask for the calm and it goes ahead. Gang plans and ambushes are still held.
+- Aiming at one of enRAGE's outlaws (a gang man, or a man in an outfit's colours) no longer has him plead with his hands up. Since enRAGE 0.9.5.3 he stands his ground unless he's scared of you, and his crew draws on you, so RealNPCs leaves him to enRAGE. Ordinary townsfolk still plead as before.
+
 - Each town keeps its own people (`[World]`: `Regulars`, `RegularsPerTown` 30, `RegularsDress`; settings version 32). When the game puts an ordinary person in the street where you can't see them, they become one of the town's regulars. It's either someone met there before, of the same build and back in their own clothes, or, while the town has room, someone new with an outfit of their own. Their names, worries and lives go on between visits, and the ones you've met know you again ("Him again. Same hat."). Nobody changes clothes in front of you: only people who haven't been on screen since they appeared, 20 m or more off and out of sight, are dressed. Nobody enRAGE has already named or fingerprinted is touched, since enRAGE knows people by their look. With `RegularsDress` off they keep their names and lives but not their looks. Not yet seen in game.
 - Up to three ordinary people near you now get turns on the ticker, not just the nearest one.
 - Street scenes happen for a reason, and where you can see them. Instead of the two people standing closest to each other, it's the two near you with the strongest reason to have something to do with each other:

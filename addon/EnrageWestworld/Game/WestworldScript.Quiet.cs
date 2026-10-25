@@ -1,8 +1,11 @@
 // Quiet while you stand still or watch through the cinematic camera ([Quiet] in the ini): RealNPCs asks enRAGE for
 // its own calm period, a few seconds at a time, so enRAGE's tension stops building and no nemesis, gang or faction
 // is sent after you. Fights already going on carry on. The calm is asked for in short pieces, so it runs out soon
-// after you move on (enRAGE can't be told to end it early).
+// after you move on (enRAGE can't be told to end it early). Since enRAGE 0.9.5.3 its calm also holds back its
+// planned peaceful events, so while a funeral or someone's habit (an evening at the saloon) is due near you, no calm
+// is asked for and it goes ahead. Its gang jobs, and anything else, are still held.
 using System;
+using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
 using RDR2.Math;
@@ -18,7 +21,8 @@ namespace EnrageWestworld.InGame
 
         private Vector3 _quietAt;
         private int _quietStillSince, _quietRenewAt, _nextQuietCheck;
-        private string _quietWhy;
+        private string _quietWhy, _quietLetBy, _planDue;
+        private int _nextPlanLook;
         private bool _quietWarned;
         private Action _aQuiet;
 
@@ -62,6 +66,14 @@ namespace EnrageWestworld.InGame
             }
             if (!_bridge.CanHoldEnrage)
                 return;
+            string due = PeacefulPlanDue(pos, now);
+            if (due != _quietLetBy)
+            {
+                Log.Write(due != null ? "QUIET: not asked for while enRAGE's " + due + " is due here, so it can go ahead" : "QUIET: enRAGE's " + _quietLetBy + " is over or gone; the quiet can hold again");
+                _quietLetBy = due;
+            }
+            if (due != null)
+                return;
             if (why != _quietWhy)
             {
                 _quietRenewAt = 0;
@@ -78,6 +90,19 @@ namespace EnrageWestworld.InGame
                 _quietRenewAt = now + QuietRenewMs;
                 _bridge.HoldEnrage(QuietPieceSeconds, "RealNPCs: " + why);
             }
+        }
+
+        /// A funeral or habit of enRAGE's due or going on within 250 m (null if none), looked at every 2 seconds.
+        private string PeacefulPlanDue(Vector3 pos, int now)
+        {
+            if (now < _nextPlanLook)
+                return _planDue;
+            _nextPlanLook = now + 2000;
+            long g = Bridge.Now();
+            PlanInfo p = _bridge.Plans().FirstOrDefault(x => (x.Kind == "funeral" || x.Kind == "habit") && !x.Done && g >= x.DueAt - 5 && g <= x.DueAt + Math.Max(60, x.WindowMin) &&
+                                                             x.Pos.DistanceTo2D(pos) < 250f);
+            _planDue = p == null ? null : (p.Kind == "funeral" ? "funeral" : "planned event") + (string.IsNullOrEmpty(p.Title) ? "" : " (" + p.Title + ")");
+            return _planDue;
         }
 
         private void EndQuiet()

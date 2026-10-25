@@ -403,7 +403,7 @@ REQUIREMENTS
 ------------
 - Red Dead Redemption 2 (PC), Story Mode
 - Script Hook RDR2 and Script Hook RDR2 .NET (V2), the same ones enRAGE needs
-- enRAGE 0.9.5.2 installed and working. If a later enRAGE changes something, the parts that need it
+- enRAGE 0.9.5.3 installed and working. If a later enRAGE changes something, the parts that need it
   turn off and the log says which.
 
 

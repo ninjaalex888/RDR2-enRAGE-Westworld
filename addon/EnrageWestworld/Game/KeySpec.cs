@@ -46,7 +46,7 @@ namespace EnrageWestworld.InGame
 			}
 			catch
 			{
-				Log.Write("'" + text + "' isn't a key name; using " + fallback.ToString() + ".");
+				Log.Write("'" + text + "' is not a recognised key; using " + fallback.ToString() + ".");
 				result = new KeySpec
 				{
 					Key = fallback

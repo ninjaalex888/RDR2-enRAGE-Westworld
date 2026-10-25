@@ -120,7 +120,7 @@ namespace EnrageWestworld.Core
 			}
 			if (f.Grudge >= 40)
 			{
-				return " " + Voice.Pick(seed, "Folks like you make me sick.", "You ought to be ashamed.");
+				return " " + Voice.Pick(seed, "Folks like you make me sick.", "Have you no shame at all?");
 			}
 			return " " + Voice.Pick(seed, "Ain't forgot it.", "Thought you should know.");
 		}

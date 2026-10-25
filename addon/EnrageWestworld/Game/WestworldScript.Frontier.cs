@@ -198,7 +198,7 @@ namespace EnrageWestworld.InGame
             Log.Write("PICKPOCKET " + how + " by you");
         }
 
-        // ---- a gun on a stranger -------------------------------------------------------------------------
+        // ---- drawing on a stranger ---------------------------------------------------------------------
 
         private unsafe void PleadTick(int now)
         {
@@ -273,7 +273,8 @@ namespace EnrageWestworld.InGame
             }
             Ped ped = new Ped(target);
             if (_pleadedAt.ContainsKey(target) || !PED.IS_PED_HUMAN(target) || !Natives.Bystander(ped, me.Handle) || Spawner.IsOurs(target) || _bridge.RecordAt(target) != null ||
-                ped.Position.DistanceTo(me.Position) > 30f || PED.IS_PED_IN_COMBAT(me.Handle, 0) || _director.Involves(target))
+                ped.Position.DistanceTo(me.Position) > 30f || PED.IS_PED_IN_COMBAT(me.Handle, 0) || _director.Involves(target) ||
+                _bridge.EnrageHandlesAtGunpoint(ped, me, 30f))   // one of enRAGE's outlaws: he's enRAGE's to handle (Bridge.Gunpoint.cs)
             {
                 _aimTarget = 0;
                 _pleadCooldown = now + 1500;

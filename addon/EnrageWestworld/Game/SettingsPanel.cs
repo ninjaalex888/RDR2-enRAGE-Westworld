@@ -183,7 +183,7 @@ namespace EnrageWestworld.InGame
             // enRAGE's settings only when we know which of its entries are its own bookkeeping, and can ask it to reload
             string why = _bridge == null ? "enRAGE hasn't been found yet (it takes a few seconds after loading a save)."
                 : !_bridge.EnrageHidesKnown || !_bridge.CanReloadEnrage ? "this version of enRAGE isn't laid out the way RealNPCs expects (the log says what was missing). Its own panel still works: set ReplaceEnrageSettings to false."
-                : _theirs == null || _theirs.Error != null ? "NemesisMod.ini couldn't be read" + (_theirs != null && _theirs.Error != null ? ": " + _theirs.Error : ".") : null;
+                : _theirs == null || _theirs.Error != null ? "enRAGE's settings didn't load from its ini file" + (_theirs != null && _theirs.Error != null ? ": " + _theirs.Error : ".") : null;
             Page enrage = new Page { Title = "enRAGE", Enrage = true };
             if (why != null)
                 enrage.Message = "enRAGE's settings can't be shown right now: " + why;

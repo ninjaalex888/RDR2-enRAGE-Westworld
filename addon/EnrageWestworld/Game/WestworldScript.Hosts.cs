@@ -183,7 +183,7 @@ namespace EnrageWestworld.InGame
             if (ENTITY.IS_ENTITY_IN_WATER(me.Handle))
                 return "you're in the water";
             if (!Spawner.SafeToSpawn())
-                return "the screen is fading or loading";
+                return "the screen is going dark or loading";
             if (EncounterLive)
                 return EncounterWhat;
             return null;

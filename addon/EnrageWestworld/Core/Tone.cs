@@ -15,7 +15,7 @@ namespace EnrageWestworld.Core
         private static readonly Regex Threatening = new Regex(@"\b(i'll (kill|find|get|see you|gut|bury|hunt)|you'll (pay|hang|regret|swing)|watch your back|stay away from|get away from|i swear|next time i see|you're a dead man|your days are)\b", Opt);
         private static readonly Regex Cursing = new Regex(@"\b(bastard|devil|murderer|killer|coward|scum|vermin|snake|son of a|damn you|go to hell|filth|butcher)\b", Opt);
         private static readonly Regex Accusing = new Regex(@"\byou (killed|shot|murdered|robbed|took|did this|hanged|left)\b", Opt);
-        private static readonly Regex Disgusted = new Regex(@"\b(grave ?robb\w*|rob(s|bing)? the dead|shame on you|no shame|ought to be ashamed|disgrace|sick in the head|no decent man)\b", Opt);
+        private static readonly Regex Disgusted = new Regex(@"\b(grave ?robb\w*|rob(s|bing)? the dead|shame on you|no shame|(ought to|should) be ashamed|disgrace|sick in the head|no decent man)\b", Opt);
         private static readonly Regex Grieving = new Regex(@"\b(dead|died|buried|grave|funeral|widow(ed)?|lost (my|him|her|them|the)|miss (him|her|them)|mourn|rest (his|her) soul|god rest|passed on|never came home)\b", Opt);
         private static readonly Regex Parting = new Regex(@"^(good ?bye|so long|take care|be seeing you|farewell|good night|i (best|should|ought to) (be )?go|mind how you go|until next time|i'll be off)|\b(be seeing you|so long now|take care of yourself)\b", Opt);
         private static readonly Regex Greeting = new Regex(@"^(hello|howdy|hey there|hi\b|morning|evening|afternoon|good (morning|day|evening|afternoon)|well,? (well|if it isn't|look who)|mister\b|ma'am\b|sir\b)|\b(pleased to meet you|good to see you|nice to meet you)\b", Opt);

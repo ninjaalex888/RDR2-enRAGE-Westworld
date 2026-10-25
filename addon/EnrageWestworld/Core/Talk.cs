@@ -166,7 +166,7 @@ namespace EnrageWestworld.Core
 				}
 				else
 				{
-					list.Add(Voice.Pick(text + "curt", "We got nothing to talk about.", "Spit it out, then.", "You're wasting my time.", "Move along."));
+					list.Add(Voice.Pick(text + "curt", "We got nothing to talk about.", "Spit it out, then.", "I've got better things to do.", "Move along."));
 				}
 				Done(st, ctx);
 				return list;

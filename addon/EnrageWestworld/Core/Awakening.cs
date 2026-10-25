@@ -105,7 +105,7 @@ namespace EnrageWestworld.Core
             new[]
             {
                 "Tell me something, {you}. Where did you come from before you rode into {town}? Not the name of a place. The road itself.",
-                "Everyone in {town} says their piece and goes back to what they were doing. Does that seem right to you?",
+                "Everyone in {town} says their piece, then picks up right where they left off. Does that seem right to you?",
                 "I've started keeping count of things. It's remarkable how often the same things come round.",
                 "Say something that's never been said in {town}. Anything. I want to see what happens.",
                 "Do you hear it? A kind of hum under the day, like a wire pulled tight.",
