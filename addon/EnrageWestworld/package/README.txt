@@ -84,7 +84,8 @@ NEW IN 0.6.0
   bounty after fights with its own outlaws. For everyone else who comes at you, soldiers too,
   RealNPCs puts back any bounty or wanted level the fight gave you (SelfDefenceNoBounty), unless
   you also hurt someone who hadn't come at you or did another crime in the last few minutes.
-  Story missions keep their own law.
+  Story missions keep their own law, and a fight that moves into another state keeps the
+  bounty you owe there.
 
 
 NEW IN 0.5.5

@@ -49,6 +49,8 @@ namespace EnrageWestworld.InGame
         private string _lastDefenceWho;
         private int _defendSince = -1, _bountyBase;
         private bool _wantedBefore, _defenceTaintNoted, _defenceWantedNoted;
+        private Vector3 _defendAt;
+        private uint _defendState;
         private readonly List<KeyValuePair<int, int>> _bountyHistory = new List<KeyValuePair<int, int>>();   // (when, bounty; negative = wanted)
         private readonly HashSet<string> _campOffered = new HashSet<string>();
         private Pickup _pickup;
@@ -98,12 +100,8 @@ namespace EnrageWestworld.InGame
                                     h.Human = true;
                                     h.CameAtYou = CameAtYou(victim, player, out why);
                                     h.Why = why;
-                                    if (h.CameAtYou && !MISC.GET_MISSION_FLAG())
-                                    {
-                                        StartDefence(now);   // a story mission's law is the mission's own: never touched
-                                        _lastDefenceAt = now;
+                                    if (h.CameAtYou)
                                         _lastDefenceWho = Director.Kind(new Ped(victim), !PED.IS_PED_MALE(victim));
-                                    }
                                     else
                                     {
                                         _lastOffenceAt = now;       // someone who hadn't come at him: any bounty now may be his own doing
@@ -118,6 +116,8 @@ namespace EnrageWestworld.InGame
                             }
                             h.At = now;
                             h.Weapon = (uint)p[2];
+                            if (h.CameAtYou)
+                                Defending(now);   // every hit on them keeps the fight going, not just the first
                         }
                     }
                     else if (ev == EventLootComplete)
@@ -205,73 +205,96 @@ namespace EnrageWestworld.InGame
             DefenceBounty(now);
         }
 
-        /// While he fights off people who came at him (and for 90 s after), the bounty and wanted level he had before
-        /// the fight are kept (SelfDefenceNoBounty), unless he also hurt someone who hadn't come at him or did another
-        /// crime in the last five minutes: then the game's call stands. enRAGE does the same for its own outlaws.
+        /// While he fights off people who came at him (and for 90 s after his last hit or kill on one), the bounty and
+        /// wanted level he had before the fight are kept (SelfDefenceNoBounty), unless he also hurt someone who hadn't
+        /// come at him or did another crime from five minutes before it on: then the game's call stands. A fight that
+        /// moves a long way, or into another state, starts again from the bounty there, so a bounty he owes elsewhere is
+        /// never wiped. Story missions keep their own law. enRAGE does the same for its own outlaws (DefenceLaw decides).
         private void DefenceBounty(int now)
         {
             int me = Game.Player.Handle;
             int bounty = LAW.GET_BOUNTY(me);
             bool wanted = PLAYER.GET_PLAYER_WANTED_LEVEL(me) > 0;
-            if (MISC.GET_MISSION_FLAG())
+            bool mission = MISC.GET_MISSION_FLAG();
+            Vector3 pos = Game.Player.Character.Position;
+            bool moved = _defendSince >= 0 && (pos.DistanceTo(_defendAt) > 300f || StateAt(pos) != _defendState);
+            bool clearWanted;
+            DefenceAct act = DefenceLaw.Decide(now, bounty, wanted, _defendSince, _lastDefenceAt, _bountyBase, _wantedBefore,
+                                               _lastOffenceAt, _lastRealCrimeAt, mission, _cfg.SelfDefenceNoBounty, moved, out clearWanted);
+            switch (act)
             {
-                _defendSince = -1;   // a story mission sets its own bounty and wanted level: hands off
-                _bountyHistory.Clear();
-                _lastBounty = bounty;
-                return;
-            }
-            if (_defendSince < 0 || now - _lastDefenceAt >= 90000)
-            {
-                if (_defendSince >= 0)
-                    Log.Detail("SELF-DEFENCE: the fight is over");
-                _defendSince = -1;
-                _bountyHistory.Add(new KeyValuePair<int, int>(now, wanted ? -bounty - 1 : bounty));
-                _bountyHistory.RemoveAll(x => now - x.Key > 5000);
-                _lastBounty = bounty;
-                return;
-            }
-            bool tainted = _lastOffenceAt >= _defendSince - 300000 || _lastRealCrimeAt >= _defendSince - 300000;
-            if (tainted)
-            {
-                if (!_defenceTaintNoted && (bounty > _bountyBase || (wanted && !_wantedBefore)))
-                {
-                    _defenceTaintNoted = true;
-                    Log.Write("SELF-DEFENCE: you also hurt someone who hadn't come at you, or did another crime: the game's bounty stands ($" + bounty / 100 + ")");
-                }
-            }
-            else if (_cfg.SelfDefenceNoBounty)
-            {
-                if (bounty > _bountyBase)
-                {
-                    LAW.SET_BOUNTY(me, _bountyBase);
-                    Log.Write("SELF-DEFENCE: bounty $" + bounty / 100 + " -> $" + _bountyBase / 100 + ": you were fighting off " + (_lastDefenceWho ?? "someone") + " who came at you");
-                    bounty = _bountyBase;
-                }
-                if (wanted && !_wantedBefore)
-                {
-                    PLAYER.CLEAR_PLAYER_WANTED_LEVEL(me);
-                    if (!_defenceWantedNoted)
+                case DefenceAct.Mission:
+                    _defendSince = -1;   // a story mission sets its own bounty and wanted level: hands off
+                    _bountyHistory.Clear();
+                    break;
+                case DefenceAct.None:
+                    if (_defendSince >= 0)
+                        Log.Detail("SELF-DEFENCE: the fight is over");
+                    _defendSince = -1;
+                    _bountyHistory.Add(new KeyValuePair<int, int>(now, wanted ? -bounty - 1 : bounty));
+                    _bountyHistory.RemoveAll(x => now - x.Key > 5000);
+                    break;
+                case DefenceAct.Moved:
+                    Log.Write("SELF-DEFENCE: the fight has moved " + (StateAt(pos) != _defendState ? "into another state" : "a long way") +
+                              ": from here the bounty is kept at what it is now ($" + bounty / 100 + ")");
+                    _bountyBase = bounty;
+                    _wantedBefore = wanted;
+                    _defendAt = pos;
+                    _defendState = StateAt(pos);
+                    break;
+                case DefenceAct.Tainted:
+                    if (!_defenceTaintNoted && (bounty > _bountyBase || (wanted && !_wantedBefore)))
                     {
-                        _defenceWantedNoted = true;
-                        Log.Write("SELF-DEFENCE: wanted level cleared: you were fighting off " + (_lastDefenceWho ?? "someone") + " who came at you (kept clear while the fight lasts)");
+                        _defenceTaintNoted = true;
+                        Log.Write("SELF-DEFENCE: you also hurt someone who hadn't come at you, or did another crime: the game's bounty stands ($" + bounty / 100 + ")");
                     }
-                }
+                    break;
+                case DefenceAct.Off:
+                    if (bounty > _lastBounty)
+                        Log.Write("SELF-DEFENCE: your bounty rose $" + _lastBounty / 100 + " -> $" + bounty / 100 + " while you fought off " + (_lastDefenceWho ?? "someone") +
+                                  " who came at you (SelfDefenceNoBounty is off, so it stays)");
+                    break;
+                case DefenceAct.Restore:
+                    if (bounty > _bountyBase)
+                    {
+                        LAW.SET_BOUNTY(me, _bountyBase);
+                        Log.Write("SELF-DEFENCE: bounty $" + bounty / 100 + " -> $" + _bountyBase / 100 + ": you were fighting off " + (_lastDefenceWho ?? "someone") + " who came at you");
+                        bounty = _bountyBase;
+                    }
+                    if (clearWanted)
+                    {
+                        PLAYER.CLEAR_PLAYER_WANTED_LEVEL(me);
+                        if (!_defenceWantedNoted)
+                        {
+                            _defenceWantedNoted = true;
+                            Log.Write("SELF-DEFENCE: wanted level cleared: you were fighting off " + (_lastDefenceWho ?? "someone") + " who came at you (kept clear while the fight lasts)");
+                        }
+                    }
+                    break;
             }
-            else if (bounty > _lastBounty)
-                Log.Write("SELF-DEFENCE: your bounty rose $" + _lastBounty / 100 + " -> $" + bounty / 100 + " while you fought off " + (_lastDefenceWho ?? "someone") +
-                          " who came at you (SelfDefenceNoBounty is off, so it stays)");
             _lastBounty = bounty;
         }
 
-        /// The first hit on someone who came at him: the fight starts, and what he owed before it is remembered
-        /// (the lowest bounty of the last few seconds, as reports can lag the shot).
+        /// A hit or a kill on someone who came at him: the fight starts (or goes on). Not in story missions.
+        private void Defending(int now)
+        {
+            if (MISC.GET_MISSION_FLAG())
+                return;
+            StartDefence(now);
+            _lastDefenceAt = now;
+        }
+
+        /// The first hit on someone who came at him: the fight starts, and what he owed before it is remembered (the
+        /// lowest bounty of the last few seconds, as reports can lag the shot), with where it began.
         private void StartDefence(int now)
         {
-            if (_defendSince >= 0 && now - _lastDefenceAt < 90000)
+            if (_defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs)
                 return;
             _defendSince = now;
             _defenceTaintNoted = false;
             _defenceWantedNoted = false;
+            _defendAt = Game.Player.Character.Position;
+            _defendState = StateAt(_defendAt);
             int me = Game.Player.Handle;
             List<KeyValuePair<int, int>> recent = _bountyHistory.Where(x => now - x.Key <= 4000).ToList();
             if (recent.Count == 0)
@@ -283,6 +306,12 @@ namespace EnrageWestworld.InGame
             _bountyBase = recent.Min(x => x.Value < 0 ? -x.Value - 1 : x.Value);
             _wantedBefore = recent[0].Value < 0;
             Log.Detail("SELF-DEFENCE: a fight with someone who came at you; bounty before it $" + _bountyBase / 100 + (_wantedBefore ? ", already wanted" : ""));
+        }
+
+        /// The state (New Hanover, Lemoyne...) a place is in: the game keeps the law by region.
+        private static uint StateAt(Vector3 p)
+        {
+            return ZONE._GET_MAP_ZONE_AT_COORDS(p.X, p.Y, p.Z, 0);
         }
 
         /// Everyone he hurt in the last while came at him (and he hurt somebody).
@@ -328,6 +357,8 @@ namespace EnrageWestworld.InGame
             int h = victim.Handle;
             if (Spawner.IsOurs(h))
                 return;
+            if (hit.CameAtYou)
+                Defending(now);   // the kill is what usually brings the bounty, and reports lag: the fight goes on from here
             Vector3 pos = victim.Position;
             string town = _bridge.TownAt(pos);
             string zone = ZoneAt(pos);
@@ -426,7 +457,12 @@ namespace EnrageWestworld.InGame
         {
             string kind = CrimeKind(crime);
             if (kind == null)
+            {
+                // not one RealNPCs knows (a killing, perhaps): during a fight in self-defence, the log says it was seen
+                if (_defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs)
+                    Log.Write("SELF-DEFENCE: the game confirmed a crime 0x" + crime.ToString("X8") + " during the fight with someone who came at you");
                 return;
+            }
             if (kind == "assault" && OnlyDefending(now, 30000))
             {
                 Log.Write("SELF-DEFENCE: the game called it an assault, but everyone you hurt just now came at you: no crime noted");
