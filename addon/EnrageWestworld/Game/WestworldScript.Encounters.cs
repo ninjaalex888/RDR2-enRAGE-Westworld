@@ -33,6 +33,7 @@ namespace EnrageWestworld.InGame
         private const string Kneel = "WORLD_HUMAN_GRAVE_MOURNING_KNEEL";
 
         private Crying _crying;
+        private readonly HashSet<int> _encounterPeds = new HashSet<int>();   // everyone the crying woman's encounter made, kept after it ends so a death is always judged the same way
         private int _nextEncounterRoll, _nextEncounterTick;
         private uint _hostileGroup;
         private string _encounterWait;
@@ -47,11 +48,25 @@ namespace EnrageWestworld.InGame
 
         private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null; } }
 
+        /// What's going on, for the log and the stalker key.
+        private string EncounterWhat
+        {
+            get
+            {
+                if (_crying != null)
+                    return "the crying woman is out";
+                if (_hermit != null)
+                    return _hermit.R.Name + " is at " + Their(_hermit.R) + " camp nearby";
+                return _gathering != null ? "a gathering is standing out there" : null;
+            }
+        }
+
         private void EncountersTick(int now)
         {
             if (now < _nextEncounterTick)
                 return;
             _nextEncounterTick = now + (EncounterLive ? 250 : 1000);
+            _encounterPeds.RemoveWhere(x => !ENTITY.DOES_ENTITY_EXIST(x));
             if (_crying != null)
                 CryingStep(now);
             if (_gathering != null)
@@ -349,6 +364,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             c.Woman = w;
+            _encounterPeds.Add(h);
             c.OwnGroup = PED.GET_PED_RELATIONSHIP_GROUP_HASH(h);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);
@@ -388,6 +404,7 @@ namespace EnrageWestworld.InGame
                         MakeHostile(m, now);
                         TASK.TASK_COMBAT_PED(m.Handle, me.Handle, 0, 16);
                         c.Men.Add(m);
+                        _encounterPeds.Add(m.Handle);
                     }
                     if (c.Men.Count == 0)
                     {

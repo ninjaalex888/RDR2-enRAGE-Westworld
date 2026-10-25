@@ -185,7 +185,7 @@ namespace EnrageWestworld.InGame
             if (!Spawner.SafeToSpawn())
                 return "the screen is fading or loading";
             if (EncounterLive)
-                return "a night encounter is going on";
+                return EncounterWhat;
             return null;
         }
 

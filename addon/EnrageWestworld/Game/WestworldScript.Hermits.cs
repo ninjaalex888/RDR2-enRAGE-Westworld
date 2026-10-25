@@ -25,11 +25,13 @@ namespace EnrageWestworld.InGame
             public uint Model;
             public string Phase = "spawn";   // spawn, then Encounters.HermitNext's: camp, watch, warn, talk, flee
             public int StartedAt, PhaseAt, NextLine, NextTurn, Talks, Warned;
-            public bool Asleep;
+            public bool Asleep, Fallback;
+            public int ScenarioCheckAt;
         }
 
         private static readonly string[] FireModels = { "p_campfire01x", "p_campfire05x" };
         private const string SitScenario = "WORLD_CAMP_FIRE_SIT_GROUND", SleepScenario = "WORLD_CAMP_FIRE_LAY_GROUND_SIDE";
+        private const string SitFallback = "WORLD_HUMAN_SIT_GROUND", SleepFallback = "WORLD_HUMAN_SLEEP_GROUND_ARM";   // if the camp ones don't play in place
         private const float CampNear = 120f, CampFar = 180f;
 
         private HermitOut _hermit;
@@ -45,6 +47,11 @@ namespace EnrageWestworld.InGame
         private bool IsHermit(int handle)
         {
             return _hermit != null && _hermit.Ped != null && _hermit.Ped.Handle == handle;
+        }
+
+        private static string CampScenario(HermitOut o)
+        {
+            return o.Asleep ? (o.Fallback ? SleepFallback : SleepScenario) : (o.Fallback ? SitFallback : SitScenario);
         }
 
         /// "his" or "her".
@@ -115,7 +122,7 @@ namespace EnrageWestworld.InGame
                 HermitLive(now);
                 return;
             }
-            if (!_cfg.Hermits || _crying != null || now < _nextCampCheck)
+            if (!_cfg.Hermits || _crying != null || _gathering != null || now < _nextCampCheck)
                 return;
             _nextCampCheck = now + 3000;
             Ped me = Game.Player.Character;
@@ -232,7 +239,7 @@ namespace EnrageWestworld.InGame
             bool hurt = ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(h, me.Handle, true, false);
             if (o.Phase == "flee")
             {
-                if ((!seen && dist > 50f) || dist > 120f)
+                if ((!seen && dist > 50f) || dist > 120f || now - o.PhaseAt > 45000)
                     EndHermit("ran off");
                 return;
             }
@@ -256,8 +263,9 @@ namespace EnrageWestworld.InGame
             {
                 case "camp":
                     TASK.CLEAR_PED_TASKS(h, true, false);
-                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(o.Asleep ? SleepScenario : SitScenario), -1, true, 0u, -1f, false);
+                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(CampScenario(o)), -1, true, 0u, -1f, false);
                     o.NextLine = now + 4000;
+                    o.ScenarioCheckAt = now + 2500;
                     break;
                 case "watch":
                     TASK.CLEAR_PED_TASKS(h, true, false);
@@ -287,6 +295,23 @@ namespace EnrageWestworld.InGame
         private void HermitInPhase(HermitOut o, Ped me, float dist, int now)
         {
             int h = o.Ped.Handle;
+            if (o.Phase == "camp" && o.ScenarioCheckAt > 0 && now >= o.ScenarioCheckAt)
+            {
+                // the camp scenarios are from the game's list but not yet seen playing in place: check, and fall back once
+                o.ScenarioCheckAt = 0;
+                string sc = CampScenario(o);
+                if (PED.IS_PED_USING_ANY_SCENARIO(h))
+                    Log.Write("ENCOUNTER hermit: " + sc + " is playing");
+                else if (!o.Fallback)
+                {
+                    o.Fallback = true;
+                    Log.Write("ENCOUNTER hermit: " + sc + " didn't start; trying " + CampScenario(o));
+                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash(CampScenario(o)), -1, true, 0u, -1f, false);
+                    o.ScenarioCheckAt = now + 2500;
+                }
+                else
+                    Log.Write("ENCOUNTER hermit: " + sc + " didn't start either: standing at the fire");
+            }
             if (o.Phase != "camp" && now >= o.NextTurn)
             {
                 // on his feet: he keeps you in front of him
