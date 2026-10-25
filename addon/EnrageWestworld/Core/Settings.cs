@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 24;
+        public const int CurrentVersion = 25;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -139,7 +139,7 @@ namespace EnrageWestworld.Core
         public string WarNewsTo = "right";
         public string FlirtKey = "F6";
         public string WakeKey = "Y";
-        public string ReaderKey = "F5";
+        public string ReaderKey = "-";
         public bool ReloadIni = true;
         public bool ReplaceEnrageSettings = true;
         public string SettingsKey = "Ctrl+F7";
@@ -226,6 +226,11 @@ namespace EnrageWestworld.Core
                 // the keys moved: the wake key from G to Y, the stalker key from 0 to ] (a key of your own is kept)
                 if (KeyIs(s.WakeKey, "G")) { s.WakeKey = "Y"; raised.Add("WakeKey G -> Y"); }
                 if (KeyIs(s.StalkerKey, "0") || KeyIs(s.StalkerKey, "D0")) { s.StalkerKey = "]"; raised.Add("StalkerKey 0 -> ]"); }
+            }
+            if (s.SettingsVersion < 25 && KeyIs(s.ReaderKey, "F5"))
+            {
+                s.ReaderKey = "-";   // the reader moved from F5 to the minus key (a key of your own is kept)
+                raised.Add("ReaderKey F5 -> -");
             }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
