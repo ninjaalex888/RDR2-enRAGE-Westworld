@@ -723,6 +723,7 @@ namespace EnrageWestworld.InGame
                 Log.Detail("The mission is over: scenes, stalkers and ceremonies carry on.");
             }
             Safe("lines", _aLater);
+            LedgerStep(now);   // deaths are noted whether or not the player has control (not in story missions)
             if (!PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;
             QuietStep(now);

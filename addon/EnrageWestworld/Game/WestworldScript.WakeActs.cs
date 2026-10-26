@@ -1029,6 +1029,7 @@ namespace EnrageWestworld.InGame
                 act.Res.Dead = true;
                 _engine.KeepResident(act.Res, Bridge.Now());
             }
+            LedgerNote(act.Handle, act.P.Id, act.Name, act.Res != null ? "resident" : "folk", DespairHow(act), "self");   // known dead: no knocked-out test
             string how = act.Method ?? "gun";
             int c;
             _despairCount.TryGetValue(how, out c);

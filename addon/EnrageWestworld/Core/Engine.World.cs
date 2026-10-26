@@ -1034,13 +1034,29 @@ namespace EnrageWestworld.Core
         {
             if (id == null)
                 return false;
+            // our own record first for townsfolk and residents (Deaths.cs); whether one of enRAGE's records lives is
+            // enRAGE's to say, since it brings some of them back on purpose
             if (id.StartsWith("folk:"))
-                return FolkDead != null && FolkDead(id);
-            Resident r = Resident.IsResident(id) ? Store.FindResident(id) : null;
-            if (r != null)
-                return r.Dead;
+                return Store.DeathOf(id) != null || (FolkDead != null && FolkDead(id));
+            if (Resident.IsResident(id))
+            {
+                Resident r = Store.FindResident(id);
+                return (r != null && r.Dead) || Store.DeathOf(id) != null;
+            }
             Person p;
             return _byId.TryGetValue(id, out p) && !p.IsAlive;
+        }
+
+        /// Every death RealNPCs records comes through here: our own record (Deaths.cs), and a resident marked dead.
+        /// False when it was already noted.
+        public bool NoteDied(DeathEntry e)
+        {
+            if (e == null || e.Id == null)
+                return false;
+            Resident r = Resident.IsResident(e.Id) ? Store.FindResident(e.Id) : null;
+            if (r != null)
+                r.Dead = true;
+            return Store.NoteDeath(e);
         }
 
         // ---- the real people at the other end of worries (Links.cs) ------------------------------------------------

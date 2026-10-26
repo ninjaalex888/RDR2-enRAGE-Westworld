@@ -114,8 +114,10 @@ namespace EnrageWestworld.InGame
                     gone.Add(h);
                 else if (ENTITY.IS_ENTITY_DEAD(h))
                 {
-                    if (kv.Value.R.PostId == null)
-                        kv.Value.R.Dead = true;   // a post's person is vacated by the posts code, which notes how they died
+                    if (KnockedOutWhy(h) != null)
+                        continue;   // only senseless (enRAGE's rule, DeathLedger.KnockedOut): still bound, looked at again
+                    if (kv.Value.R.PostId == null)   // a post's person is vacated by the posts code, which notes how they died
+                        LedgerNote(h, kv.Value.R.Id, kv.Value.R.Name, "resident", null, null);
                     gone.Add(h);
                 }
             }

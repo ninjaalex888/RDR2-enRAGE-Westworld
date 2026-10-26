@@ -503,6 +503,64 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
+		/// One of the direct writes (CLAUDE.md, "Writing to enRAGE"): a townsperson's death enRAGE didn't see, or, after a
+		/// reload undid it, taking that back. Found the way FolkDead finds them; enRAGE saves it with its people.
+		public bool MarkFolkDead(string folkKey, bool dead)
+		{
+			if (_people == null || folkKey == null || !folkKey.StartsWith("folk:"))
+			{
+				return false;
+			}
+			try
+			{
+				string id = folkKey.Substring(5);
+				Acquaintance acquaintance = ((_people.GetValue(Mod, null) is List<Acquaintance> source) ? source.FirstOrDefault((Acquaintance x) => x != null && (x.Id ?? x.FullName) == id) : null);
+				if (acquaintance == null || acquaintance.Dead == dead)
+				{
+					return false;
+				}
+				acquaintance.Dead = dead;
+				if (_peopleDirty != null)
+				{
+					_peopleDirty.SetValue(Mod, true);
+				}
+				return true;
+			}
+			catch (Exception ex)
+			{
+				Fail("townsfolk deaths", ex);
+				return false;
+			}
+		}
+
+		private MethodInfo _gunButt;
+		private bool _gunButtLooked;
+
+		/// enRAGE's own test for someone it knocked out with a gun butt (its GunMelee), read only, so the ledger never
+		/// buries them. False if it can't be found.
+		public bool KnockedOutByGunButt(RDR2.Ped p)
+		{
+			if (!_gunButtLooked)
+			{
+				_gunButtLooked = true;
+				Type type = Mod.GetType().Assembly.GetType("NemesisSystem.GunMelee");
+				_gunButt = ((type != null) ? type.GetMethod("KnockedOutByGunButt", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic) : null);
+				if (_gunButt == null)
+				{
+					Log.Write("enRAGE's gun-butt check wasn't found: the people ledger tells the knocked-out from the dead without it.");
+				}
+			}
+			try
+			{
+				return _gunButt != null && p != null && (bool)_gunButt.Invoke(null, new object[1] { p });
+			}
+			catch (Exception ex)
+			{
+				Fail("gun-butt check", ex);
+				return false;
+			}
+		}
+
 		public void LikeMore(string acquaintanceId, int delta)
 		{
 			if (_people == null || acquaintanceId == null)

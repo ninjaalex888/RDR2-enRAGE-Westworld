@@ -46,6 +46,35 @@ namespace EnrageWestworld.Core
         [DataMember] public List<Post> Posts = new List<Post>();   // the counters with one person each, who pass them on (see Posts.cs)
         [DataMember] public List<SceneTie> Ties = new List<SceneTie>();      // what street scenes left between two people (see Ties.cs)
         [DataMember] public List<WorryLink> Links = new List<WorryLink>();   // the real person at the other end of a worry (see Links.cs)
+        [DataMember] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
+        public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
+        private Dictionary<string, DeathEntry> _deathIndex;
+
+        /// The latest death in our own record for this person, or null.
+        public DeathEntry DeathOf(string id)
+        {
+            if (id == null || Deaths == null)
+                return null;
+            if (_deathIndex == null)
+            {
+                _deathIndex = new Dictionary<string, DeathEntry>();
+                foreach (DeathEntry d in Deaths)
+                    if (d != null && d.Id != null)
+                        _deathIndex[d.Id] = d;   // a later one wins
+            }
+            DeathEntry e;
+            return _deathIndex.TryGetValue(id, out e) ? e : null;
+        }
+
+        /// Adds a death to our record (DeathLedger.Note: the same death twice is one). True if it was new.
+        public bool NoteDeath(DeathEntry e)
+        {
+            if (Deaths == null)
+                Deaths = new List<DeathEntry>();
+            bool added = DeathLedger.Note(Deaths, e);
+            _deathIndex = null;
+            return added;
+        }
 
         public long WasAt;
 
@@ -140,6 +169,19 @@ namespace EnrageWestworld.Core
             n += Avengers.RemoveAll(a => a.Stage < 2 && a.DueAt > cut + 10080);
             n += Weddings.RemoveAll(w => !w.Done && w.At > cut + 20160);
             n += Debts.RemoveAll(d => d.Since > cut);
+            if (Deaths != null)
+            {
+                foreach (DeathEntry d in Deaths.Where(d => d.At > cut).ToList())
+                {
+                    Resident r = Resident.IsResident(d.Id) ? FindResident(d.Id) : null;
+                    if (r != null && r.Dead && r.PostId == null && !r.Fled)
+                        r.Dead = false;   // it hadn't happened yet (a post's keeper and a hermit are their own code's)
+                    if (d.SharedWithEnrage)
+                        (RewoundShares ?? (RewoundShares = new List<string>())).Add(d.Id);
+                }
+                n += Deaths.RemoveAll(d => d.At > cut);
+                _deathIndex = null;
+            }
             if (LastWorldTickAt > now)
                 LastWorldTickAt = now;
             LastGameMin = now;
@@ -241,6 +283,8 @@ namespace EnrageWestworld.Core
             if (Posts == null) Posts = new List<Post>();
             if (Ties == null) Ties = new List<SceneTie>();
             if (Links == null) Links = new List<WorryLink>();
+            if (Deaths == null) Deaths = new List<DeathEntry>();
+            if (RewoundShares == null) RewoundShares = new List<string>();
             foreach (Post p in Posts)
             {
                 if (p.Former == null)

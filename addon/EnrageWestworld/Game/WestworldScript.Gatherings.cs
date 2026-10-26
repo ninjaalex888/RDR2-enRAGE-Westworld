@@ -149,6 +149,7 @@ namespace EnrageWestworld.InGame
             foreach (Gatherer m in g.Ring)
                 if (m.R != null && !m.R.Dead && m.Ped.Exists() && m.Ped.IsDead)
                 {
+                    LedgerNote(m.Ped.Handle, m.R.Id, m.R.Name, "resident", null, null);   // marks them dead too (Engine.NoteDied)
                     m.R.Dead = true;
                     _engine.KeepResident(m.R, Bridge.Now());
                 }

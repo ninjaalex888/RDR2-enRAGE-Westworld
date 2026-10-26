@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.6.3 (not released yet)
+
+- RealNPCs keeps its own record of who has died: every death of someone it knows near you (its own people, enRAGE's townsfolk and enRAGE's people), with when, where, how and by whose hand. It's the first step of the NPC mind design, and what people think and say about the dead now asks it first. It follows enRAGE's rule for the knocked out (out cold from fists, a gun butt or being incapacitated isn't dead), which RealNPCs didn't before: a resident knocked out in a brawl used to be counted dead.
+- When enRAGE misses the death of one of its townsfolk, RealNPCs tells it (`[Mind]` `ShareWithEnrage`, on; settings version 58). enRAGE looks for deaths every 2 seconds while the body is there; Pope McCrae shot himself a second before the area unloaded, so it never saw, and would have brought him back as if nothing happened. Now he'd be marked dead 4 seconds later. If you load an older save that undoes the death, it's taken back again (enRAGE's own save points usually do this already).
+- Loading an older save brings back residents who died after it, as it already did for everything else that hadn't happened yet.
+- F7's `TEST ledger:` line; `LEDGER` in the log.
+- Every write RealNPCs makes into enRAGE is listed (CLAUDE.md, "Writing to enRAGE"). One that set a field by name now says so in the log if an enRAGE update renames it, instead of quietly doing nothing, and the past someone tells you is saved by enRAGE at once. The readmes now say accurately what RealNPCs changes in enRAGE.
+- No licence file, on purpose: all rights reserved, with a notice at the end of both readmes.
+
 ## 0.6.2
 
 - Trouble between people, played out in front of you, each time for a reason (street scenes; none of it seen in game yet, and each can be switched off on its own, `[Scenes]`, settings version 53):
