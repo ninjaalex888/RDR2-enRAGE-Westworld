@@ -958,7 +958,12 @@ namespace EnrageWestworld.InGame
 			{
 				return;
 			}
-			if (TalkTestKey.Matches(e))
+			if (FontTestKey.Matches(e))
+			{
+				_fontTestUntil = Game.GameTime + 20000;   // Shift+F2: the subtitle line in each face (WestworldScript.Subtitles.cs)
+				Log.Write("FONT test: 1-" + FontFaces.Length + " are " + string.Join(", ", FontFaces) + "; say which matches the game's subtitles");
+			}
+			else if (TalkTestKey.Matches(e))
 			{
 				_talkTestRequested = true;   // Shift+F7: two people near you talk in their real voices (WestworldScript.Talk.cs)
 			}

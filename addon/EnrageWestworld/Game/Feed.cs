@@ -4,7 +4,6 @@ using System.Text;
 using EnrageWestworld.Core;
 using RDR2;
 using RDR2.Native;
-using RDR2.UI;
 
 namespace EnrageWestworld.InGame
 {
@@ -37,10 +36,19 @@ namespace EnrageWestworld.InGame
 			public int Tries;       // times the game turned its voice down (a line said to you is tried again)
 		}
 
-		// A spoken line is its voice, at its turn in the queue. Only what's said to the player gets a subtitle, on the
-		// game's subtitle line (Screen.PrintSubtitle; the game gives mods no way into its own dialogue subtitles), and
-		// only while the voice is really playing (SubtitleRule). A notice is a toast at the top left of the screen
-		// (Toaster), or the "Around town" box (Fallback): never the subtitle line.
+		// A spoken line is its voice, at its turn in the queue. Only what's said to the player gets a subtitle, and only
+		// while the voice is really playing (SubtitleRule). The game gives mods no way into its own dialogue subtitles,
+		// so RealNPCs draws it the way the game does: in the same spot, in a dark box, in a serif face (DrawSubtitle;
+		// Lex chose that over the white objective line). A notice is a toast at the top left of the screen (Toaster),
+		// or the "Around town" box (Fallback).
+
+		/// The face the game's subtitles are set in (found with the font test, Shift+F2).
+		public static string SubtitleFace = "$body1";
+
+		public const float SubtitleScale = 0.42f, SubtitleBottom = 0.846f, SubtitleWidth = 0.62f;
+
+		private static string _subText;
+		private static int _subFrom, _subUntil;
 
 		/// [Output] Subtitles (on, unless "off").
 		public static bool SubtitlesOn = true;
@@ -234,7 +242,9 @@ namespace EnrageWestworld.InGame
 					                                            HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON(), InView(line.Ped), line.Speaker, words, line.Part) : null;
 					if (sub != null)
 					{
-						Screen.PrintSubtitle(Clean(sub));
+						_subText = Clean(sub);
+						_subFrom = gameTime;
+						_subUntil = gameTime + Math.Max(ms, Duration(sub));
 						SubtitlesShown++;
 						LastSubtitle = sub;
 						Log.Write("SUBTITLE " + sub + " (" + (!string.IsNullOrEmpty(words) ? "the recorded words" : "the written line") + ")");
@@ -242,6 +252,30 @@ namespace EnrageWestworld.InGame
 					_lastShownAt = gameTime;
 					_nextAt = gameTime + ms;
 				}
+			}
+		}
+
+		/// Every frame: the subtitle showing now, the game's way: white serif text in a dark box, centred above the ticker,
+		/// fading in and out. Nothing when none is showing.
+		public static void DrawSubtitle(int now)
+		{
+			if (_subText == null || now >= _subUntil || now < _subFrom)
+				return;
+			int a = Math.Min(255, Math.Min((now - _subFrom) * 255 / 150, (_subUntil - now) * 255 / 250));
+			if (a <= 0)
+				return;
+			float scale = SubtitleScale, lineH = Draw.LineHeight(scale);
+			List<string> lines = Draw.Wrap(_subText, scale, SubtitleWidth);
+			float w = 0f;
+			foreach (string l in lines)
+				w = Math.Max(w, Draw.Width(l, scale));
+			float padX = 0.012f, padY = 0.006f, h = lines.Count * lineH, top = SubtitleBottom - h - padY * 2f;
+			Draw.Rect(0.5f - w / 2f - padX, top, w + padX * 2f, h + padY * 2f, 0, 0, 0, a * 165 / 255);
+			float y = top + padY;
+			foreach (string l in lines)
+			{
+				Draw.Text(l, 0.5f - Draw.Width(l, scale) / 2f, y, scale, 255, 255, 255, a, SubtitleFace);   // each line centred
+				y += lineH;
 			}
 		}
 

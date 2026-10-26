@@ -163,7 +163,7 @@ namespace EnrageWestworld.InGame
         // ---- drawing -----------------------------------------------------------------------------
 
         /// Text with its top-left corner at (x, y), in screen fractions.
-        public static void Text(string text, float x, float y, float scale, int r, int g, int b, int a = 255)
+        public static void Text(string text, float x, float y, float scale, int r, int g, int b, int a = 255, string face = null)
         {
             if (string.IsNullOrEmpty(text) || a <= 0 || !Take(1))
                 return;
@@ -171,7 +171,7 @@ namespace EnrageWestworld.InGame
             UIDEBUG._BG_SET_TEXT_SCALE(scale, scale);
             UIDEBUG._BG_SET_TEXT_COLOR(r, g, b, a);
             ulong inner = Function.Call<ulong>(VarString, 10, new InputArgument(Pin("LITERAL_STRING")),
-                new InputArgument(Pin("<FONT FACE='" + Font + "'>" + text + "</FONT>")));
+                new InputArgument(Pin("<FONT FACE='" + (face ?? Font) + "'>" + text + "</FONT>")));
             ulong v = Function.Call<ulong>(VarString, 42, new InputArgument(Pin("COLOR_STRING")), 0, new InputArgument(inner));
             Function.Call(DisplayText, new InputArgument(v), x, y);
         }

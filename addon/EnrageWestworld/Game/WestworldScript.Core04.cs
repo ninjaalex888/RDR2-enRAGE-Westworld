@@ -352,6 +352,7 @@ namespace EnrageWestworld.InGame
             Safe("ticker", _aFrame);
             FeelingsStep(now);
             NewsStep(now);
+            SubtitleDraw(now);
         }
 
         private void FrameImpl(int now)
