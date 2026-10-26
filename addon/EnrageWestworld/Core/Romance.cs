@@ -292,9 +292,28 @@ namespace EnrageWestworld.Core
 			return Voice.Pick(seed, "You, uh... you look real nice today.", "Can't say I've seen a prettier face in this town.", "Maybe I'll see you around.", "That's a fine hat, miss. Suits you.");
 		}
 
-		public static string Welcome(Person p, int heart, PlayerRef you, string seed)
+		public static string Welcome(Person p, int heart, PlayerRef you, string seed, string why = null)
 		{
 			string text = Call(p, heart, you, seed);
+			if (heart < 3)
+			{
+				// what drew them, in their own words
+				switch (why)
+				{
+				case "money":
+					return Voice.Pick(seed, "A man with money in his pocket. Well, now.", "You dress rough, but you don't spend rough. I noticed.");
+				case "danger":
+					return Voice.Pick(seed, "Folks say you're trouble. Maybe I like trouble.", "Half this town's scared of you. I ain't.");
+				case "decent":
+					return Voice.Pick(seed, "I heard you did right by folks here. That counts with me.", "Word is you're decent. I'd like to find out.");
+				case "restless":
+					return Voice.Pick(seed, "A man who don't stay put. I could get used to that.", "You've got the look of somewhere else about you. I like it.");
+				case "lonely":
+					return Voice.Pick(seed, "Been a long while since anybody said a thing like that to me.", "Lord. I'd forgotten what that sounds like.");
+				case "tipsy":
+					return Voice.Pick(seed, "Buy me another and say that again.", "Keep talking. The whiskey likes you.");
+				}
+			}
 			if (heart >= 4)
 			{
 				return Voice.Pick(seed, "There's my " + Fella(p) + ".", "Missed you, " + text + ".", "Took you long enough.");
@@ -318,8 +337,12 @@ namespace EnrageWestworld.Core
 			return Voice.Pick(seed, "Well, aren't you a charmer.", "Careful, " + text + ". A body could get used to that.", "Is that so? Maybe you'll buy me a drink sometime.", "You ain't so bad yourself.");
 		}
 
-		public static string Unsure(Person p, string seed)
+		public static string Unsure(Person p, string seed, string why = null)
 		{
+			if (why == "shy")
+				return Voice.Pick(seed, "I... oh. I don't rightly know what to say.", "You shouldn't say such things. ...Say it again?");
+			if (why == "troubled")
+				return Voice.Pick(seed, "That's kind. I've got a lot on my mind just now.", "Maybe another day, when I can think straight.");
 			return Voice.Pick(seed, "Is that so?", "Hm. We'll see.", "Smooth talker, ain't you.", "You say that to everybody?");
 		}
 
@@ -341,6 +364,24 @@ namespace EnrageWestworld.Core
 				return Voice.Pick(seed, "You said that already.", "Easy, cowboy.", "One at a time.");
 			case "scorned":
 				return Voice.Pick(seed, "Save it.", "You had your chance.", "Don't.");
+			case "frightened":
+				return Voice.Pick(seed, "You frighten me a little, mister. I'd sooner you didn't.", "Please, mister. Go sweet-talk somebody braver.");
+			case "beneath":
+				return Voice.Pick(seed, "You'll need more than a kind word and a dirty coat.", "I'm particular about who I keep company with.");
+			case "poor":
+				return Voice.Pick(seed, "Sweet talk don't pay the rent, mister.", "Come back when your pockets ain't empty.");
+			case "killer":
+				return Voice.Pick(seed, "Not with a man like you. Not ever.", "I know what kind of man you are. No.");
+			case "pious":
+				return Voice.Pick(seed, "I'm a churchgoing " + (p.Woman ? "woman" : "man") + ", mister, and I know what you've done.", "The Lord sees you, mister. So do I.");
+			case "troubled":
+				return Voice.Pick(seed, "I've got trouble enough without you adding to it.", "Not now. Not with everything as it is.");
+			case "wary":
+				return Voice.Pick(seed, "Not out here, where the whole street can see. Go on.", "Folks are watching. Always watching. Go on.");
+			case "elsewhere":
+				return Voice.Pick(seed, "I'm waiting on somebody. Somebody who writes.", "There's someone else. Somewhere.");
+			case "shy":
+				return Voice.Pick(seed, "I... no. Thank you. No.", "I couldn't. I just couldn't.");
 			case "badrep":
 				return Voice.Pick(seed, "I know what you did, mister. Don't you smile at me.", "I've heard about you. Every word of it.");
 			case "busy":

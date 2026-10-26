@@ -1150,6 +1150,7 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			long now = Bridge.Now();
+			_engine.PlayerCash = MONEY._MONEY_GET_CASH_BALANCE() / 100;   // what the greedy and the proud look at
 			NemesisRecord nemesisRecord = _bridge.RecordAt(num);
 			if (nemesisRecord != null && nemesisRecord.IsAlive)
 			{
@@ -1210,7 +1211,9 @@ namespace EnrageWestworld.InGame
 			Feed.Say(_engine.Player.FirstName, r.YouSay, Speech.When(me, "flatter", ped), ahead: true);
 			if (r.Reply != null)
 			{
-				Feed.Say(name, r.Reply, Speech.For(ped, r.Reply, me, hate), toYou: true, ahead: true);
+				// a voice that fits the answer when the words alone don't give one ("Hm. We'll see." had none, so it went unheard)
+				Feed.Say(name, r.Reply, Speech.For(ped, r.Reply, me, hate, fallback: r.Answer == "yes" ? "flatter" : r.Answer == "maybe" ? "respond" : r.Why == "fear" || r.Why == "frightened" ? "scared" : "no"),
+				         toYou: true, ahead: true);
 			}
 			_flirtSaidUntil = Game.GameTime + 7000;
 			foreach (KeyValuePair<Person, string> jealou in r.Jealous)

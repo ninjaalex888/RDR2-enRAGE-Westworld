@@ -10,6 +10,10 @@ namespace EnrageWestworld.Core
 
 		public bool Liked;
 
+		public string Answer;   // yes, maybe or no (Interest)
+
+		public string Why;      // the reason that weighed most
+
 		public List<KeyValuePair<Person, string>> Jealous = new List<KeyValuePair<Person, string>>();
 	}
 }
