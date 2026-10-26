@@ -162,7 +162,7 @@ namespace EnrageWestworld.InGame
             return st.Sightings;
         }
 
-        private readonly List<KeyValuePair<Blip, int>> _regBlips = new List<KeyValuePair<Blip, int>>();   // mark, taken off at
+        private readonly List<KeyValuePair<Blip, int>> _regBlips = new List<KeyValuePair<Blip, int>>();   // F7's marks (regulars, the awake), taken off at
 
         /// F7: a grey mark on the map, with their name, on each town regular around you for a minute, and the nearest
         /// one named on screen with how far and which way. A test aid, so a regular can be found and looked at again.

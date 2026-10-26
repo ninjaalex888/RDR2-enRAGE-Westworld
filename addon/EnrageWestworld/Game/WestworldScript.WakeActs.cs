@@ -1035,13 +1035,25 @@ namespace EnrageWestworld.InGame
             Log.Write("WAKE despair: " + act.Name + " (a resident) could not bear it and ended their own life (" + DespairHow(act) + ")");
         }
 
-        /// F7: the setting, the blade set, this session's by way, and the awake within 30 m with what would happen.
+        private sealed class AwakeNear
+        {
+            public int Handle;
+            public string Name, Way, Mark;
+            public float Dist;
+            public bool May;
+        }
+
+        private readonly List<AwakeNear> _awakeNear = new List<AwakeNear>();   // the last F7's, for MarkAwake
+
+        /// F7: the setting, the blade set, this session's by way, and the awake within 30 m with which way they are and
+        /// what would happen.
         private string DespairStatus()
         {
             DespairSets();
             Ped me = Game.Player.Character;
             var near = new List<string>();
-            foreach (Ped p in World.GetAllPeds())
+            _awakeNear.Clear();
+            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists()).OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || ENTITY.IS_ENTITY_DEAD(p.Handle) || !PED.IS_PED_HUMAN(p.Handle))
                     continue;
@@ -1055,14 +1067,52 @@ namespace EnrageWestworld.InGame
                 bool armed = WEAPON.IS_PED_ARMED(p.Handle, 4);
                 Vector3 w, d;
                 bool wall = DespairWall(p, me, out w, out d);
+                string method = Despair.Method(who, armed, wall, who.Id);
+                bool may = res != null && res.PostId == null && !st.Has(DespairMark);
                 string verdict = res == null ? (_bridge.RecordAt(p.Handle) != null ? "enRAGE's own: never" : "enRAGE's townsfolk: never")
                                : res.PostId != null ? "keeps a counter: never" : st.Has(DespairMark) ? "had their chance"
-                               : (passive ? "can't be directed now; " : "") + "would use " + Despair.Method(who, armed, wall, who.Id) + (wall ? " (wall " + Flat(w, p.Position).ToString("0") + " m)" : "");
-                near.Add(who.Name + " (" + (int)dist + " m, " + verdict + ")");
+                               : (passive ? "can't be directed now; " : "") + "would use " + method + (wall ? " (wall " + Flat(w, p.Position).ToString("0") + " m)" : "");
+                string way = Way(me.Position, p.Position);
+                near.Add(who.Name + " (" + (int)dist + " m " + way + ", " + verdict + ")");
+                _awakeNear.Add(new AwakeNear { Handle = p.Handle, Name = who.Name, Way = way, Dist = dist, May = may,
+                                               Mark = may ? method : res == null ? "never (enRAGE's)" : res.PostId != null ? "never (counter)" : "had their chance" });
             }
             return "AwakeningDespair " + _cfg.AwakeningDespair + "% (one roll each); blade reel " + (_bladeSet == 1 ? "there" : "MISSING") + "; this session " +
                    (_despairCount.Count == 0 ? "none" : string.Join(", ", _despairCount.Select(kv => kv.Key + " " + kv.Value))) + (_despairLast != null ? ", last " + _despairLast : "") +
                    "; awake within 30 m: " + (near.Count == 0 ? "none" : string.Join("; ", near.Take(8)));
+        }
+
+        /// F7: a white mark on the map on each fully awake person within 30 m for a minute, labelled with their name and
+        /// what they'd do ("Esther Lowry: knife", "Mart Cannon: never (enRAGE's)"), and the nearest who could end it
+        /// named on screen with which way to look. A test aid, so they can be found.
+        private void MarkAwake()
+        {
+            if (_awakeNear.Count == 0)
+                return;
+            int until = Game.GameTime + 60000;
+            foreach (AwakeNear a in _awakeNear.Take(10))
+            {
+                if (!ENTITY.DOES_ENTITY_EXIST(a.Handle))
+                    continue;
+                Blip b = new Ped(a.Handle).AddBlip(BlipType.WhiteDot);
+                b.Label = a.Name + ": " + a.Mark;
+                _regBlips.Add(new KeyValuePair<Blip, int>(b, until));   // taken off with the regulars' marks
+            }
+            AwakeNear first = _awakeNear.FirstOrDefault(a => a.May);
+            Hint(first != null ? "Awake, and could end it: " + first.Name + " (" + first.Mark + "), " + (int)first.Dist + " m " + first.Way + ". " + _awakeNear.Count + " awake shown on your map for a minute."
+                               : "Awake near you, none who could end it: " + _awakeNear.Count + " shown on your map for a minute.", 9000);
+            Log.Write("WAKE marked " + _awakeNear.Count + " awake on the map" + (first != null ? "; nearest who could: " + first.Name + ", " + (int)first.Dist + " m " + first.Way : ""));
+        }
+
+        /// Which way someone is from where the camera looks ("ahead", "behind you to the left"), and "above you" or
+        /// "below you" when they're a floor away.
+        private static string Way(Vector3 from, Vector3 to)
+        {
+            double bearing = Math.Atan2(to.X - from.X, to.Y - from.Y) * 180.0 / Math.PI;   // clockwise from north
+            double rel = ((bearing + CAM.GET_GAMEPLAY_CAM_ROT(2).Z) % 360.0 + 360.0) % 360.0;   // headings turn the other way
+            string[] names = { "ahead", "ahead to your right", "to your right", "behind you to the right", "behind you", "behind you to the left", "to your left", "ahead to your left" };
+            float dz = to.Z - from.Z;
+            return names[(int)Math.Round(rel / 45.0) % 8] + (dz > 2.5f ? ", above you" : dz < -2.5f ? ", below you" : "");
         }
 
         // ---- shared ----------------------------------------------------------------------------------------------
