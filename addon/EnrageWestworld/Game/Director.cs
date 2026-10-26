@@ -35,6 +35,24 @@ namespace EnrageWestworld.InGame
             public bool Intruded;
             public bool[] Aimed = new bool[3];   // guns out in a standoff: put away if the scene is cut short
             public int MeetUntil;                // "meet": B is walking over; nothing is said until they're close, or give up then
+            public bool Slamming;                // "slam": the rough move is playing (WestworldScript.Roughs.cs); nothing else until it's done
+            public bool WasFighting;             // a "fight" was started: at the end both are let go of it, however it ended
+            public int MeetWalker = 1;           // who walks over in "meet" (the second, or the first for trouble)
+            public int MeetGoAt;                 // the walker was sitting or leaning: he sets off once he's up (0: on his way)
+            public bool Downed;                  // "passout" played: he's lying there until "cometo", or the end gets him up
+            public bool MadeDrunk;               // A was given a drunk voice for the scene
+            public bool HappenedSent;            // the scene's defining moment has been reported (Happened)
+            public int ReactAt;                  // when the one spoken to reacts to the line (0: no reaction due)
+            public int ReactBy, ReactTo;         // who reacts, and to whom
+            public string ReactTone;             // the tone of the line they react to
+        }
+
+        /// What one of the cast does about a line said to them, or about the slam ("hurt"), for the game layer to play.
+        public sealed class Reaction
+        {
+            public Ped By, To;
+            public string Tone, Temper, ByName, ToName, Seed;
+            public bool Woman;
         }
 
         private Live _live;
@@ -43,6 +61,23 @@ namespace EnrageWestworld.InGame
 
         /// Called for actions the director doesn't know ("cb:reveal"), with the part after "cb:".
         public Action<string> Custom;
+
+        /// "slam": the game layer plays the rough move, attacker then victim; false if it can't (then it's a shove).
+        public Func<Ped, Ped, bool> Slam;
+        /// While the rough move is still playing.
+        public Func<bool> SlamGoing;
+        /// The scene ended while the move played: stop it.
+        public Action SlamStop;
+        /// How the move came out once it's over: "rough" (it played), "shove" (it couldn't, so a shove), or null (nothing).
+        public Func<string> SlamResult;
+        /// The scene's defining moment really happened, once per scene: "rough" (the move began), "shove" (it couldn't,
+        /// so a shove), "drunk" (he went down), "lift" (the thief walked off with it). Ties for these are noted then.
+        public Action<string> Happened;
+        /// The one spoken to reacts (WestworldScript.Reactions.cs); null: nobody reacts.
+        public Action<Reaction> React;
+
+        // the drunk who calls a man out (Scenes.Drunk): the game's own drunk-dueler moves, one ped at a time
+        public const string DrunkDict = "script_re@drunk_dueler";
 
         public bool Busy { get { return _live != null; } }
         public string LastSummary { get; private set; }
@@ -112,8 +147,19 @@ namespace EnrageWestworld.InGame
             _live = l;
             foreach (string d in Gestures.Dicts)
                 STREAMING.REQUEST_ANIM_DICT(d);   // body language for the lines (Gestures), loaded by the time they're said
+            if (s.Beats.Any(x => x.Act == "challenge" || x.Act == "passout" || x.Act == "cometo"))
+            {
+                STREAMING.REQUEST_ANIM_DICT(DrunkDict);
+                AUDIO.SET_PED_IS_DRUNK(l.Cast[0].Handle, true);   // he sounds it, too
+                l.MadeDrunk = true;
+            }
             Log.Write("SCENE " + s.Kind + ": " + string.Join(" & ", l.Names));
             return true;
+        }
+
+        private static string Temper(Live l, int i)
+        {
+            return l.Info != null && l.Info.Tempers != null && i < l.Info.Tempers.Length ? l.Info.Tempers[i] : null;
         }
 
         /// A townsfolk gesture that fits the line's tone (Core/Gestures.cs), on the upper body while they say it,
@@ -156,14 +202,25 @@ namespace EnrageWestworld.InGame
         {
             Live l = _live;
             _live = null;
+            if (l.Slamming)
+                SlamStop?.Invoke();
+            Ped a0 = l.Cast.Length > 0 ? l.Cast[0] : null;
+            if (a0 != null && a0.Exists() && !ENTITY.IS_ENTITY_DEAD(a0.Handle))
+            {
+                // a drunk still lying where he fell gets up as the scene ends, whatever ended it, and sobers in his voice
+                if (l.Downed && STREAMING.HAS_ANIM_DICT_LOADED(DrunkDict) && ENTITY.IS_ENTITY_PLAYING_ANIM(a0.Handle, DrunkDict, "pass_out_fwd_v1_drunk", 3))
+                    TASK.TASK_PLAY_ANIM(a0.Handle, DrunkDict, "pass_out_fwd_v1_exit_drunk", 4f, -4f, -1, 0, 0f, false, 0, false, "", false);
+                if (l.MadeDrunk)
+                    AUDIO.SET_PED_IS_DRUNK(a0.Handle, false);
+            }
             for (int i = 0; i < l.Cast.Length; i++)
             {
                 Ped p = l.Cast[i];
                 if (p != null && p.Exists())
                 {
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
-                    if (l.Fighting || (i < l.Aimed.Length && l.Aimed[i]))
-                        TASK.CLEAR_PED_TASKS(p.Handle, true, false);
+                    if (((l.Fighting || l.WasFighting) && i < 2) || (i < l.Aimed.Length && l.Aimed[i]))
+                        TASK.CLEAR_PED_TASKS(p.Handle, true, false);   // the two who fought (never the barkeep or a bystander)
                     if (i < l.Aimed.Length && l.Aimed[i])
                         WEAPON.SET_CURRENT_PED_WEAPON(p.Handle, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
                 }
@@ -212,6 +269,16 @@ namespace EnrageWestworld.InGame
             {
                 l.Fighting = false;   // the first beat ends the fight
                 l.FightUntil = 0;
+                if (!s.Beats.Any(b => b.Act == "endfight"))
+                {
+                    // a scene the stranger's word has no fight-ending beat for (the trouble scenes): stop it here
+                    for (int i = 0; i < Math.Min(2, l.Cast.Length); i++)
+                        if (l.Cast[i] != null && l.Cast[i].Exists())
+                        {
+                            TASK.CLEAR_PED_TASKS(l.Cast[i].Handle, true, false);
+                            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(l.Cast[i].Handle, true);
+                        }
+                }
             }
             else if (l.Fighting && _say != null && s.Beats.Count > 0 && s.Beats[0].Line != null)
             {
@@ -257,10 +324,37 @@ namespace EnrageWestworld.InGame
                     return;
                 l.Fighting = false;
             }
+            if (l.Slamming)
+            {
+                if (SlamGoing != null && SlamGoing())
+                    return;
+                l.Slamming = false;
+                string result = SlamResult != null ? SlamResult() : null;
+                if (result != null)
+                    Report(l, result);   // only now is it known whether the face went into the bar
+            }
+            if (l.ReactAt > 0 && now >= l.ReactAt)
+            {
+                // the one spoken to reacts, unless they're about to speak or act themselves (theirs would cut it short)
+                l.ReactAt = 0;
+                int by = l.ReactBy;
+                Beat next = l.Index < l.Scene.Beats.Count ? l.Scene.Beats[l.Index] : null;
+                bool theirTurn = next != null && next.Who == by && (next.Line != null || next.Act != null) && l.NextAt - now < 1000;
+                if (React != null && !theirTurn && !l.Fighting && l.MeetUntil == 0 && !(l.Downed && by == 0))
+                    React(new Reaction { By = l.Cast[by], To = l.Cast[l.ReactTo], Tone = l.ReactTone, Temper = Temper(l, by), Woman = l.Women[by],
+                                         ByName = l.Names[by], ToName = l.Names[l.ReactTo], Seed = l.Seed + l.Index });
+            }
             if (now < l.NextAt)
                 return;
             if (l.MeetUntil > 0)
             {
+                // the walker was sitting or leaning: he's up now, and sets off
+                if (l.MeetGoAt > 0 && now >= l.MeetGoAt)
+                {
+                    l.MeetGoAt = 0;
+                    Ped w = l.Cast[l.MeetWalker], o = l.Cast[1 - l.MeetWalker];
+                    TASK.TASK_GO_TO_ENTITY(w.Handle, o.Handle, 20000, 1.4f, 1.3f, 0f, 0);
+                }
                 // B is still walking over: the first word waits until they're face to face
                 if (l.Cast[0].Position.DistanceTo(l.Cast[1].Position) <= 2.4f)
                 {
@@ -269,10 +363,10 @@ namespace EnrageWestworld.InGame
                 }
                 else if (now > l.MeetUntil)
                 {
-                    Ped walker = l.Cast[1];   // why, for the log: how far off, and whether a scenario (a bench, a rail) held them
-                    Abort("they never got close enough to talk (still " + l.Cast[0].Position.DistanceTo(walker.Position).ToString("0.0") + " m apart" +
+                    Ped walker = l.Cast[l.MeetWalker], waiter = l.Cast[1 - l.MeetWalker];   // why, for the log: how far off, and whether a scenario held them
+                    Abort("they never got close enough to talk (still " + waiter.Position.DistanceTo(walker.Position).ToString("0.0") + " m apart" +
                           (PED.IS_PED_USING_ANY_SCENARIO(walker.Handle) ? ", a scenario held the walker" : "") +
-                          (PED.IS_PED_USING_ANY_SCENARIO(l.Cast[0].Handle) ? ", a scenario held the other" : "") + ")");
+                          (PED.IS_PED_USING_ANY_SCENARIO(waiter.Handle) ? ", a scenario held the other" : "") + ")");
                     return;
                 }
                 else
@@ -301,6 +395,13 @@ namespace EnrageWestworld.InGame
                     Gesture(me.Handle, b.Voice, l.Women[who], l.Seed + l.Index);
                 say(Label(l, who), b.Line, l.Scene.Kind == "hosts", l.Women[who], me.Handle);
                 wait = Math.Max(wait, 1600 + b.Line.Length * 55);
+                if (b.Act != "hurt" && b.Voice != null)
+                {
+                    l.ReactAt = now + 700;   // the one it's said to takes it, a moment in
+                    l.ReactBy = other;
+                    l.ReactTo = who;
+                    l.ReactTone = b.Voice;
+                }
             }
             l.NextAt = now + wait + (b.Act == "fight" ? 0 : b.Ms);
         }
@@ -325,17 +426,79 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_GO_TO_ENTITY(h, l.Cast.Length > 2 && who == 2 ? l.Cast[0].Handle : t, -1, 1.4f, 1.3f, 0f, 0);
                     return 2600;
                 case "meet":
-                    // walks over to the other, who waits; the next line waits until they're close (Tick)
-                    TASK.TASK_GO_TO_ENTITY(h, t, 20000, 1.4f, 1.3f, 0f, 0);
+                    // walks over to the other, who waits; the next line waits until they're close (Tick). Someone sitting or
+                    // leaning (a scenario) is let go of it first and sets off once he's up: a walk order alone never
+                    // moves him (seen 2026-10-25)
+                    l.MeetWalker = who == 0 ? 0 : 1;
                     TASK.TASK_LOOK_AT_ENTITY(t, h, 20000, 0, 51, 0);
-                    l.MeetUntil = Game.GameTime + 15000;
+                    if (PED.IS_PED_USING_ANY_SCENARIO(h))
+                    {
+                        TASK.CLEAR_PED_TASKS(h, true, false);
+                        l.MeetGoAt = Game.GameTime + 1800;
+                        l.MeetUntil = Game.GameTime + 16800;
+                    }
+                    else
+                    {
+                        TASK.TASK_GO_TO_ENTITY(h, t, 20000, 1.4f, 1.3f, 0f, 0);
+                        l.MeetUntil = Game.GameTime + 15000;
+                    }
                     return 300;
                 case "shove":
                     Ped victim = who == 2 ? l.Cast[0] : them;
                     PED.SET_PED_TO_RAGDOLL(victim.Handle, 900, 1600, 0, false, false, "");
                     Speech.SayAny(victim.Handle, Speech.Scared, h);
                     return 1800;
+                case "hurt":
+                    // his face has just gone into the bar: he reels as he cries out (the game layer picks the clip)
+                    if (React != null)
+                        React(new Reaction { By = me, To = them, Tone = Reactions.HurtTone, Temper = Temper(l, who), Woman = l.Women[who], ByName = l.Names[who],
+                                             ToName = l.Names[other], Seed = l.Seed + l.Index });
+                    return 0;
+                case "slam":
+                    // the rough move into a table, a bar or a wall; with nothing it can be played on, a hard shove
+                    if (Slam != null && Slam(me, them))
+                    {
+                        l.Slamming = true;   // reported once it's over (SlamResult)
+                        return 300;
+                    }
+                    PED.SET_PED_TO_RAGDOLL(t, 1500, 2500, 0, false, false, "");
+                    Speech.SayAny(h, Speech.Angry, t);
+                    Report(l, "shove");
+                    return 2200;
+                case "challenge":
+                    // the drunk lurches up off the bar if he was slumped on it, turns on the other and squares up,
+                    // swaying (or, without the move, just looks him up and down)
+                    if (PED.IS_PED_USING_ANY_SCENARIO(h))
+                        TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, false, true);
+                    Vector3 from = me.Position, to = them.Position;
+                    ENTITY.SET_ENTITY_HEADING(h, (float)(Math.Atan2(-(to.X - from.X), to.Y - from.Y) * 180.0 / Math.PI));
+                    TASK.TASK_LOOK_AT_ENTITY(h, t, 20000, 0, 51, 0);
+                    if (STREAMING.HAS_ANIM_DICT_LOADED(DrunkDict))
+                    {
+                        TASK.TASK_PLAY_ANIM(h, DrunkDict, "main_challenge_drunk", 4f, -4f, -1, 0, 0f, false, 0, false, "", false);
+                        return Math.Max(1500, (int)(ENTITY.GET_ANIM_DURATION(DrunkDict, "main_challenge_drunk") * 1000) - 500);
+                    }
+                    return 1200;
+                case "passout":
+                    // down he goes, and stays down (the last frame held) until he comes to
+                    l.Downed = true;
+                    Report(l, "drunk");
+                    if (STREAMING.HAS_ANIM_DICT_LOADED(DrunkDict))
+                    {
+                        TASK.TASK_PLAY_ANIM(h, DrunkDict, "pass_out_fwd_v1_drunk", 4f, -4f, -1, 2, 0f, false, 0, false, "", false);
+                        return Math.Max(1500, (int)(ENTITY.GET_ANIM_DURATION(DrunkDict, "pass_out_fwd_v1_drunk") * 1000));
+                    }
+                    PED.SET_PED_TO_RAGDOLL(h, 6000, 9000, 0, false, false, "");
+                    return 2500;
+                case "cometo":
+                    if (STREAMING.HAS_ANIM_DICT_LOADED(DrunkDict) && ENTITY.IS_ENTITY_PLAYING_ANIM(h, DrunkDict, "pass_out_fwd_v1_drunk", 3))
+                    {
+                        TASK.TASK_PLAY_ANIM(h, DrunkDict, "pass_out_fwd_v1_exit_drunk", 4f, -4f, -1, 0, 0f, false, 0, false, "", false);
+                        return Math.Max(1500, (int)(ENTITY.GET_ANIM_DURATION(DrunkDict, "pass_out_fwd_v1_exit_drunk") * 1000));
+                    }
+                    return 600;
                 case "fight":
+                    l.WasFighting = true;
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.CLEAR_PED_TASKS(t, true, false);
                     uint fists = Natives.Hash("WEAPON_UNARMED");
@@ -374,6 +537,8 @@ namespace EnrageWestworld.InGame
                 case "walkaway":
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                     TASK.TASK_WANDER_STANDARD(h, 10f, 10);
+                    if (l.Scene.Kind == "lift" && who == 0)
+                        Report(l, "lift");   // the thief walks off with it
                     return 600;
                 case "flee":
                     TASK.TASK_SMART_FLEE_PED(h, t, 40f, -1, 0, 2f, 0);
@@ -439,7 +604,7 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_SMART_FLEE_PED(h, _player != 0 ? _player : t, 180f, -1, 0, 3f, 0);
                     return 300;
                 case "faceplayer":
-                    if (_player != 0)
+                    if (_player != 0 && !(l.Downed && who == 0))   // a drunk lying where he fell only looks
                     {
                         if (!PED.IS_PED_USING_ANY_SCENARIO(h))
                             TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, _player, 3000, 0f, 0f, 0f);
@@ -450,6 +615,22 @@ namespace EnrageWestworld.InGame
                     if (_player != 0)
                         TASK.TASK_LOOK_AT_ENTITY(h, _player, 6000, 0, 51, 0);
                     return 500;
+            }
+        }
+
+        /// The scene's defining moment, once (Happened).
+        private void Report(Live l, string what)
+        {
+            if (l.HappenedSent)
+                return;
+            l.HappenedSent = true;
+            try
+            {
+                Happened?.Invoke(what);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("SCENE report " + what + " failed: " + ex.Message);
             }
         }
 

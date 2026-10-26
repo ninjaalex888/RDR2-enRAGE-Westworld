@@ -40,6 +40,27 @@ namespace EnrageWestworld.InGame
             }
             if (_director.Custom == null)
                 _director.Custom = SceneAction;
+            if (_director.Slam == null)
+            {
+                // the rough move for the Director's "slam" (WestworldScript.Roughs.cs)
+                _director.Slam = RoughForScene;
+                _director.SlamGoing = () => _rough != null && _rough.ForScene;
+                _director.SlamResult = () => _roughResult;
+                _director.React = OnReaction;   // WestworldScript.Reactions.cs
+                _director.SlamStop = () =>
+                {
+                    if (_rough != null && _rough.ForScene)
+                        RoughEnd(_rough, "stopped: the scene ended", _now);
+                };
+                _director.Happened = what =>
+                {
+                    // the trouble scenes leave their tie (and the memory of it) only once it has really happened
+                    Pending p = _pendingNote;
+                    _pendingNote = null;
+                    if (p != null)
+                        NoteHappened(p, what == "shove" ? "argue" : p.S.Kind);
+                };
+            }
             if (_nextDrama < 0)
                 _nextDrama = now + 45000;
             if (!_cfg.Drama || now < _nextDrama || Feed.Busy || _stalker != null || _wedding != null || _theft != null || _plea != null)
@@ -122,35 +143,94 @@ namespace EnrageWestworld.InGame
                 return;
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
                 AddJobTalk(s, seed);
+            AddBarkeep(s, people, cast, seed, saloon);
             AddBystander(s, people, cast, seed, now);
             StartScene(s, people, cast, seed, now);
         }
 
-        private void StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now)
+        private sealed class Pending
+        {
+            public Scene S;
+            public List<Ped> People;
+            public string[] Names;
+        }
+
+        private Pending _pendingNote;   // a trouble scene's tie, waiting for the moment it really happens (Director.Happened)
+
+        private static readonly HashSet<string> TroubleKinds = new HashSet<string> { "rough", "lift", "pickpocket", "drunk", "charity", "scorn", "avoid", "comfort" };
+        private readonly Dictionary<string, int> _troubleCount = new Dictionary<string, int>();
+        private string _troubleLast;
+
+        /// F7: the trouble scenes' settings, how many of each played this session, and the last.
+        private string TroubleStatus()
+        {
+            return "rough " + (_cfg.RoughHandling ? "on" : "off") + ", thieves " + (_cfg.NpcThieves ? "on" : "off") + ", drunks " + (_cfg.DrunkChallenges ? "on" : "off") +
+                   "; this session: " + (_troubleCount.Count == 0 ? "none yet" : string.Join(", ", _troubleCount.Select(kv => kv.Key + " " + kv.Value))) +
+                   (_troubleLast != null ? "; last: " + _troubleLast : "");
+        }
+
+        /// F7: what the thoughts of the people near can turn to now (InnerLife.Now.cs): the weather, the place, a scene
+        /// just seen, and who's in sight.
+        private string NowStatus()
+        {
+            long g = _store.LastGameMin;
+            InnerLife.Witnessed seen = _engine.LastScene;
+            return "weather " + (_engine.NowWeather ?? "unknown") + (_engine.NowIndoors ? ", indoors" : "") + ", place " + (_engine.NowPlace ?? "the street") +
+                   "; scene just seen: " + (seen != null && g - seen.At >= 0 && g - seen.At < Engine.SeenForMinutes ? seen.Kind + " in " + seen.Town + ", " + (g - seen.At) + " game min ago" : "none") +
+                   "; in sight: " + (_engine.Nearby != null ? _engine.Nearby.Count : 0) + " (noted " + (g - _engine.NearbyAt) + " game min ago)";
+        }
+
+        private void StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now, bool test = false)
         {
             // the labels over the lines say the names the lines were written with (cast.Names, set by BuildCast)
             string[] names = cast.Names ?? new string[0];
             if (_director.Start(s, people, names, seed, () => { }, cast))
             {
                 _nextDrama = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5));
-                NoteSceneTie(s, people);
+                if (TroubleKinds.Contains(s.Kind))
+                {
+                    int c;
+                    _troubleCount.TryGetValue(s.Kind, out c);
+                    _troubleCount[s.Kind] = c + 1;
+                    _troubleLast = s.Kind + " (" + string.Join(" & ", names.Where(x => x != null)) + ")" + (test ? ", a test" : "");
+                }
+                var p = new Pending { S = s, People = new List<Ped>(people), Names = names };
+                // a face in the bar, a drunk on the floor, a purse gone: noted only once it happens (a walk-over that
+                // never arrives leaves nothing); any other scene counts as soon as it starts, broken up or not
+                _pendingNote = !test && (s.Kind == "rough" || s.Kind == "drunk" || s.Kind == "lift") ? p : null;
+                if (_pendingNote == null && !test)
+                    NoteHappened(p, s.Kind);   // a test leaves no tie between them
                 NoteInScene(people, now);
                 Onlookers(people);
             }
         }
 
+        /// What a scene leaves: the tie between its two (kind may differ from the scene's: a rough that came to a
+        /// shove is a quarrel), and the memory of it for everyone around (never a lift, which nobody saw).
+        private void NoteHappened(Pending p, string kind)
+        {
+            NoteSceneTie(kind, p.People);
+            if (kind != "lift" && p.People.Count >= 2)
+            {
+                string aId, aName, bId, bName;
+                LastingId(p.People[0], out aId, out aName);
+                LastingId(p.People[1], out bId, out bName);
+                _engine.SawScene(kind, p.Names.Length > 0 && p.Names[0] != null ? p.Names[0] : aName, p.Names.Length > 1 && p.Names[1] != null ? p.Names[1] : bName, aId, bId, _placeTown);
+            }
+        }
+
         /// What the scene leaves between its two people (Ties.cs), when both can be met again: a town regular, a
         /// resident saved for something else, or one of enRAGE's townsfolk. Nobody is saved just for this.
-        private void NoteSceneTie(Scene s, List<Ped> people)
+        private void NoteSceneTie(string kind, List<Ped> people)
         {
-            if (people.Count < 2 || Ties.Effect(s.Kind) == null)
+            if (people.Count < 2 || Ties.Effect(kind) == null)
                 return;
             string aId, aName, bId, bName;
             if (!LastingId(people[0], out aId, out aName) || !LastingId(people[1], out bId, out bName))
                 return;
-            SceneTie t = Ties.Note(_store.Ties, aId, aName, bId, bName, _placeTown, s.Kind, Bridge.Now());
+            SceneTie t = Ties.Note(_store.Ties, aId, aName, bId, bName, _placeTown, kind, Bridge.Now());
             if (t != null)
-                Log.Write("TIE " + t.AName + " & " + t.BName + ": " + s.Kind + " (" + (t.Warmth > 0 ? "warm" : t.Warmth < 0 ? "hostile" : "acquainted") + ", " +
+                Log.Write("TIE " + t.AName + " & " + t.BName + ": " + kind + " (" + (t.Warmth > 0 ? "warm" : t.Warmth < 0 ? "hostile" : "acquainted") + ", " +
                           t.Count + " scene" + (t.Count == 1 ? "" : "s") + " between them)");
         }
 
@@ -221,7 +301,8 @@ namespace EnrageWestworld.InGame
                 AWoman = !PED.IS_PED_MALE(a.Handle), BWoman = !PED.IS_PED_MALE(b.Handle), Town = _placeTown, Saloon = saloon, Night = Natives.Night(),
                 HostTier = TownHostTier(), HasCrowd = crowd != null, CWoman = crowd != null && !PED.IS_PED_MALE(crowd.Handle), OldTimer = Director.OldModel(a),
                 PlayerNear = a.Position.DistanceTo(me.Position) < 12f,
-                Names = SceneNames(a, b, crowd)
+                Names = SceneNames(a, b, crowd),
+                Tempers = new[] { CastTemper(a), CastTemper(b), crowd != null ? CastTemper(crowd) : null }
             };
             if (!saloon || _cfg.SaloonGossip)
                 cast.Rumours.AddRange(_engine.RumourPool(_placeTown, 4));
@@ -741,7 +822,7 @@ namespace EnrageWestworld.InGame
                     lines.Add(Voice.Pick(seed, "My " + kin + " " + first + " wrote to me about you. I didn't believe half of it.", first + "'s letters are full of you, you know. Not all of it kind."));
                 else
                     lines.Add(Voice.Pick(seed, "You know my " + kin + ", don't you? " + first + ". How is " + (p.Woman ? "she" : "he") + "?", "You've met my " + kin + ". " + first + ". Tell " + (p.Woman ? "her" : "him") + " to write more."));
-                lines.Add(Grammar.Sentence(r.Line != null ? "I " + r.Line.Replace("{p}", first) + ", if you ever need anything" : "Take care of yourself"));
+                lines.Add(Grammar.Sentence(r.Line != null ? "I " + r.Line.Replace("{p}", first) + ", if you ever need anything" : "Look after yourself out there"));
                 Speech.SayAny(handle, Speech.Greet, Game.Player.Character.Handle);
             }
             for (int i = 0; i < lines.Count; i++)

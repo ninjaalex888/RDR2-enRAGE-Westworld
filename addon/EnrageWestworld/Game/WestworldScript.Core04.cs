@@ -149,6 +149,8 @@ namespace EnrageWestworld.InGame
                 _director.Abort("stopping");
                 EndEncounters("the add-on stopped");
                 WakeActsAbort();
+                if (_rough != null)
+                    RoughEnd(_rough, "stopped: the add-on stopped", _now);
                 if (_stalker != null)
                     _stalker.Finish(true);
                 Spawner.CleanupAll();
@@ -601,6 +603,36 @@ namespace EnrageWestworld.InGame
                     _near.Add(new NearThought { Key = key, Name = Grammar.UpperFirst(Director.Kind(stranger, woman)), Handle = stranger.Handle, Distance = sd + 10f, Text = () => _engine.StrangerThought(key + now / 600, town, woman) });
                 }
             }
+            NoteNearby();
+        }
+
+        private int _nextNearby;
+
+        /// Every few seconds: the named people in view, as the others see them (InnerLife.Nearby), so their thoughts can
+        /// turn to each other: envy of the well-dressed, pity for the drunk, a wary eye on the hothead (InnerLife.Now.cs).
+        private void NoteNearby()
+        {
+            int t = Game.GameTime;
+            if (t < _nextNearby)
+                return;
+            _nextNearby = t + 5000;
+            var list = new List<InnerLife.Nearby>();
+            foreach (NearThought n in _near.Where(x => x.Handle != 0 && x.Key != null && !x.Key.StartsWith("stranger:")).Take(6))
+            {
+                Ped p = new Ped(n.Handle);
+                if (!p.Exists())
+                    continue;
+                Someone who = SomeoneOf(p);
+                if (who == null)
+                    continue;
+                // what they're known for this week: putting a man's face in the bar, or being caught at a pocket
+                long g = Bridge.Now();
+                string known = _store.Ties.Any(x => x.Did(who.Id) && x.Kind == "rough" && g - x.At >= 0 && g - x.At < 7 * 1440L) ? "bully"
+                             : _store.Ties.Any(x => x.Did(who.Id) && x.Kind == "pickpocket" && g - x.At >= 0 && g - x.At < 7 * 1440L) ? "thief" : null;
+                list.Add(new InnerLife.Nearby { Id = who.Id, Name = Person.FirstOf(who.Name), Temper = who.Temper, Woman = who.Woman, WellOff = who.WellOff, Drunk = who.Drunk, Known = known });
+            }
+            _engine.Nearby = list;
+            _engine.NearbyAt = _store.LastGameMin;   // the same clock ThoughtDay reads (Bridge.Now() runs ahead of it)
         }
 
         /// What someone this far off can see of the player, for their thought about him.
@@ -640,6 +672,8 @@ namespace EnrageWestworld.InGame
             _director.Abort("a mission started");
             EndEncounters("a mission started");
             WakeActsAbort();
+            if (_rough != null)
+                RoughEnd(_rough, "stopped: a mission started", now);
             _glitch = null;
             if (_stalker != null)
             {
@@ -689,6 +723,7 @@ namespace EnrageWestworld.InGame
             SubtitleStep(now);
             TerritoryStep(now);
             FlirtPromptStep();
+            RoughStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);
             Safe("arrivals", _aArrival);

@@ -44,6 +44,7 @@ namespace EnrageWestworld.InGame
             {
                 int h = p.Handle;
                 if (!Natives.Bystander(p, me.Handle) || p.Position.DistanceTo(me.Position) > ReasonRange || Spawner.IsOurs(h) || _bridge.RecordAt(h) != null ||
+                    Natives.StoryModel(p) || !IsGrownUp(p) ||   // never the story's own people, grown-ups only
                     PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || _wakeActs.Any(w => w.Handle == h) ||
                     PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h))
                     continue;
@@ -69,14 +70,52 @@ namespace EnrageWestworld.InGame
                 if (fp.Personality == null)
                     fp.Personality = f.Temper;
                 PersonState st = _store.Find(f.Key);
-                return new Someone { Id = f.Key, Name = f.Name, Woman = f.Woman, Temper = f.Temper, P = fp, WakeStage = st != null ? st.WakeStage : 0 };
+                return new Someone { Id = f.Key, Name = f.Name, Woman = f.Woman, Temper = f.Temper, P = fp, WakeStage = st != null ? st.WakeStage : 0, WellOff = WellOff(p), Drunk = InHisCups(p, fp), Hurt = HurtLately(f.Key) };
             }
             if (!ResidentEligible(p))
                 return null;
             Resident r = ResidentOf(p);
             if (r == null)
                 return null;
-            return new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = _engine.PersonOfResident(r), WakeStage = _engine.StageOf(r.Id) };
+            Person rp = _engine.PersonOfResident(r);
+            return new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = rp, WakeStage = _engine.StageOf(r.Id), WellOff = WellOff(p), Drunk = InHisCups(p, rp), Hurt = HurtLately(r.Id) };
+        }
+
+        /// Had it done to them in the last hour and a half (game time): a face put into the bar, or their pocket picked
+        /// (and they know it: a lift only once it was noticed, which the tie can't tell, so a caught pickpocket only).
+        private string HurtLately(string id)
+        {
+            long g = Bridge.Now();
+            SceneTie t = _store.Ties.Where(x => x.Has(id) && x.Doer != null && !x.Did(id) && (x.Kind == "rough" || x.Kind == "pickpocket") && g - x.At >= 0 && g - x.At < 90)
+                                    .OrderByDescending(x => x.At).FirstOrDefault();
+            return t == null ? null : t.Kind == "rough" ? "rough" : "robbed";
+        }
+
+        /// Dressed like money, by the game's own model: a gentleman or a lady (Director.Kind).
+        private static bool WellOff(Ped p)
+        {
+            string kind = Director.Kind(p, !PED.IS_PED_MALE(p.Handle));
+            return kind == "a gentleman" || kind == "a lady";
+        }
+
+        /// In his cups: slumped over the bar or drinking himself silly (the game's drunk scenarios), or in a saloon at
+        /// night with a drinking worry at its worst.
+        private bool InHisCups(Ped p, Person who)
+        {
+            if (PED.IS_PED_USING_ANY_SCENARIO(p.Handle))
+            {
+                uint type = (uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(p.Handle);
+                uint slumped = Natives.Hash("WORLD_HUMAN_DRUNK_BAR_SLUMPED"), reeling = Natives.Hash("WORLD_HUMAN_DRINKING_DRUNK");
+                if (type == slumped || type == reeling || PED.IS_PED_USING_SCENARIO_HASH(p.Handle, slumped) || PED.IS_PED_USING_SCENARIO_HASH(p.Handle, reeling))
+                    return true;
+            }
+            string kind;
+            int stage;
+            bool good;
+            int clock = CLOCK.GET_CLOCK_HOURS();
+            if (_placeKind != "saloon" || !(clock >= 20 || clock < 4) || who == null)
+                return false;
+            return who.Has("drunk") || (InnerLife.WorryNow(who, Bridge.Now() / 1440, out kind, out stage, out good) && kind == "drink" && stage >= 1);   // a known drinker, or a drinking worry
         }
 
         /// Every pair close enough to each other with a reason, strongest first.
@@ -125,10 +164,47 @@ namespace EnrageWestworld.InGame
                 string seed = first.Handle + "|" + second.Handle + "|" + now / 60000;
                 SceneCast cast = BuildCast(first, second, null, saloon, me, now, seed);
                 string kind = pr.Why.Kind;
+                Someone doer = pr.Why.BFirst ? pr.B.Who : pr.A.Who, done = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
+                // the trouble scenes (Scenes.Trouble.cs): each needs its setting, and the rough move a surface by the victim;
+                // when one can't be played the reason falls back (a fistfight, or words) or the pair is passed over
+                string cant = TroubleCant(kind, first, second, cast);
+                if (cant != null)
+                {
+                    Log.Detail("REASON " + doer.Name + " & " + done.Name + ": " + kind + " can't be played (" + cant + ")" + (pr.Why.Fallback != null ? ", so " + pr.Why.Fallback : ""));
+                    if (pr.Why.Fallback == null || TroubleCant(pr.Why.Fallback, first, second, cast) != null)
+                        continue;
+                    kind = pr.Why.Fallback;
+                }
                 if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
                     continue;
                 Scene s;
-                if (kind.StartsWith("x:"))
+                if (kind == "avoid")
+                    s = Scenes.Avoid(cast, seed);
+                else if (kind == "tend")
+                    s = Scenes.Tend(cast, seed, done.Hurt ?? "rough");
+                else if (kind == "beg")
+                {
+                    // the answer comes from the asked one's own nature (Exchanges.Manner); the scene's kind is how it went
+                    long bday = Bridge.Now() / 1440;
+                    string bk;
+                    int bst;
+                    bool bg;
+                    s = Scenes.Beg(cast, seed, Exchanges.Manner(done, (InnerLife.WorryNow(done.P, bday, out bk, out bst, out bg) && bst == 2) || done.Hurt != null));
+                }
+                else if (kind == "rough" || kind == "lift" || kind == "drunk")
+                {
+                    long tday = Bridge.Now() / 1440;
+                    string wk;
+                    int wst;
+                    bool wg;
+                    string answer = Exchanges.Manner(done, (InnerLife.WorryNow(done.P, tday, out wk, out wst, out wg) && wst == 2) || done.Hurt != null);
+                    SceneTie bad = _store.Ties.FirstOrDefault(t => t.Has(doer.Id) && t.Has(done.Id));
+                    // a lift is noticed too late now and then: by the alert, more often (the thief is long gone by then)
+                    s = kind == "rough" ? Scenes.Rough(cast, seed, bad != null && bad.Warmth < 0, answer)
+                      : kind == "lift" ? Scenes.Lift(cast, seed, Voice.Chance(seed + "late", Reasons.Alert(done.Temper) ? 60 : 35))
+                      : Scenes.Drunk(cast, seed, answer);
+                }
+                else if (kind.StartsWith("x:"))
                 {
                     // an exchange written for the reason (Exchanges.cs): the second one's answer comes from their own state
                     Someone fw = pr.Why.BFirst ? pr.B.Who : pr.A.Who, sw = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
@@ -136,7 +212,7 @@ namespace EnrageWestworld.InGame
                     string wk;
                     int wst;
                     bool wg;
-                    bool atWorst = InnerLife.WorryNow(sw.P, day, out wk, out wst, out wg) && wst == 2;
+                    bool atWorst = (InnerLife.WorryNow(sw.P, day, out wk, out wst, out wg) && wst == 2) || sw.Hurt != null;   // sore from today, too
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(fw.Id) && t.Has(sw.Id));
                     string fn = cast.Names[0] ?? Person.FirstOf(fw.Name), sn = cast.Names[1] ?? Person.FirstOf(sw.Name);
                     s = kind == "x:debt" || kind == "x:feud" || kind == "x:courting"
@@ -147,7 +223,13 @@ namespace EnrageWestworld.InGame
                     s = Scenes.Make(kind, cast, seed);
                 if (s == null)
                     continue;
-                if (pr.Apart > 2.6f)
+                if (pr.Apart > 2.6f && (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend"))
+                {
+                    // trouble goes to its victim: the attacker, the thief or the drunk walks over, and the other stays put
+                    // (at the bar the rough move needs; the Director's "meet" works whichever of the two walks)
+                    s.Beats.Insert(0, new Beat(0, null, null, "meet"));
+                }
+                else if (pr.Apart > 2.6f)
                 {
                     // apart: one turns to the other, the second walks over, and not a word until they're face to face
                     // (the Director's "meet" waits for it, and gives up if they never get there)
@@ -157,11 +239,65 @@ namespace EnrageWestworld.InGame
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
                           " (strength " + pr.Why.Strength + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
                 List<Ped> cast2 = new List<Ped> { first, second };
+                AddBarkeep(s, cast2, cast, seed, saloon);
                 AddBystander(s, cast2, cast, seed, now);
                 StartScene(s, cast2, cast, seed, now);
                 return true;
             }
             return false;
+        }
+
+        /// In a saloon, the barkeep has his say when it gets rough (a face in the bar, fists, a drunk on the floor): he
+        /// joins the scene as its third person with one line, after the trouble itself.
+        private void AddBarkeep(Scene s, List<Ped> people, SceneCast cast, string seed, bool saloon)
+        {
+            string line = saloon && s.Cast == 2 && people.Count == 2 ? Scenes.Barkeep(s.Kind, seed) : null;
+            if (line == null)
+                return;
+            Ped me = Game.Player.Character;
+            Ped keep = World.GetAllPeds().FirstOrDefault(p => p != null && p.Exists() && !ENTITY.IS_ENTITY_DEAD(p.Handle) && PostKindOf(p) != null && PostKindOf(p).Role == "the barkeep" &&
+                                                           p.Position.DistanceTo(people[0].Position) < 18f && !_director.Involves(p.Handle));
+            if (keep == null)
+                return;
+            string cant = Natives.StoryModel(keep) ? "one of the story's own people" : !IsGrownUp(keep) ? "not a grown-up" : !CanDirect(keep) ? "can't be directed now" : null;
+            if (cant != null)
+            {
+                Log.Write("BARKEEP left out (" + cant + ") of the " + s.Kind);   // the casting rules: never a story character, adults only, CanDirect
+                return;
+            }
+            string after = s.Kind == "rough" ? "slam" : s.Kind == "brawl" ? "endfight" : "passout";
+            int at = s.Beats.FindIndex(b => b.Act == after);
+            if (at < 0)
+                return;
+            s.Beats.Insert(at + 1, new Beat(2, line, "angry"));
+            s.Cast = 3;
+            people.Add(keep);
+            Resident holder = HolderAt(keep, PostKindOf(keep));
+            cast.Names[2] = holder != null ? Person.FirstOf(holder.Name) : null;
+            Log.Write("BARKEEP " + (cast.Names[2] ?? "the barkeep") + " has his say about the " + s.Kind);
+        }
+
+        /// Why a trouble scene can't be played with these two now, or null if it can (other kinds: null).
+        private string TroubleCant(string kind, Ped first, Ped second, SceneCast cast)
+        {
+            switch (kind)
+            {
+                case "rough":
+                    if (!_cfg.RoughHandling) return "RoughHandling is off";
+                    return RoughCanPlay(second) ? null : "no table, bar or wall by him that the move fits";
+                case "lift":
+                    return _cfg.NpcThieves ? null : "NpcThieves is off";
+                case "pickpocket":
+                    // caught in the act (the older scene): the robbed one cries thief and he bolts for the player to run down;
+                    // one of those at a time, and its lines want a man
+                    if (!_cfg.NpcThieves || !_cfg.Pickpockets) return "NpcThieves or Pickpockets is off";
+                    return _theft != null ? "a thief is already running" : cast.AWoman ? "the lines want a man thief" : null;
+                case "drunk":
+                    if (!_cfg.DrunkChallenges) return "DrunkChallenges is off";
+                    return STREAMING.DOES_ANIM_DICT_EXIST(Director.DrunkDict) ? null : "this game is missing the drunk-dueler animation set";
+                default:
+                    return null;
+            }
         }
 
         /// One named person watching close by may call out once (Crowd.cs): they join the scene as its third person,
@@ -199,6 +335,7 @@ namespace EnrageWestworld.InGame
             s.Cast = 3;
             people.Add(by.Ped);
             cast.Names[2] = Person.FirstOf(by.Who.Name);
+            cast.Tempers[2] = by.Who.Temper;
             cast.CWoman = by.Who.Woman;
             Log.Write("BYSTANDER " + by.Who.Name + " watches " + an + " & " + bn + " (" + s.Kind + ") and calls out");
         }

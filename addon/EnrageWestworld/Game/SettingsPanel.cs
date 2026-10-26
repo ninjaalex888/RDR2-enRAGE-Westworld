@@ -63,7 +63,7 @@ namespace EnrageWestworld.InGame
             { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
             { "CryingWomanChance", "CryingWoman" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
             { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" },
-            { "FeelingBarsMetres", "FeelingBars" }, { "FeelingBarsShowEmpty", "FeelingBars" }, { "RealVoiceTalkSeconds", "RealVoiceTalk" }, { "CrudeTalk", "RealVoiceTalk" }        };
+            { "FeelingBarsMetres", "FeelingBars" }, { "FeelingBarsShowEmpty", "FeelingBars" }, { "RealVoiceTalkSeconds", "RealVoiceTalk" }, { "CrudeTalk", "RealVoiceTalk" }, { "Reactions", "Drama" }, { "RoughHandling", "Drama" }, { "NpcThieves", "Drama" }, { "DrunkChallenges", "Drama" }        };
 
         // sections whose first setting switches the whole section on or off
         private static readonly Dictionary<string, string> Masters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -88,7 +88,7 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
-            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "Subtitles for what's said to you" }, { "FlirtPrompt", "Flirt in the lock-on menu (H)" }, { "TerritoryNews", "enRAGE's territory changes as updates" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "CrudeTalk", "Crude remarks (saloons, sweethearts)" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
+            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "Subtitles for what's said to you" }, { "FlirtPrompt", "Flirt in the lock-on menu (H)" }, { "TerritoryNews", "enRAGE's territory changes as updates" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "CrudeTalk", "Crude remarks (saloons, sweethearts)" }, { "RoughHandling", "Faces into the bar (rough handling)" }, { "Reactions", "People react to what's done and said to them" }, { "NpcThieves", "Pickpockets among townsfolk" }, { "DrunkChallenges", "Drunks who call men out" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMin", "He does odd things at least (metres)" }, { "StalkerActMax", "... and at most (metres)" },
             { "StalkerKey", "Make a stalker now" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },

@@ -259,7 +259,7 @@ namespace EnrageWestworld.InGame
                 _pairTalkedAt[TalkPairKey(t.People[0], t.People[1])] = now;
             // a word exchanged is remembered between them, as any small talk is
             if (how == "over" && t.People.All(p => p != null && p.Exists()))
-                NoteSceneTie(new Scene { Kind = "smalltalk" }, t.People.ToList());
+                NoteSceneTie("smalltalk", t.People.ToList());
             if (_talkedAt.Count > 200)
                 foreach (int h in _talkedAt.Where(kv => now - kv.Value > TalkPersonRestMs || now < kv.Value).Select(kv => kv.Key).ToList())
                     _talkedAt.Remove(h);

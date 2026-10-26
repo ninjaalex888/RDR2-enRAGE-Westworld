@@ -669,6 +669,15 @@ namespace EnrageWestworld.Core
                 if (th != null)
                     news.Add(th);
             }
+            // what happened between them and someone else today, told from their side of it (Ties.Thought): a face put
+            // into the bar, a purse gone, a coin given or refused, a quarrel, a courtship
+            SceneTie tie = Store.Ties.Where(t => t.Has(p.Id) && now - t.At >= 0 && now - t.At < 1440 && (Ties.Trouble(t.Kind) || (Ties.Effect(t.Kind) ?? 0) != 0) &&
+                                                 !st.Has("dt:" + t.OtherId(p.Id) + ":" + t.At)).OrderByDescending(t => t.At).FirstOrDefault();
+            if (tie != null)
+            {
+                st.Mark("dt:" + tie.OtherId(p.Id) + ":" + tie.At);
+                news.Add(Ties.Thought(tie, p.Id, seed, HasDied(tie.OtherId(p.Id))));
+            }
             Debt debt = Store.Debts.FirstOrDefault(x => !x.Settled && (x.FromId == p.Id || x.ToId == p.Id));
             if (debt != null && (now / 1440 - debt.Since / 1440) % 3 == 0)
                 news.Add(debt.ToId == p.Id ? Person.FirstOf(debt.FromName) + " still owes me " + Voice.Number(debt.Amount) + " dollars."
@@ -977,10 +986,33 @@ namespace EnrageWestworld.Core
         /// The game day, for the worry a life is going through; what the player did in this town in the last three
         /// days (from two hours after, when word has got round), newest first; this person's street scenes lately,
         /// and the ones between two others in their town.
+        /// What is going on around the player (and so around whoever near him is thinking), kept up by the game side.
+        public string NowWeather, NowPlace;
+        public bool NowIndoors;
+        public InnerLife.Witnessed LastScene;
+        public List<InnerLife.Nearby> Nearby = new List<InnerLife.Nearby>();
+        public long NearbyAt = -1000;   // game minute the list was made (stale after a few minutes: the ticker was off)
+        /// How long, in game minutes, people near a scene still have it on their minds.
+        public const long SeenForMinutes = 45;
+
+        /// A scene has just played out near the player: who was in it, so those watching think about it for a while.
+        public void SawScene(string kind, string aName, string bName, string aId, string bId, string town)
+        {
+            LastScene = new InnerLife.Witnessed { Kind = kind, AName = aName, BName = bName, AId = aId, BId = bId, Town = town, At = Store.LastGameMin };
+        }
+
         public InnerLife.Context ThoughtDay(string town, string id = null)
         {
             long now = Store.LastGameMin;
-            InnerLife.Context c = new InnerLife.Context { GameDay = now > 0 ? now / 1440 : -1, Dead = HasDied };
+            InnerLife.Context c = new InnerLife.Context { GameDay = now > 0 ? now / 1440 : -1, Dead = HasDied, Weather = NowWeather, Indoors = NowIndoors, Place = NowPlace, Now = now };
+            // what is going on around them now (set by the game side): a scene just played out in their town, and the
+            // others in sight (not themselves; the two in the scene think about it through their tie instead)
+            InnerLife.Witnessed seen = LastScene;
+            // (the scene is where the player is, and so is whoever near him is thinking: not necessarily their home town)
+            if (seen != null && now - seen.At >= 0 && now - seen.At < SeenForMinutes && seen.Town == CurrentTown)
+                c.JustSaw = seen;
+            if (Nearby != null && Nearby.Count > 0 && Math.Abs(now - NearbyAt) <= 3)
+                c.Nearby = Nearby.Where(n => n.Id != id).ToList();
             if (town != null)
             {
                 c.TownDeeds = Store.Deeds.Where(d => d.Town == town && InnerLife.TalkedAbout.Contains(d.Kind) && now - d.At >= 120 && now - d.At < 3 * 1440)

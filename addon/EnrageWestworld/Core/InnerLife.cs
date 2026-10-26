@@ -20,6 +20,12 @@ namespace EnrageWestworld.Core
             public List<SceneTie> TownTies;             // the town's talk: scenes between two others here lately, newest first
             public List<WorryLink> Linked;              // someone else's worry this person is the other end of (Links.cs)
             public Func<string, bool> Dead;             // whether someone in those has died since, by id (may be null)
+            public string Weather;                      // how it feels out (WeatherOf): rain, storm, snow, dust, fog, sun, grey; null unknown
+            public bool Indoors;                        // under a roof (the weather doesn't touch them; the place does)
+            public string Place;                        // the kind of place they're in: saloon, church, store, hotel... (null: the street)
+            public Witnessed JustSaw;                        // a scene that just played out in front of them, if any (InnerLife.Now.cs)
+            public List<Nearby> Nearby;                 // the other people in sight, as this one sees them
+            public long Now = -1;                       // the game minute (for how long ago today's ties were); -1 unknown
 
             public bool IsDead(string id)
             {
@@ -294,28 +300,32 @@ namespace EnrageWestworld.Core
             }
             else if (roll < 49)
                 own = Pick(ClockYear >= 1900 ? Era1907 : Era1899, p, seed, told);
+            else if (roll < 58)
+                own = NowThought(p, seed, told, day);   // what's going on around them right now (InnerLife.Now.cs)
             if (own != null)
                 return own;
-            if (roll < 49)
-                roll = 49 + roll * 51 / 49;   // nothing of their own for this roll: one of the timeless frames instead
+            if (roll < 58)
+                roll = 58 + roll * 42 / 58;   // nothing of their own for this roll: one of the timeless frames instead
             string[] pool;
-            if (roll < 61)
+            if (roll < 68)
                 pool = ByTrade[TradeGroup(p.Trade)];
-            else if (roll < 67)
+            else if (roll < 73)
                 pool = ForHour(hour);
-            else if (roll < 74)
-                pool = Body;
             else if (roll < 79)
-                pool = Mirror;
+                pool = Body;
             else if (roll < 83)
-                pool = Bias;
+                pool = Mirror;
             else if (roll < 86)
+                pool = Bias;
+            else if (roll < 88)
                 pool = Age;
-            else if (roll < 90)
+            else if (roll < 91)
                 pool = Mask;
-            else if (roll < 95 && p.Personality != null && ByTemper.ContainsKey(p.Personality))
+            else if (roll < 94)
+                pool = Pleasure;
+            else if (roll < 97 && p.Personality != null && ByTemper.ContainsKey(p.Personality))
                 pool = ByTemper[p.Personality];
-            else if (roll < 98 && p.Home != null && ByTown.ContainsKey(p.Home))
+            else if (roll < 99 && p.Home != null && ByTown.ContainsKey(p.Home))
                 pool = ByTown[p.Home];
             else
                 pool = ByFaith.ContainsKey(p.Devotion ?? "") ? ByFaith[p.Devotion] : ByFaith["Other"];

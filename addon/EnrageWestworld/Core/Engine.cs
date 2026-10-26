@@ -1462,9 +1462,8 @@ namespace EnrageWestworld.Core
 			return new Interest.Ask
 			{
 				Regard = regard, Drawn = drawn, Taken = taken, AtWorst = worry && stage == 2, Spam = st.FlirtedAt > 0 && now - st.FlirtedAt < 30, Temper = p.Personality,
-				Mood = null, Who = p,   // their mood today (InnerLife.MoodOf) joins in with the moods' own commit
-				 Worry = worry ? kind : null, Cash = PlayerCash,
-				BadHere = day.TownDeeds != null ? day.TownDeeds.Count : 0, GoodHere = goodHere, Saloon = false   // where they are (Engine.NowPlace) joins in with the moods' own commit
+				Mood = InnerLife.MoodOf(p, day, p.Id + "|flirtmood|" + day.GameDay), Who = p, Worry = worry ? kind : null, Cash = PlayerCash,
+				BadHere = day.TownDeeds != null ? day.TownDeeds.Count : 0, GoodHere = goodHere, Saloon = NowPlace == "saloon"
 			};
 		}
 

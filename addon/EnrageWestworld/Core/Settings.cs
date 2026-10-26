@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 52;
+        public const int CurrentVersion = 53;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -128,6 +128,10 @@ namespace EnrageWestworld.Core
         public bool RealVoiceTalk = true;
         public int RealVoiceTalkSeconds = 120;
         public bool CrudeTalk = true;
+        public bool RoughHandling = true;
+        public bool NpcThieves = true;
+        public bool DrunkChallenges = true;
+        public bool Reactions = true;
         public bool Standoffs = true;
         public bool Songs = true;
         public bool TallTales = true;
@@ -561,6 +565,10 @@ namespace EnrageWestworld.Core
             b.AppendLine("[Scenes]");
             b.AppendLine("RealVoiceTalk = " + B(RealVoiceTalk) + "   ; now and then two people standing together near you have a word in their real recorded voices: the weather, how they're getting on, a piece of news, a hello");
             b.AppendLine("RealVoiceTalkSeconds = " + RealVoiceTalkSeconds + "   ; about how often (seconds, 30 to 1800); each person then rests five minutes, and the pair fifteen");
+            b.AppendLine("Reactions = " + B(Reactions) + "   ; street scenes: the one spoken to reacts to the words by their nature (bristles, flinches, shakes their head, nods), and a man whose face goes into the bar reels");
+            b.AppendLine("RoughHandling = " + B(RoughHandling) + "   ; street scenes: a man with a grudge (or a hothead with drink in him) grabs another and smashes his face into the nearest table, bar or wall, with the game's own move; with nothing to hand it stays a fistfight");
+            b.AppendLine("NpcThieves = " + B(NpcThieves) + "   ; street scenes: someone short of money or light-fingered picks a well-off or drunk mark's pocket; mostly the mark never knows who");
+            b.AppendLine("DrunkChallenges = " + B(DrunkChallenges) + "   ; street scenes: a drunk in a saloon at night calls a man out and falls on his face before a punch is thrown");
             b.AppendLine("CrudeTalk = " + B(CrudeTalk) + "   ; in those conversations, the game's own crude remarks: a man to a woman in a saloon of an evening (she tells him off), or between sweethearts at night");
             b.AppendLine("SceneReactions = " + B(SceneReactions) + "   ; greet or antagonize someone in a scene: take a side, break up a fight, or stir it up");
             b.AppendLine("Standoffs = " + B(Standoffs) + "   ; two men square off in the street (guns come out only away from the law)");

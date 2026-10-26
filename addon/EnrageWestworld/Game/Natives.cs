@@ -119,6 +119,21 @@ namespace EnrageWestworld.InGame
             return (uint)slots[0] != 0;
         }
 
+        /// A ray from a to b: true and where it struck, and the surface's facing there, when something solid is in the way.
+        public static unsafe bool Probe(Vector3 a, Vector3 b, int ignore, out Vector3 hit, out Vector3 normal)
+        {
+            int handle = SHAPETEST.START_EXPENSIVE_SYNCHRONOUS_SHAPE_TEST_LOS_PROBE(a.X, a.Y, a.Z, b.X, b.Y, b.Z, 1 | 16, ignore, 7);
+            ulong* slots = stackalloc ulong[10];
+            for (int i = 0; i < 10; i++)
+                slots[i] = 0;
+            SHAPETEST.GET_SHAPE_TEST_RESULT(handle, (bool*)slots, (Vector3*)(slots + 1), (Vector3*)(slots + 5), (int*)(slots + 9));
+            // the game writes each vector as three 8-byte slots (x, y, z), not as a packed Vector3
+            float* f = (float*)slots;
+            hit = new Vector3(f[2], f[4], f[6]);
+            normal = new Vector3(f[10], f[12], f[14]);
+            return (uint)slots[0] != 0;
+        }
+
         /// The interior the entity stands in, as the game's interior type hash ("val_saloon_int"), or 0.
         public static unsafe uint InteriorType(int entity)
         {

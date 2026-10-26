@@ -543,7 +543,14 @@ in the file. The new ones:
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
-            SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true)
+            SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true),
+            Reactions (true): in a street scene the one spoken to reacts to the words by their
+            nature, and a man whose face goes into the bar reels
+            RoughHandling (true): a man with a grudge (or a hothead with drink in him) smashes another's
+            face into the nearest table, bar or wall; NpcThieves (true): pickpockets among the
+            townsfolk, and begging; DrunkChallenges (true): a drunk calls a man out at night
+            RealVoiceTalk (true), RealVoiceTalkSeconds (120): people near you talk to each other in
+            their real recorded voices; CrudeTalk (true): the game's crude remarks among them
 [Romance]   FlirtPrompt (true): Flirt in the game's lock-on menu, with Greet and Antagonize, on H
             (D-pad down on a pad)
 [Output]    NewsTo = corner | ticker | gamefeed

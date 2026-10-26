@@ -37,7 +37,9 @@ namespace EnrageWestworld.Core
             switch (kind)
             {
                 case "argue": case "snap": case "envy": case "debt": case "standoff": case "cheat": case "jealous": return "quarrel";
-                case "brawl": return "fight";
+                case "brawl": case "rough": return "fight";
+                case "drunk": return null;     // a man face down on the floor: the barkeep has his say, nobody takes a side
+                case "avoid": return null;   // nobody makes a speech of a man crossing the street
                 case "flirt": case "sweet": case "propose": case "makeup": case "cheer": return "warm";
                 case "comfort": return "sad";
                 default: return null;

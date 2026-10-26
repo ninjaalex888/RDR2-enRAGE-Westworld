@@ -210,7 +210,26 @@ namespace EnrageWestworld.InGame
             foreach (int h in _youStarted.Where(kv => now - kv.Value > 300000 || !ENTITY.DOES_ENTITY_EXIST(kv.Key)).Select(kv => kv.Key).ToList())
                 _youStarted.Remove(h);
 
+            // the fight lasts while someone who came at him is still in it, not only while he lands blows, so the law's
+            // window counts from its real end (seen 2026-10-25: punches, then a gun drawn, then a surrender at gunpoint,
+            // over a minute and a half in all, and the window from the last punch would have closed first)
+            if (_defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs && FoeStillIn(now, player, pos))
+                _lastDefenceAt = now;
             DefenceBounty(now);
+        }
+
+        /// Someone who came at him is still in the fight: alive, within 50 m, and fighting him or held at his gunpoint.
+        private bool FoeStillIn(int now, int player, Vector3 pos)
+        {
+            foreach (int h in _hits.Where(kv => kv.Value.CameAtYou).Select(kv => kv.Key).Concat(_cameAtYouSeen.Keys))
+            {
+                if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || ENTITY.GET_ENTITY_COORDS(h, false, false).DistanceTo(pos) > 50f)
+                    continue;
+                int at;
+                if (PED.IS_PED_IN_COMBAT(h, player) || (_aimedAt.TryGetValue(h, out at) && now - at < 3000))
+                    return true;
+            }
+            return false;
         }
 
         /// While he fights off people who came at him (and for 90 s after his last hit or kill on one), the bounty and
@@ -299,7 +318,8 @@ namespace EnrageWestworld.InGame
             if (_cfg.SelfDefenceNoBounty && !MISC.GET_MISSION_FLAG() && now - _lastOffenceAt > DefenceLaw.LookbackMs && now - _lastRealCrimeAt > DefenceLaw.LookbackMs &&
                 (_defendSince < 0 || (_lastOffenceAt < _defendSince - DefenceLaw.LookbackMs && _lastRealCrimeAt < _defendSince - DefenceLaw.LookbackMs)))
             {
-                on = now - _lastDefenceHitAt < 1500 || _hits.Values.Any(x => x.CameAtYou && !x.Done && now - x.At < 20000);
+                on = now - _lastDefenceHitAt < 1500 || _hits.Values.Any(x => x.CameAtYou && !x.Done && now - x.At < 20000) ||
+                     (_defendSince >= 0 && now - _lastDefenceAt < 1500);   // the fight still on (FoeStillIn renews it every scan)
                 if (!on)
                 {
                     ulong slot = 0;   // out-parameters take 8 bytes
@@ -643,6 +663,10 @@ namespace EnrageWestworld.InGame
             _nextPlaces = now + 1500;
             Ped me = Game.Player.Character;
             Vector3 pos = me.Position;
+            // what it's like around him, for the thoughts of the people near (InnerLife.Now.cs)
+            _engine.NowWeather = InnerLife.WeatherOf(MISC._GET_PREV_WEATHER_TYPE_HASH_NAME());
+            _engine.NowIndoors = _interiorType != 0;
+            _engine.NowPlace = _placeKind;
             string town = _bridge.TownAt(pos);
             if (town != _placeTown)
             {

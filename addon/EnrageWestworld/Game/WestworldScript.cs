@@ -967,6 +967,10 @@ namespace EnrageWestworld.InGame
 			{
 				_talkTestRequested = true;   // Shift+F7: two people near you talk in their real voices (WestworldScript.Talk.cs)
 			}
+			else if (RoughTestKey.Matches(e))
+			{
+				_roughTestRequested = true;   // Shift+F9: one man near you smashes another's face on the bar (WestworldScript.Roughs.cs)
+			}
 			else if (_testKey.Matches(e))
 			{
 				_testRequested = true;
@@ -1021,6 +1025,10 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST subtitles: " + SubtitlesStatus());
 			Log.Write("TEST territory: " + TerritoryStatus());
 			Log.Write("TEST flirt prompt: " + FlirtPromptStatus());
+			Log.Write("TEST rough: " + RoughStatus());
+			Log.Write("TEST reactions: " + ReactionsStatus());
+			Log.Write("TEST trouble: " + TroubleStatus());
+			Log.Write("TEST now: " + NowStatus());
 			Log.Write("TEST settings: " + SettingsStatus());
 			if (nemesisRecord == null)
 			{
