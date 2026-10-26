@@ -101,6 +101,8 @@ namespace EnrageWestworld.InGame
 
 		private bool _flirtRequested;
 
+		private int _flirtSaidUntil;   // a flirt's two lines are being said: another press waits for them
+
 		private readonly Random _rng = new Random();
 
 		private static readonly Regex Childlike = new Regex("kid|child|teen|jack|(?<!cow)boy|(?<!show|saloon|cow|bar)girl");
@@ -663,7 +665,7 @@ namespace EnrageWestworld.InGame
 						voiced++;
 					}
 				}
-				Feed.Say(you ? firstName : speaker, text, voice, toYou: true);
+				Feed.Say(you ? firstName : speaker, text, voice, toYou: !you);   // Arthur's own lines get no subtitle
 			}
 		}
 
@@ -1110,8 +1112,14 @@ namespace EnrageWestworld.InGame
 				PLAYER.GET_PLAYER_INTERACTION_TARGET_ENTITY(Game.Player.Handle, &num, p2: false, p3: false);
 			}
 			Ped ped = ((num != 0) ? new Ped(num) : NearestFacing(character, 4f));
+			if (Game.GameTime < _flirtSaidUntil)
+			{
+				Log.Write("FLIRT ignored: the last one is still being said.");
+				return;
+			}
 			if (ped == null)
 			{
+				Log.Write("FLIRT: nobody to flirt with (lock on to someone, or face them within 4 m).");
 				if (!_flirtHinted)
 				{
 					_flirtHinted = true;
@@ -1121,8 +1129,9 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			num = ped.Handle;
-			if (!ENTITY.DOES_ENTITY_EXIST(num) || ENTITY.IS_ENTITY_DEAD(num) || !PED.IS_PED_HUMAN(num) || PED.IS_PED_A_PLAYER(num) || ped.Position.DistanceTo(character.Position) > 8f || PED.IS_PED_IN_COMBAT(num, 0) || Feed.Talking)
+			if (!ENTITY.DOES_ENTITY_EXIST(num) || ENTITY.IS_ENTITY_DEAD(num) || !PED.IS_PED_HUMAN(num) || PED.IS_PED_A_PLAYER(num) || ped.Position.DistanceTo(character.Position) > 8f || PED.IS_PED_IN_COMBAT(num, 0))
 			{
+				Log.Write("FLIRT ignored: " + (ped.Position.DistanceTo(character.Position) > 8f ? "too far off (" + (int)ped.Position.DistanceTo(character.Position) + " m)" : PED.IS_PED_IN_COMBAT(num, 0) ? "they're fighting" : "not someone to flirt with") + ".");
 				return;
 			}
 			if (!IsGrownUp(ped))
@@ -1167,8 +1176,9 @@ namespace EnrageWestworld.InGame
 				bool drawn = Romance.DrawnTo("ped" + num, flag, otherIsWoman: false, _cfg.SameSexRomance);
 				string seed = num + "|" + Game.GameTime / 20000;
 				string reply = Romance.StrangerReply(flag, drawn, seed);
-				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed), Speech.When(character.Handle, "flatter", num), toYou: true);
-				Feed.Say(flag ? "A woman" : "A man", reply, Speech.For(num, reply, character.Handle, fallback: drawn ? "flatter" : "no"), toYou: true);
+				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed), Speech.When(character.Handle, "flatter", num), ahead: true);
+				Feed.Say(flag ? "A woman" : "A man", reply, Speech.For(num, reply, character.Handle, fallback: drawn ? "flatter" : "no"), toYou: true, ahead: true);
+				_flirtSaidUntil = Game.GameTime + 7000;
 				LookAt(num, character.Handle);
 				NoteFlirt(ped, Director.Kind(ped, flag));
 			}
@@ -1181,11 +1191,13 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			int me = Game.Player.Character.Handle;
-			Feed.Say(_engine.Player.FirstName, r.YouSay, Speech.When(me, "flatter", ped), toYou: true);
+			// the player asked for this: it goes ahead of what's waiting; Arthur's own line gets no subtitle, the reply does
+			Feed.Say(_engine.Player.FirstName, r.YouSay, Speech.When(me, "flatter", ped), ahead: true);
 			if (r.Reply != null)
 			{
-				Feed.Say(name, r.Reply, Speech.For(ped, r.Reply, me, hate), toYou: true);
+				Feed.Say(name, r.Reply, Speech.For(ped, r.Reply, me, hate), toYou: true, ahead: true);
 			}
+			_flirtSaidUntil = Game.GameTime + 7000;
 			foreach (KeyValuePair<Person, string> jealou in r.Jealous)
 			{
 				Feed.Mutter(jealou.Key.Name, jealou.Key.Woman, jealou.Value);

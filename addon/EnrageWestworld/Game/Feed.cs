@@ -33,6 +33,8 @@ namespace EnrageWestworld.InGame
 			public int Ped;         // who says it, when known
 
 			public bool ToYou;      // said to the player: the only lines that get a subtitle (SubtitleRule)
+
+			public int Tries;       // times the game turned its voice down (a line said to you is tried again)
 		}
 
 		// A spoken line is its voice, at its turn in the queue. Only what's said to the player gets a subtitle, on the
@@ -59,6 +61,12 @@ namespace EnrageWestworld.InGame
 
 		private static readonly Queue<Line> _speech = new Queue<Line>();
 
+		private static readonly Queue<Line> _first = new Queue<Line>();   // what the player asked for (a flirt): ahead of the rest
+
+		private static Line _again;   // a line said to you whose voice the game turned down: tried again before anything else
+
+		private const int VoiceTries = 4, VoiceRetryMs = 700;
+
 		private static int _nextAt;
 
 		private static int _lastShownAt = -100000;
@@ -69,7 +77,7 @@ namespace EnrageWestworld.InGame
 		{
 			get
 			{
-				if (_speech.Count <= 0 && Game.GameTime - _lastShownAt >= 3500)
+				if (!Talking && Game.GameTime - _lastShownAt >= 3500)
 				{
 					return Game.GameTime < _nextAt;
 				}
@@ -77,29 +85,34 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
-		public static bool Talking => _speech.Count > 0;
+		public static bool Talking => _speech.Count > 0 || _first.Count > 0 || _again != null;
 
 		public static void Clear()
 		{
 			_speech.Clear();
+			_first.Clear();
+			_again = null;
 		}
 
 		/// A test key's answer, at once: what's queued to be said is dropped, and the answer is a top-left update.
 		public static void Interrupt(string text, int ms = 4000)
 		{
 			_speech.Clear();
+			_first.Clear();
+			_again = null;
 			_dropGroup = null;
 			Notice(null, text);
 			_lastShownAt = Game.GameTime;
 			_nextAt = Game.GameTime + ms;
 		}
 
-		public static void Say(string speaker, string text, Func<string> onShow = null, int ped = 0, bool toYou = false)
+		/// ahead: the player asked for it (a flirt), so it goes before everything already waiting, in the order given.
+		public static void Say(string speaker, string text, Func<string> onShow = null, int ped = 0, bool toYou = false, bool ahead = false)
 		{
 			object group = new object();
 			foreach (string item in Split(text, 150))
 			{
-				_speech.Enqueue(new Line
+				(ahead ? _first : _speech).Enqueue(new Line
 				{
 					Text = speaker + ": \"" + item + "\"",
 					Part = item,
@@ -178,11 +191,8 @@ namespace EnrageWestworld.InGame
 			int gameTime = Game.GameTime;
 			if (gameTime >= _nextAt)
 			{
-				while (_speech.Count > 0 && _dropGroup != null && _speech.Peek().Group == _dropGroup)
-				{
-					_speech.Dequeue();   // the rest of a line already replaced by the speaker's real words
-				}
-				Line line = _speech.Count > 0 ? _speech.Dequeue() : null;
+				Line line = _again ?? Next();
+				_again = null;
 				if (line != null)
 				{
 					int ms = line.Ms;
@@ -199,6 +209,15 @@ namespace EnrageWestworld.InGame
 							played = Speech.LastPlayed;
 							if (played)
 								_voicedGroup = line.Group;
+							else if (line.ToYou && ++line.Tries < VoiceTries)
+							{
+								// the game turned the voice down (the speaker busy a moment): try again shortly, before anything else
+								_again = line;
+								_nextAt = gameTime + VoiceRetryMs;
+								return;
+							}
+							else if (line.ToYou)
+								Log.Write("VOICE: " + line.Speaker + "'s line to you wasn't played (the game turned it down " + line.Tries + " times), so no subtitle");
 							if (!string.IsNullOrEmpty(words))
 							{
 								ms = Duration(words);
@@ -223,6 +242,21 @@ namespace EnrageWestworld.InGame
 					_lastShownAt = gameTime;
 					_nextAt = gameTime + ms;
 				}
+			}
+		}
+
+		/// The next line: what the player asked for first, then the rest; the rest of a line already replaced by the
+		/// speaker's real words is skipped.
+		private static Line Next()
+		{
+			while (true)
+			{
+				Queue<Line> q = _first.Count > 0 ? _first : _speech.Count > 0 ? _speech : null;
+				if (q == null)
+					return null;
+				Line l = q.Dequeue();
+				if (_dropGroup == null || l.Group != _dropGroup)
+					return l;
 			}
 		}
 
