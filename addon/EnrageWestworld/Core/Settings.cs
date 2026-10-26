@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 48;
+        public const int CurrentVersion = 50;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -156,7 +156,7 @@ namespace EnrageWestworld.Core
         public bool UseGameFeed;
         public string TestKey = "F7";
         public string WarNewsTo = "feed";
-        public string FlirtKey = "5";
+        public string FlirtKey = "F2";
         public string WakeKey = "Y";
         public string ReaderKey = "N";
         public bool ReloadIni = true;
@@ -291,10 +291,12 @@ namespace EnrageWestworld.Core
                 if (KeyIs(s.NewsTo, "ticker")) { s.NewsTo = "corner"; raised.Add("NewsTo ticker -> corner"); }
                 if (KeyIs(s.WarNewsTo, "right")) { s.WarNewsTo = "corner"; raised.Add("WarNewsTo right -> corner"); }
             }
-            if (s.SettingsVersion < 48 && KeyIs(s.FlirtKey, "F6"))
+            if ((s.SettingsVersion < 48 && KeyIs(s.FlirtKey, "F6")) || (s.SettingsVersion == 48 && KeyIs(s.FlirtKey, "5")))
             {
-                s.FlirtKey = "5";   // F6 is the game's camera (a key of your own is kept)
-                raised.Add("FlirtKey F6 -> 5");
+                // F6 is the game's camera, and 5 (the default for one version) takes out the melee slot of the item
+                // wheel; a key of your own is kept
+                raised.Add("FlirtKey " + s.FlirtKey + " -> F2");
+                s.FlirtKey = "F2";
             }
             if (s.SettingsVersion < 46)
             {

@@ -147,7 +147,7 @@ namespace EnrageWestworld.InGame
 			Log.Debug = _cfg.DebugLog;
 			Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
 			_testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
-			_flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.D5);
+			_flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F2);
 			Setup04();
 			_loadedAt = Environment.TickCount;
 			string[] obj2 = new string[9] { "RealNPCs ", _version, " loaded (", base.FileName, "). Test key: ", null, null, null, null };

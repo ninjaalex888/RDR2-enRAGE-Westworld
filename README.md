@@ -49,7 +49,7 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 |---|---|
 | Ctrl+F7 or Alt+F | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text. Press either again to close it. Alt+F11 opens it too, but only on enRAGE 0.9.5.3 |
 | F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log |
-| 5 | Flirt with the person you're looking at |
+| F2 | Flirt with the person you're looking at |
 | N | Read your letters, diaries and clippings, or take a diary you've just found |
 | ] | Make a stalker now: someone near you (someone with a history with you first), or a stranger if nobody near can be. The log says what it's waiting for |
 | Y | Wake the person you are facing one stage (West World), so you can see what each stage does |
