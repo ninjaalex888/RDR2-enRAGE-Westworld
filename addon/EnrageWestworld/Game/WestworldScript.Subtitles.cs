@@ -24,7 +24,7 @@ namespace EnrageWestworld.InGame
             "to you, synced, flags 1/1", "to you, the scripted way", "to another person, flags 1/1", "to nobody, flags 1/1"
         };
 
-        private bool _subProbeRequested, _subNoted;
+        private bool _subProbeRequested, _subNoted, _subRunning, _subScriptedPlaying;   // running: from the key until the last way (_subWay is -1 before the first)
         private int _subWay = -1, _subNextAt, _subScripted = -1, _subScriptedUntil;
         private Ped _subWho, _subOther;
         private string _subLast;
@@ -34,7 +34,7 @@ namespace EnrageWestworld.InGame
         {
             if (_aSubtitles == null)
                 _aSubtitles = () => SubtitleTick(_now);
-            if (!_subNoted || _subProbeRequested || _subWay >= 0)
+            if (!_subNoted || _subProbeRequested || _subRunning)
                 Safe("subtitle probe", _aSubtitles);
         }
 
@@ -52,14 +52,20 @@ namespace EnrageWestworld.InGame
                 ProbeStart(now);
                 return;
             }
-            if (_subWay < 0)
+            if (!_subRunning)
                 return;
             if (_subScripted >= 0)
             {
+                // the scripted way is played by asking every tick until it says it's finished (2)
                 int st = Speech.ScriptedPlay(_subScripted);
-                if (st != 0 || now > _subScriptedUntil)
+                if (st == 1 && !_subScriptedPlaying)
                 {
-                    Log.Write("SUBTITLE probe " + (_subWay + 1) + " of " + ProbeWays.Length + ": the scripted way " + (st == 1 ? "is playing" : st == 2 ? "played and finished" : "never started"));
+                    _subScriptedPlaying = true;
+                    Log.Write("SUBTITLE probe " + (_subWay + 1) + " of " + ProbeWays.Length + ": the scripted way is playing");
+                }
+                if (st == 2 || now > _subScriptedUntil)
+                {
+                    Log.Write("SUBTITLE probe " + (_subWay + 1) + " of " + ProbeWays.Length + ": the scripted way " + (st == 2 ? "played and finished" : _subScriptedPlaying ? "was still playing after 6 s" : "never started"));
                     _subScripted = -1;
                 }
             }
@@ -70,6 +76,7 @@ namespace EnrageWestworld.InGame
             {
                 Log.Write("SUBTITLE probe over" + (_subWay < ProbeWays.Length ? " early: " + _subLast + " is gone" : "") + ". Say which numbers showed the game's own subtitle.");
                 _subWay = -1;
+                _subRunning = false;
                 return;
             }
             ProbePlay(_subWay, now);
@@ -78,7 +85,7 @@ namespace EnrageWestworld.InGame
 
         private void ProbeStart(int now)
         {
-            if (_subWay >= 0)
+            if (_subRunning)
             {
                 Log.Write("SUBTITLE probe: one is already going on.");
                 return;
@@ -97,6 +104,7 @@ namespace EnrageWestworld.InGame
             _subLast = TalkName(_subWho);
             _subWay = -1;
             _subNextAt = now;
+            _subRunning = true;
             Log.Write("SUBTITLE probe: " + _subLast + " (" + Natives.ModelName(_subWho) + ", " + (int)_subWho.Position.DistanceTo(me.Position) + " m) greets you " + ProbeWays.Length +
                       " ways, 5 s apart" + (_subOther != null ? "; " + TalkName(_subOther) + " is the other person" : "; nobody else near, so way 7 is said to nobody") +
                       "; the game's Subtitles option is " + (HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON() ? "on" : "OFF"));
@@ -116,7 +124,8 @@ namespace EnrageWestworld.InGame
                     if (handle >= 0)
                     {
                         _subScripted = handle;
-                        _subScriptedUntil = now + 3000;
+                        _subScriptedPlaying = false;
+                        _subScriptedUntil = now + 6000;
                         Log.Write("SUBTITLE probe " + n + " of " + ProbeWays.Length + " (" + ProbeWays[way] + "): " + line + " made (handle " + handle + ")");
                         return;
                     }
@@ -141,7 +150,7 @@ namespace EnrageWestworld.InGame
         private string SubtitlesStatus()
         {
             return "RealNPCs draws none; [Output] Subtitles = " + _cfg.Subtitles + "; the game's own option " + (HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON() ? "on" : "OFF") +
-                   "; news to " + _cfg.NewsRoute + ", faction news to " + _cfg.WarRoute + "; probe (Ctrl+Shift+F7) " + (_subWay >= 0 ? "at way " + (_subWay + 1) + " of " + ProbeWays.Length : "idle");
+                   "; news to " + _cfg.NewsRoute + ", faction news to " + _cfg.WarRoute + "; probe (Ctrl+Shift+F7) " + (_subRunning ? "at way " + (_subWay + 1) + " of " + ProbeWays.Length : "idle");
         }
     }
 }
