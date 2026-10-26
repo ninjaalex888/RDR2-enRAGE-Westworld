@@ -53,14 +53,14 @@ namespace EnrageWestworld.Core
         public int FreshCount { get { return _fresh.Count; } }
 
         /// A new notice: it gets a turn soon and then joins the rotation.
-        public void Push(string label, string text, string kind = "news")
+        public void Push(string label, string text, string kind = "news", int handle = 0)
         {
             if (string.IsNullOrEmpty(text))
                 return;
             text = text.Trim();
             if (_fresh.Any(x => x.Text == text) || (Current != null && Current.Text == text))
                 return;
-            _fresh.Add(new TickerLine { Label = label, Text = text, Kind = kind, Fresh = true });
+            _fresh.Add(new TickerLine { Label = label, Text = text, Kind = kind, Fresh = true, Handle = handle });
             if (_fresh.Count > 6)
                 _fresh.RemoveAt(0);
         }

@@ -220,7 +220,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 }
                 _courtShown++;
-                _ticker.Push(t.Who + ", thinking", t.Text, "near");
+                _ticker.Push(t.Who + ", thinking", t.Text, "near", t.Handle);   // the gold mark goes over them
                 Log.Write("ROMANCE thought, " + t.Who + ": " + t.Text);
             }
         }
