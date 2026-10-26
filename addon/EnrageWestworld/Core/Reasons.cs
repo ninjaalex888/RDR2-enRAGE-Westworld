@@ -42,6 +42,7 @@ namespace EnrageWestworld.Core
     {
         /// Game minutes before the same two people have another scene (about four real minutes).
         public const long PairRest = 120;
+        public const long HostileRest = 45;   // a quarrel picks up again sooner than a friendship does (Lex: fights were too rare to see)
 
         /// Everything the place adds: is it a saloon, is it night, are there rumours to pass on, did the player do
         /// something in this town lately that people would talk about.
@@ -61,7 +62,7 @@ namespace EnrageWestworld.Core
             bool mixed = a.Woman != b.Woman, twoMen = !a.Woman && !b.Woman;
             if (tie != null)
             {
-                long rest = tie.Kind == "brawl" ? 1440 : PairRest;   // after a fight, a day before the next thing between them
+                long rest = tie.Kind == "brawl" ? 1440 : tie.Warmth < 0 ? HostileRest : PairRest;   // after a fight, a day before the next thing between them
                 if (now - tie.At >= 0 && now - tie.At < rest)
                     return null;   // they've just had words, or a walk together
             }
@@ -86,8 +87,9 @@ namespace EnrageWestworld.Core
                 }
                 if (tie.Warmth < 0)
                 {
-                    bool hot = a.Temper == "Hothead" || b.Temper == "Hothead" || a.Temper == "Proud" || b.Temper == "Proud";
-                    bool blows = twoMen && tie.Stage >= 1 && (hot || tie.Warmth <= -3 || tie.Stage >= 2);
+                    bool hot = Hot(a) || Hot(b);
+                    // the first quarrel can come to blows too, between two hot men or with drink in one of them
+                    bool blows = twoMen && ((tie.Stage >= 1 && (hot || tie.Warmth <= -3 || tie.Stage >= 2)) || (Hot(a) && Hot(b)) || (hot && (a.Drunk || b.Drunk)));
                     // blows between a hothead (or a proud or a cold man) and the man he hates: sometimes he grabs him and
                     // smashes his face into whatever is at hand instead of trading punches
                     if (blows && (Rough(a.Temper) || Rough(b.Temper)) && Voice.Hash(a.Id + b.Id + tie.Count + "rough") % 100 < RoughChance)
@@ -136,8 +138,12 @@ namespace EnrageWestworld.Core
             // (or any other worry): spoken to, they snap, and say what's wrong (Exchanges)
             if (worry && stage == 2)
             {
-                bool hot = x.Temper == "Hothead" || x.Temper == "Proud";
-                all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
+                bool hot = Hot(x);
+                // a hot man at the worst of it snaps at a man who won't take it: it comes to blows
+                if (hot && twoMen && Hot(y) && Voice.Chance(x.Id + gameDay + "snapblows", 20))
+                    all.Add(new Reason { Kind = "brawl", Strength = 56, Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
+                else
+                    all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
             }
             if (x.WakeStage >= 2 && y.WakeStage >= 1)
                 all.Add(new Reason { Kind = "hosts", Strength = 45, Why = "both are waking" });
@@ -161,13 +167,26 @@ namespace EnrageWestworld.Core
             // a drunk in a saloon at night calls a man out, and falls down before a blow is struck
             if (x.Drunk && twoMen && where.Saloon && where.Night && x.Temper != "Coward")
                 all.Add(new Reason { Kind = "drunk", Strength = 44, Why = x.Name + " is drunk and spoiling for a fight" });
-            if (x.Temper == "Hothead" && twoMen && where.Saloon)
+            // drink and temper in a saloon at night: two men, one of them hot, one of them drunk, come to blows (a coward
+            // only gets words); now and then the hot one does it rough
+            if (twoMen && where.Saloon && where.Night && Hot(x) && (x.Drunk || y.Drunk) && Voice.Chance(x.Id + gameDay + "drinktemper", DrinkTemperChance))
             {
-                // now and then a hothead with drink in him doesn't stop at words with whoever is in his way
-                if (Voice.Hash(x.Id + y.Id + gameDay + "srough") % 100 < StrangerRoughChance)
-                    all.Add(new Reason { Kind = "rough", Fallback = "argue", Strength = 32, Why = x.Name + " is a hothead with drink in him, and " + y.Name + " is in his way" });
+                if (y.Temper == "Coward")
+                    all.Add(new Reason { Kind = "argue", Strength = 46, Why = x.Name + " has drink and temper in him, and " + y.Name + " won't stand up to it" });
+                else if (Voice.Hash(x.Id + y.Id + gameDay + "drough") % 100 < RoughChance)
+                    all.Add(new Reason { Kind = "rough", Fallback = "brawl", Strength = 57, Why = x.Name + " has drink and temper in him, and does it rough" });
                 else
-                    all.Add(new Reason { Kind = "argue", Strength = 30, Why = x.Name + " is a hothead with drink in him" });
+                    all.Add(new Reason { Kind = "brawl", Strength = 56, Why = x.Name + " has drink and temper in him, and " + y.Name + " answers it" });
+            }
+            else if (x.Temper == "Hothead" && twoMen && where.Saloon)
+            {
+                // now and then a hothead with drink in him doesn't stop at words with whoever is in his way; at night he
+                // wins the turn over most things (Lex: fights were too rare to see)
+                int night = where.Night ? 14 : 0;
+                if (Voice.Hash(x.Id + gameDay + "srough") % 100 < StrangerRoughChance)
+                    all.Add(new Reason { Kind = "rough", Fallback = "argue", Strength = 32 + night, Why = x.Name + " is a hothead with drink in him, and " + y.Name + " is in his way" });
+                else
+                    all.Add(new Reason { Kind = "argue", Strength = 30 + night, Why = x.Name + " is a hothead with drink in him" });
             }
             // someone free and taken with the one beside them makes eyes at them; the answer is the other's own
             Reason court = Courtship(x, y, gameDay, where);
@@ -224,6 +243,13 @@ namespace EnrageWestworld.Core
 
         /// Percent of fistfights between enemies that a rough man turns into a face into the table instead.
         public const int RoughChance = 45;
+        public const int DrinkTemperChance = 35;   // a hothead, a night: drink and temper in the saloon come to blows (rolled per man, not per pair)
+
+        /// Quick to anger: a hothead or a proud man.
+        public static bool Hot(Someone s)
+        {
+            return s != null && (s.Temper == "Hothead" || s.Temper == "Proud");
+        }
         /// Percent of a saloon hothead's run-ins with a stranger that go that far.
         public const int StrangerRoughChance = 15;
 

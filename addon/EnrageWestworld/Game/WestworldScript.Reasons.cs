@@ -20,7 +20,9 @@ namespace EnrageWestworld.InGame
         private const float ReasonApart = 7f;      // the two at most this far from each other
         private const float LinkedApart = 18f;     // ...or this far, when one is at the other end of the other's worry
         private const int PersonRestMs = 120000;   // real time before someone is in another scene
+        private const int FoughtRestMs = 900000;   // ...or after coming to blows (a brawl, a rough, a drunk's challenge)
         private readonly Dictionary<int, int> _sceneAtHandle = new Dictionary<int, int>();
+        private readonly Dictionary<int, int> _restMsOf = new Dictionary<int, int>();   // a longer rest than PersonRestMs, by handle
         private int _nextChance;
 
         private sealed class Candidate
@@ -48,8 +50,7 @@ namespace EnrageWestworld.InGame
                     PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || _wakeActs.Any(w => w.Handle == h) ||
                     PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h))
                     continue;
-                int at;
-                if (_sceneAtHandle.TryGetValue(h, out at) && now - at < PersonRestMs && now >= at)
+                if (Resting(h, now))
                     continue;
                 Someone who = SomeoneOf(p);
                 if (who != null)
@@ -263,10 +264,12 @@ namespace EnrageWestworld.InGame
                 }
                 else if (pr.Apart > 2.6f)
                 {
-                    // apart: one turns to the other, the second walks over, and not a word until they're face to face
-                    // (the Director's "meet" waits for it, and gives up if they never get there)
-                    s.Beats.Insert(0, new Beat(1, null, null, "meet"));
-                    s.Beats.Insert(0, new Beat(0, null, null, "face"));
+                    // apart: one turns to the other, the other walks over, and not a word until they're face to face (the
+                    // Director's "meet" waits for it, and gives up if they never get there). The second walks, unless they
+                    // sit or lean and the first doesn't: then the first does (a seated man was too often left waiting for)
+                    int walker = PED.IS_PED_USING_ANY_SCENARIO(second.Handle) && !PED.IS_PED_USING_ANY_SCENARIO(first.Handle) ? 0 : 1;
+                    s.Beats.Insert(0, new Beat(walker, null, null, "meet"));
+                    s.Beats.Insert(0, new Beat(1 - walker, null, null, "face"));
                 }
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
                           " (strength " + pr.Why.Strength + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
@@ -399,15 +402,38 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// Notes everyone in a scene, so they sit the next PersonRestMs out.
-        private void NoteInScene(IEnumerable<Ped> people, int now)
+        /// Notes everyone in a scene, so they sit the next PersonRestMs out; the two who come to blows sit FoughtRestMs out.
+        private void NoteInScene(IList<Ped> people, string kind, int now)
         {
-            foreach (Ped p in people)
-                if (p != null)
-                    _sceneAtHandle[p.Handle] = now;
+            bool blows = kind == "brawl" || kind == "rough" || kind == "drunk";
+            for (int i = 0; i < people.Count; i++)
+            {
+                Ped p = people[i];
+                if (p == null)
+                    continue;
+                _sceneAtHandle[p.Handle] = now;
+                if (blows && i < 2)
+                    _restMsOf[p.Handle] = FoughtRestMs;
+                else
+                    _restMsOf.Remove(p.Handle);
+            }
             if (_sceneAtHandle.Count > 200)
-                foreach (int h in _sceneAtHandle.Where(kv => now - kv.Value > PersonRestMs || now < kv.Value).Select(kv => kv.Key).ToList())
+                foreach (int h in _sceneAtHandle.Where(kv => !Resting(kv.Key, now)).Select(kv => kv.Key).ToList())
+                {
                     _sceneAtHandle.Remove(h);
+                    _restMsOf.Remove(h);
+                }
+        }
+
+        /// Sitting out after a scene: PersonRestMs, or longer for the two who fought.
+        private bool Resting(int h, int now)
+        {
+            int at, ms;
+            if (!_sceneAtHandle.TryGetValue(h, out at) || now < at)
+                return false;
+            if (!_restMsOf.TryGetValue(h, out ms))
+                ms = PersonRestMs;
+            return now - at < ms;
         }
 
         /// The worries with a real person at the other end, in the town you're in (all towns elsewhere): who, the
@@ -436,13 +462,16 @@ namespace EnrageWestworld.InGame
         private string ReasonsStatus()
         {
             Ped me = Game.Player.Character;
-            List<Candidate> people = ReasonCandidates(me, Game.GameTime);
+            int now = Game.GameTime;
+            int fought = _restMsOf.Keys.Count(h => Resting(h, now));
+            string sat = fought > 0 ? fought + " who came to blows sitting it out (" + FoughtRestMs / 60000 + " min); " : "";
+            List<Candidate> people = ReasonCandidates(me, now);
             if (people.Count < 2)
-                return people.Count + " named people free near you; no pairs";
+                return sat + people.Count + " named people free near you; no pairs";
             List<PairReason> found = PairReasons(people, _placeKind == "saloon");
             if (found.Count == 0)
-                return people.Count + " named people free near you; none has a reason with anyone close by (a chance meeting now and then)";
-            return people.Count + " named people free near you; " + string.Join("; ", found.Take(5).Select(pr =>
+                return sat + people.Count + " named people free near you; none has a reason with anyone close by (a chance meeting now and then)";
+            return sat + people.Count + " named people free near you; " + string.Join("; ", found.Take(5).Select(pr =>
                 pr.A.Who.Name + " & " + pr.B.Who.Name + ": " + pr.Why.Why + " -> " + pr.Why.Kind + " (" + pr.Why.Strength + ", " + (int)pr.Apart + " m apart" +
                 (new[] { pr.A.Ped, pr.B.Ped }.Any(p => ENTITY.IS_ENTITY_ON_SCREEN(p.Handle)) ? ", in view" : ", out of view") + ")"));
         }

@@ -355,8 +355,10 @@ namespace EnrageWestworld.InGame
                     Ped w = l.Cast[l.MeetWalker], o = l.Cast[1 - l.MeetWalker];
                     TASK.TASK_GO_TO_ENTITY(w.Handle, o.Handle, 20000, 1.4f, 1.3f, 0f, 0);
                 }
-                // B is still walking over: the first word waits until they're face to face
-                if (l.Cast[0].Position.DistanceTo(l.Cast[1].Position) <= 2.4f)
+                // B is still walking over: the first word waits until they're face to face, or near enough across a bar or a
+                // table when the one waiting sits or leans there (3.6 m: they often stopped short at the counter)
+                Ped waiting = l.Cast[1 - l.MeetWalker];
+                if (l.Cast[0].Position.DistanceTo(l.Cast[1].Position) <= (PED.IS_PED_USING_ANY_SCENARIO(waiting.Handle) ? 3.6f : 2.4f))
                 {
                     l.MeetUntil = 0;
                     Act(l, "face", 0, 1, 0);

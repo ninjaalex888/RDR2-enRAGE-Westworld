@@ -436,7 +436,8 @@ LIVES IN MOTION
 ---------------
 - Scenes: strangers near you flirt, argue, call in debts, catch a cheat at cards, propose, catch
   their spouse being sweet-talked, and sometimes come to blows (fists only: if one reaches for a
-  gun, it goes back in the holster). In saloons they trade
+  gun, it goes back in the holster): most often two hot-tempered men with bad blood, or a hothead
+  with drink in him in a saloon at night. In saloons they trade
   the rumours going round, and loose talk can give away a gang job, which then shows up in
   enRAGE like any other tip.
 - Weddings: when two of enRAGE's people get engaged, a wedding is set at the church in their town.
