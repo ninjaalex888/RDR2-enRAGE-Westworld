@@ -337,8 +337,8 @@ A thin bar at the very bottom of the screen.
   part first; from someone's thought it moves on to the news.
 - It hides in menus, cutscenes, the pause menu, when the HUD is hidden, and while enRAGE's own
   menus are open.
-Spoken lines (people talking to you) still use the subtitle line, as before.
-Ticker = false turns it off; NewsTo = subtitles brings back 0.3's subtitle notices.
+RealNPCs draws no subtitles (0.6.2): what people say is their voice, and the game shows its own
+subtitles where it does. Ticker = false turns the ticker off.
 
 
 YOUR DEEDS
@@ -510,7 +510,7 @@ Saved changes are picked up in game within a few seconds (ReloadIni). Every opti
 in the file. The new ones:
 
 [Ticker]    Ticker (true), TickerNearbyMetres (30), TickerSeconds (12), TickerY (0.962, height on
-            screen), TickerScale (0.30, text size), TickerWidth (0.60), NoticesAsSubtitles (false),
+            screen), TickerScale (0.30, text size), TickerWidth (0.60),
             TickerNextKey (T): the next line now, ThoughtSounds (true): a small sound from someone
             near as their thought shows
 [Display]   FeelingBars (true): bars under people near you for their fear, liking and anger,
@@ -544,11 +544,13 @@ in the file. The new ones:
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
             SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true)
-[Output]    NewsTo = ticker | subtitles | enrage | gamefeed
-                ticker: the ticker (default); subtitles: 0.3's subtitle notices;
-                enrage: enRAGE's own notice line (its message settings decide) and its feed;
-                gamefeed: EXPERIMENTAL top-left toasts
-            WarNewsTo (right | ticker): where gang and faction news goes
+[Output]    NewsTo = corner | ticker | gamefeed
+                corner: the "Around town" box (default); ticker: the ticker;
+                gamefeed: the game's own updates, top left
+            WarNewsTo (feed | corner | ticker): where gang and faction news goes (feed, the default:
+                the game's own updates, top left)
+            Subtitles (game | off): the game's own subtitles for what's said to you; RealNPCs draws
+                none of its own (the game's Subtitles option has to be on)
             TestKey (F7), FlirtKey (F6), WakeKey (Y), ReaderKey (N), ReloadIni (true),
             ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel (enRAGE 0.9.5.3 only),
             SettingsKey (Ctrl+F7) and SettingsKey2 (Alt+F) open and close it with any enRAGE version

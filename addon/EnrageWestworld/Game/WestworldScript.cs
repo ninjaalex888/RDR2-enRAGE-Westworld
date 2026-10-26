@@ -146,7 +146,6 @@ namespace EnrageWestworld.InGame
 			_cfg = EnrageWestworld.Core.Settings.Load(Path.Combine(_dir, "RealNPCs.ini"), Log.Write).Gated();   // the master switches applied; the ini keeps the player's own values
 			Log.Debug = _cfg.DebugLog;
 			Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
-			Feed.UseGameFeed = _cfg.UseGameFeed;
 			_testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
 			_flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F6);
 			Setup04();
@@ -957,7 +956,11 @@ namespace EnrageWestworld.InGame
 			{
 				return;
 			}
-			if (TalkTestKey.Matches(e))
+			if (SubtitleProbeKey.Matches(e))
+			{
+				_subProbeRequested = true;   // Ctrl+Shift+F7: one greeting played every way in turn (WestworldScript.Subtitles.cs)
+			}
+			else if (TalkTestKey.Matches(e))
 			{
 				_talkTestRequested = true;   // Shift+F7: two people near you talk in their real voices (WestworldScript.Talk.cs)
 			}
@@ -1012,6 +1015,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST links: " + LinksStatus());
 			Log.Write("TEST posts: " + PostsStatus());
 			Log.Write("TEST encounters: " + EncountersStatus());
+			Log.Write("TEST subtitles: " + SubtitlesStatus());
 			Log.Write("TEST settings: " + SettingsStatus());
 			if (nemesisRecord == null)
 			{

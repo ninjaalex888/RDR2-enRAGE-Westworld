@@ -5,8 +5,8 @@
 // of news, or a hello; and when the moment is right, about the riders going by (at once, not waiting), a story about
 // the town, a sweetheart's compliment, or a crude remark (a saloon of an evening, or sweethearts at night; CrudeTalk).
 // Each rests five minutes afterwards and the pair fifteen. A test key (Shift+F7) does the same
-// at once for the two closest to each other, the second walking over if they're apart. A subtitle appears as a line
-// starts: its words when the word list has them (a model with one voice), else a caption if OverheardTalk is on.
+// at once for the two closest to each other, the second walking over if they're apart. Nothing is drawn as they
+// talk (RealNPCs draws no subtitles; the game shows its own where it does).
 // The log says what played, which take and for how long.
 using System;
 using System.Collections.Generic;

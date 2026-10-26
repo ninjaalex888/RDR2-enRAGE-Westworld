@@ -110,9 +110,7 @@ namespace EnrageWestworld.InGame
         {
             Log.Debug = _cfg.DebugLog;
             Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
-            Feed.UseGameFeed = _cfg.NewsRoute == "gamefeed";
-            Feed.SubtitleMode = _cfg.Subtitles;
-            Feed.CaptionsOn = _cfg.OverheardTalk == "captions";
+            Feed.Fallback = (title, text) => NewsPush(title, text, "news");   // when the game won't take top-left updates
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
@@ -282,22 +280,16 @@ namespace EnrageWestworld.InGame
                     text = t.Text;
                     break;
                 case "world":
-                    // gang and faction news: the "Around town" box, or the game's pop-up on the right, apart from the ticker
-                    if (string.Equals(_cfg.WarNewsTo, "corner", StringComparison.OrdinalIgnoreCase))
-                    {
+                    // gang and faction news: the game's own top-left updates (by default), the "Around town" box, or the ticker
+                    string war = _cfg.WarRoute;
+                    if (war == "feed")
+                        Feed.Notice(t.Title, t.Text);
+                    else if (war == "corner")
                         NewsPush(t.Title, t.Text, "news");
-                        Log.Write("WORLD NEWS (corner): " + t.Title + ": " + t.Text);
-                        return;
-                    }
-                    if (string.Equals(_cfg.WarNewsTo, "right", StringComparison.OrdinalIgnoreCase) && Toaster.Post(t.Title, t.Text))
-                    {
-                        Log.Write("WORLD NEWS (right): " + t.Title + ": " + t.Text);
-                        return;
-                    }
-                    label = t.Title;
-                    text = t.Text;
-                    kind = "news";
-                    break;
+                    else
+                        _ticker.Push(t.Title, t.Text, "news");
+                    Log.Write("WORLD NEWS (" + war + "): " + t.Title + ": " + t.Text);
+                    return;
                 case "life":
                     label = t.Title == NameOf(t.PersonId) ? null : t.Title;
                     text = t.Text;
@@ -317,24 +309,18 @@ namespace EnrageWestworld.InGame
         {
             if (string.IsNullOrEmpty(text))
                 return;
-            string route = _cfg.NewsRoute;
+            string route = _cfg.NewsRoute;   // corner, ticker or gamefeed (Settings.NewsRoute): never white text
             if (route == "corner")
             {
                 NewsPush(label, text, kind);   // the "Around town" box (WestworldScript.News.cs)
-                if (!_cfg.NoticesAsSubtitles)
-                    return;
+                return;
             }
             if (route == "ticker")
             {
                 _ticker.Push(label, text, kind);
-                if (!_cfg.NoticesAsSubtitles)
-                    return;
-            }
-            if (route == "enrage" && _bridge != null)
-            {
-                _bridge.EnrageNotice((label != null ? label + (self != null ? ", to " + self : "") + ": " : "") + (kind == "thought" ? "\"" + text + "\"" : text));
                 return;
             }
+            // a toast at the top left of the screen (Toaster)
             if (kind == "thought")
                 Feed.Notice(label + ", to " + (self ?? "himself"), "\"" + text + "\"");
             else if (kind == "diary")
@@ -697,6 +683,7 @@ namespace EnrageWestworld.InGame
             RegularsStep(now);
             EncountersStep(now);
             TalkStep(now);
+            SubtitleStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);
             Safe("arrivals", _aArrival);

@@ -100,9 +100,8 @@ namespace EnrageWestworld.InGame
 			{
 				_broken = true;
 				Free(live);
-				Log.Write("Game feed toast failed, using subtitles from now on: " + ex.Message);
-				Feed.UseGameFeed = false;
-				Feed.Notice(keyValuePair.Key, keyValuePair.Value);
+				Log.Write("Game feed toast failed, using the \"Around town\" box from now on: " + ex.Message);
+				Feed.Notice(keyValuePair.Key, keyValuePair.Value);   // broken now, so this goes to Feed.Fallback
 			}
 		}
 

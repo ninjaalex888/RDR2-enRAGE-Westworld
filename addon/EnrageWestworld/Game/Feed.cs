@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Text;
 using RDR2;
 using RDR2.Native;
-using RDR2.UI;
 
 namespace EnrageWestworld.InGame
 {
@@ -27,22 +26,17 @@ namespace EnrageWestworld.InGame
 
 			public bool Spoken;     // said by someone (Say, SayFirst, Mutter), not a notice
 
-			public int Ped;         // who says it, when known: no subtitle while they're out of sight
+			public int Ped;         // who says it, when known
 
-			public bool ToYou;      // said to the player: keeps its subtitle on "matched" even without known words
-
-			public bool Real;       // a recording already playing, with its known words (Overheard)
-
-			public bool Caption;    // a recording already playing, captioned in the add-on's own words (Overheard)
+			public bool ToYou;      // said to the player (the game may show its own subtitle for it)
 		}
 
-		/// Overheard real-voice talk without known words gets a caption in the add-on's own words when this is on
-		/// ([Output] OverheardTalk = captions); otherwise none.
-		public static bool CaptionsOn;
+		// Nothing here is drawn on screen any more: the white subtitles were the game's objective line
+		// (Screen.PrintSubtitle), and showed words the voice wasn't saying. A spoken line is its voice, at its turn in the
+		// queue; a notice is a toast at the top left of the screen (Toaster), or the "Around town" box (Fallback).
 
-		/// Which spoken lines get a white subtitle ([Output] Subtitles): "matched" only when the speaker's recorded
-		/// words are known (voices\words.txt), "on" every line, "off" none. The voice plays either way.
-		public static string SubtitleMode = "matched";
+		/// Where a notice goes when the game won't take top-left updates (WestworldScript: the "Around town" box).
+		public static Action<string, string> Fallback;
 
 		/// Where a line goes when the speaker's real recorded words replace it on screen (the ticker).
 		public static Action<string, string> Thinking;
@@ -51,15 +45,11 @@ namespace EnrageWestworld.InGame
 
 		private static readonly Queue<Line> _speech = new Queue<Line>();
 
-		private static readonly Queue<Line> _news = new Queue<Line>();
-
 		private static int _nextAt;
 
 		private static int _lastShownAt = -100000;
 
 		public static int SpeechMs = 5000;
-
-		public static bool UseGameFeed;
 
 		public static bool Busy
 		{
@@ -78,16 +68,14 @@ namespace EnrageWestworld.InGame
 		public static void Clear()
 		{
 			_speech.Clear();
-			_news.Clear();
 		}
 
-		/// Shows a line right now, ahead of everything queued (for the test keys, so their answer isn't stuck behind other subtitles).
+		/// A test key's answer, at once: what's queued to be said is dropped, and the answer is a top-left update.
 		public static void Interrupt(string text, int ms = 4000)
 		{
 			_speech.Clear();
-			_news.Clear();
 			_dropGroup = null;
-			Screen.PrintSubtitle(Clean(text));
+			Notice(null, text);
 			_lastShownAt = Game.GameTime;
 			_nextAt = Game.GameTime + ms;
 		}
@@ -131,17 +119,16 @@ namespace EnrageWestworld.InGame
 				_speech.Enqueue(l);
 		}
 
-		/// A recording that has just started playing (a conversation in real voices): its words when the word list has
-		/// them, else a caption. Shown at once, ahead of the queue, since the voice is already speaking.
+		/// A recording that has just started playing (a conversation in real voices). Nothing is shown for it; it holds
+		/// the queue for about as long as it lasts, so no other line is voiced over it.
 		public static void Overheard(string speaker, string words, string caption, int ped)
 		{
-			bool real = !string.IsNullOrEmpty(words);
-			string text = real ? words : caption;
+			string text = !string.IsNullOrEmpty(words) ? words : caption;
 			if (text == null || text.Length == 0)
-				return;   // nothing to show for it
+				return;
 			Line[] rest = _speech.ToArray();
 			_speech.Clear();
-			_speech.Enqueue(new Line { Text = speaker + ": " + (real ? "\"" + text + "\"" : text), Ms = Duration(text), Speaker = speaker, Spoken = true, Ped = ped, Real = real, Caption = !real });
+			_speech.Enqueue(new Line { Text = speaker + ": " + text, Ms = Duration(text), Speaker = speaker, Spoken = true, Ped = ped });
 			foreach (Line l in rest)
 				_speech.Enqueue(l);
 			_nextAt = 0;
@@ -159,20 +146,15 @@ namespace EnrageWestworld.InGame
 			});
 		}
 
+		/// A notice (news, a hint, a test key's answer): a toast at the top left of the screen, or the "Around town" box
+		/// when the game won't take toasts. Never white text.
 		public static void Notice(string title, string text)
 		{
-			if (UseGameFeed && Toaster.Post(title, text))
-			{
+			if (text == null || text.Length == 0)
 				return;
-			}
-			foreach (string item in Split(string.IsNullOrEmpty(title) ? text : (title + ": " + text), 190))
-			{
-				_news.Enqueue(new Line
-				{
-					Text = item,
-					Ms = Duration(item) + 1000
-				});
-			}
+			if (Toaster.Post(title, text))
+				return;
+			Fallback?.Invoke(title, text);
 		}
 
 		public static void Tick()
@@ -185,23 +167,21 @@ namespace EnrageWestworld.InGame
 				{
 					_speech.Dequeue();   // the rest of a line already replaced by the speaker's real words
 				}
-				Line line = ((_speech.Count > 0) ? _speech.Dequeue() : ((_news.Count > 0) ? _news.Dequeue() : null));
+				Line line = _speech.Count > 0 ? _speech.Dequeue() : null;
 				if (line != null)
 				{
-					string text = line.Text;
 					int ms = line.Ms;
-					bool real = false;   // the subtitle shows what the recording really says
 					if (line.OnShow != null)
 					{
 						try
 						{
+							// the voice plays now; when its words are known the written line goes to the ticker as the
+							// speaker's thought, and the rest of it (split over several turns) is dropped
 							string words = line.OnShow();
 							if (!string.IsNullOrEmpty(words))
 							{
-								text = line.Speaker + ": \"" + words + "\"";
 								ms = Duration(words);
 								_dropGroup = line.Group;
-								real = true;
 								Thinking?.Invoke(line.Speaker, line.Full);
 							}
 						}
@@ -210,26 +190,10 @@ namespace EnrageWestworld.InGame
 							Log.Write("Voice: " + ex.Message);
 						}
 					}
-					if (ShowsSubtitle(line, real))
-						Screen.PrintSubtitle(Clean(text));
 					_lastShownAt = gameTime;
 					_nextAt = gameTime + ms;
 				}
 			}
-		}
-
-		/// Whether a line gets its white subtitle: notices always; a spoken line by SubtitleMode, and only while the
-		/// speaker (when known) is on screen and in plain view, so it's always clear who is talking.
-		private static bool ShowsSubtitle(Line line, bool real)
-		{
-			if (!line.Spoken)
-				return true;
-			real = real || line.Real;
-			if (SubtitleMode == "off" || (line.Caption && !CaptionsOn) || (SubtitleMode != "on" && !real && !line.ToYou && !line.Caption))
-				return false;   // on "matched", what's said to you keeps its subtitle; only overheard talk needs its real words
-			int ped = line.Ped;
-			return ped == 0 || (ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.IS_ENTITY_ON_SCREEN(ped) &&
-			                    ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(Game.Player.Character.Handle, ped, 17));
 		}
 
 		private static int Duration(string text)

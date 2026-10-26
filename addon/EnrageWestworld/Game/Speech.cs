@@ -13,6 +13,7 @@ namespace EnrageWestworld.InGame
     internal static class Speech
     {
         private const ulong PlayAmbientSpeech = 0x8E04FEDD28D42462;
+        private const ulong MakeScriptedSpeech = 0x72E4D1C4639BC465, PlayScriptedSpeech = 0xB18FEC133C7C6C69;
         private const int RetryFailedMs = 120000;
         private static readonly string[] Params = { "SPEECH_PARAMS_FORCE_NORMAL_CLEAR", "SPEECH_PARAMS_FORCE" };
         private static readonly HashSet<string> Worked = new HashSet<string>();
@@ -175,6 +176,52 @@ namespace EnrageWestworld.InGame
             p[6] = 1;
             p[7] = 1;
             return Function.Call<bool>(PlayAmbientSpeech, ped, p);
+        }
+
+        /// One play request with every field of the speech struct given (ScriptedSpeechParams: line, voice, take,
+        /// params, listener, sync over network, and two flags nobody has named, v7 and v8; Play sets both to 1). For the
+        /// subtitle probe: which of them make the game show its own subtitle.
+        public static unsafe bool PlayWith(int ped, string line, uint paramHash, int listener, int sync, int v7, int v8)
+        {
+            if (ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped))
+                return false;
+            ulong* p = stackalloc ulong[8];
+            Fill(p, line, paramHash, listener, sync, v7, v8);
+            return Function.Call<bool>(PlayAmbientSpeech, ped, p);
+        }
+
+        /// The game's other way of playing a line: a scripted speech, made here and played by polling ScriptedPlay.
+        /// Its handle, or -1.
+        public static unsafe int ScriptedMake(int ped, string line, uint paramHash, int listener)
+        {
+            if (ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped))
+                return -1;
+            ulong* p = stackalloc ulong[8];
+            Fill(p, line, paramHash, listener, 0, 1, 1);
+            return Function.Call<int>(MakeScriptedSpeech, ped, p);
+        }
+
+        /// 0 not ready or failed, 1 playing, 2 finished.
+        public static int ScriptedPlay(int handle)
+        {
+            return handle < 0 ? 0 : Function.Call<int>(PlayScriptedSpeech, handle);
+        }
+
+        private static unsafe void Fill(ulong* p, string line, uint paramHash, int listener, int sync, int v7, int v8)
+        {
+            for (int i = 0; i < 8; i++)
+                p[i] = 0;
+            p[0] = Draw.CString(line);
+            p[3] = paramHash;
+            p[4] = listener != 0 && ENTITY.DOES_ENTITY_EXIST(listener) ? (uint)listener : 0u;
+            p[5] = (ulong)sync;
+            p[6] = (ulong)v7;
+            p[7] = (ulong)v8;
+        }
+
+        public static uint ParamHash(int i)
+        {
+            return Natives.Hash(Params[i]);
         }
 
         public static unsafe bool Say(int ped, string line, int listener)
