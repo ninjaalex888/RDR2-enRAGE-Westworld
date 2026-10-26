@@ -81,10 +81,10 @@ namespace EnrageWestworld.InGame
             { "TownPostsAfterDeath", new[] { "survive", "successor" } }
         };
 
-        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "TickerNextKey", "StalkerKey" };
+        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "StalkerKey" };
 
         // the order RealNPCs' keys are listed in on the Hotkeys page
-        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "WakeKey", "StalkerKey", "TickerNextKey", "TestKey", "SettingsKey" };
+        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "WakeKey", "StalkerKey", "TickerNextKey", "TestKey", "SettingsKey", "SettingsKey2" };
 
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -105,7 +105,7 @@ namespace EnrageWestworld.InGame
             { "Hermits", "Hermits who woke" }, { "HermitChance", "A new camp's chance (percent)" },
             { "Gatherings", "Gatherings of the awake" }, { "GatheringChance", "A gathering's chance (percent)" },
             { "ReaderKey", "Letters, diaries and clippings" }, { "FlirtKey", "Flirt" }, { "WakeKey", "Wake the person you face" },
-            { "TickerNextKey", "Next line on the ticker" }, { "TestKey", "Status line and log dump" }, { "SettingsKey", "Open this panel (as well as Alt+F11)" }
+            { "TickerNextKey", "Next line on the ticker" }, { "TestKey", "Status line and log dump" }, { "SettingsKey", "Open or close this panel" }, { "SettingsKey2", "... or this key" }
         };
 
         private readonly Func<Bridge> _bridgeOf;
@@ -125,6 +125,8 @@ namespace EnrageWestworld.InGame
         private int _pendingAt;
 
         public bool Open { get; private set; }
+        /// Waiting for the key to set a hotkey to: every key is that key, even the one that opens and closes the panel.
+        public bool Capturing { get { return _capture != null; } }
 
         public SettingsPanel(Func<Bridge> bridge, string oursPath, string backupDir, Func<string, string> applyOurs, Action useEnragePanel)
         {

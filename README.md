@@ -47,21 +47,21 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 
 | Key | What it does |
 |---|---|
+| Ctrl+F7 or Alt+F | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text. Press either again to close it. Alt+F11 opens it too, but only on enRAGE 0.9.5.3 |
 | F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log |
 | F6 | Flirt with the person you're looking at |
 | N | Read your letters, diaries and clippings, or take a diary you've just found |
 | ] | Make a stalker now: someone near you (someone with a history with you first), or a stranger if nobody near can be. The log says what it's waiting for |
 | Y | Wake the person you are facing one stage (West World), so you can see what each stage does |
 | T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
-| Alt+F11 | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text (Ctrl+F7 opens it too) |
 
-Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings: RealNPCs opens its panel in place of enRAGE's, and `ReplaceEnrageSettings = false` gives it back.
+Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings. Only on enRAGE 0.9.5.3 does RealNPCs open its panel there in place of enRAGE's (`ReplaceEnrageSettings = false` gives it back); on other enRAGE versions Alt+F11 opens enRAGE's own panel, and Ctrl+F7 or Alt+F is the way in. About 15 seconds after loading, a notice says which key to use.
 
 ## Settings and log
 
 Everything is kept in `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\`:
 
-- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Alt+F11) edits it too, along with enRAGE's `NemesisMod.ini`.
+- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Ctrl+F7 or Alt+F) edits it too, along with enRAGE's `NemesisMod.ini`.
 - `RealNPCs.log` records what happened. Please attach it to bug reports.
 - `backup\` holds a copy of `NemesisMod.ini` from before the panel first changed it in each session.
 - `arthur.json` and `john.json` hold what people know and feel about you. `diaries\` holds the diaries you've found, as text files.

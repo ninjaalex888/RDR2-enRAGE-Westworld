@@ -49,7 +49,7 @@ NEW IN 0.6.1
   at you, as enRAGE keeps them. A "Sore at you" panel in the top right lists the strangers whose
   grudge against you is building, with a mark where they'd become a nemesis, and the nemesis
   after you now. [Display] FeelingBars, FeelingBarsMetres (15), FeelingBarsShowEmpty, GrudgeMeter;
-  in the panel (Alt+F11), "Bars and meter".
+  in the panel (Ctrl+F7 or Alt+F), "Bars and meter".
 - Standing still no longer holds up enRAGE's funerals or someone's evening at the saloon.
 - Aiming at one of enRAGE's outlaws leaves him to enRAGE (he stands his ground and his crew draws
   on you). Ordinary townsfolk still plead.
@@ -550,18 +550,22 @@ in the file. The new ones:
                 gamefeed: EXPERIMENTAL top-left toasts
             WarNewsTo (right | ticker): where gang and faction news goes
             TestKey (F7), FlirtKey (F6), WakeKey (Y), ReaderKey (N), ReloadIni (true),
-            ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel, SettingsKey (Ctrl+F7)
+            ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel (enRAGE 0.9.5.3 only),
+            SettingsKey (Ctrl+F7) and SettingsKey2 (Alt+F) open and close it with any enRAGE version
 All the older options are still there and work the same.
 
 
 KEYS
 ----
+Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+F
+          (SettingsKey2) opens it too, and either closes it again. Alt+F11 opens it as well, but
+          only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
+          About 15 seconds after loading, a notice says which key to use.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
           regulars around you show on the map for a minute
 F6  flirt with the person you're looking at
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)
-Alt+F11   the RealNPCs settings panel (all RealNPCs and enRAGE settings); Ctrl+F7 opens it too
 Y         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
 T         the next line on the ticker now (on a long line, its next part first; TickerNextKey).
           T is enRAGE's telegraph key too: near a telegraph clerk, both happen.

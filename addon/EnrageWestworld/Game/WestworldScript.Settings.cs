@@ -1,7 +1,9 @@
 // The settings panel in the game. With ReplaceEnrageSettings on, Alt+F11 (enRAGE's key for its own settings) opens
 // the RealNPCs panel instead: as soon as enRAGE's panel opens, it is closed again through enRAGE's own toggle and
-// ours opens (pressed again, both close). SettingsKey opens it too. While it is open every key goes to the panel,
-// so none of RealNPCs' own keys fire. For the keys enRAGE rebinds itself, the panel hands over to enRAGE's own.
+// ours opens (pressed again, both close). SettingsKey and SettingsKey2 open it too, and close it again. While it is
+// open every other key goes to the panel, so none of RealNPCs' own keys fire. For the keys enRAGE rebinds itself, the panel hands over to enRAGE's own.
+// Only enRAGE 0.9.5.3 has the panel the takeover needs; on other versions Alt+F11 stays enRAGE's, and the player is
+// told SettingsKey about 15 s into the world (once on the first run when the takeover works too).
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -13,11 +15,14 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private SettingsPanel _panel;
-        private KeySpec _settingsKey;
+        private KeySpec _settingsKey, _settingsKey2;
         private bool _settingsRequested;
         private bool _letEnrageShow;   // the player went to enRAGE's own panel: leave it be until it closes
+        private int _keyNoticeAt;      // game time the settings-key notice is due (15 s into the world); 0 not yet set
+        private bool _keyNoticed;      // given, or not needed, this session
+        private string _keyNoticeCase; // which case applied, for the F7 dump
         private readonly Queue<KeyEventArgs> _panelKeys = new Queue<KeyEventArgs>();
-        private Action _aSettings;
+        private Action _aSettings, _aKeyNotice;
 
         private SettingsPanel Panel
         {
@@ -36,6 +41,10 @@ namespace EnrageWestworld.InGame
         {
             if (_aSettings == null)
                 _aSettings = SettingsImpl;
+            if (_aKeyNotice == null)
+                _aKeyNotice = SettingsKeyNotice;
+            if (!_keyNoticed && _cfg != null)
+                Safe("settings key notice", _aKeyNotice);   // on its own: a fault here mustn't switch the panel off
             if (_panel != null && _panel.Open && _featureOff.Contains("settings panel"))
             {
                 try
@@ -59,6 +68,12 @@ namespace EnrageWestworld.InGame
             while (_panelKeys.Count > 0)
             {
                 KeyEventArgs k = _panelKeys.Dequeue();
+                if (panel.Open && !panel.Capturing && SettingsKeyHit(k))
+                {
+                    panel.Close();   // the key that opened it closes it (unless it's being set as a key)
+                    Log.Write("SETTINGS panel closed (" + (k.Control ? "Ctrl+" : "") + (k.Shift ? "Shift+" : "") + (k.Alt ? "Alt+" : "") + KeySpec.Name(k.KeyCode) + ")");
+                    continue;
+                }
                 panel.Key(k.KeyCode, k.Shift, k.Control, k.Alt);
             }
             bool theirsOpen = _bridge != null && _bridge.EnrageSettingsOpen();
@@ -85,6 +100,68 @@ namespace EnrageWestworld.InGame
                 panel.Tick();
                 panel.Render();
             }
+        }
+
+        /// About 15 s into the world after loading, says which key opens the RealNPCs settings: every session when Alt+F11
+        /// can't open them (enRAGE not found, or its panel couldn't be reached: only 0.9.5.3 has it), and once ever, on the
+        /// first run, when it can.
+        private void SettingsKeyNotice()
+        {
+            if (_keyNoticed)
+                return;
+            if (_keyNoticeAt == 0)
+                _keyNoticeAt = _now + 15000;
+            if (_now - _keyNoticeAt < 0)
+                return;
+            string key = _settingsKey + (_settingsKey2.Key != Keys.None ? " or " + _settingsKey2 : string.Empty);
+            if (_bridge == null || !_bridge.CanReplaceSettings)
+            {
+                _keyNoticed = true;
+                _keyNoticeCase = _bridge == null ? "told (enRAGE not found)" : "told (Alt+F11 can't open this panel)";
+                string line = "RealNPCs settings: " + key + ". With this enRAGE version, Alt+F11 opens enRAGE's own panel.";
+                KeyNoticeOut(line);
+                Log.Write("SETTINGS key: " + (_bridge == null ? "enRAGE not found" : "Alt+F11 can't open the RealNPCs panel with enRAGE " + _bridge.Version)
+                          + "; told the player " + key + " opens it");
+                return;
+            }
+            if (_store == null)
+                return;   // Alt+F11 works: wait for the saved data, which knows whether this is the first run
+            _keyNoticed = true;
+            if (_store.Count("told:settings key") > 0)
+            {
+                _keyNoticeCase = "told before, not again";
+                Log.Write("SETTINGS key: Alt+F11 " + (_cfg.ReplaceEnrageSettings ? "opens the RealNPCs panel" : "left to enRAGE (ReplaceEnrageSettings off)") + ", " + key + " too; told before, not again");
+                return;
+            }
+            _store.Bump("told:settings key");
+            _keyNoticeCase = "first run, told";
+            KeyNoticeOut("RealNPCs settings: " + key + (_cfg.ReplaceEnrageSettings ? " (Alt+F11 opens them too)." : ". Alt+F11 opens enRAGE's own panel (ReplaceEnrageSettings is off)."));
+            Log.Write("SETTINGS key: Alt+F11 " + (_cfg.ReplaceEnrageSettings ? "opens the RealNPCs panel" : "left to enRAGE (ReplaceEnrageSettings off)") + "; first run, told the player " + key);
+        }
+
+        /// SettingsKey or SettingsKey2 (a key set to None never matches).
+        private bool SettingsKeyHit(KeyEventArgs e)
+        {
+            return _settingsKey.Matches(e) || _settingsKey2.Matches(e);
+        }
+
+        /// For the F7 dump: the keys, what Alt+F11 does, and what the player was told.
+        private string SettingsStatus()
+        {
+            string alt = _bridge == null ? "enRAGE not found" : !_bridge.CanReplaceSettings ? "stays with enRAGE " + _bridge.Version
+                : _cfg.ReplaceEnrageSettings ? "opens this panel" : "left to enRAGE (ReplaceEnrageSettings off)";
+            return "keys " + _settingsKey + (_settingsKey2.Key != Keys.None ? " and " + _settingsKey2 : " (no second key)") + ", Alt+F11 " + alt
+                   + ", notice " + (_keyNoticeCase ?? (_keyNoticed ? "given" : "not yet"));
+        }
+
+        /// Where the player will see it: the news, unless that's the ticker and nothing draws it (enRAGE not found yet,
+        /// or the ticker off), then a notice on screen.
+        private void KeyNoticeOut(string line)
+        {
+            if (_engine == null || (_cfg.NewsRoute == "ticker" && !_cfg.Ticker))
+                Feed.Notice(null, line);
+            else
+                News(null, line);
         }
 
         private void OpenPanel()

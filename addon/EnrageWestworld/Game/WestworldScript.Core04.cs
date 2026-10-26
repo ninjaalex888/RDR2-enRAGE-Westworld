@@ -121,6 +121,7 @@ namespace EnrageWestworld.InGame
             _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.OemCloseBrackets);
             _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.Y);
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
+            _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
         }
 
@@ -172,7 +173,7 @@ namespace EnrageWestworld.InGame
         /// press counts once the key has been let go (T tapped through a long ticker line).
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e) || _settingsKey.Matches(e) || _tickerNextKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && !_hotkeyLetGo && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -195,7 +196,7 @@ namespace EnrageWestworld.InGame
                 _panelKeys.Enqueue(e);   // while the settings are open, every key is theirs
                 return true;
             }
-            if (_settingsKey.Matches(e))
+            if (SettingsKeyHit(e))
             {
                 _settingsRequested = true;
                 return true;

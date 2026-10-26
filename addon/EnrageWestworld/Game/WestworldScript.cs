@@ -1012,6 +1012,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST links: " + LinksStatus());
 			Log.Write("TEST posts: " + PostsStatus());
 			Log.Write("TEST encounters: " + EncountersStatus());
+			Log.Write("TEST settings: " + SettingsStatus());
 			if (nemesisRecord == null)
 			{
 				int num3 = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);

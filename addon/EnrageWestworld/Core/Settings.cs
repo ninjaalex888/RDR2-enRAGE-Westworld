@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 42;
+        public const int CurrentVersion = 44;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -164,6 +164,7 @@ namespace EnrageWestworld.Core
         public bool ReloadIni = true;
         public bool ReplaceEnrageSettings = true;
         public string SettingsKey = "Ctrl+F7";
+        public string SettingsKey2 = "Alt+F";
         public bool DebugLog;
 
         /// Where notices go: "corner" (the "Around town" box), "ticker", "subtitles", "enrage" or "gamefeed".
@@ -418,7 +419,7 @@ namespace EnrageWestworld.Core
         public string ToIni()
         {
             StringBuilder b = new StringBuilder();
-            b.AppendLine("; RealNPCs settings (an unofficial add-on for enRAGE). true/false, numbers in seconds unless noted. Alt+F11 in game edits them too.");
+            b.AppendLine("; RealNPCs settings (an unofficial add-on for enRAGE). true/false, numbers in seconds unless noted. Ctrl+F7 in game edits them too (Alt+F11 on enRAGE 0.9.5.3).");
             b.AppendLine("; Saved changes are picked up in game within a few seconds (ReloadIni).");
             b.AppendLine("SettingsVersion = " + SettingsVersion + "   ; leave this alone");
             b.AppendLine();
@@ -569,8 +570,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("WakeKey = " + WakeKey + "   ; wakes the grown-up you are facing by one stage, to see what each stage does (set it to something unused, or a combination like Ctrl+Y)");
             b.AppendLine("ReaderKey = " + ReaderKey + "   ; read the diaries, letters and clippings you carry");
             b.AppendLine("ReloadIni = " + B(ReloadIni) + "   ; pick up changes to this file while the game runs");
-            b.AppendLine("ReplaceEnrageSettings = " + B(ReplaceEnrageSettings) + "   ; Alt+F11 opens the larger RealNPCs settings panel (RealNPCs, West World, Stalkers and every enRAGE section) instead of enRAGE's own");
-            b.AppendLine("SettingsKey = " + SettingsKey + "   ; also opens the RealNPCs settings panel");
+            b.AppendLine("ReplaceEnrageSettings = " + B(ReplaceEnrageSettings) + "   ; Alt+F11 opens the larger RealNPCs settings panel (RealNPCs, West World, Stalkers and every enRAGE section) instead of enRAGE's own (enRAGE 0.9.5.3 only)");
+            b.AppendLine("SettingsKey = " + SettingsKey + "   ; opens the RealNPCs settings panel (with any enRAGE version), and closes it again");
+            b.AppendLine("SettingsKey2 = " + SettingsKey2 + "   ; a second key that does the same (None: no second key)");
             b.AppendLine("DebugLog = " + B(DebugLog));
             return b.ToString();
         }

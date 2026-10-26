@@ -55,9 +55,10 @@ namespace EnrageWestworld.InGame
 			return result;
 		}
 
+		/// The key as pressed, modifiers and all. A key set to None (no key) never matches.
 		public bool Matches(KeyEventArgs e)
 		{
-			if (e.KeyCode == Key && e.Control == Ctrl && e.Shift == Shift)
+			if (Key != Keys.None && e.KeyCode == Key && e.Control == Ctrl && e.Shift == Shift)
 			{
 				return e.Alt == Alt;
 			}
