@@ -67,6 +67,29 @@ namespace EnrageWestworld.Core
             return s;
         }
 
+        /// What each of them thinks as it happens (shown on the ticker, since overheard talk has no subtitle): the one
+        /// asking, working up to it; the other, as they answer. other: the other one's name.
+        public static string CourtThought(bool asker, string answer, string why, string other, string seed)
+        {
+            if (asker)
+                return Voice.Pick(seed + "ta", "Go on. Say something to " + other + ". ...Say something.", "Don't stammer. Whatever you do, don't stammer.",
+                                  other + " looked this way. Twice. That's twice.", "Now or never. Probably never. ...Now.");
+            if (answer == "yes")
+                return Voice.Pick(seed + "tb", "Well. Didn't see that coming. Didn't mind it, either.", "Kind eyes on " + other + ". Never noticed before.",
+                                  "My face is burning. Lord, don't let it show.");
+            if (answer == "maybe")
+                return why == "shy" ? Voice.Pick(seed + "tb", "Everybody's looking. Why is everybody looking?", "Say something back. Anything. ...Too late.")
+                     : Voice.Pick(seed + "tb", other + "? ...Maybe. Maybe " + other + ".", "Can't say I minded it. Can't say I'll admit it, either.");
+            switch (why)
+            {
+                case "married": case "elsewhere": return "I've got somebody. " + other + " ought to know that.";
+                case "frightened": case "killer": case "badrep": case "fear": return "Keep back. Just keep back from me.";
+                case "busy": case "troubled": case "sore": return "Of all the days to ask me. Of all the days.";
+                case "shy": return "Why me? Why does it have to be me?";
+                default: return Voice.Pick(seed + "tb", "Not in a hundred years, " + other + ".", "The nerve. In front of everybody.");
+            }
+        }
+
         /// Every courtship's lines, for the tests: each answer with each reason it can be given for.
         public static System.Collections.Generic.IEnumerable<Scene> CourtSamples(SceneCast c)
         {

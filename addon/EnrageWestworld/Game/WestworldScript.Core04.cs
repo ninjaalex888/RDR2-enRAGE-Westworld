@@ -42,7 +42,7 @@ namespace EnrageWestworld.InGame
         private TickerLine _tickerLine;
         private readonly Dictionary<string, int> _featureErrors = new Dictionary<string, int>();
         private readonly HashSet<string> _featureOff = new HashSet<string>();
-        private Action _aFrame, _aReader, _aEvents, _aRequests, _aIni, _aPlaces, _aHosts, _aStalker, _aDrama, _aCeremony, _aCast, _aPickups, _aMission,
+        private Action _aFrame, _aReader, _aEvents, _aRequests, _aIni, _aPlaces, _aHosts, _aStalker, _aDrama, _aCourtThoughts, _aCeremony, _aCast, _aPickups, _aMission,
             _aPlead, _aTheft, _aArrival, _aLater, _aVoices, _aWake, _aWakeActs;
         private bool _missionPaused;
 
@@ -84,6 +84,7 @@ namespace EnrageWestworld.InGame
             _aWake = () => WakeTick(_now);
             _aWakeActs = () => WakeActsTick(_now);
             _aDrama = () => DramaTick(_now);
+            _aCourtThoughts = () => CourtThoughtsDue(_now);
             _aCeremony = () => Ceremonies(_now);
             _aCast = () => CastTick(_now);
             _aPickups = () => Pickups(_now);
@@ -733,6 +734,7 @@ namespace EnrageWestworld.InGame
             Safe("awakening", _aWake);
             Safe("wakeacts", _aWakeActs);
             Safe("scenes", _aDrama);
+            Safe("court thoughts", _aCourtThoughts);
             Safe("ceremonies", _aCeremony);
             Safe("kin", _aCast);
             Safe("pickups", _aPickups);

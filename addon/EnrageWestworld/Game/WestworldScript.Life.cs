@@ -172,6 +172,59 @@ namespace EnrageWestworld.InGame
                       (other.Mood != null ? ", " + other.Mood + " today" : "") + "): " + answer + ", " + why);
         }
 
+        private sealed class LaterThought
+        {
+            public int At, Handle;
+            public string Who, Text;
+        }
+
+        private readonly List<LaterThought> _courtThoughts = new List<LaterThought>();
+        private int _courtShown, _courtUnseen;
+
+        /// A courtship you can see and that lasts: the one asking thinks as they go to it, the other as they answer
+        /// (on the ticker, only while they're in view: overheard talk has no subtitle, so this is how you know); a yes
+        /// or a maybe keeps any of the add-on's own people in it, so the romance is remembered and their thoughts turn
+        /// to it.
+        private void CourtSeen(Ped asker, Ped other, Someone a, Someone b, string answer, string why, bool apart, string seed)
+        {
+            int now = Game.GameTime;
+            _courtThoughts.Add(new LaterThought { At = now, Handle = asker.Handle, Who = a.Name, Text = Scenes.CourtThought(true, answer, why, Person.FirstOf(b.Name), seed) });
+            _courtThoughts.Add(new LaterThought { At = now + (apart ? 12000 : 7000), Handle = other.Handle, Who = b.Name, Text = Scenes.CourtThought(false, answer, why, Person.FirstOf(a.Name), seed) });
+            if (answer == "no")
+                return;
+            foreach (Ped p in new[] { asker, other })
+            {
+                ResBind rb;
+                if (p != null && _resBind.TryGetValue(p.Handle, out rb) && !rb.R.Dead && !_store.Residents.Contains(rb.R))
+                {
+                    _engine.KeepResident(rb.R, Bridge.Now());
+                    Log.Write("ROMANCE " + rb.R.Name + " is kept now, so the romance is remembered");
+                }
+            }
+        }
+
+        /// The courtship thoughts that are due, on the ticker if the one thinking is in plain view.
+        private void CourtThoughtsDue(int now)
+        {
+            int player = Game.Player.Character.Handle;
+            for (int i = _courtThoughts.Count - 1; i >= 0; i--)
+            {
+                LaterThought t = _courtThoughts[i];
+                if (now < t.At)
+                    continue;
+                _courtThoughts.RemoveAt(i);
+                if (now - t.At > 15000 || !ENTITY.DOES_ENTITY_EXIST(t.Handle) || !ENTITY.IS_ENTITY_ON_SCREEN(t.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(player, t.Handle, 17))
+                {
+                    _courtUnseen++;
+                    Log.Detail("ROMANCE thought not shown (" + t.Who + " out of view): " + t.Text);
+                    continue;
+                }
+                _courtShown++;
+                _ticker.Push(t.Who + ", thinking", t.Text, "near");
+                Log.Write("ROMANCE thought, " + t.Who + ": " + t.Text);
+            }
+        }
+
         /// F7: courtships this session by answer, the last, and the romances going on in this town.
         private string RomanceStatus()
         {
@@ -179,7 +232,8 @@ namespace EnrageWestworld.InGame
                 return "off ([Romance] NpcFlirting)";
             int here = _store.Ties.Count(t => t.Town == _placeTown && Ties.Romantic(t.Kind) && t.Warmth > 0);
             return "this session: " + (_courtCount.Count == 0 ? "none yet" : string.Join(", ", _courtCount.Select(kv => kv.Key + " " + kv.Value))) +
-                   (_courtLast != null ? "; last: " + _courtLast : "") + "; romances in " + (_placeTown ?? "this place") + ": " + here;
+                   (_courtLast != null ? "; last: " + _courtLast : "") + "; thoughts on the ticker " + _courtShown + ", out of view " + _courtUnseen +
+                   "; romances in " + (_placeTown ?? "this place") + ": " + here;
         }
 
         private static readonly HashSet<string> TroubleKinds = new HashSet<string> { "rough", "lift", "pickpocket", "drunk", "charity", "scorn", "avoid", "comfort" };

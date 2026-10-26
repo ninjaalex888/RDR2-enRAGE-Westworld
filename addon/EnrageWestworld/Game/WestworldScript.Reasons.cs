@@ -234,6 +234,7 @@ namespace EnrageWestworld.InGame
                     string[] parts = kind.Split(':');
                     s = Scenes.Court(cast, seed, parts[1], parts.Length > 2 ? parts[2] : null);
                     NoteCourt(doer, done, parts[1], parts.Length > 2 ? parts[2] : null);
+                    CourtSeen(first, second, doer, done, parts[1], parts.Length > 2 ? parts[2] : null, pr.Apart > 2.6f, seed);
                 }
                 else if (kind.StartsWith("x:"))
                 {
