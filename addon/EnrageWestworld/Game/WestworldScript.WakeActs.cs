@@ -789,8 +789,10 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             if (_cfg.AwakeningDespair <= 0)
                 return "AwakeningDespair is 0";
-            if (act.Res == null && (_bridge.RecordAt(h) != null || _bridge.AcquaintanceAt(h) == null))
-                return _bridge.RecordAt(h) != null ? "one of enRAGE's own people" : "not someone we know";
+            // enRAGE's records too since Lex relaxed the rule (2026-10-26, with its author's permission): only while
+            // enRAGE isn't driving them (act.Passive, from MayDirect)
+            if (act.Res == null && _bridge.RecordAt(h) == null && _bridge.AcquaintanceAt(h) == null)
+                return "not someone we know";
             if (act.Res != null && act.Res.PostId != null)
                 return "keeps a counter";
             if (act.Passive)
@@ -1031,13 +1033,13 @@ namespace EnrageWestworld.InGame
                 act.Res.Dead = true;
                 _engine.KeepResident(act.Res, Bridge.Now());
             }
-            LedgerNote(act.Handle, act.P.Id, act.Name, act.Res != null ? "resident" : "folk", DespairHow(act), "self");   // known dead: no knocked-out test
+            LedgerNote(act.Handle, act.P.Id, act.Name, act.Res != null ? "resident" : _bridge.RecordAt(act.Handle) != null ? "record" : "folk", DespairHow(act), "self");   // known dead: no knocked-out test
             string how = act.Method ?? "gun";
             int c;
             _despairCount.TryGetValue(how, out c);
             _despairCount[how] = c + 1;
             _despairLast = act.Name + " (" + DespairHow(act) + ")";
-            Log.Write("WAKE despair: " + act.Name + (act.Res != null ? " (a resident)" : " (one of enRAGE's townsfolk)") + " could not bear it and ended their own life (" + DespairHow(act) + ")");
+            Log.Write("WAKE despair: " + act.Name + (act.Res != null ? " (a resident)" : act.P != null && act.P.Id != null && act.P.Id.StartsWith("folk:") ? " (one of enRAGE's townsfolk)" : " (one of enRAGE's people)") + " could not bear it and ended their own life (" + DespairHow(act) + ")");
         }
 
         private sealed class AwakeNear
@@ -1073,15 +1075,14 @@ namespace EnrageWestworld.InGame
                 Vector3 w, d;
                 bool wall = DespairWall(p, me, out w, out d);
                 string method = Despair.Method(who, armed, wall, who.Id);
-                bool folk = res == null && _bridge.RecordAt(p.Handle) == null;   // WakeIdentity knows records, townsfolk and residents
-                bool may = (folk || (res != null && res.PostId == null)) && !st.Has(DespairMark);
-                string verdict = res == null && !folk ? "enRAGE's own: never"
-                               : res != null && res.PostId != null ? "keeps a counter: never" : st.Has(DespairMark) ? "had their chance"
-                               : (folk ? "townsfolk, " : "") + (passive ? "can't be directed now; " : "") + "would use " + method + (wall ? " (wall " + Flat(w, p.Position).ToString("0") + " m)" : "");
+                bool record = res == null && _bridge.RecordAt(p.Handle) != null, folk = res == null && !record;   // WakeIdentity knows records, townsfolk and residents
+                bool may = (res == null || res.PostId == null) && !st.Has(DespairMark);
+                string verdict = res != null && res.PostId != null ? "keeps a counter: never" : st.Has(DespairMark) ? "had their chance"
+                               : (folk ? "townsfolk, " : record ? "enRAGE's, " : "") + (passive ? "can't be directed now; " : "") + "would use " + method + (wall ? " (wall " + Flat(w, p.Position).ToString("0") + " m)" : "");
                 string way = Way(me.Position, p.Position);
                 near.Add(who.Name + " (" + (int)dist + " m " + way + ", " + verdict + ")");
                 _awakeNear.Add(new AwakeNear { Handle = p.Handle, Name = who.Name, Way = way, Dist = dist, May = may,
-                                               Mark = may ? method : res == null && !folk ? "never (enRAGE's)" : res != null && res.PostId != null ? "never (counter)" : "had their chance" });
+                                               Mark = may ? method : res != null && res.PostId != null ? "never (counter)" : "had their chance" });
             }
             return "AwakeningDespair " + _cfg.AwakeningDespair + "% (one roll each); blade reel " + (_bladeSet == 1 ? "there" : "MISSING") + "; this session " +
                    (_despairCount.Count == 0 ? "none" : string.Join(", ", _despairCount.Select(kv => kv.Key + " " + kv.Value))) + (_despairLast != null ? ", last " + _despairLast : "") +
@@ -1089,7 +1090,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// F7: a white mark on the map on each fully awake person within 30 m for a minute, labelled with their name and
-        /// what they'd do ("Esther Lowry: knife", "Mart Cannon: never (enRAGE's)"), and the nearest who could end it
+        /// what they'd do ("Esther Lowry: knife", "Mart Cannon: had their chance"), and the nearest who could end it
         /// named on screen with which way to look. A test aid, so they can be found.
         private void MarkAwake()
         {
