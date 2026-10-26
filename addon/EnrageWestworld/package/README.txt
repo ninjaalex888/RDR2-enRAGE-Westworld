@@ -632,7 +632,8 @@ All the older options are still there and work the same.
 KEYS
 ----
 Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+F
-          (SettingsKey2) opens it too, and either closes it again. Alt+F11 opens it as well, but
+          (SettingsKey2) opens it too, and either closes it again. For testing, its "The mind"
+          page can wipe every NPC's memory (Enter, then Enter again to confirm). Alt+F11 opens it as well, but
           only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
           About 15 seconds after loading, a notice says which key to use.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town

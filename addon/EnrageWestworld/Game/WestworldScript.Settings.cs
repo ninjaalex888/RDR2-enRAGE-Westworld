@@ -29,7 +29,7 @@ namespace EnrageWestworld.InGame
             get
             {
                 if (_panel == null)
-                    _panel = new SettingsPanel(() => _bridge, _iniPath, Path.Combine(_dir, "backup"), ApplyOurSettings, UseEnragePanel);
+                    _panel = new SettingsPanel(() => _bridge, _iniPath, Path.Combine(_dir, "backup"), ApplyOurSettings, UseEnragePanel, PanelAction);
                 return _panel;
             }
         }

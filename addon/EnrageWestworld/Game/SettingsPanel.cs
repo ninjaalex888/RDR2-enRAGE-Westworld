@@ -23,9 +23,15 @@ namespace EnrageWestworld.InGame
     {
         private sealed class Row
         {
-            public IniEntry E;        // null for a section heading
+            public IniEntry E;        // null for a section heading or an action
             public string Heading;
             public bool Theirs;       // a line of NemesisMod.ini, not of RealNPCs.ini
+            public string Action, ActionLabel, ActionAsk;   // a row that does something on Enter, after a second Enter
+        }
+
+        private static bool Pickable(Row r)
+        {
+            return r.E != null || r.Action != null;
         }
 
         private sealed class Page
@@ -112,6 +118,8 @@ namespace EnrageWestworld.InGame
         private readonly string _oursPath, _backupDir;
         private readonly Func<string, string> _applyOurs;   // reloads RealNPCs' settings; gives the value now in force for a key
         private readonly Action _useEnragePanel;           // hands over to enRAGE's own panel (for the keys it rebinds itself)
+        private readonly Func<string, string> _runAction;   // an action row's work, by its id; returns what to say
+        private Row _confirm;                               // an action row waiting for its second Enter
         private readonly List<Page> _pages = new List<Page>();
         private IniDoc _ours, _theirs;
         private string _theirsPath;
@@ -127,13 +135,14 @@ namespace EnrageWestworld.InGame
         /// Waiting for the key to set a hotkey to: every key is that key, even the one that opens and closes the panel.
         public bool Capturing { get { return _capture != null; } }
 
-        public SettingsPanel(Func<Bridge> bridge, string oursPath, string backupDir, Func<string, string> applyOurs, Action useEnragePanel)
+        public SettingsPanel(Func<Bridge> bridge, string oursPath, string backupDir, Func<string, string> applyOurs, Action useEnragePanel, Func<string, string> runAction = null)
         {
             _bridgeOf = bridge;
             _oursPath = oursPath;
             _backupDir = backupDir;
             _applyOurs = applyOurs;
             _useEnragePanel = useEnragePanel;
+            _runAction = runAction;
         }
 
         // ---- opening and closing ------------------------------------------------------------------------
@@ -184,6 +193,16 @@ namespace EnrageWestworld.InGame
                     keys.Rows.Add(new Row { Heading = "RealNPCs" });
                     keys.Rows.AddRange(ourKeys.Select(e => new Row { E = e }));
                 }
+                // things to do rather than set, on the page they belong with
+                if (_runAction != null)
+                {
+                    Page mind = _pages.FirstOrDefault(p => p.Title == OurTitles["Mind"]);
+                    if (mind == null)
+                        _pages.Add(mind = new Page { Title = OurTitles["Mind"] });
+                    mind.Rows.Add(new Row { Heading = "Testing" });
+                    mind.Rows.Add(new Row { Action = "wipe-memories", ActionLabel = "Wipe every NPC's memory",
+                                            ActionAsk = "Wipe everything RealNPCs remembers of the people in this world (who they are, what they know and feel about you, their ties, their deaths)? enRAGE's own memory stays. A copy of the save is kept. Press Enter again to wipe; any other key keeps it all." });
+                }
             }
             _theirs = !string.IsNullOrEmpty(_theirsPath) && File.Exists(_theirsPath) ? IniDoc.Read(_theirsPath, false) : null;
             // enRAGE's settings only when we know which of its entries are its own bookkeeping, and can ask it to reload
@@ -233,7 +252,7 @@ namespace EnrageWestworld.InGame
             for (int k = 0; k < n; k++)
             {
                 int j = (i + k) % n;
-                if (page.Rows[j].E != null)
+                if (Pickable(page.Rows[j]))
                     return j;
             }
             return 0;
@@ -246,7 +265,7 @@ namespace EnrageWestworld.InGame
             for (int k = 1; k <= n; k++)
             {
                 int j = ((i + dir * k) % n + n) % n;
-                if (page.Rows[j].E != null)
+                if (Pickable(page.Rows[j]))
                     return j;
             }
             return i;
@@ -283,6 +302,13 @@ namespace EnrageWestworld.InGame
                 Capture(key, shift, ctrl, alt);
                 return;
             }
+            if (_confirm != null && key != Keys.Enter)
+            {
+                _confirm = null;   // anything but a second Enter keeps it all
+                _note = "Nothing was wiped.";
+                if (key == Keys.Back || key == Keys.Escape)
+                    return;
+            }
             if (key == Keys.Back || key == Keys.Escape)
             {
                 Close();
@@ -294,7 +320,7 @@ namespace EnrageWestworld.InGame
             if (!changing)
                 Flush();   // moving on: a value still settling is written first
             Page page = _pages[_page];
-            bool any = page.Rows.Any(r => r.E != null);
+            bool any = page.Rows.Any(Pickable);
             if (!any && key != Keys.Q && key != Keys.E && key != Keys.PageUp && key != Keys.PageDown && key != Keys.Tab)
                 return;
             switch (key)
@@ -346,6 +372,30 @@ namespace EnrageWestworld.InGame
 
         private void Enter(Row r)
         {
+            if (r.Action != null)
+            {
+                if (_confirm != r)
+                {
+                    _confirm = r;
+                    _note = r.ActionAsk;
+                    return;
+                }
+                _confirm = null;
+                try
+                {
+                    _note = _runAction != null ? _runAction(r.Action) : "Nothing to do.";
+                }
+                catch (Exception ex)
+                {
+                    _note = "That didn't work: " + ex.Message;
+                }
+                return;
+            }
+            if (_confirm != null)
+            {
+                _confirm = null;
+                _note = "Nothing was wiped.";
+            }
             IniEntry e = r.E;
             if (e == null)
                 return;
@@ -667,7 +717,7 @@ namespace EnrageWestworld.InGame
             float rowH = Draw.LineHeight(RowScale) * 1.22f;
             float top = pageY + Draw.LineHeight(PageScale) + 0.014f;
             Draw.Rect(left - 0.006f, top - 0.006f, W - 0.032f, 0.0015f, 120, 98, 66, 200);
-            if (!page.Rows.Any(r => r.E != null))
+            if (!page.Rows.Any(Pickable))
             {
                 float my = top + 0.01f;
                 foreach (string line in Draw.Wrap(page.Message ?? string.Empty, RowScale, W - 0.05f).Take(6))
@@ -689,6 +739,20 @@ namespace EnrageWestworld.InGame
             {
                 Row r = page.Rows[i];
                 float y = top + (i - _scroll) * rowH;
+                if (r.Action != null)
+                {
+                    // something to do, on Enter (twice)
+                    bool onRow = i == _row, asking = _confirm == r;
+                    if (onRow)
+                    {
+                        Draw.Rect(left - 0.006f, y - 0.002f, W - 0.032f, rowH, 70, 54, 32, 215);
+                        Draw.Rect(left - 0.006f, y - 0.002f, 0.003f, rowH, 222, 182, 96, 255);
+                    }
+                    Draw.Text(Draw.Fit(r.ActionLabel, RowScale, W * 0.58f), left + 0.006f, y, RowScale, onRow ? 255 : 226, onRow ? 246 : 216, onRow ? 230 : 196);
+                    string act = asking ? "Enter again to confirm" : "Enter";
+                    Draw.Text(act, right - 0.012f - Draw.Width(act, RowScale), y, RowScale, asking ? 236 : 200, asking ? 120 : 170, asking ? 96 : 120);
+                    continue;
+                }
                 if (r.E == null)
                 {
                     // a section's heading
