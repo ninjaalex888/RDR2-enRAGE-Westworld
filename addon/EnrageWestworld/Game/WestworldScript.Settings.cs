@@ -113,7 +113,7 @@ namespace EnrageWestworld.InGame
                 _keyNoticeAt = _now + 15000;
             if (_now - _keyNoticeAt < 0)
                 return;
-            string key = _settingsKey + (_settingsKey2.Key != Keys.None ? " or " + _settingsKey2 : string.Empty);
+            string key = SettingsKeysText(" or ");
             if (_bridge == null || !_bridge.CanReplaceSettings)
             {
                 _keyNoticed = true;
@@ -145,12 +145,19 @@ namespace EnrageWestworld.InGame
             return _settingsKey.Matches(e) || _settingsKey2.Matches(e);
         }
 
+        /// The keys that open the panel, each named once (both set to the same key: just that one).
+        private string SettingsKeysText(string joint)
+        {
+            string a = _settingsKey.ToString(), b = _settingsKey2.Key != Keys.None ? _settingsKey2.ToString() : null;
+            return b == null || b == a ? a : a + joint + b;
+        }
+
         /// For the F7 dump: the keys, what Alt+F11 does, and what the player was told.
         private string SettingsStatus()
         {
             string alt = _bridge == null ? "enRAGE not found" : !_bridge.CanReplaceSettings ? "stays with enRAGE " + _bridge.Version
                 : _cfg.ReplaceEnrageSettings ? "opens this panel" : "left to enRAGE (ReplaceEnrageSettings off)";
-            return "keys " + _settingsKey + (_settingsKey2.Key != Keys.None ? " and " + _settingsKey2 : " (no second key)") + ", Alt+F11 " + alt
+            return "keys " + SettingsKeysText(" and ") + (_settingsKey2.Key == Keys.None ? " (no second key)" : "") + ", Alt+F11 " + alt
                    + ", notice " + (_keyNoticeCase ?? (_keyNoticed ? "given" : "not yet"));
         }
 
