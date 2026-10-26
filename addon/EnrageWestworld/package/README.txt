@@ -1,4 +1,4 @@
-RealNPCs 0.6.0 - an unofficial add-on for enRAGE (formerly enRAGE Westworld)
+RealNPCs 0.6.1 - an unofficial add-on for enRAGE (formerly enRAGE Westworld)
 =========================================================================
 
 The people enRAGE keeps track of start acting like they have their own lives. They tell you about
@@ -13,6 +13,54 @@ enRAGE's files. enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemp
 Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
+
+
+NEW IN 0.6.1
+------------
+- Built for enRAGE 0.9.5.3.
+- Each town keeps its own people. When the game puts an ordinary person in the street out of your
+  sight, they become one of that town's regulars: someone met there before, back in their own
+  clothes, or, while the town has room, someone new with an outfit of their own. Their names,
+  worries and lives go on between visits, and the ones you've met know you again. Nobody changes
+  clothes in front of you, and nobody enRAGE has already named is touched. [World] Regulars,
+  RegularsPerTown (30), RegularsDress.
+- Ordinary people have lives of their own. Each one is going through something that fits their
+  trade and age: a debt, a sick child, a letter that doesn't come, a feud over a fence, a
+  courtship, the drink, a secret. It runs about eight game days in their thoughts (it begins,
+  gets worse, comes to a head, and ends well or badly) with the same named people all through.
+  When the other person in a debt, a feud or a courtship can be met, it's a real regular in town,
+  who thinks about it from their side. Thoughts also follow the day (meals, Saturday night,
+  Sunday church), the year (1899, or 1907 in the epilogue) and what you did in town lately.
+  enRAGE's townsfolk think about their own lives too when they don't feel strongly about you.
+- CONTENT NOTE: a sick child doesn't always get better. About a third of those worries end with a
+  burial.
+- The ticker gives up to three people near you a turn, and the person right beside you every
+  other turn, with a new thought about every 30 seconds.
+- Street scenes happen for a reason, and where you can see them. A quarrel goes on, and between
+  two hot-tempered men it comes to blows. Sweethearts flirt, and in time one asks. A debt is
+  called in. Someone at the worst of a bad week snaps at whoever speaks to them; someone whose
+  trouble just ended tells it. If the two are apart, one walks over first. A pair's story moves
+  on each time they meet, and what happened is remembered: for days they think about each other
+  by name, and the town gossips about it. If one of them has died since, the other thinks of that
+  instead: guilt after a quarrel, grief for a friend.
+- People notice. Bystanders turn to look, and one may call out: taking a side, trying to calm it,
+  or egging it on. People make the gestures that go with what they say.
+- Bars under the people near you show their fear of you, how much they like you and their anger
+  at you, as enRAGE keeps them. A "Sore at you" panel in the top right lists the strangers whose
+  grudge against you is building, with a mark where they'd become a nemesis, and the nemesis
+  after you now. [Display] FeelingBars, FeelingBarsMetres (15), FeelingBarsShowEmpty, GrudgeMeter;
+  in the panel (Alt+F11), "Bars and meter".
+- Standing still no longer holds up enRAGE's funerals or someone's evening at the saloon.
+- Aiming at one of enRAGE's outlaws leaves him to enRAGE (he stands his ground and his crew draws
+  on you). Ordinary townsfolk still plead.
+- Stalkers make gestures Story Mode has (a hat tip, a hand up for quiet, a slow head-shake...),
+  crouch as they creep up, and sprint in to 2-30 m before doing odd things.
+- F7 shows the town regulars around you on the map for a minute.
+- Fixes: the names over street-scene lines match the names inside them; the paper reader no
+  longer answers peaceful news as if it were a killing; "Thought he should know" instead of
+  "Thought him should know"; rumours keep a name's capital.
+- Known issues: about one walk-over in ten gives up before the two meet, and the scene is
+  dropped. The stalker's digging, hammering and scrubbing don't start yet.
 
 
 NEW IN 0.6.0
@@ -393,7 +441,7 @@ Strangers you kill are remembered too, and a few (StrangerReturnChance, 15%) com
 Stalkers. Now and then someone near you, often someone who knows you, starts following you. They keep their distance, stand and stare when they think
 you can't see, freeze when you look at them and slip out of sight, and somehow turn up behind you
 again after you've ridden off. Stand still for 20 seconds and they come closer and do something:
-odd gestures and tasks (digging a grave, a finger to the lips, a slow wave), circling you, or
+odd gestures and tasks (kneeling as at a graveside, a tipped hat, a hand up for quiet), circling you, or
 just watching; move and they run back out, behind a tree or a building if there is one. They
 never attack. Draw on them and they run for good. One can follow you for up to two hours.
 Sometimes it's someone you killed.
@@ -435,6 +483,7 @@ the log; the rest carries on. Bug reports (with your log) are welcome on GitHub 
   what people say, and watch the ticker.
 - Kill one of enRAGE's people, loot the body for a diary, then visit a post office a few days later.
 - Stand around a busy street or saloon for a few minutes. Greet someone in the middle of a quarrel.
+- Stay a while in one town: watch who meets whom, and why, and the bars under the people near you.
 - Hold your gun on a passer-by in town (then lower it). Ride into a town where you've done things.
 - Press ] to make a stalker right away: someone near you, or a stranger if nobody near can be. It
   happens once you're outdoors, off any story mission, with no lawmen after you and not fighting;
@@ -464,6 +513,9 @@ in the file. The new ones:
             screen), TickerScale (0.30, text size), TickerWidth (0.60), NoticesAsSubtitles (false),
             TickerNextKey (T): the next line now, ThoughtSounds (true): a small sound from someone
             near as their thought shows
+[Display]   FeelingBars (true): bars under people near you for their fear, liking and anger,
+            FeelingBarsMetres (15), FeelingBarsShowEmpty (false): the empty part of each bar too,
+            GrudgeMeter (true): the "Sore at you" panel, top right
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
             AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
@@ -486,7 +538,8 @@ in the file. The new ones:
             4 am in the wilds), Hermits (true, needs WestWorld), HermitChance (25, a new
             camp's chance per roll in the wilds), Gatherings (true, needs WestWorld),
             GatheringChance (15, percent per roll, midnight to 3:30 am in the wilds)
-[World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
+[World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
+            Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
@@ -503,7 +556,8 @@ All the older options are still there and work the same.
 
 KEYS
 ----
-F7  what the nearest person enRAGE knows thinks of you (and a status line in the log)
+F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
+          regulars around you show on the map for a minute
 F6  flirt with the person you're looking at
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)
