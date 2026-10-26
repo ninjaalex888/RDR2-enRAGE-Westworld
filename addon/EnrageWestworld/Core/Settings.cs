@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 39;
+        public const int CurrentVersion = 40;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -151,6 +151,7 @@ namespace EnrageWestworld.Core
         // [Output]
         public string NewsTo = "corner";
         public string Subtitles = "matched";
+        public string OverheardTalk = "none";
         public bool UseGameFeed;
         public string TestKey = "F7";
         public string WarNewsTo = "corner";
@@ -395,6 +396,7 @@ namespace EnrageWestworld.Core
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
             string subs = (Subtitles ?? "").Trim().ToLowerInvariant();
             Subtitles = subs == "on" || subs == "off" ? subs : "matched";
+            OverheardTalk = (OverheardTalk ?? "").Trim().ToLowerInvariant() == "captions" ? "captions" : "none";
             FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
         }
 
@@ -552,6 +554,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("[Output]");
             b.AppendLine("NewsTo = " + NewsTo + "   ; where news, rumours and what people elsewhere think of you go: corner (the \"Around town\" box, top right), ticker, subtitles, enrage (enRAGE's own notices) or gamefeed");
             b.AppendLine("Subtitles = " + Subtitles + "   ; white subtitles for what people say: matched (only when the words of their recorded voice are known, voices\\words.txt), on (every line) or off. Their voice plays either way, and only people you can see get subtitles");
+            b.AppendLine("OverheardTalk = " + OverheardTalk + "   ; when people talk to each other in their real recorded voices and the words aren't known (your voices\\words.txt): none (just hear them) or captions (a short note in RealNPCs' own words)");
             b.AppendLine("UseGameFeed = " + B(UseGameFeed) + "   ; EXPERIMENTAL: the game's top-left toasts (same as NewsTo = gamefeed)");
             b.AppendLine("TestKey = " + TestKey + "   ; shows what the nearest person enRAGE knows thinks of you");
             b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: corner (the \"Around town\" box), right (the game's pop-ups on the right of the screen) or ticker");

@@ -30,7 +30,15 @@ namespace EnrageWestworld.InGame
 			public int Ped;         // who says it, when known: no subtitle while they're out of sight
 
 			public bool ToYou;      // said to the player: keeps its subtitle on "matched" even without known words
+
+			public bool Real;       // a recording already playing, with its known words (Overheard)
+
+			public bool Caption;    // a recording already playing, captioned in the add-on's own words (Overheard)
 		}
+
+		/// Overheard real-voice talk without known words gets a caption in the add-on's own words when this is on
+		/// ([Output] OverheardTalk = captions); otherwise none.
+		public static bool CaptionsOn;
 
 		/// Which spoken lines get a white subtitle ([Output] Subtitles): "matched" only when the speaker's recorded
 		/// words are known (voices\words.txt), "on" every line, "off" none. The voice plays either way.
@@ -123,6 +131,22 @@ namespace EnrageWestworld.InGame
 				_speech.Enqueue(l);
 		}
 
+		/// A recording that has just started playing (a conversation in real voices): its words when the word list has
+		/// them, else a caption. Shown at once, ahead of the queue, since the voice is already speaking.
+		public static void Overheard(string speaker, string words, string caption, int ped)
+		{
+			bool real = !string.IsNullOrEmpty(words);
+			string text = real ? words : caption;
+			if (text == null || text.Length == 0)
+				return;   // nothing to show for it
+			Line[] rest = _speech.ToArray();
+			_speech.Clear();
+			_speech.Enqueue(new Line { Text = speaker + ": " + (real ? "\"" + text + "\"" : text), Ms = Duration(text), Speaker = speaker, Spoken = true, Ped = ped, Real = real, Caption = !real });
+			foreach (Line l in rest)
+				_speech.Enqueue(l);
+			_nextAt = 0;
+		}
+
 		/// onShow: a sound to play as it appears (a wordless one: what's muttered isn't for anyone to hear).
 		public static void Mutter(string speaker, bool woman, string text, Func<string> onShow = null)
 		{
@@ -200,7 +224,8 @@ namespace EnrageWestworld.InGame
 		{
 			if (!line.Spoken)
 				return true;
-			if (SubtitleMode == "off" || (SubtitleMode != "on" && !real && !line.ToYou))
+			real = real || line.Real;
+			if (SubtitleMode == "off" || (line.Caption && !CaptionsOn) || (SubtitleMode != "on" && !real && !line.ToYou && !line.Caption))
 				return false;   // on "matched", what's said to you keeps its subtitle; only overheard talk needs its real words
 			int ped = line.Ped;
 			return ped == 0 || (ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.IS_ENTITY_ON_SCREEN(ped) &&

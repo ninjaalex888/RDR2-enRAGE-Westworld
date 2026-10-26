@@ -276,6 +276,41 @@ namespace EnrageWestworld.InGame
             return SayAny(ped, set, listener);
         }
 
+        /// Plays the first of these lines the ped's voice has, by name (a conversation in their real voice). When the
+        /// voice is certain, a chosen take, with `words` if the word list has them; otherwise the game picks the take
+        /// (take 0). No model-wide cache: voices of one model differ in which conversation lines they have.
+        public static bool PlayFirst(int ped, string[] lines, int listener, out string line, out int take, out string words)
+        {
+            line = null;
+            take = 0;
+            words = null;
+            if (lines == null || ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+                return false;
+            string bank = BankOf(ped);
+            foreach (string l in lines)
+            {
+                int n = bank != null ? Book.Takes(bank, l) : 0;
+                if (n > 0)
+                {
+                    int t = 1 + (_turn++ & 0x7fffffff) % n;
+                    foreach (string prm in Params)
+                        if (Play(ped, l, t, Natives.Hash(prm), null, listener))
+                        {
+                            line = l;
+                            take = t;
+                            words = Book.Words(bank, l, t);
+                            return true;
+                        }
+                }
+                if (Say(ped, l, listener))
+                {
+                    line = l;
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /// A voice to play later, when its subtitle appears (Feed.Say's onShow); it returns the words actually
         /// spoken when they're known. Null when there's nothing to play. Skipped if the ped is gone or already
         /// speaking by then.

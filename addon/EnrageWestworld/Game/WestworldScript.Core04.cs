@@ -112,6 +112,7 @@ namespace EnrageWestworld.InGame
             Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
             Feed.UseGameFeed = _cfg.NewsRoute == "gamefeed";
             Feed.SubtitleMode = _cfg.Subtitles;
+            Feed.CaptionsOn = _cfg.OverheardTalk == "captions";
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
@@ -694,6 +695,7 @@ namespace EnrageWestworld.InGame
             PostsStep(now);
             RegularsStep(now);
             EncountersStep(now);
+            TalkStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);
             Safe("arrivals", _aArrival);

@@ -957,7 +957,11 @@ namespace EnrageWestworld.InGame
 			{
 				return;
 			}
-			if (_testKey.Matches(e))
+			if (TalkTestKey.Matches(e))
+			{
+				_talkTestRequested = true;   // Shift+F7: two people near you talk in their real voices (WestworldScript.Talk.cs)
+			}
+			else if (_testKey.Matches(e))
 			{
 				_testRequested = true;
 			}
