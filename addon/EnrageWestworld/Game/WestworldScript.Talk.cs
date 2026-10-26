@@ -312,7 +312,7 @@ namespace EnrageWestworld.InGame
         private string TalkLeftOut(Ped p, Ped me)
         {
             int h = p.Handle;
-            if (!Natives.Bystander(p, me.Handle))
+            if (!Natives.Bystander(p, me.Handle, IsRecord(h)))
                 return ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) ? "a mission or mod character" : Natives.IsLaw(p) ? "the law" : PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) ? "fighting or fleeing" : "not a bystander";
             if (Spawner.IsOurs(h))
                 return "one of RealNPCs' own";

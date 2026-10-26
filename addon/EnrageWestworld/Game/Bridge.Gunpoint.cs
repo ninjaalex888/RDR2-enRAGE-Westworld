@@ -14,6 +14,23 @@ namespace EnrageWestworld.InGame
         private MethodInfo _interrogable;
         private FieldInfo _interroNow;
 
+        /// enRAGE is questioning someone right now.
+        public bool Interrogating
+        {
+            get
+            {
+                try
+                {
+                    EnrageHandlesAtGunpoint(null, null, 0f);   // looks the pieces up the first time
+                    return _interroNow != null && _interroNow.GetValue(Mod) != null;
+                }
+                catch
+                {
+                    return false;
+                }
+            }
+        }
+
         /// enRAGE would question this man (one of its outlaws), or is questioning someone right now.
         public bool EnrageHandlesAtGunpoint(Ped p, Ped player, float range)
         {

@@ -62,7 +62,7 @@ namespace EnrageWestworld.InGame
             {
                 if (!rec.IsAlive)
                     return false;
-                passive = true;   // enRAGE's encounters and camps give its people their orders
+                passive = !MayDirect(ped);   // enRAGE's people act it out too, unless enRAGE has them busy (Lex, 2026-10-26)
                 p = PersonOf(rec);
                 st = _store.Find(p.Id);
                 return st != null && st.WakeStage > 0;
@@ -219,7 +219,7 @@ namespace EnrageWestworld.InGame
                 EndWakeAct(old, "replaced by the next stage");
                 _wakeActs.Remove(old);
             }
-            bool passive = !CanDirect(ped) || _bridge.RecordAt(handle) != null || PostKindOf(ped) != null;
+            bool passive = !MayDirect(ped) || PostKindOf(ped) != null;
             string kind;
             int r = _rng.Next(100);
             switch (st.WakeStage)

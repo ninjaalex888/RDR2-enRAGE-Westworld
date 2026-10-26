@@ -43,8 +43,8 @@ namespace EnrageWestworld.InGame
             foreach (Ped p in World.GetAllPeds())
             {
                 int h = p.Handle;
-                if (!Natives.Bystander(p, me.Handle) || p.Position.DistanceTo(me.Position) > ReasonRange || Spawner.IsOurs(h) || _bridge.RecordAt(h) != null ||
-                    Natives.StoryModel(p) || !IsGrownUp(p) ||   // never the story's own people, grown-ups only
+                if (!Natives.Bystander(p, me.Handle, IsRecord(h)) || p.Position.DistanceTo(me.Position) > ReasonRange || Spawner.IsOurs(h) ||
+                    MayDirectWhyNot(p) != null ||   // never the story's own people, grown-ups only; enRAGE's people unless it has them busy
                     PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || _wakeActs.Any(w => w.Handle == h) ||
                     PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h))
                     continue;
@@ -62,6 +62,17 @@ namespace EnrageWestworld.InGame
         private Someone SomeoneOf(Ped p)
         {
             int h = p.Handle;
+            NemesisRecord rec = _bridge.RecordAt(h);
+            if (rec != null)
+            {
+                // one of enRAGE's people: its own name, temper and record (Lex, 2026-10-26: they join in)
+                if (!rec.IsAlive)
+                    return null;
+                Person who = PersonOf(rec);
+                PersonState rs = _store.Find(who.Id);
+                return new Someone { Id = who.Id, Name = ShownName(h, who.Name), Woman = who.Woman, Temper = who.Personality, P = who, WakeStage = rs != null ? rs.WakeStage : 0,
+                                     WellOff = WellOff(p), Drunk = InHisCups(p, who), Hurt = HurtLately(who.Id) };
+            }
             Acquaintance ac = _bridge.AcquaintanceAt(h);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
             {
@@ -359,7 +370,7 @@ namespace EnrageWestworld.InGame
                 if (n >= 6)
                     break;
                 int h = p.Handle;
-                if (people.Any(x => x.Handle == h) || !Natives.Bystander(p, me.Handle) || Spawner.IsOurs(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
+                if (people.Any(x => x.Handle == h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) || Spawner.IsOurs(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
                     p.Position.DistanceTo(first.Position) > 12f)
                     continue;
                 TASK.TASK_LOOK_AT_ENTITY(h, first.Handle, 9000, 0, 51, 0);

@@ -239,6 +239,14 @@ namespace EnrageWestworld.InGame
             id = name = null;
             if (p == null || !p.Exists())
                 return false;
+            NemesisRecord rec = _bridge.RecordAt(p.Handle);
+            if (rec != null && rec.IsAlive)
+            {
+                Person rp = PersonOf(rec);   // enRAGE's people are met again by their record
+                id = rp.Id;
+                name = rp.Name;
+                return true;
+            }
             Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
             {
@@ -285,6 +293,9 @@ namespace EnrageWestworld.InGame
         {
             if (p == null || !p.Exists())
                 return null;
+            NemesisRecord rec = _bridge.RecordAt(p.Handle);
+            if (rec != null && !string.IsNullOrEmpty(rec.Name))
+                return ShownName(p.Handle, rec.Name);
             Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
                 return ac.Name;

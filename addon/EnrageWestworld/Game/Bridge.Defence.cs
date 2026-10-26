@@ -18,6 +18,21 @@ namespace EnrageWestworld.InGame
         private static readonly HashSet<string> FighterRoles = new HashSet<string> { "Active", "Crew", "HiredGun", "Patrol", "Skirmish", "Hunter", "Rival", "Camp" };
 
         /// One of enRAGE's fighters (red on the map). Read from enRAGE's own role for the ped.
+        /// The role enRAGE has this person in right now (its RoleOf), or null.
+        public string RoleName(int handle)
+        {
+            ResolveDefence();
+            try
+            {
+                object role = _roleOf != null ? _roleOf.Invoke(Mod, new object[] { handle }) : null;
+                return role != null ? role.ToString() : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         public bool EnrageFighter(int handle)
         {
             ResolveDefence();

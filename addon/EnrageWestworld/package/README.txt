@@ -549,6 +549,8 @@ in the file. The new ones:
             RoughHandling (true): a man with a grudge (or a hothead with drink in him) smashes another's
             face into the nearest table, bar or wall; NpcThieves (true): pickpockets among the
             townsfolk, and begging; DrunkChallenges (true): a drunk calls a man out at night
+            EnragePeopleJoinIn (true): enRAGE's own people take part in all of these too, unless
+            enRAGE has them busy (a fight, a job, a ride)
             RealVoiceTalk (true), RealVoiceTalkSeconds (120): people near you talk to each other in
             their real recorded voices; CrudeTalk (true): the game's crude remarks among them
 [Romance]   FlirtPrompt (true): Flirt in the game's lock-on menu, with Greet and Antagonize, on H

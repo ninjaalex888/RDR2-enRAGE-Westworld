@@ -447,7 +447,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             List<Ped> men = World.GetAllPeds().Where(p => p != null && p.Exists() && PED.IS_PED_MALE(p.Handle) && p.Position.DistanceTo(me.Position) < RoughNear &&
-                                                          TalkLeftOut(p, me) == null && CanDirect(p) && IsGrownUp(p) && _bridge.RecordAt(p.Handle) == null)
+                                                          TalkLeftOut(p, me) == null && MayDirect(p))
                                               .OrderBy(p => p.Position.DistanceTo(me.Position)).ToList();
             Ped vic = men.FirstOrDefault(p => AtBar(p) != null) ?? men.FirstOrDefault(p => !PED.IS_PED_USING_ANY_SCENARIO(p.Handle)) ?? men.FirstOrDefault();
             // the attacker: someone on his feet first (a man at the piano or at his supper is a last resort)

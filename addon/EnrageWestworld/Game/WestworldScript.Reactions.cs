@@ -36,9 +36,8 @@ namespace EnrageWestworld.InGame
                 return;
             int h = r.By.Handle;
             bool hurt = r.Tone == Reactions.HurtTone;
-            string cant = SteerCant(r.By);
-            bool record = _bridge != null && _bridge.RecordAt(h) != null;
-            if (cant != null && !record)
+            string cant = MayDirectWhyNot(r.By);
+            if (cant != null)
             {
                 Log.Detail("REACT " + r.ByName + " left alone (" + cant + ")");
                 return;
@@ -49,9 +48,9 @@ namespace EnrageWestworld.InGame
             string kind = Reactions.Listener(r.Tone, r.Temper, r.Seed);
             if (kind == null)
                 return;
-            if (record || PED.IS_PED_USING_ANY_SCENARIO(h))
+            if (PED.IS_PED_USING_ANY_SCENARIO(h))
             {
-                Log.Detail("REACT " + r.ByName + " only looks at " + r.ToName + " (" + (record ? "enRAGE runs them" : "in a scenario") + ")");
+                Log.Write("REACT " + r.ByName + " only looks at " + r.ToName + " (in a scenario: leaning, sitting or at work)");
                 return;
             }
             string dict, clip;
@@ -78,23 +77,6 @@ namespace EnrageWestworld.InGame
             _reactLast = r.ByName + " " + Reactions.Verb(kind) + " (" + clip + ")";
             Log.Write("REACT " + r.ByName + " " + Reactions.Verb(kind) + (hurt ? " after the slam" : " at " + r.ToName + "'s " + r.Tone + " line") +
                       " (" + (r.Temper ?? "no temper") + "; " + clip + ")");
-        }
-
-        /// Why we mustn't task this person, or null if we may: never in a story mission, never a story character or a
-        /// child, never one of enRAGE's records (it runs them), and only when CanDirect says they're free.
-        private string SteerCant(Ped p)
-        {
-            if (MISC.GET_MISSION_FLAG())
-                return "during a story mission";
-            if (Natives.StoryModel(p))
-                return "one of the story's own people";
-            if (!IsGrownUp(p))
-                return "not a grown-up";
-            if (_bridge != null && _bridge.RecordAt(p.Handle) != null)
-                return "enRAGE runs them";
-            if (!CanDirect(p))
-                return "can't be directed now";
-            return null;
         }
 
         /// A scene's people's temperaments (Reactions.Listener): enRAGE's or the resident's own, else null.

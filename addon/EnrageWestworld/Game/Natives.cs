@@ -186,12 +186,13 @@ namespace EnrageWestworld.InGame
 
         /// A grown-up, living human who isn't the player, a lawman or busy fighting, and who no script owns
         /// (a story mission, a random encounter, enRAGE or another mod): only those are ever borrowed for a scene.
-        public static bool Bystander(Ped p, int player)
+        /// missionOk: one of enRAGE's records, which enRAGE may mark as a mission entity (that flag doesn't stop us for them).
+        public static bool Bystander(Ped p, int player, bool missionOk = false)
         {
             if (p == null || !p.Exists())
                 return false;
             int h = p.Handle;
-            return h != player && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_HUMAN(h) && !ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) && !PED.IS_PED_IN_COMBAT(h, 0) &&
+            return h != player && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_HUMAN(h) && (missionOk || !ENTITY.IS_ENTITY_A_MISSION_ENTITY(h)) && !PED.IS_PED_IN_COMBAT(h, 0) &&
                    !PED.IS_PED_A_PLAYER(h) && !PED.IS_PED_FLEEING(h) && !IsChild(p) && !IsLaw(p);
         }
 
