@@ -1034,14 +1034,15 @@ namespace EnrageWestworld.Core
         {
             if (id == null)
                 return false;
-            // our own record first for townsfolk and residents (Deaths.cs); whether one of enRAGE's records lives is
-            // enRAGE's to say, since it brings some of them back on purpose
+            // townsfolk: our own record (Deaths.cs) or enRAGE's. A saved resident: their flag, which the posts code clears
+            // when a keeper turns out only shot down; an unsaved one: our record. Whether one of enRAGE's records lives
+            // is enRAGE's to say, since it brings some of them back on purpose.
             if (id.StartsWith("folk:"))
                 return Store.DeathOf(id) != null || (FolkDead != null && FolkDead(id));
             if (Resident.IsResident(id))
             {
                 Resident r = Store.FindResident(id);
-                return (r != null && r.Dead) || Store.DeathOf(id) != null;
+                return r != null ? r.Dead : Store.DeathOf(id) != null;
             }
             Person p;
             return _byId.TryGetValue(id, out p) && !p.IsAlive;
