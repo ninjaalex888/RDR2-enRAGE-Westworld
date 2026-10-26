@@ -62,7 +62,7 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			KeyValuePair<string, string> keyValuePair = _queue.Dequeue();
-			_nextAt = gameTime + 4500;
+			_nextAt = gameTime + 7500;   // the next toast waits for this one to go
 			Live live = new Live
 			{
 				At = gameTime,
@@ -75,7 +75,7 @@ namespace EnrageWestworld.InGame
 				live.Strings[0] = Utf8("LITERAL_STRING");
 				live.Strings[1] = Utf8(Feed.Clean(keyValuePair.Key));
 				live.Strings[2] = Utf8(Feed.Clean(keyValuePair.Value));
-				Marshal.WriteInt64(live.Duration, 0, 4000L);
+				Marshal.WriteInt64(live.Duration, 0, 7000L);   // 7 s on screen (4 s was too quick to read)
 				ulong val = Function.Call<ulong>(18055593637008912569uL, new InputArgument[3]
 				{
 					10,
