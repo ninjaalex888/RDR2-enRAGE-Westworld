@@ -1109,34 +1109,18 @@ namespace EnrageWestworld.Core
 			string text = p.Id + "|flirt|" + personState.Flirts + "|" + now / 30;
 			PlayerRef you = Talk.RefFor(p, personState, Player);
 			flirtResult.YouSay = Romance.PlayerLine(John, p.Woman, personState.Heart, text);
-			string text2 = null;
 			int num = Romance.ToPlayer(p, Cfg.SameSexRomance, John);
-			if (personState.Heart == -1)
-			{
-				text2 = "scorned";
-			}
-			else if (!Romance.Free(p))
-			{
-				text2 = "married";
-			}
-			else if (p.Hate >= 30 || p.Vengeful || p.Murderous)
-			{
-				text2 = "hate";
-			}
-			else if (p.Fear >= 50)
-			{
-				text2 = "fear";
-			}
-			else if (!Romance.DrawnTo(p.Id, p.Woman, otherIsWoman: false, Cfg.SameSexRomance))
-			{
-				text2 = "notdrawn";
-			}
-			else if (personState.FlirtedAt > 0 && now - personState.FlirtedAt < 30)
-			{
-				text2 = "spam";
-			}
+			// what they think of him decides it (Regard, as their thoughts about him), with their day and their nature
+			string regard = Regard.OfPerson(p, personState, true);
+			string mood;
+			bool atWorst;
+			TheirDay(p, p.Home ?? CurrentTown, out mood, out atWorst);
+			string why;
+			string answer = Interest.Answer(new Interest.Ask { Regard = regard, Drawn = Romance.Suits(p, Cfg.SameSexRomance, John), Taken = !Romance.Free(p) || SpokenFor(p.Id),
+			                                                    AtWorst = atWorst, Spam = personState.FlirtedAt > 0 && now - personState.FlirtedAt < 30, Temper = p.Personality, Mood = mood }, out why);
+			string text2 = answer == "no" ? why : null;
 			personState.ContactAt = now;
-			if (text2 != null)
+			if (text2 != null && text2 != "cold" && text2 != "sore")
 			{
 				flirtResult.Reply = Romance.Rebuff(p, text2, text);
 				if (text2 == "notdrawn")
@@ -1155,22 +1139,21 @@ namespace EnrageWestworld.Core
 			else
 			{
 				personState.FlirtedAt = now;
-				int num2 = num + personState.Affection / 2 + Voice.Hash(text + "roll") % 31 - 15;
-				if (num2 >= 55)
+				if (answer == "yes")
 				{
 					personState.Flirts++;
 					flirtResult.Liked = true;
 					flirtResult.Reply = Romance.Welcome(p, Math.Max(personState.Heart, 0), you, text);
 					Feel(p, personState, 8 + num / 10, now, "flirted");
 				}
-				else if (num2 >= 35)
+				else if (answer == "maybe")
 				{
 					flirtResult.Reply = Romance.Unsure(p, text);
 					Feel(p, personState, 3, now, "flirted");
 				}
 				else
 				{
-					flirtResult.Reply = Romance.Rebuff(p, "cold", text);
+					flirtResult.Reply = Romance.Rebuff(p, text2, text);   // cold, or sore from their day
 					Feel(p, personState, -2, now, "flirted");
 				}
 			}
@@ -1201,7 +1184,8 @@ namespace EnrageWestworld.Core
 					flirtResult.Jealous.Add(new KeyValuePair<Person, string>(person, "That's my " + (p.Woman ? "girl" : "fella") + " you're sweet-talking, mister."));
 				}
 			}
-			Log("FLIRT " + p.Name + " (drawn " + num + ", affection " + personState.Affection + ", " + Romance.HeartNames[personState.Heart + 1] + "): " + flirtResult.YouSay + " -> " + flirtResult.Reply + ((text2 != null) ? (" [" + text2 + "]") : ""));
+			Log("FLIRT " + p.Name + " (thinks of you: " + regard + (p.Personality != null ? ", " + p.Personality : "") + (mood != null ? ", " + mood + " today" : "") + (atWorst ? ", a worry at its worst" : "") +
+			    " -> " + answer + " (" + why + "); affection " + personState.Affection + ", " + Romance.HeartNames[personState.Heart + 1] + "): " + flirtResult.YouSay + " -> " + flirtResult.Reply);
 			return flirtResult;
 		}
 
@@ -1374,22 +1358,26 @@ namespace EnrageWestworld.Core
 			string text = f.Key + "|flirt|" + personState.Flirts + "|" + now / 30;
 			PlayerRef you = Talk.RefFor(p, personState, Player);
 			flirtResult.YouSay = Romance.PlayerLine(John, f.Woman, personState.Heart, text);
-			bool flag = Romance.DrawnTo(f.Key, f.Woman, otherIsWoman: false, Cfg.SameSexRomance);
 			personState.ContactAt = now;
-			if (!flag || f.Grudge >= 30 || f.Fear >= 50 || personState.Heart == -1)
+			// what they think of him decides it (Regard: the same judgement as their thoughts about him on the ticker)
+			p.Personality = f.Temper;
+			string regard = Regard.OfFolk(f, personState, true);
+			string mood;
+			bool atWorst;
+			TheirDay(p, f.Town ?? CurrentTown, out mood, out atWorst);
+			string why;
+			string answer = Interest.Answer(new Interest.Ask { Regard = regard, Drawn = Romance.DrawnTo(f.Key, f.Woman, otherIsWoman: false, Cfg.SameSexRomance), Taken = SpokenFor(f.Key),
+			                                                    AtWorst = atWorst, Spam = personState.FlirtedAt > 0 && now - personState.FlirtedAt < 30, Temper = f.Temper, Mood = mood }, out why);
+			string seen = "thinks of you: " + regard + (f.Temper != null ? ", " + f.Temper : "") + (mood != null ? ", " + mood + " today" : "") + (atWorst ? ", a worry at its worst" : "") + " -> " + answer + " (" + why + ")";
+			if (answer == "no" && why != "cold" && why != "sore")
 			{
-				flirtResult.Reply = Romance.Rebuff(p, (!flag) ? "notdrawn" : ((f.Fear >= 50) ? "fear" : ((personState.Heart == -1) ? "scorned" : "hate")), text);
-				return flirtResult;
-			}
-			if (personState.FlirtedAt > 0 && now - personState.FlirtedAt < 30)
-			{
-				flirtResult.Reply = Romance.Rebuff(p, "spam", text);
+				flirtResult.Reply = Romance.Rebuff(p, why, text);
+				Log("FLIRT " + f.Name + " (townsfolk; " + seen + "): " + flirtResult.YouSay + " -> " + flirtResult.Reply);
 				return flirtResult;
 			}
 			personState.FlirtedAt = now;
 			int num = 40 + Voice.Hash(f.Key + "|spark") % 30 + f.Like / 3 - f.Grudge;
-			int num2 = num + personState.Affection / 2 + Voice.Hash(text + "roll") % 31 - 15;
-			if (num2 >= 55)
+			if (answer == "yes")
 			{
 				personState.Flirts++;
 				flirtResult.Liked = true;
@@ -1402,19 +1390,83 @@ namespace EnrageWestworld.Core
 					Amount = 5
 				});
 			}
-			else if (num2 >= 35)
+			else if (answer == "maybe")
 			{
 				flirtResult.Reply = Romance.Unsure(p, text);
 				personState.Affection = Romance.Clamp(personState.Affection + 3, -100, 100);
 			}
 			else
 			{
-				flirtResult.Reply = Romance.Rebuff(p, "cold", text);
+				flirtResult.Reply = Romance.Rebuff(p, why, text);   // cold, or sore from their day
 				personState.Affection = Romance.Clamp(personState.Affection - 2, -100, 100);
 			}
 			personState.Heart = Math.Min(3, Romance.HeartFor(personState.Affection, personState.Flirts));
-			Log("FLIRT " + f.Name + " (townsfolk, affection " + personState.Affection + ", " + Romance.HeartNames[personState.Heart + 1] + "): " + flirtResult.YouSay + " -> " + flirtResult.Reply);
+			Log("FLIRT " + f.Name + " (townsfolk; " + seen + "; affection " + personState.Affection + ", " + Romance.HeartNames[personState.Heart + 1] + "): " + flirtResult.YouSay + " -> " + flirtResult.Reply);
 			return flirtResult;
+		}
+
+		/// One of the add-on's own people (a resident: a town regular, someone met before, or someone new now).
+		public FlirtResult FlirtWithResident(Person p, long now)
+		{
+			FlirtResult flirtResult = new FlirtResult();
+			if (!Cfg.Romance || !Romance.Adult(p))
+				return flirtResult;
+			PersonState personState = Store.Get(p);
+			string text = p.Id + "|flirt|" + personState.Flirts + "|" + now / 30;
+			PlayerRef you = Talk.RefFor(p, personState, Player);
+			flirtResult.YouSay = Romance.PlayerLine(John, p.Woman, personState.Heart, text);
+			personState.ContactAt = now;
+			string town = p.Home ?? CurrentTown;
+			InnerLife.Context day = ThoughtDay(town, p.Id);
+			string regard = Regard.OfResident(personState, true, day.TownDeeds != null && day.TownDeeds.Count > 0, p.Personality);
+			string mood;
+			bool atWorst;
+			TheirDay(p, town, out mood, out atWorst);
+			string why;
+			string answer = Interest.Answer(new Interest.Ask { Regard = regard, Drawn = Romance.Suits(p, Cfg.SameSexRomance, John), Taken = SpokenFor(p.Id), AtWorst = atWorst,
+			                                                    Spam = personState.FlirtedAt > 0 && now - personState.FlirtedAt < 30, Temper = p.Personality, Mood = mood }, out why);
+			if (why != "spam")
+				personState.FlirtedAt = now;
+			if (answer == "yes")
+			{
+				personState.Flirts++;
+				flirtResult.Liked = true;
+				flirtResult.Reply = Romance.Welcome(p, Math.Max(0, personState.Heart), you, text);
+				personState.Affection = Romance.Clamp(personState.Affection + 8, -100, 100);
+			}
+			else if (answer == "maybe")
+			{
+				flirtResult.Reply = Romance.Unsure(p, text);
+				personState.Affection = Romance.Clamp(personState.Affection + 3, -100, 100);
+			}
+			else
+			{
+				flirtResult.Reply = Romance.Rebuff(p, why, text);
+				if (why == "cold" || why == "sore")
+					personState.Affection = Romance.Clamp(personState.Affection - 2, -100, 100);
+			}
+			personState.Heart = Math.Min(3, Romance.HeartFor(personState.Affection, personState.Flirts));
+			Log("FLIRT " + p.Name + " (resident; thinks of you: " + regard + (p.Personality != null ? ", " + p.Personality : "") + (mood != null ? ", " + mood + " today" : "") + (atWorst ? ", a worry at its worst" : "") +
+			    " -> " + answer + " (" + why + "); affection " + personState.Affection + ", " + Romance.HeartNames[personState.Heart + 1] + "): " + flirtResult.YouSay + " -> " + flirtResult.Reply);
+			return flirtResult;
+		}
+
+		/// Their day, as their thoughts show it: a mood from what happened to them today (InnerLife.MoodOf), and whether
+		/// a worry of theirs is at its worst.
+		private void TheirDay(Person p, string town, out string mood, out bool atWorst)
+		{
+			InnerLife.Context day = ThoughtDay(town, p.Id);
+			mood = null;   // a mood from their day (InnerLife.MoodOf) joins in with the moods' own commit
+			string kind;
+			int stage;
+			bool good;
+			atWorst = day.GameDay >= 0 && InnerLife.WorryNow(p, day.GameDay, out kind, out stage, out good) && stage == 2;
+		}
+
+		/// Spoken for: a sweetheart of their own (a warm romantic tie) or someone they're courting.
+		private bool SpokenFor(string id)
+		{
+			return Store.Ties.Any(t => t.Has(id) && Ties.Romantic(t.Kind) && t.Warmth > 0) || Store.Links.Any(l => l.Kind == "courting" && (l.Id == id || l.OtherId == id));
 		}
 
 		private void RomanceTick(IList<Person> roster, long now)

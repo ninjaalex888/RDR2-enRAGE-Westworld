@@ -1177,6 +1177,16 @@ namespace EnrageWestworld.InGame
 			}
 			else if (!ENTITY.IS_ENTITY_A_MISSION_ENTITY(num))
 			{
+				// one of the add-on's own people: what they think of him decides it, as for enRAGE's (Regard, Interest)
+				Resident res = ResidentEligible(ped) ? ResidentOf(ped) : null;
+				if (res != null)
+				{
+					string shown = ShownName(num, res.Name);
+					SayFlirt(_engine.FlirtWithResident(_engine.PersonOfResident(res), now), shown, num, 0);
+					LookAt(num, character.Handle);
+					NoteFlirt(ped, shown);
+					return;
+				}
 				bool flag = !PED.IS_PED_MALE(num);
 				bool drawn = Romance.DrawnTo("ped" + num, flag, otherIsWoman: false, _cfg.SameSexRomance);
 				string seed = num + "|" + Game.GameTime / 20000;

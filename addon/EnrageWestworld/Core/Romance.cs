@@ -132,6 +132,12 @@ namespace EnrageWestworld.Core
 			return true;
 		}
 
+		/// Drawn to the player at all: to his sex, and near enough his age (22 years either way), a grown-up.
+		public static bool Suits(Person p, bool sameSexOn, bool john)
+		{
+			return p != null && Adult(p) && DrawnTo(p.Id ?? p.Name, p.Woman, otherIsWoman: false, sameSexOn) && Math.Abs(AgeOf(p) - (Voice.NowYear - PlayerBorn(john))) <= 22;
+		}
+
 		public static bool Free(Person p)
 		{
 			return p.Family != "married";
@@ -335,6 +341,12 @@ namespace EnrageWestworld.Core
 				return Voice.Pick(seed, "You said that already.", "Easy, cowboy.", "One at a time.");
 			case "scorned":
 				return Voice.Pick(seed, "Save it.", "You had your chance.", "Don't.");
+			case "badrep":
+				return Voice.Pick(seed, "I know what you did, mister. Don't you smile at me.", "I've heard about you. Every word of it.");
+			case "busy":
+				return Voice.Pick(seed, "Not today. I've got more on my mind than I can carry.", "Another time, maybe. Not today.");
+			case "sore":
+				return Voice.Pick(seed, "Not today of all days, mister.", "I'm in no mood for sweet talk today.");
 			case "notdrawn":
 				if (!p.Woman)
 				{

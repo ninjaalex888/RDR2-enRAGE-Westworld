@@ -10,6 +10,8 @@ namespace EnrageWestworld.Core
 
 		private static readonly Regex Masked = new Regex("^saw you (.+?) \\(masked\\) - then saw your face( - (.+?))?$");
 
+		private const string HeardWhat = "heard what you did";   // one of enRAGE's witness notes, as it writes them
+
 		private static readonly Regex HeardFriend = new Regex("^heard you killed (his|her) friend (.+?)( - .+)?$");
 
 		public static List<string> Lines(Folk f, PersonState st, PlayerRef player, string seed, bool romance = false)
@@ -80,6 +82,12 @@ namespace EnrageWestworld.Core
 			return list;
 		}
 
+		/// Whether one of enRAGE's witness notes is one Witness has words for (seen, seen masked, heard of a killing).
+		public static bool Recognised(string text)
+		{
+			return text != null && (Masked.IsMatch(text) || HeardFriend.IsMatch(text) || text.StartsWith(HeardWhat) || Saw.IsMatch(text));
+		}
+
 		public static string Witness(Folk f, string text, string seed)
 		{
 			Match match;
@@ -91,7 +99,7 @@ namespace EnrageWestworld.Core
 			{
 				return "Heard you killed my friend " + Person.FirstOf(match.Groups[2].Value) + "." + ((f.Grudge >= 30) ? " I won't forget that." : " Is it true?");
 			}
-			if (text.StartsWith("heard what you did"))
+			if (text.StartsWith(HeardWhat))
 			{
 				return "I heard what you did." + Tail(f, seed);
 			}

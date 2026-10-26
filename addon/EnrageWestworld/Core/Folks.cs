@@ -10,28 +10,28 @@ namespace EnrageWestworld.Core
             PlayerRef you = new PlayerRef { FullName = player.FullName, Scarred = player.Scarred, KnownByName = st.KnowsName };
             Person shell = new Person { Id = f.Key, Name = f.Name, Woman = f.Woman };
             string who = Voice.YouPrivate(shell, you, false);
-            if (romance && st.Heart >= 2)
-                return Voice.Pick(seed, "There's " + who + " again. My heart's going like a rabbit.", "Don't look at him. Don't look at him. ...Looked.", "I hope he stops to talk. I hope he doesn't. I don't know what I hope.");
-            if (romance && st.Heart < 0)
-                return Voice.Pick(seed, "Of all the people to walk past.", "I hope he trips.");
-            if (f.FavourNotes.Count > 0)
-                return Voice.Pick(seed, Grammar.UpperFirst(who) + " did me a kindness once. I ain't forgot.", "There's " + who + ". Decent, for all the talk about him.");
-            string saw = f.Witnessed.LastOrDefault();
-            if (saw != null)
+            // what they think of him (Regard): the same judgement their answer to his flirting comes from
+            switch (Regard.OfFolk(f, st, romance))
             {
-                string w = Townsfolk.Witness(f, saw, seed);
-                if (w != null)
-                    return Voice.ToPrivate(w, shell, you);
+                case "smitten":
+                    return Voice.Pick(seed, "There's " + who + " again. My heart's going like a rabbit.", "Don't look at him. Don't look at him. ...Looked.", "I hope he stops to talk. I hope he doesn't. I don't know what I hope.");
+                case "scorned":
+                    return Voice.Pick(seed, "Of all the people to walk past.", "I hope he trips.");
+                case "grateful":
+                    return Voice.Pick(seed, Grammar.UpperFirst(who) + " did me a kindness once. I ain't forgot.", "There's " + who + ". Decent, for all the talk about him.");
+                case "witnessed":
+                    return Voice.ToPrivate(Townsfolk.Witness(f, f.Witnessed.Last(), seed), shell, you);
+                case "hostile":
+                    return Voice.Pick(seed, "Him again. Can't stand the sight of " + (st.KnowsName ? player.Surname : "him") + ".", "One day somebody'll give him what he's owed.");
+                case "afraid":
+                    return Voice.Pick(seed, "Keep walking. Keep walking.", "Please don't stop here. Please don't stop here.");
+                case "fond":
+                    return Voice.Pick(seed, "Good to see " + who + " back in town.", "Always tips his hat, that one.");
+                case "met":
+                    return Voice.Pick(seed, "I've talked to " + who + " before. Can't decide what I make of him.", "Him. We've spoken.");
+                default:
+                    return null;
             }
-            if (f.Grudge >= 40)
-                return Voice.Pick(seed, "Him again. Can't stand the sight of " + (st.KnowsName ? player.Surname : "him") + ".", "One day somebody'll give him what he's owed.");
-            if (f.Fear >= 40)
-                return Voice.Pick(seed, "Keep walking. Keep walking.", "Please don't stop here. Please don't stop here.");
-            if (f.Like >= 25)
-                return Voice.Pick(seed, "Good to see " + who + " back in town.", "Always tips his hat, that one.");
-            if (f.Met)
-                return Voice.Pick(seed, "I've talked to " + who + " before. Can't decide what I make of him.", "Him. We've spoken.");
-            return null;
         }
     }
 }
