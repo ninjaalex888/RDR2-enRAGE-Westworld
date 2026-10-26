@@ -157,6 +157,31 @@ namespace EnrageWestworld.InGame
 
         private Pending _pendingNote;   // a trouble scene's tie, waiting for the moment it really happens (Director.Happened)
 
+        private readonly Dictionary<string, int> _courtCount = new Dictionary<string, int>();
+        private string _courtLast;
+
+        /// A courtship began: who was taken with whom, and how it was taken (the scene follows; the tie it leaves is a
+        /// romance for a yes or a maybe, a brush-off for a no).
+        private void NoteCourt(Someone suitor, Someone other, string answer, string why)
+        {
+            int c;
+            _courtCount.TryGetValue(answer, out c);
+            _courtCount[answer] = c + 1;
+            _courtLast = suitor.Name + " -> " + other.Name + ": " + answer + " (" + why + ")";
+            Log.Write("ROMANCE " + suitor.Name + " (" + (suitor.Temper ?? "no temper") + ") makes eyes at " + other.Name + " (" + (other.Temper ?? "no temper") +
+                      (other.Mood != null ? ", " + other.Mood + " today" : "") + "): " + answer + ", " + why);
+        }
+
+        /// F7: courtships this session by answer, the last, and the romances going on in this town.
+        private string RomanceStatus()
+        {
+            if (!_cfg.NpcFlirting || !_cfg.Romance)
+                return "off ([Romance] NpcFlirting)";
+            int here = _store.Ties.Count(t => t.Town == _placeTown && Ties.Romantic(t.Kind) && t.Warmth > 0);
+            return "this session: " + (_courtCount.Count == 0 ? "none yet" : string.Join(", ", _courtCount.Select(kv => kv.Key + " " + kv.Value))) +
+                   (_courtLast != null ? "; last: " + _courtLast : "") + "; romances in " + (_placeTown ?? "this place") + ": " + here;
+        }
+
         private static readonly HashSet<string> TroubleKinds = new HashSet<string> { "rough", "lift", "pickpocket", "drunk", "charity", "scorn", "avoid", "comfort" };
         private readonly Dictionary<string, int> _troubleCount = new Dictionary<string, int>();
         private string _troubleLast;

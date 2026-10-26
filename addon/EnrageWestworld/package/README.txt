@@ -553,7 +553,9 @@ in the file. The new ones:
             enRAGE has them busy (a fight, a job, a ride)
             RealVoiceTalk (true), RealVoiceTalkSeconds (120): people near you talk to each other in
             their real recorded voices; CrudeTalk (true): the game's crude remarks among them
-[Romance]   FlirtPrompt (true): Flirt in the game's lock-on menu, with Greet and Antagonize, on H
+[Romance]   NpcFlirting (true): people near you make eyes at each other and court, each answering by
+            what they make of the other
+            FlirtPrompt (true): Flirt in the game's lock-on menu, with Greet and Antagonize, on H
             (D-pad down on a pad)
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;

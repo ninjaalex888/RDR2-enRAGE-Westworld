@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 54;
+        public const int CurrentVersion = 55;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         // [Romance]
         public bool Romance = true;
         public bool FlirtPrompt = true;
+        public bool NpcFlirting = true;
         public bool NpcRomance = true;
         public bool AmbientFlirting = true;
         public bool SameSexRomance;
@@ -466,6 +467,7 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[Romance]");
             b.AppendLine("Romance = " + B(Romance) + "   ; people flirt with you, and you can flirt back (FlirtKey)");
+            b.AppendLine("NpcFlirting = " + B(NpcFlirting) + "   ; people near you make eyes at each other in street scenes and court, each answering by what they make of the other, as with you");
             b.AppendLine("FlirtPrompt = " + B(FlirtPrompt) + "   ; Flirt in the game's lock-on menu, with Greet and Antagonize, on its H key (D-pad down on a pad), as well as FlirtKey");
             b.AppendLine("NpcRomance = " + B(NpcRomance) + "   ; enRAGE's people court, marry, quarrel and fight over each other");
             b.AppendLine("AmbientFlirting = " + B(AmbientFlirting) + "   ; strangers in town flirt with each other now and then");

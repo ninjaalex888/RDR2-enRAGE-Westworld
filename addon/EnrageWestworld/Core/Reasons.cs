@@ -24,6 +24,9 @@ namespace EnrageWestworld.Core
         public bool WellOff;      // dressed like money: a gentleman, a lady (a mark worth robbing)
         public bool Drunk;        // in his cups: slumped at the bar, drinking himself silly (a mark, or a man who calls people out)
         public string Hurt;       // just had it done to them (the last hour and a half): "rough" (a face in the bar) or "robbed", else null
+        public bool Taken;        // spoken for: a sweetheart, someone they're courting, an affair of enRAGE's
+        public string Mood;       // their day: "sore", "glad" or null (InnerLife.MoodOf)
+        public bool Known;        // known lately for a face in the bar or a hand in a coat
     }
 
     public sealed class Reason
@@ -45,6 +48,8 @@ namespace EnrageWestworld.Core
         public sealed class Place
         {
             public bool Saloon, Night, Rumours, DeedsHere;
+            public bool Courting;   // [Romance] NpcFlirting: people make eyes at each other
+            public bool SameSex;    // [Romance] SameSexRomance
         }
 
         /// The strongest reason between these two, either way round; null if they have none (or had their scene
@@ -98,7 +103,7 @@ namespace EnrageWestworld.Core
                     Someone hurt = a.Hurt != null ? a : b, friend = hurt == a ? b : a;
                     return new Reason { Kind = "tend", Strength = 58, BFirst = friend == b, Why = friend.Name + " goes to " + hurt.Name + ", who was just " + (hurt.Hurt == "rough" ? "roughed up" : "robbed") };
                 }
-                if (tie.Warmth > 0 && mixed && Ties.Romantic(tie.Kind))
+                if (tie.Warmth > 0 && (mixed || where.SameSex) && Ties.Romantic(tie.Kind))
                 {
                     bool ask = tie.Warmth >= 2 && tie.Stage >= 2 && !where.Night;
                     return new Reason { Kind = ask ? "propose" : tie.Stage == 0 ? "flirt" : "x:sweet", Strength = 60 + 10 * tie.Warmth,
@@ -164,11 +169,55 @@ namespace EnrageWestworld.Core
                 else
                     all.Add(new Reason { Kind = "argue", Strength = 30, Why = x.Name + " is a hothead with drink in him" });
             }
+            // someone free and taken with the one beside them makes eyes at them; the answer is the other's own
+            Reason court = Courtship(x, y, gameDay, where);
+            if (court != null)
+                all.Add(court);
             Reason best = null;
             foreach (Reason r in all)
                 if (best == null || r.Strength > best.Strength)
                     best = r;
             return best;
+        }
+
+        /// Percent of days a free person, taken with someone beside them, tries their luck (from both ids and the day).
+        public const int CourtChance = 12;
+
+        /// x, free, drawn to y and not against them (x's own answer, judged as the player is: Interest, a yes or a maybe:
+        /// it takes some nerve, but a maybe is enough to try), tries their luck; y answers by what y makes of x. Kind "court:answer:why". Never anyone spoken for or under age, nor more
+        /// than 15 years apart; only between people with no tie yet (Between calls Own only then).
+        public static Reason Courtship(Someone x, Someone y, long gameDay, Place where)
+        {
+            if (where == null || !where.Courting || x == null || y == null || x.Id == y.Id || x.P == null || y.P == null || x.Taken)
+                return null;
+            int ax = Romance.AgeOf(x.P), ay = Romance.AgeOf(y.P);
+            if (ax < 18 || ay < 18 || System.Math.Abs(ax - ay) > 15 || !Romance.DrawnTo(x.Id, x.Woman, y.Woman, where.SameSex))
+                return null;
+            if (Voice.Hash(x.Id + "|" + y.Id + "|" + gameDay + "|court") % 100 >= CourtChance)
+                return null;   // not today
+            string mine, why;
+            if (Interest.Answer(ViewOf(x, y, gameDay, where), out mine) == "no")
+                return null;   // x isn't taken with y
+            string answer = Interest.Answer(ViewOf(y, x, gameDay, where), out why);
+            // a romance beginning outweighs an everyday snap (45); a rebuff is a smaller thing to see
+            return new Reason { Kind = "court:" + answer + ":" + why, Strength = answer == "yes" ? 52 : answer == "maybe" ? 48 : 42,
+                                Why = x.Name + " is taken with " + y.Name + ", and " + y.Name + (answer == "yes" ? " is with " + x.Name + " too" : answer == "maybe" ? " isn't sure" : " isn't (" + why + ")") };
+        }
+
+        /// How "me" sees "them" as a sweetheart (Interest.Ask), as the player is seen: no tie yet, so a stranger; their
+        /// worry and mood, their nature; them dressed like money or not, known lately for trouble or not.
+        public static Interest.Ask ViewOf(Someone me, Someone them, long gameDay, Place where)
+        {
+            string kind = null;
+            int stage = -1;
+            bool good;
+            bool worry = me.P != null && InnerLife.WorryNow(me.P, gameDay, out kind, out stage, out good);
+            return new Interest.Ask
+            {
+                Regard = "stranger", Drawn = Romance.DrawnTo(me.Id, me.Woman, them.Woman, where != null && where.SameSex), Taken = me.Taken, AtWorst = worry && stage == 2,
+                Temper = me.Temper, Mood = me.Mood, Who = me.P, Worry = worry ? kind : null, Cash = them.WellOff ? 600 : 150, BadHere = them.Known ? 1 : 0,
+                Saloon = where != null && where.Saloon
+            };
         }
 
         private const string Desperate = "is desperate for money";

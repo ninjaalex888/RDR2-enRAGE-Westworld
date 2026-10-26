@@ -1467,10 +1467,19 @@ namespace EnrageWestworld.Core
 			};
 		}
 
-		/// Spoken for: a sweetheart of their own (a warm romantic tie) or someone they're courting.
-		private bool SpokenFor(string id)
+		/// Spoken for: a sweetheart of their own (a warm romantic tie), someone they're courting, or one of enRAGE's people
+		/// in an affair of the heart.
+		public bool SpokenFor(string id)
 		{
-			return Store.Ties.Any(t => t.Has(id) && Ties.Romantic(t.Kind) && t.Warmth > 0) || Store.Links.Any(l => l.Kind == "courting" && (l.Id == id || l.OtherId == id));
+			return Store.Ties.Any(t => t.Has(id) && Ties.Romantic(t.Kind) && t.Warmth > 0) || Store.Links.Any(l => l.Kind == "courting" && (l.Id == id || l.OtherId == id)) ||
+			       Store.Affairs.Any(x => x.Active && x.Involves(id));
+		}
+
+		/// Their mood today, as their thoughts show it (InnerLife.MoodOf).
+		public string MoodToday(Person p, string town)
+		{
+			InnerLife.Context day = ThoughtDay(town, p.Id);
+			return InnerLife.MoodOf(p, day, p.Id + "|mood|" + day.GameDay);
 		}
 
 		private void RomanceTick(IList<Person> roster, long now)

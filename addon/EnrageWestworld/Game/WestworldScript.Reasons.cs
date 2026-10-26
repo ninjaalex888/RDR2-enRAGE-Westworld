@@ -70,8 +70,8 @@ namespace EnrageWestworld.InGame
                     return null;
                 Person who = PersonOf(rec);
                 PersonState rs = _store.Find(who.Id);
-                return new Someone { Id = who.Id, Name = ShownName(h, who.Name), Woman = who.Woman, Temper = who.Personality, P = who, WakeStage = rs != null ? rs.WakeStage : 0,
-                                     WellOff = WellOff(p), Drunk = InHisCups(p, who), Hurt = HurtLately(who.Id) };
+                return Heart(new Someone { Id = who.Id, Name = ShownName(h, who.Name), Woman = who.Woman, Temper = who.Personality, P = who, WakeStage = rs != null ? rs.WakeStage : 0,
+                                     WellOff = WellOff(p), Drunk = InHisCups(p, who), Hurt = HurtLately(who.Id) });
             }
             Acquaintance ac = _bridge.AcquaintanceAt(h);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
@@ -81,7 +81,7 @@ namespace EnrageWestworld.InGame
                 if (fp.Personality == null)
                     fp.Personality = f.Temper;
                 PersonState st = _store.Find(f.Key);
-                return new Someone { Id = f.Key, Name = f.Name, Woman = f.Woman, Temper = f.Temper, P = fp, WakeStage = st != null ? st.WakeStage : 0, WellOff = WellOff(p), Drunk = InHisCups(p, fp), Hurt = HurtLately(f.Key) };
+                return Heart(new Someone { Id = f.Key, Name = f.Name, Woman = f.Woman, Temper = f.Temper, P = fp, WakeStage = st != null ? st.WakeStage : 0, WellOff = WellOff(p), Drunk = InHisCups(p, fp), Hurt = HurtLately(f.Key) });
             }
             if (!ResidentEligible(p))
                 return null;
@@ -89,7 +89,20 @@ namespace EnrageWestworld.InGame
             if (r == null)
                 return null;
             Person rp = _engine.PersonOfResident(r);
-            return new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = rp, WakeStage = _engine.StageOf(r.Id), WellOff = WellOff(p), Drunk = InHisCups(p, rp), Hurt = HurtLately(r.Id) };
+            return Heart(new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = rp, WakeStage = _engine.StageOf(r.Id), WellOff = WellOff(p), Drunk = InHisCups(p, rp), Hurt = HurtLately(r.Id) });
+        }
+
+        /// What a street scene's reasons need to know of someone's heart and day: spoken for, their mood today, and
+        /// whether they're known lately for a face in the bar or a hand in a coat (Reasons.Courtship).
+        internal Someone Heart(Someone s)
+        {
+            if (s == null)
+                return null;
+            long g = Bridge.Now();
+            s.Taken = _engine.SpokenFor(s.Id);
+            s.Known = _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
+            s.Mood = s.P != null ? _engine.MoodToday(s.P, s.P.Home ?? _placeTown) : null;
+            return s;
         }
 
         /// Had it done to them in the last hour and a half (game time): a face put into the bar, or their pocket picked
@@ -135,7 +148,7 @@ namespace EnrageWestworld.InGame
             long now = Bridge.Now(), day = now > 0 ? now / 1440 : -1;
             Reasons.Place where = new Reasons.Place
             {
-                Saloon = saloon, Night = Natives.Night(),
+                Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance,
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
             };
@@ -215,6 +228,13 @@ namespace EnrageWestworld.InGame
                       : kind == "lift" ? Scenes.Lift(cast, seed, Voice.Chance(seed + "late", Reasons.Alert(done.Temper) ? 60 : 35))
                       : Scenes.Drunk(cast, seed, answer);
                 }
+                else if (kind.StartsWith("court:"))
+                {
+                    // one taken with the other: the other's answer, and what weighed, are in the kind (Reasons.Courtship)
+                    string[] parts = kind.Split(':');
+                    s = Scenes.Court(cast, seed, parts[1], parts.Length > 2 ? parts[2] : null);
+                    NoteCourt(doer, done, parts[1], parts.Length > 2 ? parts[2] : null);
+                }
                 else if (kind.StartsWith("x:"))
                 {
                     // an exchange written for the reason (Exchanges.cs): the second one's answer comes from their own state
@@ -234,7 +254,7 @@ namespace EnrageWestworld.InGame
                     s = Scenes.Make(kind, cast, seed);
                 if (s == null)
                     continue;
-                if (pr.Apart > 2.6f && (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend"))
+                if (pr.Apart > 2.6f && (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind.StartsWith("court:")))
                 {
                     // trouble goes to its victim: the attacker, the thief or the drunk walks over, and the other stays put
                     // (at the bar the rough move needs; the Director's "meet" works whichever of the two walks)
