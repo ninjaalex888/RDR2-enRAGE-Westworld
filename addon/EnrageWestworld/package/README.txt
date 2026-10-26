@@ -8,8 +8,9 @@ travels from town to town and grows in the telling, kin you never met write to y
 revenge, strangers quarrel, sing, haggle, court and square off around you (and you can step in),
 and some people begin to wonder whether any of this is real. A few of the dead don't stay dead.
 
-It's free, and it's not made by the enRAGE author. It needs enRAGE to work and doesn't change
-enRAGE's files. enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemption2/mods/10967
+It's free, and it's not made by the enRAGE author. It needs enRAGE to work and never modifies
+enRAGE's program (it edits enRAGE's settings file only when you change an enRAGE setting in
+its panel, after a backup). enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemption2/mods/10967
 Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.

@@ -612,6 +612,7 @@ namespace EnrageWestworld.InGame
 				int num = Snapshot.MarkKnown(rec, person);
 				if (num > 0)
 				{
+					_bridge.RosterChanged();   // a direct write: enRAGE saves it now (CLAUDE.md, "Writing to enRAGE")
 					Log.Write("Marked " + num + " of " + person.Name + "'s past as known in enRAGE.");
 				}
 			}

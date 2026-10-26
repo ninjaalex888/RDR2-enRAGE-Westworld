@@ -24,10 +24,10 @@ This plan was written overnight against 0.6.1. Since then 0.6.2 shipped and a fe
 
 **Open for Lex:**
 
-- [ ] The despair default (gap 4, P8 step 8). This plan suggests 0, opt-in; Lex plays at 90 and widened despair in 0.6.2. It stays at 75 until Lex decides.
-- [ ] Order of work: (a) the living street (Q2 to Q6) first, as the README's roadmap says, written to plug into the mind's catalogue later; or (b) the mind design's steps 1 to 5 first (the ledger, traits, needs, appraisal and emotion, the catalogue), then the living street built on them, so reactions aren't written twice.
-- [ ] A LICENSE (gap 8).
-- [ ] Direct writes into enRAGE (gap 5, P8 step 7): audit them before the mind design's sharing back is built. If some must stay direct, the README's "only through its own methods" sentence needs correcting.
+- [x] The despair default (gap 4, P8 step 8): stays at 75 (Lex, 2026-10-26). Instead, more animations for what a fully awake (stage 4) person might do.
+- [x] Order of work: (b), the mind design's steps 1 to 5 first (the ledger, traits, needs, appraisal and emotion, the catalogue), then the living street (Q2 to Q6) built on them (Lex, 2026-10-26).
+- [ ] A LICENSE (gap 8): Lex is weighing no licence, all rights reserved, so it can be opened later.
+- [x] Direct writes into enRAGE (gap 5, P8 step 7): audited 2026-10-26. Eight direct writes, each now followed by enRAGE's own save and failing loudly; the list and the rule are in CLAUDE.md ("Writing to enRAGE"), and the README no longer says "only through its own methods".
 - [ ] The Want, Maybe and No columns in the idea banks.
 
 **Still true at 0.6.2:** a feature's error counter never resets; `Store.People` has no cap; the three big files grew (Engine.cs 2,049 lines, WestworldScript.cs 1,561, Engine.World.cs 1,213); there's no LICENSE file.

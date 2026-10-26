@@ -28,12 +28,35 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 
 ## Rules that matter
 
-- **No enRAGE code, text or files in this repo.** The add-on reads what enRAGE tracks and changes things only through enRAGE's own methods. Every line of dialogue must be original; do not copy or lightly reword enRAGE's strings. Never commit decompiled enRAGE source.
+- **No enRAGE code, text or files in this repo.** The add-on reads what enRAGE tracks; it writes through enRAGE's own methods where one exists, and otherwise only the direct writes listed in "Writing to enRAGE" below, each followed by enRAGE's own save. Every line of dialogue must be original; do not copy or lightly reword enRAGE's strings. Never commit decompiled enRAGE source.
 - If an enRAGE update breaks something, only the feature that needs it should switch off, and the log should say which.
 - Never run script mods in Red Dead Online.
 - Writing style for all player-facing text: plain, specific, no filler.
 - Settings: add a field in `Settings.cs`, a line in `ToIni()`, clamp it in `Clamp()`. Bump `CurrentVersion` when adding options so old inis are rewritten with the new lines (values kept).
 - Native out-parameters use 8-byte slots.
+
+## Writing to enRAGE (audit, 2026-10-26)
+
+Lex asked for the bridge's writes to be audited so the docs say what really happens. Reading is free (reflection or enRAGE's own types, read only). Writing goes through enRAGE's own methods where one exists; where enRAGE has none (it does the same thing inline in its own code), a direct write is allowed only if it's on this list, followed by enRAGE's own save, and logged. Lex's call on the mind design (2026-10-26, the private Claude Doc "RealNPCs: the NPC Mind"): RealNPCs shares traits and what happens to people back to enRAGE, so this list will grow by two, and nothing else is added without Lex.
+
+Through enRAGE's methods: `Grace` (quiet while still); `WorldNotice`, `Feed`, `GrudgeNotice`; `ChronicleDeed` (AddDeed); `AddThought`, `Mind.Remember`, `History`, `Mind.SetGoal`, the record's own `AddHate`, `AddFear` and `Touch`; `NewRecord` (enRAGE's person generator) and `FitKinToLife`; `IntelNotice`; `SaveRoster` and `SaveWorld`; the settings panel's `Toggle` and `_reload`.
+
+| Direct write | Where | What it sets | Then | An enRAGE method for it? |
+| --- | --- | --- | --- | --- |
+| Revive | `Bridge.Revive` | A record's IsAlive, PresumedDead and its time, KilledByPlayer, Fate, RestUntil, Hate | `Remember`, `History`, `SaveRoster` | None; enRAGE revives inline (LoreMenSeen) |
+| The avenger | `Life.cs` (the avenger's arrival) | A fresh record from `NewRecord`: Name, Title, KinId, KinRelation, Hate, Origin and its place, RestUntil | `Mind.SetGoal`, `AddToRoster`, `Remember`, `History` | None for filling in a record |
+| AddToRoster | `Bridge.AddToRoster` | Adds a record to enRAGE's roster list | `FitKinToLife`, `SaveRoster` | None; enRAGE adds inline |
+| AddTownItem | `Bridge.AddTownItem` | A LIFE `WorldEvent` in the chronicle's events (the papers' "Around town") | `SaveWorld` | `AgendaEvent` is for gangs only |
+| RevealPlan | `Bridge.RevealPlan`, `RevealPlanAs` | A plan's Known, ToldBy, ToldAbout (by reflection, `Bridge.Set`) | `SaveWorld`, `IntelNotice` | None; enRAGE does it inline (AnswerOrders, UpdateInformants) |
+| Marry | `WestworldScript.Marry` | A record's Family = married, a "Married" past entry, one friend id | `SaveRoster` | `MakeFriends` could make the friend link both ways (enRAGE's own cap of 3 and log line); `ApplyLifeEffect("marry")` needs a WorldPart |
+| MarkKnown | `Snapshot.MarkKnown` (`RevealToEnrage`) | Past entries told in talk: Known | `SaveRoster` (added in the audit; before, it waited for enRAGE's next save) | `RevealPast` reveals by kind, not the entries actually told |
+| LikeMore | `Bridge.LikeMore` | A townsperson's Like, up or down | enRAGE's `_peopleDirty` | None; enRAGE changes Like inline (AnswerPerson) |
+| Planned: a townsperson's temper | The mind design's sharing back | Acquaintance.Temper, only when enRAGE hasn't given one | `_peopleDirty` | None |
+| Planned: a death enRAGE missed | The people ledger | Acquaintance.Dead (Pope McCrae: the area unloaded a second after he died, before enRAGE's 2 s people sync saw the body) | `_peopleDirty` | None; enRAGE marks deaths only in that sync |
+
+How they fail: the typed writes are compiled against NemesisMod.dll, so a field an enRAGE update renames throws when the feature runs, and its `Safe` guard switches that one feature off and logs it. The reflection writes (`Bridge.Set`, the plan's three) used to skip a missing property in silence; since the audit they log `enRAGE setting <Type>.<name> failed` once.
+
+Files: RealNPCs never modifies NemesisMod.dll or enRAGE's data files directly; enRAGE writes its own saves after the calls above. The one file of enRAGE's that RealNPCs edits is NemesisMod.ini, from the settings panel, only when the player changes an enRAGE setting there, after a backup (`RealNPCs\backup`).
 
 ## Testing
 

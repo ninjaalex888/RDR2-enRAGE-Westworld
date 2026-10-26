@@ -538,13 +538,17 @@ namespace EnrageWestworld.InGame
 			return (T)obj;
 		}
 
-		private static void Set(object o, string name, object value)
+		/// One of the few direct writes into enRAGE (CLAUDE.md, "Writing to enRAGE"). A property an enRAGE update renamed
+		/// or made read-only is logged once, not skipped in silence.
+		private void Set(object o, string name, object value)
 		{
 			PropertyInfo property = o.GetType().GetProperty(name, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
 			if (property != null && property.CanWrite)
 			{
 				property.SetValue(o, value, null);
+				return;
 			}
+			Fail("setting " + o.GetType().Name + "." + name, new MissingMemberException(o.GetType().Name, name));
 		}
 	}
 }
