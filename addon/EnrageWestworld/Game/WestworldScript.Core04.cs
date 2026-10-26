@@ -392,9 +392,18 @@ namespace EnrageWestworld.InGame
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));
             }
             TickerLine line = _tickerLine;
-            Ticker.Render(line, _cfg, now);
-            if (_cfg.ThoughtMarker)
-                DrawThinkingMark(line);
+            // a thought of someone in view goes over their head (WestworldScript.OverHead.cs), under its own guard;
+            // anything else, or if that can't be drawn, on the bar
+            _overHeadDrawn = false;
+            if (_aOverHead == null)
+                _aOverHead = () => _overHeadDrawn = ThoughtOverHead(_tickerLine, _now);
+            Safe("thoughts over heads", _aOverHead);
+            if (!_overHeadDrawn)
+            {
+                Ticker.Render(line, _cfg, now);
+                if (_cfg.ThoughtMarker)
+                    DrawThinkingMark(line);
+            }
             if (_hint != null && now < _hintUntil)
             {
                 float s = _cfg.TickerScale * 0.9f;

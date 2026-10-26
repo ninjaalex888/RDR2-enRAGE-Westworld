@@ -509,10 +509,11 @@ SETTINGS (RealNPCs.ini)
 Saved changes are picked up in game within a few seconds (ReloadIni). Every option has a comment
 in the file. The new ones:
 
-[Ticker]    Ticker (true), TickerNearbyMetres (30), TickerSeconds (12), TickerY (0.962, height on
+[Ticker]    Ticker (true), TickerNearbyMetres (20), TickerSeconds (12), TickerY (0.962, height on
             screen), TickerScale (0.30, text size), TickerWidth (0.60),
             TickerNextKey (T): the next line now, ThoughtSounds (true): a small sound from someone
-            near as their thought shows
+            near as their thought shows, ThoughtsOverHeads (true): the thoughts of people near you
+            above their head in small type instead of on the bar, ThoughtsOverHeadScale (0.24)
 [Display]   FeelingBars (true): bars under people near you for their fear, liking and anger,
             FeelingBarsMetres (15), FeelingBarsShowEmpty (false): the empty part of each bar too,
             GrudgeMeter (true): the "Sore at you" panel, top right

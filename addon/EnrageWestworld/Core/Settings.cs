@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 56;
+        public const int CurrentVersion = 57;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -35,7 +35,7 @@ namespace EnrageWestworld.Core
 
         // [Ticker]
         public bool Ticker = true;
-        public float TickerNearbyMetres = 30f;
+        public float TickerNearbyMetres = 20f;
         public int TickerSeconds = 12;
         public float TickerY = 0.962f;
         public float TickerScale = 0.30f;
@@ -44,6 +44,8 @@ namespace EnrageWestworld.Core
         public bool ThoughtSounds = true;
         public int TickerGapSeconds = 3;
         public bool ThoughtMarker = true;
+        public bool ThoughtsOverHeads = true;
+        public float ThoughtsOverHeadScale = 0.24f;
 
         // [Display] - drawn on screen besides the ticker
         public bool FeelingBars = true;
@@ -313,6 +315,13 @@ namespace EnrageWestworld.Core
                 if (KeyIs(s.WarNewsTo, "corner") || KeyIs(s.WarNewsTo, "right")) { raised.Add("WarNewsTo " + s.WarNewsTo + " -> feed"); s.WarNewsTo = "feed"; }
                 if (KeyIs(s.NewsTo, "subtitles") || KeyIs(s.NewsTo, "enrage")) { raised.Add("NewsTo " + s.NewsTo + " -> corner"); s.NewsTo = "corner"; }
             }
+            if (s.SettingsVersion < 57 && Math.Abs(s.TickerNearbyMetres - 30f) < 0.01f)
+            {
+                // 0.6.2: thoughts show above heads now, and a nearer circle keeps them to people you can read (a value of
+                // your own is kept)
+                s.TickerNearbyMetres = 20f;
+                raised.Add("TickerNearbyMetres 30 -> 20");
+            }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
         }
@@ -432,6 +441,7 @@ namespace EnrageWestworld.Core
             TickerScale = Math.Max(0.15f, Math.Min(0.8f, TickerScale));
             TickerWidth = Math.Max(0.2f, Math.Min(1f, TickerWidth));
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
+            ThoughtsOverHeadScale = Math.Max(0.12f, Math.Min(0.6f, ThoughtsOverHeadScale));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
             RealVoiceTalkSeconds = Math.Max(30, Math.Min(1800, RealVoiceTalkSeconds));
             Subtitles = (Subtitles ?? "").Trim().ToLowerInvariant() == "off" ? "off" : "on";   // the old matched and game are on
@@ -485,6 +495,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("ThoughtSounds = " + B(ThoughtSounds) + "   ; when a thought of someone within a few steps comes up on the ticker, they make a small wordless sound (at most every 3 minutes each)");
             b.AppendLine("TickerGapSeconds = " + TickerGapSeconds + "   ; a short pause between one thought and the next, so they don't run together (0: none)");
             b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
+            b.AppendLine("ThoughtsOverHeads = " + B(ThoughtsOverHeads) + "   ; the thoughts of people near you show above their head in small type, not on the bar (the news and the rest stay on the bar, and so does a thought whose thinker is off screen)");
+            b.AppendLine("ThoughtsOverHeadScale = " + F(ThoughtsOverHeadScale) + "   ; text size of thoughts above heads (TickerScale is the bar's)");
             b.AppendLine();
             b.AppendLine("[Display]");
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, liking and anger, as enRAGE keeps them");
