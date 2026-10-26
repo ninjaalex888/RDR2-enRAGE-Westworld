@@ -145,6 +145,7 @@ namespace EnrageWestworld.InGame
         {
             try
             {
+                FlirtPromptEnd();
                 _director.Abort("stopping");
                 EndEncounters("the add-on stopped");
                 WakeActsAbort();
@@ -686,6 +687,7 @@ namespace EnrageWestworld.InGame
             TalkStep(now);
             SubtitleStep(now);
             TerritoryStep(now);
+            FlirtPromptStep();
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);
             Safe("arrivals", _aArrival);

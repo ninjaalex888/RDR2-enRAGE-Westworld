@@ -1013,6 +1013,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST encounters: " + EncountersStatus());
 			Log.Write("TEST subtitles: " + SubtitlesStatus());
 			Log.Write("TEST territory: " + TerritoryStatus());
+			Log.Write("TEST flirt prompt: " + FlirtPromptStatus());
 			Log.Write("TEST settings: " + SettingsStatus());
 			if (nemesisRecord == null)
 			{
@@ -1127,6 +1128,11 @@ namespace EnrageWestworld.InGame
 			if (!IsGrownUp(ped))
 			{
 				Log.Write("FLIRT ignored: not a grown-up.");
+				return;
+			}
+			if (Natives.StoryModel(ped))
+			{
+				Log.Write("FLIRT ignored: one of the story's own people.");   // never anyone the story holds
 				return;
 			}
 			long now = Bridge.Now();

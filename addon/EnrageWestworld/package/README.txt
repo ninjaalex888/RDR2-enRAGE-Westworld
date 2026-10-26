@@ -544,6 +544,8 @@ in the file. The new ones:
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
             SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true)
+[Romance]   FlirtPrompt (true): Flirt in the game's lock-on menu, with Greet and Antagonize, on H
+            (D-pad down on a pad)
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left
@@ -567,7 +569,8 @@ Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           About 15 seconds after loading, a notice says which key to use.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
           regulars around you show on the map for a minute
-F2        flirt with the person you're looking at (FlirtKey; it was F6, the game's camera)
+F2        flirt with the person you're looking at (FlirtKey; it was F6, the game's camera).
+          Locked on to someone, the game's menu also offers Flirt, on H (FlirtPrompt).
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)
 Y         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
