@@ -1,5 +1,7 @@
 # RealNPCs
 
+> **Early access: a work in progress.** RealNPCs is actively being worked on. New features arrive often, some parts are still rough, and things can change between versions. Feedback and bug reports are welcome.
+
 *Formerly enRAGE Westworld.*
 
 An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967)**, the nemesis-system mod for Red Dead Redemption 2. It makes the people enRAGE keeps track of act like they have their own lives, and it lets the whole world feel what you do. A few of them start to wonder whether any of it is real.
