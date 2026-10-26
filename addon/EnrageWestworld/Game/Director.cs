@@ -75,6 +75,8 @@ namespace EnrageWestworld.InGame
         public Action<string> Happened;
         /// The one spoken to reacts (WestworldScript.Reactions.cs); null: nobody reacts.
         public Action<Reaction> React;
+        /// "meet" gave up: the two never got close enough, so nothing happened between them.
+        public Action<Ped, Ped> NeverMet;
 
         // the drunk who calls a man out (Scenes.Drunk): the game's own drunk-dueler moves, one ped at a time
         public const string DrunkDict = "script_re@drunk_dueler";
@@ -366,6 +368,8 @@ namespace EnrageWestworld.InGame
                 else if (now > l.MeetUntil)
                 {
                     Ped walker = l.Cast[l.MeetWalker], waiter = l.Cast[1 - l.MeetWalker];   // why, for the log: how far off, and whether a scenario held them
+                    if (NeverMet != null)
+                        NeverMet(l.Cast[0], l.Cast[1]);
                     Abort("they never got close enough to talk (still " + waiter.Position.DistanceTo(walker.Position).ToString("0.0") + " m apart" +
                           (PED.IS_PED_USING_ANY_SCENARIO(walker.Handle) ? ", a scenario held the walker" : "") +
                           (PED.IS_PED_USING_ANY_SCENARIO(waiter.Handle) ? ", a scenario held the other" : "") + ")");

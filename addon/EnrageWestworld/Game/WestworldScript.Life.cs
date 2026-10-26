@@ -47,6 +47,12 @@ namespace EnrageWestworld.InGame
                 _director.SlamGoing = () => _rough != null && _rough.ForScene;
                 _director.SlamResult = () => _roughResult;
                 _director.React = OnReaction;   // WestworldScript.Reactions.cs
+                // a fight that never came to anything (the walker never got there) sits nobody out for long
+                _director.NeverMet = (one, other) =>
+                {
+                    _restMsOf.Remove(one.Handle);
+                    _restMsOf.Remove(other.Handle);
+                };
                 _director.SlamStop = () =>
                 {
                     if (_rough != null && _rough.ForScene)
