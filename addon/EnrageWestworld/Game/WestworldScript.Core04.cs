@@ -111,7 +111,9 @@ namespace EnrageWestworld.InGame
             Log.Debug = _cfg.DebugLog;
             Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
             Feed.UseGameFeed = _cfg.NewsRoute == "gamefeed";
+            Feed.SubtitleMode = _cfg.Subtitles;
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
+            _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
             _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F6);
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.N);
@@ -278,7 +280,13 @@ namespace EnrageWestworld.InGame
                     text = t.Text;
                     break;
                 case "world":
-                    // gang and faction news: the game's pop-up on the right, apart from the ticker
+                    // gang and faction news: the "Around town" box, or the game's pop-up on the right, apart from the ticker
+                    if (string.Equals(_cfg.WarNewsTo, "corner", StringComparison.OrdinalIgnoreCase))
+                    {
+                        NewsPush(t.Title, t.Text, "news");
+                        Log.Write("WORLD NEWS (corner): " + t.Title + ": " + t.Text);
+                        return;
+                    }
                     if (string.Equals(_cfg.WarNewsTo, "right", StringComparison.OrdinalIgnoreCase) && Toaster.Post(t.Title, t.Text))
                     {
                         Log.Write("WORLD NEWS (right): " + t.Title + ": " + t.Text);
@@ -308,6 +316,12 @@ namespace EnrageWestworld.InGame
             if (string.IsNullOrEmpty(text))
                 return;
             string route = _cfg.NewsRoute;
+            if (route == "corner")
+            {
+                NewsPush(label, text, kind);   // the "Around town" box (WestworldScript.News.cs)
+                if (!_cfg.NoticesAsSubtitles)
+                    return;
+            }
             if (route == "ticker")
             {
                 _ticker.Push(label, text, kind);
@@ -347,6 +361,7 @@ namespace EnrageWestworld.InGame
             _now = now;
             Safe("ticker", _aFrame);
             FeelingsStep(now);
+            NewsStep(now);
         }
 
         private void FrameImpl(int now)
@@ -378,12 +393,14 @@ namespace EnrageWestworld.InGame
             {
                 _nextTickerUpdate = now + 200;
                 TickerLine was = _tickerLine;
-                _tickerLine = _ticker.Update(now, _near, () => _engine.Summary());
+                _tickerLine = _ticker.Update(now, _near, _cfg.NewsRoute == "corner" ? null : (Func<string>)(() => _engine.Summary()));   // the news has its own box then
                 if (_tickerLine != was)
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));
             }
             TickerLine line = _tickerLine;
             Ticker.Render(line, _cfg, now);
+            if (_cfg.ThoughtMarker)
+                DrawThinkingMark(line);
             if (_hint != null && now < _hintUntil)
             {
                 float s = _cfg.TickerScale * 0.9f;
@@ -490,10 +507,12 @@ namespace EnrageWestworld.InGame
                 float d = ped.Position.DistanceTo(pos);
                 if (d > r || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
                     continue;
+                // only people you can see think on the ticker, so it's always clear whose thought it is
+                bool seen = ENTITY.IS_ENTITY_ON_SCREEN(h) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17);
                 NemesisRecord rec = _bridge.RecordAt(h);
                 if (rec != null)
                 {
-                    if (!rec.IsAlive)
+                    if (!rec.IsAlive || !seen)
                         continue;
                     Person p = PersonOf(rec);
                     _near.Add(new NearThought { Key = p.Id, Name = p.Name, Handle = h, Distance = d, Beside = d < BesideMetres, Text = () => _engine.TickerThought(p, now) });
@@ -504,6 +523,8 @@ namespace EnrageWestworld.InGame
                 Acquaintance a = _bridge.AcquaintanceAt(h);
                 if (a != null && !string.IsNullOrEmpty(a.Name))
                 {
+                    if (!seen)
+                        continue;
                     Folk f = Snapshot.Of(a);
                     Person fp = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, now);
                     PersonState st = _store.Get(fp);
@@ -527,26 +548,27 @@ namespace EnrageWestworld.InGame
                     Resident holder = HolderAt(ped, pk);
                     if (holder != null)
                     {
-                        NotePostVisit(holder, d);
+                        NotePostVisit(holder, d);   // a visit counts whether or not you're looking at them
                         float near = d;
-                        _near.Add(new NearThought
-                        {
-                            Key = holder.Id,
-                            Handle = h,
-                            Name = holder.Name + ", " + pk.Role,
-                            Distance = d + 2f,
-                            Beside = d < BesideMetres,
-                            Text = () =>
+                        if (seen)
+                            _near.Add(new NearThought
                             {
-                                PersonState hs = _store.Find(holder.Id);
-                                return _cfg.WestWorld && hs != null && hs.WakeStage > 0 ? Hosts.Thought(_engine.PersonOfResident(holder), hs, _engine.Player, holder.Id + "|" + now / 180)
-                                    : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / every, Look(me, near));
-                            }
-                        });
+                                Key = holder.Id,
+                                Handle = h,
+                                Name = holder.Name + ", " + pk.Role,
+                                Distance = d + 2f,
+                                Beside = d < BesideMetres,
+                                Text = () =>
+                                {
+                                    PersonState hs = _store.Find(holder.Id);
+                                    return _cfg.WestWorld && hs != null && hs.WakeStage > 0 ? Hosts.Thought(_engine.PersonOfResident(holder), hs, _engine.Player, holder.Id + "|" + now / 180)
+                                        : _engine.PostThought(holder, near < 10f, CLOCK.GET_CLOCK_HOURS(), holder.Id + "|" + now / every, Look(me, near));
+                                }
+                            });
                     }
                     continue;
                 }
-                if (d < 12f && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && ResidentEligible(ped))
+                if (seen && d < 12f && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && ResidentEligible(ped))
                     strangers.Add(new KeyValuePair<Ped, float>(ped, d));
             }
             // the three nearest ordinary people get turns too (behind anyone with a name, unless right beside you)
@@ -567,7 +589,7 @@ namespace EnrageWestworld.InGame
                     _near.Add(new NearThought
                     {
                         Key = res.Id,
-                        Name = res.Name,
+                        Name = ShownName(stranger.Handle, res.Name),
                         Handle = stranger.Handle,
                         Distance = sd + 10f,
                         Beside = sd < BesideMetres,

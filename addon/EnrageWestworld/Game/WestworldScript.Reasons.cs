@@ -76,7 +76,7 @@ namespace EnrageWestworld.InGame
             Resident r = ResidentOf(p);
             if (r == null)
                 return null;
-            return new Someone { Id = r.Id, Name = r.Name, Woman = r.Woman, Temper = r.Personality, P = _engine.PersonOfResident(r), WakeStage = _engine.StageOf(r.Id) };
+            return new Someone { Id = r.Id, Name = ShownName(h, r.Name), Woman = r.Woman, Temper = r.Personality, P = _engine.PersonOfResident(r), WakeStage = _engine.StageOf(r.Id) };
         }
 
         /// Every pair close enough to each other with a reason, strongest first.

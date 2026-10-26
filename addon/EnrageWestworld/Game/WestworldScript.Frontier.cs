@@ -89,7 +89,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 // the speaker's own recorded line; an uncanny one (Speak) gets an unsettled one when no other was chosen
                 string voice = l.Voice ?? (l.Speak ? "uneasy" : null);
-                Feed.Say(l.Label, l.Line, l.Ped != 0 ? Speech.When(l.Ped, voice, Game.Player.Character.Handle) : null);
+                Feed.Say(l.Label, l.Line, l.Ped != 0 ? Speech.When(l.Ped, voice, Game.Player.Character.Handle) : null, toYou: true);
             }
         }
 

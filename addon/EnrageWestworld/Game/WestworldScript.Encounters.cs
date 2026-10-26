@@ -243,7 +243,7 @@ namespace EnrageWestworld.InGame
                         c.NextCry = now + 7000 + _rng.Next(5000);
                         Speech.Say(h, HelpLines[_rng.Next(HelpLines.Length)], 0);
                         if (dist < 90f)
-                            Feed.Say(dist > 15f ? "A woman, somewhere in the dark" : "The crying woman", Encounters.Pick(Encounters.Cries, h + "|" + now / 9000));
+                            Feed.Say(dist > 15f ? "A woman, somewhere in the dark" : "The crying woman", Encounters.Pick(Encounters.Cries, h + "|" + now / 9000), toYou: true);
                     }
                     bool aimed = PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, h);
                     if (dist < 6f || (dist < 25f && aimed))
@@ -385,7 +385,7 @@ namespace EnrageWestworld.InGame
                     MakeHostile(c.Woman, now);
                     c.Woman.GiveWeapon(eWeapon.MeleeKnife, 1, eWeaponAttachPoint.Knife, true);
                     TASK.TASK_COMBAT_PED(h, me.Handle, 0, 16);
-                    Feed.Say("The crying woman", Encounters.Pick(Encounters.KnifeTurn, h + "k"), Speech.When(h, "mock", me.Handle));
+                    Feed.Say("The crying woman", Encounters.Pick(Encounters.KnifeTurn, h + "k"), Speech.When(h, "mock", me.Handle), toYou: true);
                     c.Phase = "knife";
                     c.PhaseUntil = now + 4000;
                     break;
@@ -411,7 +411,7 @@ namespace EnrageWestworld.InGame
                         CryingOutcome(c, "knife", now);   // nowhere for them to come from: she manages on her own
                         return;
                     }
-                    Feed.Say("The crying woman", Encounters.Pick(Encounters.AmbushCall, h + "a"), Speech.When(h, "mock", me.Handle));
+                    Feed.Say("The crying woman", Encounters.Pick(Encounters.AmbushCall, h + "a"), Speech.When(h, "mock", me.Handle), toYou: true);
                     _cameAtYouSeen[h] = now;   // she brought them: shooting her as she runs is self-defence too
                     PED.SET_PED_KEEP_TASK(h, true);
                     TASK.TASK_SMART_FLEE_PED(h, me.Handle, 300f, -1, 0, 3f, 0);
@@ -422,7 +422,7 @@ namespace EnrageWestworld.InGame
                 default:
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 3000, 0f, 0f, 0f);
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 6000, 0, 51, 0);
-                    Feed.Say("The crying woman", Encounters.Pick(Encounters.IntoTheDark, h + "d"), Speech.When(h, "hum", me.Handle));   // no words of the game's would fit
+                    Feed.Say("The crying woman", Encounters.Pick(Encounters.IntoTheDark, h + "d"), Speech.When(h, "hum", me.Handle), toYou: true);   // no words of the game's would fit
                     c.Phase = "dark";
                     c.PhaseUntil = now + 3500;
                     outcome = "dark";

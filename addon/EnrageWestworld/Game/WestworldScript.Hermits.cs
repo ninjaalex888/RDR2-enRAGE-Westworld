@@ -292,7 +292,7 @@ namespace EnrageWestworld.InGame
                     _hermitAway.Add(o.R.Id);
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.TASK_SMART_FLEE_PED(h, me, 150f, -1, 0, 3f, 0);
-                    Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitFlee, o.R.Id + "|f|" + now / 1000), Speech.When(h, "getaway", me));
+                    Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitFlee, o.R.Id + "|f|" + now / 1000), Speech.When(h, "getaway", me), toYou: true);
                     break;
             }
             Log.Detail("ENCOUNTER hermit: " + o.R.Name + " " + was + " -> " + phase);
@@ -345,7 +345,7 @@ namespace EnrageWestworld.InGame
                         return;
                     o.Warned++;
                     o.NextLine = now + 6000;
-                    Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitWarns, o.R.Id + "|w|" + o.Warned + "|" + now / 60000), Speech.When(h, o.Warned == 1 ? "threat" : o.Warned == 2 ? "warned" : "final", me.Handle));   // sharper each time
+                    Feed.Say(o.R.Name, Encounters.Pick(Encounters.HermitWarns, o.R.Id + "|w|" + o.Warned + "|" + now / 60000), Speech.When(h, o.Warned == 1 ? "threat" : o.Warned == 2 ? "warned" : "final", me.Handle), toYou: true);   // sharper each time
                     break;
                 case "talk":
                 {
@@ -354,7 +354,7 @@ namespace EnrageWestworld.InGame
                     PersonState st = _store.Get(_engine.PersonOfResident(o.R));
                     string line = Encounters.HermitTalkNext(o.R.Id, o.R.Town, st);
                     _engine.KeepResident(o.R, Bridge.Now());
-                    Feed.Say(o.R.Name, line, Speech.For(h, line, me.Handle, fear: 30, fallback: "hum"));
+                    Feed.Say(o.R.Name, line, Speech.For(h, line, me.Handle, fear: 30, fallback: "hum"), toYou: true);
                     break;
                 }
             }

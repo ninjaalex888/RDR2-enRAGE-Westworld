@@ -92,7 +92,7 @@ namespace EnrageWestworld.InGame
             string line = Hosts.StrangerAloud(tier, p.Handle + "|" + Game.GameTime / 60000);
             string label = Grammar.UpperFirst(Director.Kind(p, woman));
             TASK.TASK_LOOK_AT_ENTITY(p.Handle, Game.Player.Character.Handle, 5000, 0, 51, 0);
-            Feed.Say(label + ", to nobody in particular", line, Speech.For(p.Handle, line, 0, 0, 0, false, "uneasy"));   // their own voice, unsettled
+            Feed.Say(label + ", to nobody in particular", line, Speech.For(p.Handle, line, 0, 0, 0, false, "uneasy"), p.Handle);   // their own voice, unsettled
             Log.Write("MUSING " + label + ": " + line);
         }
 
@@ -133,7 +133,7 @@ namespace EnrageWestworld.InGame
                 else
                 {
                     string line = Hosts.Glitch(h + "|g");
-                    Feed.Say(g.Name, line, Speech.When(h, "uneasy", me));
+                    Feed.Say(g.Name, line, Speech.When(h, "uneasy", me), h);
                     g.Step = 99;
                 }
             }
@@ -149,7 +149,7 @@ namespace EnrageWestworld.InGame
                 else
                 {
                     string line = Hosts.Glitch(h + "|f");
-                    Feed.Say(g.Name, line, Speech.When(h, "uneasy", me));
+                    Feed.Say(g.Name, line, Speech.When(h, "uneasy", me), h);
                     g.Step = 99;
                 }
             }
@@ -487,7 +487,7 @@ namespace EnrageWestworld.InGame
         {
             // his own voice, from wherever he is: a recorded line that fits, else a taunt
             int h = _stalker != null ? _stalker.Handle : 0;
-            Feed.Say(label + ", somewhere behind you", line, h != 0 ? Speech.For(h, line, Game.Player.Character.Handle, 40, 0, false, "mock") : null);
+            Feed.Say(label + ", somewhere behind you", line, h != 0 ? Speech.For(h, line, Game.Player.Character.Handle, 40, 0, false, "mock") : null, toYou: true);
             Log.Write("STALKER " + label + ": " + line);
         }
     }

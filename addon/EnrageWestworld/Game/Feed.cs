@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using RDR2;
+using RDR2.Native;
 using RDR2.UI;
 
 namespace EnrageWestworld.InGame
@@ -23,7 +24,17 @@ namespace EnrageWestworld.InGame
 			public string Full;     // the whole line (it may be split over several subtitles)
 
 			public object Group;    // the subtitles one line was split into
+
+			public bool Spoken;     // said by someone (Say, SayFirst, Mutter), not a notice
+
+			public int Ped;         // who says it, when known: no subtitle while they're out of sight
+
+			public bool ToYou;      // said to the player: keeps its subtitle on "matched" even without known words
 		}
+
+		/// Which spoken lines get a white subtitle ([Output] Subtitles): "matched" only when the speaker's recorded
+		/// words are known (voices\words.txt), "on" every line, "off" none. The voice plays either way.
+		public static string SubtitleMode = "matched";
 
 		/// Where a line goes when the speaker's real recorded words replace it on screen (the ticker).
 		public static Action<string, string> Thinking;
@@ -73,7 +84,7 @@ namespace EnrageWestworld.InGame
 			_nextAt = Game.GameTime + ms;
 		}
 
-		public static void Say(string speaker, string text, Func<string> onShow = null)
+		public static void Say(string speaker, string text, Func<string> onShow = null, int ped = 0, bool toYou = false)
 		{
 			object group = new object();
 			foreach (string item in Split(text, 150))
@@ -85,20 +96,23 @@ namespace EnrageWestworld.InGame
 					OnShow = onShow,
 					Speaker = speaker,
 					Full = text,
-					Group = group
+					Group = group,
+					Spoken = true,
+					Ped = ped,
+					ToYou = toYou
 				});
 				onShow = null;
 			}
 		}
 
 		/// Like Say, but ahead of everything already queued (an outburst can't wait its turn).
-		public static void SayFirst(string speaker, string text, Func<string> onShow = null)
+		public static void SayFirst(string speaker, string text, Func<string> onShow = null, int ped = 0)
 		{
 			object group = new object();
 			List<Line> items = new List<Line>();
 			foreach (string item in Split(text, 150))
 			{
-				items.Add(new Line { Text = speaker + ": \"" + item + "\"", Ms = Duration(item), OnShow = onShow, Speaker = speaker, Full = text, Group = group });
+				items.Add(new Line { Text = speaker + ": \"" + item + "\"", Ms = Duration(item), OnShow = onShow, Speaker = speaker, Full = text, Group = group, Spoken = true, Ped = ped });
 				onShow = null;
 			}
 			Line[] rest = _speech.ToArray();
@@ -116,7 +130,8 @@ namespace EnrageWestworld.InGame
 			{
 				Text = speaker + ", under " + (woman ? "her" : "his") + " breath: \"" + text + "\"",
 				Ms = Duration(text),
-				OnShow = onShow
+				OnShow = onShow,
+				Spoken = true
 			});
 		}
 
@@ -151,6 +166,7 @@ namespace EnrageWestworld.InGame
 				{
 					string text = line.Text;
 					int ms = line.Ms;
+					bool real = false;   // the subtitle shows what the recording really says
 					if (line.OnShow != null)
 					{
 						try
@@ -161,6 +177,7 @@ namespace EnrageWestworld.InGame
 								text = line.Speaker + ": \"" + words + "\"";
 								ms = Duration(words);
 								_dropGroup = line.Group;
+								real = true;
 								Thinking?.Invoke(line.Speaker, line.Full);
 							}
 						}
@@ -169,11 +186,25 @@ namespace EnrageWestworld.InGame
 							Log.Write("Voice: " + ex.Message);
 						}
 					}
-					Screen.PrintSubtitle(Clean(text));
+					if (ShowsSubtitle(line, real))
+						Screen.PrintSubtitle(Clean(text));
 					_lastShownAt = gameTime;
 					_nextAt = gameTime + ms;
 				}
 			}
+		}
+
+		/// Whether a line gets its white subtitle: notices always; a spoken line by SubtitleMode, and only while the
+		/// speaker (when known) is on screen and in plain view, so it's always clear who is talking.
+		private static bool ShowsSubtitle(Line line, bool real)
+		{
+			if (!line.Spoken)
+				return true;
+			if (SubtitleMode == "off" || (SubtitleMode != "on" && !real && !line.ToYou))
+				return false;   // on "matched", what's said to you keeps its subtitle; only overheard talk needs its real words
+			int ped = line.Ped;
+			return ped == 0 || (ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.IS_ENTITY_ON_SCREEN(ped) &&
+			                    ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(Game.Player.Character.Handle, ped, 17));
 		}
 
 		private static int Duration(string text)

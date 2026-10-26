@@ -73,8 +73,9 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, string[]> Choices = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
         {
             { "StalkerWhenStill", new[] { "mix", "eerie", "circle", "watch", "rush" } },
-            { "NewsTo", new[] { "ticker", "subtitles", "enrage", "gamefeed" } },
-            { "WarNewsTo", new[] { "right", "ticker" } },
+            { "NewsTo", new[] { "corner", "ticker", "subtitles", "enrage", "gamefeed" } },
+            { "Subtitles", new[] { "matched", "on", "off" } },
+            { "WarNewsTo", new[] { "corner", "right", "ticker" } },
             { "TownPostsAfterDeath", new[] { "survive", "successor" } }
         };
 
@@ -86,7 +87,7 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
-            { "TickerY", "Ticker height on screen" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
+            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "White subtitles" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMin", "He does odd things at least (metres)" }, { "StalkerActMax", "... and at most (metres)" },
             { "StalkerKey", "Make a stalker now" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },

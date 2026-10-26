@@ -664,7 +664,7 @@ namespace EnrageWestworld.InGame
 						voiced++;
 					}
 				}
-				Feed.Say(you ? firstName : speaker, text, voice);
+				Feed.Say(you ? firstName : speaker, text, voice, toYou: true);
 			}
 		}
 
@@ -847,7 +847,7 @@ namespace EnrageWestworld.InGame
 			}
 			else
 			{
-				Feed.Say(name, r.Text, voice);
+				Feed.Say(name, r.Text, voice, toYou: true);
 			}
 		}
 
@@ -1155,8 +1155,8 @@ namespace EnrageWestworld.InGame
 				bool drawn = Romance.DrawnTo("ped" + num, flag, otherIsWoman: false, _cfg.SameSexRomance);
 				string seed = num + "|" + Game.GameTime / 20000;
 				string reply = Romance.StrangerReply(flag, drawn, seed);
-				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed), Speech.When(character.Handle, "flatter", num));
-				Feed.Say(flag ? "A woman" : "A man", reply, Speech.For(num, reply, character.Handle, fallback: drawn ? "flatter" : "no"));
+				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed), Speech.When(character.Handle, "flatter", num), toYou: true);
+				Feed.Say(flag ? "A woman" : "A man", reply, Speech.For(num, reply, character.Handle, fallback: drawn ? "flatter" : "no"), toYou: true);
 				LookAt(num, character.Handle);
 				NoteFlirt(ped, Director.Kind(ped, flag));
 			}
@@ -1169,10 +1169,10 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			int me = Game.Player.Character.Handle;
-			Feed.Say(_engine.Player.FirstName, r.YouSay, Speech.When(me, "flatter", ped));
+			Feed.Say(_engine.Player.FirstName, r.YouSay, Speech.When(me, "flatter", ped), toYou: true);
 			if (r.Reply != null)
 			{
-				Feed.Say(name, r.Reply, Speech.For(ped, r.Reply, me, hate));
+				Feed.Say(name, r.Reply, Speech.For(ped, r.Reply, me, hate), toYou: true);
 			}
 			foreach (KeyValuePair<Person, string> jealou in r.Jealous)
 			{
@@ -1262,7 +1262,7 @@ namespace EnrageWestworld.InGame
 							string text = _engine.Insulted(person, Bridge.Now());
 							if (text != null && !Feed.Talking)
 							{
-								Feed.Say(person.Name, text, Speech.For(key, text, Game.Player.Character.Handle, person.Hate, person.Fear, fallback: "mild"));
+								Feed.Say(person.Name, text, Speech.For(key, text, Game.Player.Character.Handle, person.Hate, person.Fear, fallback: "mild"), toYou: true);
 							}
 							ApplyEffects();
 						}

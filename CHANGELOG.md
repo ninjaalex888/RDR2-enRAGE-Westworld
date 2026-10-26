@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.2 (not released yet)
+
+- The ticker is clearer. It now shows only the thoughts of people you can see (on screen, in plain view), one at a time with a short pause between them (`TickerGapSeconds`, 3), and a small gold mark appears over the person whose thought it is (`ThoughtMarker`). With nobody in view thinking, the bar goes away instead of filling up with old news and a world summary. The ticker key on a thought moves to the next thought.
+- The news has a box of its own: "Around town", in the top right under the "Sore at you" panel. Rumours, life updates, gang and faction news, diaries and what people elsewhere think of you show there one at a time, each for a few seconds (longer for a longer one, and paused while a menu is open), then the box goes away. `NewsTo` and `WarNewsTo` take a new choice, `corner`, now the default; an ini still on the old defaults (`ticker`, `right`) is moved over and the log says so. Settings version 38. Seen in game.
+- White subtitles are a setting now (`[Output]` `Subtitles`): `matched` (the default) shows one only when the words of the speaker's recorded voice are known (`voices\words.txt`), so the subtitle says what you hear; `on` shows every line, as before; `off` shows none. The voice plays either way. In every mode, a street-scene line, an awake person's words or a host's muttering gets a subtitle only while the speaker is on screen and in plain view. Lines labelled as heard from out of sight ("somewhere in the dark", "somewhere behind you") keep theirs. On `matched`, what's said to you keeps its subtitle all the same: what people tell you when you greet them, remarks as you pass, insults, flirting, pleas at gunpoint, and the night encounters' words to you. Only overheard talk (street scenes, two strangers flirting, weddings, mourners, a host muttering) needs its real words, and with the word list as short as it is, that means few of those subtitles for now. Settings version 39.
+- When enRAGE has given someone a name (its name card), RealNPCs uses that name too, on the ticker and in street scenes. Before, a passer-by enRAGE called Jeb Cooley could think on the ticker as "Milo Fenton".
+- The gold mark over the person thinking is bigger and sits a little lower, so enRAGE's name card doesn't cover it.
+
 ## 0.6.1
 
 - Built for enRAGE 0.9.5.3. Everything RealNPCs reads from enRAGE is still there. enRAGE's new settings (such as TownsfolkReactions) show on its pages in the RealNPCs panel (Alt+F11). Played on: every hook found, no errors on either side.

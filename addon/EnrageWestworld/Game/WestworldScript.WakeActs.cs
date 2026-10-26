@@ -795,7 +795,7 @@ namespace EnrageWestworld.InGame
         {
             if (string.IsNullOrEmpty(line))
                 return;
-            Feed.SayFirst(act.Name, line, tag == null ? null : Speech.For(act.Handle, line, me.Handle, act.P.Hate, act.P.Fear, act.P.Friendly, tag));
+            Feed.SayFirst(act.Name, line, tag == null ? null : Speech.For(act.Handle, line, me.Handle, act.P.Hate, act.P.Fear, act.P.Friendly, tag), act.Handle);
         }
 
         /// Keeps ordinary reactions from interrupting the act.

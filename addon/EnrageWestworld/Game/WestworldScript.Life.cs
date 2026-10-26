@@ -209,7 +209,7 @@ namespace EnrageWestworld.InGame
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
                 return ac.Name;
             Resident r = ResidentEligible(p) ? ResidentOf(p) : null;
-            return r != null ? r.Name : null;
+            return r != null ? ShownName(p.Handle, r.Name) : null;
         }
 
         /// Everything a scene might use about these people and this place.
@@ -311,9 +311,9 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
-        private void SceneSay(string label, string line, bool uncanny, bool woman)
+        private void SceneSay(string label, string line, bool uncanny, bool woman, int ped)
         {
-            Feed.Say(label, line);   // the director plays the speakers' own recorded lines
+            Feed.Say(label, line, null, ped);   // the director plays the speakers' own recorded lines
         }
 
         /// Loose talk in a saloon about a gang job nobody's supposed to know about.
@@ -745,7 +745,7 @@ namespace EnrageWestworld.InGame
                 Speech.SayAny(handle, Speech.Greet, Game.Player.Character.Handle);
             }
             for (int i = 0; i < lines.Count; i++)
-                Feed.Say(r.Name, lines[i], i == 0 ? null : Speech.For(handle, lines[i], Game.Player.Character.Handle));   // the first one's voice played above
+                Feed.Say(r.Name, lines[i], i == 0 ? null : Speech.For(handle, lines[i], Game.Player.Character.Handle), toYou: true);   // the first one's voice played above
             return true;
         }
 

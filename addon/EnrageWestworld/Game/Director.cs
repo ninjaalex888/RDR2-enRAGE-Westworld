@@ -39,7 +39,7 @@ namespace EnrageWestworld.InGame
 
         private Live _live;
         private int _player;
-        private Action<string, string, bool, bool> _say;
+        private Action<string, string, bool, bool, int> _say;
 
         /// Called for actions the director doesn't know ("cb:reveal"), with the part after "cb:".
         public Action<string> Custom;
@@ -217,7 +217,7 @@ namespace EnrageWestworld.InGame
             {
                 // egged on mid-fight: the line can't wait for the fight to finish
                 Beat b0 = s.Beats[0];
-                _say(Label(l, b0.Who), b0.Line, false, l.Women[b0.Who]);
+                _say(Label(l, b0.Who), b0.Line, false, l.Women[b0.Who], l.Cast[Math.Min(b0.Who, l.Cast.Length - 1)].Handle);
                 Speech.SayTag(l.Cast[b0.Who].Handle, b0.Voice, _player);
                 s.Beats.RemoveAt(0);
                 l.FightUntil = Math.Max(l.FightUntil, Game.GameTime + 4000);
@@ -226,7 +226,7 @@ namespace EnrageWestworld.InGame
             return outcome;
         }
 
-        public void Tick(Ped player, Action<string, string, bool, bool> say)
+        public void Tick(Ped player, Action<string, string, bool, bool, int> say)
         {
             Live l = _live;
             if (l == null)
@@ -299,7 +299,7 @@ namespace EnrageWestworld.InGame
                           (ENTITY.IS_ENTITY_ON_SCREEN(me.Handle) ? "on screen" : "off screen") + "): " + b.Line);
                 if ((b.Act == null || b.Act == "face") && !l.Fighting)
                     Gesture(me.Handle, b.Voice, l.Women[who], l.Seed + l.Index);
-                say(Label(l, who), b.Line, l.Scene.Kind == "hosts", l.Women[who]);
+                say(Label(l, who), b.Line, l.Scene.Kind == "hosts", l.Women[who], me.Handle);
                 wait = Math.Max(wait, 1600 + b.Line.Length * 55);
             }
             l.NextAt = now + wait + (b.Act == "fight" ? 0 : b.Ms);

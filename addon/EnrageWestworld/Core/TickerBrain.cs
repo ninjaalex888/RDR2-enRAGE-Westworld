@@ -1,5 +1,6 @@
 // Decides what the bottom ticker says. People near the player come first (their private thought about him);
-// a brand-new notice gets one turn in between; with nobody near it rotates a summary and the latest news.
+// a brand-new notice gets one turn in between; with nobody near it rotates a summary and the latest news, or, with
+// no summary given (news shown elsewhere), says nothing. GapMs puts a short blank between one line and the next.
 // Pure logic: the game layer draws Current and feeds in who is near.
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace EnrageWestworld.Core
         public string Text;
         public string Kind;    // near, news, summary
         public string Key;     // person key for near lines
+        public int Handle;     // the thinker's ped for near lines, 0 if unknown (the game side marks them)
         public int ShownAt;    // game ms
         public bool Fresh;     // a notice shown for the first time (drawn brighter)
     }
@@ -33,6 +35,7 @@ namespace EnrageWestworld.Core
         public int ThoughtCacheMs = 90000;
         public int BesideCacheMs = 30000;
         public int HistorySize = 14;
+        public int GapMs;             // a blank this long between one line and the next (0: none)
 
         private readonly List<TickerLine> _fresh = new List<TickerLine>();
         private readonly List<TickerLine> _history = new List<TickerLine>();
@@ -43,6 +46,7 @@ namespace EnrageWestworld.Core
         private int _nearTurn;        // which near person is next
         private bool _summaryNext = true;
         private string _lastNearKey;
+        private TickerLine _prev;     // the last line shown, through any blank after it
 
         public TickerLine Current { get; private set; }
 
@@ -75,6 +79,7 @@ namespace EnrageWestworld.Core
             _history.Clear();
             _thoughts.Clear();
             Current = null;
+            _prev = null;
             _nextAt = 0;
         }
 
@@ -97,8 +102,14 @@ namespace EnrageWestworld.Core
             }
             if (nearest == null)
                 _lastNearKey = null;
-            if (Current != null && now < _nextAt && !newcomer)
-                return Current;
+            if (now < _nextAt && !newcomer && !(skip && Current == null))
+                return Current;   // the line still showing, or the blank after it
+            if (Current != null && GapMs > 0 && !newcomer && !skip)
+            {
+                Current = null;   // a short blank before the next line, so they don't run together
+                _nextAt = now + GapMs;
+                return null;
+            }
             if (newcomer)
             {
                 _lastNearKey = nearest;
@@ -106,13 +117,15 @@ namespace EnrageWestworld.Core
             }
 
             TickerLine next = null;
-            if (close.Count > 0 && !(skip && Current != null && Current.Kind == "near"))
+            // the ticker key on someone's thought moves on to the news, when the news is on the ticker at all
+            bool toNews = skip && _prev != null && _prev.Kind == "near" && (_fresh.Count > 0 || _history.Count > 0 || summary != null);
+            if (close.Count > 0 && !toNews)
             {
-                if (!newcomer && _fresh.Count > 0 && (Current == null || Current.Kind == "near"))
+                if (!newcomer && _fresh.Count > 0 && (_prev == null || _prev.Kind == "near"))
                     next = TakeFresh();
                 // the person right beside the player gets every other turn
                 NearThought beside = close.FirstOrDefault(n => n.Beside);
-                if (next == null && beside != null && !(Current != null && Current.Kind == "near" && Current.Key == beside.Key))
+                if (next == null && beside != null && !(_prev != null && _prev.Kind == "near" && _prev.Key == beside.Key))
                     next = NearLine(beside, now);
                 for (int i = 0; next == null && i < close.Count; i++)
                 {
@@ -147,11 +160,13 @@ namespace EnrageWestworld.Core
             if (next != null && next != Current)
             {
                 next.ShownAt = now;
-                Current = next;
+                Current = _prev = next;
                 _nextAt = now + (next.Kind == "summary" ? Math.Max(4000, SlotMs * 2 / 3) : SlotMs) + Math.Min(6000, next.Text.Length * 25);
             }
             else
             {
+                if (next == null)
+                    Current = null;   // nothing to say: the bar goes away rather than keep an old line up
                 _nextAt = now + 2000;
             }
             return Current;
@@ -209,7 +224,7 @@ namespace EnrageWestworld.Core
             }
             if (string.IsNullOrEmpty(text))
                 return null;
-            return new TickerLine { Label = n.Name, Text = text, Kind = "near", Key = n.Key };
+            return new TickerLine { Label = n.Name, Text = text, Kind = "near", Key = n.Key, Handle = n.Handle };
         }
 
         /// Forget a cached thought (something just happened to this person).

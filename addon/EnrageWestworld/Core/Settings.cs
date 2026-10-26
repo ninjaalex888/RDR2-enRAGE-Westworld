@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 37;
+        public const int CurrentVersion = 39;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -41,6 +41,8 @@ namespace EnrageWestworld.Core
         public bool NoticesAsSubtitles;
         public string TickerNextKey = "T";
         public bool ThoughtSounds = true;
+        public int TickerGapSeconds = 3;
+        public bool ThoughtMarker = true;
 
         // [Display] - drawn on screen besides the ticker
         public bool FeelingBars = true;
@@ -147,10 +149,11 @@ namespace EnrageWestworld.Core
         public int AmbientFlirtSeconds = 240;
 
         // [Output]
-        public string NewsTo = "ticker";
+        public string NewsTo = "corner";
+        public string Subtitles = "matched";
         public bool UseGameFeed;
         public string TestKey = "F7";
-        public string WarNewsTo = "right";
+        public string WarNewsTo = "corner";
         public string FlirtKey = "F6";
         public string WakeKey = "Y";
         public string ReaderKey = "N";
@@ -159,14 +162,14 @@ namespace EnrageWestworld.Core
         public string SettingsKey = "Ctrl+F7";
         public bool DebugLog;
 
-        /// Where notices go: "ticker", "subtitles", "enrage" or "gamefeed".
+        /// Where notices go: "corner" (the "Around town" box), "ticker", "subtitles", "enrage" or "gamefeed".
         public string NewsRoute
         {
             get
             {
-                string n = (NewsTo ?? "ticker").Trim().ToLowerInvariant();
-                if (n != "subtitles" && n != "enrage" && n != "gamefeed")
-                    n = "ticker";
+                string n = (NewsTo ?? "corner").Trim().ToLowerInvariant();
+                if (n != "ticker" && n != "subtitles" && n != "enrage" && n != "gamefeed")
+                    n = "corner";
                 if (UseGameFeed && n == "ticker")
                     n = "gamefeed";
                 if (n == "ticker" && !Ticker)
@@ -263,6 +266,12 @@ namespace EnrageWestworld.Core
             {
                 s.StalkerEveryMinutes = 34;   // the roll for a stalker comes less often now (a value of your own is kept)
                 raised.Add("StalkerEveryMinutes 10 -> 34");
+            }
+            if (s.SettingsVersion < 38)
+            {
+                // 0.6.2: the ticker keeps only the thoughts of people you can see; news has its own box
+                if (KeyIs(s.NewsTo, "ticker")) { s.NewsTo = "corner"; raised.Add("NewsTo ticker -> corner"); }
+                if (KeyIs(s.WarNewsTo, "right")) { s.WarNewsTo = "corner"; raised.Add("WarNewsTo right -> corner"); }
             }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
@@ -383,6 +392,9 @@ namespace EnrageWestworld.Core
             TickerScale = Math.Max(0.15f, Math.Min(0.8f, TickerScale));
             TickerWidth = Math.Max(0.2f, Math.Min(1f, TickerWidth));
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
+            TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
+            string subs = (Subtitles ?? "").Trim().ToLowerInvariant();
+            Subtitles = subs == "on" || subs == "off" ? subs : "matched";
             FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
         }
 
@@ -430,6 +442,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("NoticesAsSubtitles = " + B(NoticesAsSubtitles) + "   ; also flash new notices as subtitles");
             b.AppendLine("TickerNextKey = " + TickerNextKey + "   ; shows the next line on the ticker now (on a long line, its next part first)");
             b.AppendLine("ThoughtSounds = " + B(ThoughtSounds) + "   ; when a thought of someone within a few steps comes up on the ticker, they make a small wordless sound (at most every 3 minutes each)");
+            b.AppendLine("TickerGapSeconds = " + TickerGapSeconds + "   ; a short pause between one thought and the next, so they don't run together (0: none)");
+            b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
             b.AppendLine();
             b.AppendLine("[Display]");
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, liking and anger, as enRAGE keeps them");
@@ -536,10 +550,11 @@ namespace EnrageWestworld.Core
             b.AppendLine("AmbientFlirtSeconds = " + AmbientFlirtSeconds + "   ; at most one flirt between strangers this often");
             b.AppendLine();
             b.AppendLine("[Output]");
-            b.AppendLine("NewsTo = " + NewsTo + "   ; where news and thoughts go: ticker, subtitles, enrage (enRAGE's own notices) or gamefeed");
+            b.AppendLine("NewsTo = " + NewsTo + "   ; where news, rumours and what people elsewhere think of you go: corner (the \"Around town\" box, top right), ticker, subtitles, enrage (enRAGE's own notices) or gamefeed");
+            b.AppendLine("Subtitles = " + Subtitles + "   ; white subtitles for what people say: matched (only when the words of their recorded voice are known, voices\\words.txt), on (every line) or off. Their voice plays either way, and only people you can see get subtitles");
             b.AppendLine("UseGameFeed = " + B(UseGameFeed) + "   ; EXPERIMENTAL: the game's top-left toasts (same as NewsTo = gamefeed)");
             b.AppendLine("TestKey = " + TestKey + "   ; shows what the nearest person enRAGE knows thinks of you");
-            b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: right (the game's pop-ups on the right of the screen) or ticker");
+            b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: corner (the \"Around town\" box), right (the game's pop-ups on the right of the screen) or ticker");
             b.AppendLine("FlirtKey = " + FlirtKey + "   ; look at someone (as if to greet them) and press it to flirt");
             b.AppendLine("WakeKey = " + WakeKey + "   ; wakes the grown-up you are facing by one stage, to see what each stage does (set it to something unused, or a combination like Ctrl+Y)");
             b.AppendLine("ReaderKey = " + ReaderKey + "   ; read the diaries, letters and clippings you carry");

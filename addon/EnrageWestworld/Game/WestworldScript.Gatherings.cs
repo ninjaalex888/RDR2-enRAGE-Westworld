@@ -213,7 +213,7 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, -1, 0, 51, 0);
                     Speech.SayAny(h, Speech.Hum, me.Handle);   // a wordless sound from every one of them at once
                 }
-                Feed.Say("All of them, at once", Encounters.Pick(Encounters.GatherTogether, "gather|" + NightIndex()));
+                Feed.Say("All of them, at once", Encounters.Pick(Encounters.GatherTogether, "gather|" + NightIndex()), toYou: true);
                 Log.Write("ENCOUNTER gathering: you stood in the middle; they spoke at once");
                 g.NextCreep = now + 5000;
                 return;
@@ -268,7 +268,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_SMART_FLEE_PED(h, me.Handle, 200f, -1, 0, 3f, 0);
             }
             if (live.Count > 0)
-                Feed.Say("The ring breaks", Encounters.Pick(Encounters.GatherScatter, "scatter|" + now / 1000), Speech.When(live[0].Ped.Handle, "scared", me.Handle));
+                Feed.Say("The ring breaks", Encounters.Pick(Encounters.GatherScatter, "scatter|" + now / 1000), Speech.When(live[0].Ped.Handle, "scared", me.Handle), toYou: true);
             Log.Write("ENCOUNTER gathering: they scatter");
         }
 

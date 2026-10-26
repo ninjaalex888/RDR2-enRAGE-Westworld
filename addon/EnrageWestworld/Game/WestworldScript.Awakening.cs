@@ -285,7 +285,7 @@ namespace EnrageWestworld.InGame
             WakeNote(who + " is " + Awakening.StageName(stage) + " (stage " + stage + " of 4).");
             WakeDemo(handle, p, st, res, me, now);
             if (line != null && stage < Awakening.Unravelling)   // the later stages speak in their own act
-                Feed.Say(p.Name, line, Speech.For(handle, line, me.Handle, p.Hate, p.Fear, p.Friendly, "chat"));
+                Feed.Say(p.Name, line, Speech.For(handle, line, me.Handle, p.Hate, p.Fear, p.Friendly, "chat"), toYou: true);
         }
     }
 }

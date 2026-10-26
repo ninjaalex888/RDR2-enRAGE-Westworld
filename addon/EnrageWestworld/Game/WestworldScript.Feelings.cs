@@ -34,6 +34,7 @@ namespace EnrageWestworld.InGame
 
         private void FeelingsStep(int now)
         {
+            _meterBottom = 0f;   // the news box goes under the meter only when it's drawn this frame
             if (_aFeelings == null)
                 _aFeelings = () => FeelingsFrame(_now);
             Safe("feelings", _aFeelings);
@@ -134,7 +135,9 @@ namespace EnrageWestworld.InGame
         {
             const float title = 0.27f, name = 0.23f, barH = 0.006f, pad = 0.006f;
             float rowH = Draw.LineHeight(name) + 0.002f + barH + 0.005f;
-            Draw.Rect(MeterX, MeterY, MeterW, pad * 2f + Draw.LineHeight(title) + 0.004f + _meter.Count * rowH, 12, 10, 8, 150);
+            float boxH = pad * 2f + Draw.LineHeight(title) + 0.004f + _meter.Count * rowH;
+            Draw.Rect(MeterX, MeterY, MeterW, boxH, 12, 10, 8, 150);
+            _meterBottom = MeterY + boxH;
             float y = MeterY + pad, barW = MeterW - pad * 2f, line = Feelings.LineAt(_grudgeLine);
             Draw.Text(Feelings.Title, MeterX + pad, y, title, 236, 214, 160);
             y += Draw.LineHeight(title) + 0.004f;
