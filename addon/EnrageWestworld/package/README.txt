@@ -646,4 +646,11 @@ in the ini or the panel (e.g. ReaderKey = Ctrl+N).
 CREDITS
 -------
 enRAGE is by its author on Nexus Mods (link above). This add-on reads what enRAGE already tracks
-and uses enRAGE's own functions to change it. It contains no enRAGE code or content.
+and adds to it, through enRAGE's own functions wherever enRAGE has them. It contains no enRAGE
+code or content.
+
+
+LICENSE
+-------
+Copyright 2026 lexthestoic. All rights reserved. You're welcome to download and play RealNPCs;
+please ask before reusing its code.

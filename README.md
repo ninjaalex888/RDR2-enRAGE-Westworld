@@ -123,6 +123,10 @@ The detailed plan, with the ideas, designs and build steps behind each item, is 
 
 ## Credits
 
-- enRAGE is by its author on [Nexus Mods](https://www.nexusmods.com/reddeadredemption2/mods/10967). This add-on reads what enRAGE already tracks and uses enRAGE's own functions to change it. It contains no enRAGE code or content.
+- enRAGE is by its author on [Nexus Mods](https://www.nexusmods.com/reddeadredemption2/mods/10967). This add-on reads what enRAGE already tracks and adds to it, through enRAGE's own functions wherever enRAGE has them. It contains no enRAGE code or content.
 - Script Hook RDR2 is by Alexander Blade. Script Hook RDR2 .NET V2 is by its authors.
 - All the lines are original, except the songs (cowboy ballads and hymns) and a few quotations (Shakespeare, Poe, Dickinson, Thoreau and others), which are in the public domain.
+
+## License
+
+Copyright 2026 lexthestoic. All rights reserved. You're welcome to download and play RealNPCs; please ask before reusing its code.

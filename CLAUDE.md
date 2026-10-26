@@ -31,6 +31,7 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 - **No enRAGE code, text or files in this repo.** The add-on reads what enRAGE tracks; it writes through enRAGE's own methods where one exists, and otherwise only the direct writes listed in "Writing to enRAGE" below, each followed by enRAGE's own save. Every line of dialogue must be original; do not copy or lightly reword enRAGE's strings. Never commit decompiled enRAGE source.
 - If an enRAGE update breaks something, only the feature that needs it should switch off, and the log should say which.
 - Never run script mods in Red Dead Online.
+- No LICENSE file, on purpose (Lex, 2026-10-26): all rights reserved, so it can be opened later; the notice ends both readmes.
 - Writing style for all player-facing text: plain, specific, no filler.
 - Settings: add a field in `Settings.cs`, a line in `ToIni()`, clamp it in `Clamp()`. Bump `CurrentVersion` when adding options so old inis are rewritten with the new lines (values kept).
 - Native out-parameters use 8-byte slots.

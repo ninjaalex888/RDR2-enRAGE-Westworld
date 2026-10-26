@@ -26,7 +26,7 @@ This plan was written overnight against 0.6.1. Since then 0.6.2 shipped and a fe
 
 - [x] The despair default (gap 4, P8 step 8): stays at 75 (Lex, 2026-10-26). Instead, more animations for what a fully awake (stage 4) person might do.
 - [x] Order of work: (b), the mind design's steps 1 to 5 first (the ledger, traits, needs, appraisal and emotion, the catalogue), then the living street (Q2 to Q6) built on them (Lex, 2026-10-26).
-- [ ] A LICENSE (gap 8): Lex is weighing no licence, all rights reserved, so it can be opened later.
+- [x] A LICENSE (gap 8): none, all rights reserved, so it can be opened later; the notice ends both readmes (Lex, 2026-10-26).
 - [x] Direct writes into enRAGE (gap 5, P8 step 7): audited 2026-10-26. Eight direct writes, each now followed by enRAGE's own save and failing loudly; the list and the rule are in CLAUDE.md ("Writing to enRAGE"), and the README no longer says "only through its own methods".
 - [ ] The Want, Maybe and No columns in the idea banks.
 
