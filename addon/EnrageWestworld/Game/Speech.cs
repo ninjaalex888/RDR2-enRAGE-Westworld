@@ -52,6 +52,14 @@ namespace EnrageWestworld.InGame
         public static readonly string[] Harmed = { "PLAYER_HARMED_TOWN", "WRONGED_RECENTLY", "TROUBLE_RECENTLY", "WAS_THIS_YOU", "SHAME_ON_YOU" };
         public static readonly string[] Helped = { "PLAYER_HELPED_TOWN", "HELPED_RECENTLY", "GENERIC_THANKS" };
         public static readonly string[] Weird = { "PLAYER_ACTING_WEIRD", "PLAYER_LOOKING_WEIRD", "WHATS_GOING_ON" };
+        public static readonly string[] Disbelief = { "GENERIC_SHOCKED_DISBELIEF" };   // the awake, at what can't be (Lex heard a bystander's take of it at a death and wanted it for the awake)
+        public static readonly string[] DisbeliefElse = { "GENERIC_SHOCKED_HIGH", "WHATS_GOING_ON" };   // for a voice that lacks it
+        // despair's last words (Lex: "pick 10 voice lines that would make sense"): disbelief, a goodbye, trailing off,
+        // leaving, things going badly, not knowing, fear, wanting to be let be. Picked by what they say in the one voice
+        // transcribed locally (never quoted here: Rockstar's words stay on Lex's PC); each voice words them its own way,
+        // and 210 to 330 of the 330 voices carry each.
+        public static readonly string[] LastWords = { "GENERIC_SHOCKED_DISBELIEF", "WHATS_GOING_ON", "CONVO_TAIL_OFF", "GENERIC_GOODBYE", "GOODBYE_START",
+                                                      "IM_OUTTA_HERE", "GOING_BADLY", "NO_IDEA", "GENERIC_FRIGHTENED_HIGH", "LEAVE_ME" };
         public static readonly string[] Uneasy = { "WHATS_GOING_ON", "GENERIC_SHOCKED_MED", "NO_IDEA", "GENERIC_SHOCKED_DISBELIEF" };   // the uncanny lines: someone unsettled by their own world
         public static readonly string[] FightTalk = { "MELEE_BRING_IT_ON", "FIGHT", "FIGHT_RESPONSE", "GENERIC_ANGRY_SHOUT" };
         public static readonly string[] Chat = { "HOWS_IT_GOING", "CHAT_GOOD_WEATHER", "COMMENT_WORKING_HARD", "GREET_GENERAL_FAMILIAR" };
@@ -316,6 +324,22 @@ namespace EnrageWestworld.InGame
         /// speaking by then.
         /// Whether the last voice When played really started (Feed: no subtitle without a voice).
         public static bool LastPlayed;
+
+        /// When, for a set given as it is (in the order to try) rather than by tag.
+        public static System.Func<string> WhenSet(int ped, string[] set, int listener = 0)
+        {
+            if (ped == 0 || set == null || set.Length == 0)
+                return null;
+            return () =>
+            {
+                string words = null;
+                bool played = false;
+                if (!Busy(ped))
+                    played = SayWords(ped, set, listener, out words);
+                LastPlayed = played;
+                return words;
+            };
+        }
 
         public static System.Func<string> When(int ped, string tag, int listener = 0)
         {

@@ -595,6 +595,8 @@ namespace EnrageWestworld.InGame
                             TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 3000, 0f, 0f, 0f);
                         TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 30000, 0, 51, 0);
                         act.PhaseUntil = now + 900;
+                        if (act.Stage >= Awakening.Awake && Disbelieve(h, act.Name, act.P.Woman, act.P.Id + "|db|" + now / 60000, "faces you"))
+                            act.PhaseUntil = now + 2600;   // the words of the plea wait for it
                     }
                     break;
                 case 1:   // saying it
@@ -704,7 +706,7 @@ namespace EnrageWestworld.InGame
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.TASK_STAND_STILL(h, 4500);
                     act.Until = now + 30000;
-                    ActSay(act, WakeBeats.Aloud("last", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|last"), me, null);
+                    DespairLastWords(act, me);
                     act.PhaseUntil = now + 3400;
                     Log.Write("WAKE despair: " + act.Name + " can't bear it: " + DespairHow(act) + (hasWall ? " (a wall " + Flat(wall, ped.Position).ToString("0.0") + " m off)" : " (no wall to run at)") +
                               (armed ? ", armed" : ""));
@@ -1133,6 +1135,62 @@ namespace EnrageWestworld.InGame
             if (PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, act.Handle)) return "you aimed at them";
             if (new Ped(act.Handle).Position.DistanceTo(me.Position) > (act.Kind == "awake" ? 80f : 60f)) return "too far away";
             return null;
+        }
+
+        private readonly Dictionary<int, int> _disbeliefAt = new Dictionary<int, int>();
+        private int _disbeliefSaid;
+        private string _disbeliefLast;
+
+        /// Their last words, voiced (Lex): one of ten of the game's own lines that fit (Speech.LastWords), the first tried
+        /// picked for the person, then the rest in turn until their voice has one. The written "last" line is the subtitle
+        /// when the recording's own words aren't known.
+        private void DespairLastWords(WakeAct act, Ped me)
+        {
+            string line = WakeBeats.Aloud("last", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|last");
+            int start = (int)((uint)Voice.Hash(act.P.Id + "|lastwords") % (uint)Speech.LastWords.Length);
+            string[] order = Speech.LastWords.Skip(start).Concat(Speech.LastWords.Take(start)).ToArray();
+            if (string.IsNullOrEmpty(line))
+                Speech.SayAny(act.Handle, order, me.Handle);
+            else
+                Feed.SayFirst(act.Name, line, Speech.WhenSet(act.Handle, order, me.Handle), act.Handle);
+            Log.Write("WAKE despair: " + act.Name + "'s last words, voiced from " + order[0] + " first" + (line != null ? ": " + line : ""));
+        }
+
+        /// Someone fully awake at what can't be: the game's own disbelief line in their voice (a voice without it gets a
+        /// shocked one), and their thought, in our words, over their head. At most once a minute each.
+        private bool Disbelieve(int h, string name, bool woman, string seed, string why, bool sawDeath = false)
+        {
+            int now = Game.GameTime, at;
+            if (_disbeliefAt.TryGetValue(h, out at) && now - at < 60000)
+                return false;
+            _disbeliefAt[h] = now;
+            bool voiced = Speech.SayAny(h, Speech.Disbelief) || Speech.SayAny(h, Speech.DisbeliefElse);
+            string thought = sawDeath ? WakeBeats.SawDeath(seed) : WakeBeats.Disbelief(seed);
+            _ticker.Push(name + ", thinking", thought, "near", h);
+            _disbeliefSaid++;
+            _disbeliefLast = name + " (" + why + ")";
+            Log.Write("WAKE disbelief: " + name + " " + why + (voiced ? "" : " (no voice line played)") + ": " + thought);
+            return true;
+        }
+
+        /// A death near the fully awake: the nearest one awake who can see it says so (the ledger calls this).
+        private void AwakeSawDeath(int body, Vector3 at)
+        {
+            if (_cfg == null || !_cfg.WestWorld || _store == null)
+                return;
+            Ped me = Game.Player.Character;
+            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && x.Handle != body && x.Handle != me.Handle && !ENTITY.IS_ENTITY_DEAD(x.Handle) &&
+                                                           PED.IS_PED_HUMAN(x.Handle) && x.Position.DistanceTo(at) < 20f).OrderBy(x => x.Position.DistanceTo(at)))
+            {
+                Person who;
+                PersonState st;
+                Resident res;
+                bool passive;
+                if (!WakeIdentity(p, false, out who, out st, out res, out passive) || st.WakeStage < Awakening.Awake || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, body, 17))
+                    continue;
+                if (Disbelieve(p.Handle, who.Name, who.Woman, who.Id + "|sd|" + Game.GameTime / 60000, "saw someone die", true))
+                    return;
+            }
         }
 
         /// What the person thinks as they do it: on the ticker, in the thinking style.

@@ -1034,6 +1034,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST romance: " + RomanceStatus());
 			Log.Write("TEST thoughts: " + OverHeadStatus());
 			Log.Write("TEST despair: " + DespairStatus());
+			Log.Write("TEST disbelief: " + _disbeliefSaid + " this session" + (_disbeliefLast != null ? ", last " + _disbeliefLast : "") + " (GENERIC_SHOCKED_DISBELIEF, else a shocked line)");
 			Log.Write("TEST ledger: " + LedgerStatus());
 			MarkAwake();
 			Log.Write("TEST settings: " + SettingsStatus());

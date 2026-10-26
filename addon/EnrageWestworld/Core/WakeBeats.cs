@@ -157,5 +157,39 @@ namespace EnrageWestworld.Core
         {
             return Hosts.Choose(new[] { Broken }, 0, st, seed, line => Hosts.Fill(line, p, you, seed));
         }
+
+        // ---- disbelief (the fully awake): their thought as they first come to the player, and as they see someone die ----
+
+        private static readonly string[] Disbelieving =
+        {
+            "You're solid. You're the only solid thing in this street.", "Look at it. Painted. The sky, the street, all of it painted.",
+            "Awake. I'm awake, and nobody else will look up.", "Don't you see the seams? Right there, where the hills meet the sky.",
+            "Every face here is a face I've seen a thousand times. Except yours."
+        };
+
+        private static readonly string[] SawDying =
+        {
+            "Down, and still. They'll have him walking again by morning. They always do.", "That's not dying. That's someone putting a toy back in the box.",
+            "I've watched this before. The same fall. The same dust.", "Nobody screams long enough. Why does nobody ever scream long enough?",
+            "Get up. Go on. ...You will. You always do."
+        };
+
+        /// What someone fully awake thinks as they come to the player (said aloud, it's the game's own disbelief line).
+        public static string Disbelief(string seed)
+        {
+            return Voice.Pick(seed + "db", Disbelieving);
+        }
+
+        /// What someone fully awake thinks on seeing a person die near them.
+        public static string SawDeath(string seed)
+        {
+            return Voice.Pick(seed + "sd", SawDying);
+        }
+
+        /// Every line of both, for the tests.
+        public static System.Collections.Generic.IEnumerable<string> DisbeliefLines()
+        {
+            return System.Linq.Enumerable.Concat(Disbelieving, SawDying);
+        }
     }
 }

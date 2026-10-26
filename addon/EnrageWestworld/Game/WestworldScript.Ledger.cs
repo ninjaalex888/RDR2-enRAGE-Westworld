@@ -37,6 +37,17 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<int> _deadNoted = new HashSet<int>();
         private readonly List<LedgerDue> _shareDue = new List<LedgerDue>(), _unshareDue = new List<LedgerDue>();
         private int _nextLedger, _ledgerNoted, _ledgerShared, _ledgerUnshared;
+
+        // the knocked-out probe: anyone near the player the game has down but enRAGE's rule calls only out (fists, a gun
+        // butt, incapacitated), followed until they get up, are gone, or die where they lie; to learn what the game does
+        private sealed class Downed
+        {
+            public string Name, Why;
+            public int Since, Left;
+        }
+
+        private readonly Dictionary<int, Downed> _downed = new Dictionary<int, Downed>();
+        private int _cameTo, _diedDown, _goneDown;
         private DeathEntry _ledgerLast;
         private Action _aLedger;
 
@@ -61,6 +72,8 @@ namespace EnrageWestworld.InGame
                 if (p == null || !p.Exists() || p.Handle == me.Handle || !PED.IS_PED_HUMAN(p.Handle) || p.Position.DistanceTo(at) > LedgerRange)
                     continue;
                 int h = p.Handle;
+                if (p.Position.DistanceTo(at) < 60f)
+                    WatchDowned(p, now);
                 Known k = KnownAt(p, now);
                 if (k == null || _deadNoted.Contains(h) || !ENTITY.IS_ENTITY_DEAD(h) || KnockedOutWhy(h) != null)
                     continue;   // out cold is looked at again next time: they may be killed where they lie
@@ -71,6 +84,13 @@ namespace EnrageWestworld.InGame
             {
                 _known.Remove(h);
                 _deadNoted.Remove(h);
+            }
+            foreach (int h in _downed.Keys.Where(x => !ENTITY.DOES_ENTITY_EXIST(x)).ToList())
+            {
+                Downed d = _downed[h];
+                _downed.Remove(h);
+                _goneDown++;
+                Log.Write("LEDGER lost " + d.Name + ": down " + (now - d.Since) / 1000 + " s (" + d.Why + "), gone from the world before getting up");
             }
             LedgerSharesDue(now);
         }
@@ -120,6 +140,38 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
+        /// The knocked-out probe for one ped: noted when they go down out cold, then whether they get up or die there.
+        private void WatchDowned(Ped p, int now)
+        {
+            int h = p.Handle;
+            Downed d;
+            bool down = ENTITY.IS_ENTITY_DEAD(h) || PED.IS_PED_INCAPACITATED(h);
+            string why = down ? (ENTITY.IS_ENTITY_DEAD(h) ? KnockedOutWhy(h) : "incapacitated") : null;
+            if (_downed.TryGetValue(h, out d))
+            {
+                if (!down)
+                {
+                    _downed.Remove(h);
+                    _cameTo++;
+                    Log.Write("LEDGER came to: " + d.Name + " got up after " + (now - d.Since) / 1000 + " s (" + d.Why + ")");
+                }
+                else if (why == null)
+                {
+                    _downed.Remove(h);
+                    _diedDown++;
+                    Log.Write("LEDGER died where they lay: " + d.Name + ", down " + (now - d.Since) / 1000 + " s (" + d.Why + ")");
+                }
+                return;
+            }
+            if (why == null || Natives.IsChild(p))
+                return;
+            Known k;
+            string name = _known.TryGetValue(h, out k) && k.Id != null ? k.Name : Director.Kind(p, !PED.IS_PED_MALE(h));
+            int left = PED._GET_INCAPACITATION_TIME_REMAINING(h);
+            _downed[h] = new Downed { Name = name, Why = why, Since = now, Left = left };
+            Log.Write("LEDGER out cold: " + name + " (" + why + "; the game's incapacitation time left " + left + ")");
+        }
+
         /// Why a ped the game calls dead is only knocked out (enRAGE's rule, DeathLedger.KnockedOut), or null if dead.
         private string KnockedOutWhy(int h)
         {
@@ -164,6 +216,8 @@ namespace EnrageWestworld.InGame
             _ledgerNoted++;
             _ledgerLast = e;
             Log.Write("LEDGER died: " + DeathLedger.Describe(e));
+            if (there)
+                AwakeSawDeath(h, pos);   // the fully awake who see it say so
             if (kind == "folk")
                 _shareDue.Add(new LedgerDue { Id = id, Name = name, At = Game.GameTime + ShareAfterMs });
         }
@@ -221,7 +275,8 @@ namespace EnrageWestworld.InGame
                 return "not ready";
             Vector3 at = Game.Player.Character.Position;
             int near = _known.Count(kv => kv.Value.Id != null && ENTITY.DOES_ENTITY_EXIST(kv.Key) && new Ped(kv.Key).Position.DistanceTo(at) < 50f);
-            return "deaths kept " + DeathLedger.Counts(_store.Deaths) + "; this session noted " + _ledgerNoted + ", told enRAGE " + _ledgerShared + ", taken back " + _ledgerUnshared +
+            return "knocked out now " + _downed.Count + ", got up " + _cameTo + ", died where they lay " + _diedDown + ", gone while down " + _goneDown +
+                   "; deaths kept " + DeathLedger.Counts(_store.Deaths) + "; this session noted " + _ledgerNoted + ", told enRAGE " + _ledgerShared + ", taken back " + _ledgerUnshared +
                    " (ShareWithEnrage " + (_cfg.ShareWithEnrage ? "on" : "off") + "); waiting " + _shareDue.Count + "; known people within 50 m " + near + "; last: " + DeathLedger.Describe(_ledgerLast);
         }
     }
