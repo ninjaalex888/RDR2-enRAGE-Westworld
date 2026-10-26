@@ -1,4 +1,4 @@
-RealNPCs 0.6.1 - an unofficial add-on for enRAGE (formerly enRAGE Westworld)
+RealNPCs 0.6.2 - an unofficial add-on for enRAGE (formerly enRAGE Westworld)
 =========================================================================
 
 The people enRAGE keeps track of start acting like they have their own lives. They tell you about
@@ -13,6 +13,55 @@ enRAGE's files. enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemp
 Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
+
+
+NEW IN 0.6.2
+------------
+- Thoughts above their heads. The thought of the person whose turn it is shows over them in small
+  type, one person at a time, for the people within 20 m that you can see (it was 30). News and
+  the world summary stay on the bar at the bottom. [Ticker] ThoughtsOverHeads,
+  ThoughtsOverHeadScale (0.24); with it off, thoughts go on the bar as before.
+- News has a box of its own, "Around town", in the top right under the "Sore at you" panel.
+- No more white text. Subtitles look like the game's own now (white serif text in a dark box),
+  only for what people say to you, and only while their voice is playing. Notices are the game's
+  own updates at the top left, and so are enRAGE's territory changes ([Output] TerritoryNews).
+- Conversations in their real voices. About every two minutes, two people standing near you have
+  a word in their own recorded voices: the weather, how they're getting on, a piece of news, a
+  hello. They remark on riders going by, tell a story about their town, sweethearts pay each other
+  compliments, and in a saloon of an evening there are crude remarks (CrudeTalk = false leaves
+  those out). Overheard talk has no subtitle. [Scenes] RealVoiceTalk, RealVoiceTalkSeconds (120).
+- Trouble between people, each time for a reason: a man with a grudge and a temper smashes the
+  other's face into the bar, a table or a wall (RoughHandling); pickpockets among the townsfolk
+  (NpcThieves); drunks in a saloon at night who call a man out and fall on their face before a
+  punch is thrown (DrunkChallenges); someone short of money asking a stranger for a coin; the
+  timid crossing the street to avoid whoever hurt them; a friend seeing to someone who was roughed
+  up. The town remembers who did what.
+- People react to what's said and done to them, each by their own nature. What's around them is
+  on their minds too: a scene they just saw, the people in sight, the weather, the place.
+- People flirt with each other and court. You see it in their thoughts: the one asking working up
+  to it, the other as they answer. A yes or a maybe becomes a romance that goes on each time they
+  meet. [Romance] NpcFlirting.
+- Flirting: the flirt key is F2 (it was F6, the game's camera), and Flirt is in the game's lock-on
+  menu, on H (FlirtPrompt). Whether they take to it comes from what they think of you and who they
+  are: their nature, faith, troubles and mood, against your money and your name in town.
+- enRAGE's own people (its nemeses, gang men and named folk) join in street scenes, reactions,
+  talk and waking acts, unless enRAGE has them busy. [Scenes] EnragePeopleJoinIn.
+- CONTENT NOTE: despair no longer needs a gun on them. Someone fully awake who can't bear it does it
+  the way that fits them: a gun that suits them, a knife, or running at a wall. It can be one of
+  RealNPCs' own people or one of enRAGE's townsfolk, never enRAGE's nemeses or gang men, and never
+  with you within 3 m. AwakeningDespair (75; 0 turns it off). Everyone gets one fresh chance.
+- F7 marks the fully awake around you on the map for a minute, with what they'd do, and names the
+  nearest who could.
+- Self-defence lasts as long as the fight: whoever came at you stays fair game while they fight on,
+  draw on you or stand at your gunpoint.
+- The settings panel opens with Alt+F too, scrolls with the mouse wheel, and a notice after loading
+  says which key opens it.
+- Seen working in game: the thoughts above heads, the map marks, the real-voice conversations,
+  the bar slam and the reactions to it, Flirt in the lock-on menu, the new subtitles, and the knife
+  and gun endings.
+- Known issues: about one walk-over in ten still gives up before the two meet. The drunk's
+  challenge, begging and the wall ending haven't been seen in a game yet. The stalker's digging,
+  hammering and scrubbing don't start yet.
 
 
 NEW IN 0.6.1
@@ -580,7 +629,7 @@ Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
           About 15 seconds after loading, a notice says which key to use.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
-          regulars around you show on the map for a minute
+          regulars and the fully awake around you show on the map for a minute
 F2        flirt with the person you're looking at (FlirtKey; it was F6, the game's camera).
           Locked on to someone, the game's menu also offers Flirt, on H (FlirtPrompt).
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)

@@ -10,7 +10,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-**Version 0.6.1.** New in it: each town keeps its own people, ordinary people living through worries of their own, street scenes that happen for a reason and are remembered, bystanders who react, bars that show how the people near you feel about you, and support for enRAGE 0.9.5.3. Content notes: an adjustable chance (`AwakeningDespair`, default 75 percent, 0 turns it off) that a fully awake ordinary person ends their own life (with a gun that fits them, a knife, or by running at a wall); the crying woman's knife and ambush are violent (`CryingWoman = false` turns her off); and a sick child's worry sometimes ends in a burial. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RealNPCs/issues) and attach your log.
+**Version 0.6.2.** New in it: people's thoughts above their heads, conversations in their real recorded voices, trouble between people (a face into the bar, pickpockets, drunks), people flirting with and courting each other, Flirt in the game's lock-on menu, subtitles that look like the game's own, and enRAGE's own people joining in. Content notes: an adjustable chance (`AwakeningDespair`, default 75 percent, 0 turns it off) that a fully awake ordinary person ends their own life (with a gun that fits them, a knife, or by running at a wall); rough handling puts a man's face into the bar (`RoughHandling = false` turns it off); the crying woman's knife and ambush are violent (`CryingWoman = false` turns her off); and a sick child's worry sometimes ends in a burial. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RealNPCs/issues) and attach your log.
 
 ## What it does
 
@@ -37,7 +37,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 ## Install
 
 1. Install [enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967) 0.9.5.3 and what it needs (Script Hook RDR2 and Script Hook RDR2 .NET V2), and make sure it works.
-2. Download **[RealNPCs-0.6.1.zip](https://github.com/ninjaalex888/RealNPCs/releases/latest/download/RealNPCs-0.6.1.zip)** from the [latest release](https://github.com/ninjaalex888/RealNPCs/releases/latest) (it's also in the [release](release) folder). It holds `RealNPCs.dll` and a README.txt that explains every feature and setting.
+2. Download **[RealNPCs-0.6.2.zip](https://github.com/ninjaalex888/RealNPCs/releases/latest/download/RealNPCs-0.6.2.zip)** from the [latest release](https://github.com/ninjaalex888/RealNPCs/releases/latest) (it's also in the [release](release) folder). It holds `RealNPCs.dll` and a README.txt that explains every feature and setting.
 3. Copy `RealNPCs.dll` into your game's `scripts` folder, next to enRAGE's `NemesisMod.dll`. To update, just replace the file: what people remember carries over, and your settings are kept. **Coming from enRAGE Westworld** (the old name): delete `EnrageWestworld.dll` from the scripts folder. RealNPCs won't run next to it, and copies your saves, diaries and settings over from the old folder the first time it starts.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
 
@@ -48,7 +48,7 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | Key | What it does |
 |---|---|
 | Ctrl+F7 or Alt+F | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text. Press either again to close it. Alt+F11 opens it too, but only on enRAGE 0.9.5.3 |
-| F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log |
+| F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log. The town regulars and the fully awake around you show on the map for a minute |
 | F2 | Flirt with the person you're looking at. Locked on to someone, the game's menu also offers Flirt on H |
 | N | Read your letters, diaries and clippings, or take a diary you've just found |
 | ] | Make a stalker now: someone near you (someone with a history with you first), or a stranger if nobody near can be. The log says what it's waiting for |
