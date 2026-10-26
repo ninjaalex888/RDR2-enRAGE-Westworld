@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 46;
+        public const int CurrentVersion = 47;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -152,7 +152,7 @@ namespace EnrageWestworld.Core
 
         // [Output]
         public string NewsTo = "corner";
-        public string Subtitles = "game";
+        public string Subtitles = "on";
         public bool UseGameFeed;
         public string TestKey = "F7";
         public string WarNewsTo = "feed";
@@ -419,7 +419,7 @@ namespace EnrageWestworld.Core
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
             RealVoiceTalkSeconds = Math.Max(30, Math.Min(1800, RealVoiceTalkSeconds));
-            Subtitles = (Subtitles ?? "").Trim().ToLowerInvariant() == "off" ? "off" : "game";   // the old matched and on are the game's own now
+            Subtitles = (Subtitles ?? "").Trim().ToLowerInvariant() == "off" ? "off" : "on";   // the old matched and game are on
             FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
         }
 
@@ -578,7 +578,7 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[Output]");
             b.AppendLine("NewsTo = " + NewsTo + "   ; where news, rumours and what people elsewhere think of you go: corner (the \"Around town\" box, top right), ticker, or gamefeed (the game's own updates, top left)");
-            b.AppendLine("Subtitles = " + Subtitles + "   ; game (the game's own subtitles, for what people say to you; turn on Subtitles in the game's settings) or off. RealNPCs draws no subtitles of its own");
+            b.AppendLine("Subtitles = " + Subtitles + "   ; on: what people say to you shows on the game's subtitle line while their voice plays (their recorded words when known), when the game's own Subtitles option is on too; off: none. Talk you only overhear never has one");
             b.AppendLine("UseGameFeed = " + B(UseGameFeed) + "   ; EXPERIMENTAL: the game's top-left toasts (same as NewsTo = gamefeed)");
             b.AppendLine("TestKey = " + TestKey + "   ; shows what the nearest person enRAGE knows thinks of you");
             b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: feed (the game's own updates, top left), corner (the \"Around town\" box) or ticker");

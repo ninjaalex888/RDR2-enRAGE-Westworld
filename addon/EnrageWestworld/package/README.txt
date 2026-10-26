@@ -337,8 +337,8 @@ A thin bar at the very bottom of the screen.
   part first; from someone's thought it moves on to the news.
 - It hides in menus, cutscenes, the pause menu, when the HUD is hidden, and while enRAGE's own
   menus are open.
-RealNPCs draws no subtitles (0.6.2): what people say is their voice, and the game shows its own
-subtitles where it does. Ticker = false turns the ticker off.
+Subtitles (0.6.2): only what people say to you, and only while their voice plays; talk you only
+overhear has none. Ticker = false turns the ticker off.
 
 
 YOUR DEEDS
@@ -549,8 +549,8 @@ in the file. The new ones:
                 gamefeed: the game's own updates, top left
             WarNewsTo (feed | corner | ticker): where gang and faction news goes (feed, the default:
                 the game's own updates, top left)
-            Subtitles (game | off): the game's own subtitles for what's said to you; RealNPCs draws
-                none of its own (the game's Subtitles option has to be on)
+            Subtitles (on | off): what people say to you, on the game's subtitle line while their voice
+                plays (the game's own Subtitles option has to be on too)
             TestKey (F7), FlirtKey (F6), WakeKey (Y), ReaderKey (N), ReloadIni (true),
             ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel (enRAGE 0.9.5.3 only),
             SettingsKey (Ctrl+F7) and SettingsKey2 (Alt+F) open and close it with any enRAGE version

@@ -956,11 +956,7 @@ namespace EnrageWestworld.InGame
 			{
 				return;
 			}
-			if (SubtitleProbeKey.Matches(e))
-			{
-				_subProbeRequested = true;   // Ctrl+Shift+F7: one greeting played every way in turn (WestworldScript.Subtitles.cs)
-			}
-			else if (TalkTestKey.Matches(e))
+			if (TalkTestKey.Matches(e))
 			{
 				_talkTestRequested = true;   // Shift+F7: two people near you talk in their real voices (WestworldScript.Talk.cs)
 			}

@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using EnrageWestworld.Core;
 using RDR2;
 using RDR2.Native;
+using RDR2.UI;
 
 namespace EnrageWestworld.InGame
 {
@@ -20,6 +22,8 @@ namespace EnrageWestworld.InGame
 
 			public string Speaker;
 
+			public string Part;     // this turn's words, as written (a long line is split over several turns)
+
 			public string Full;     // the whole line (it may be split over several subtitles)
 
 			public object Group;    // the subtitles one line was split into
@@ -28,12 +32,22 @@ namespace EnrageWestworld.InGame
 
 			public int Ped;         // who says it, when known
 
-			public bool ToYou;      // said to the player (the game may show its own subtitle for it)
+			public bool ToYou;      // said to the player: the only lines that get a subtitle (SubtitleRule)
 		}
 
-		// Nothing here is drawn on screen any more: the white subtitles were the game's objective line
-		// (Screen.PrintSubtitle), and showed words the voice wasn't saying. A spoken line is its voice, at its turn in the
-		// queue; a notice is a toast at the top left of the screen (Toaster), or the "Around town" box (Fallback).
+		// A spoken line is its voice, at its turn in the queue. Only what's said to the player gets a subtitle, on the
+		// game's subtitle line (Screen.PrintSubtitle; the game gives mods no way into its own dialogue subtitles), and
+		// only while the voice is really playing (SubtitleRule). A notice is a toast at the top left of the screen
+		// (Toaster), or the "Around town" box (Fallback): never the subtitle line.
+
+		/// [Output] Subtitles (on, unless "off").
+		public static bool SubtitlesOn = true;
+
+		/// For the F7 dump: how many subtitles have been shown, and the last.
+		public static int SubtitlesShown;
+		public static string LastSubtitle;
+
+		private static object _voicedGroup;   // the line whose voice played: its later turns keep their subtitle
 
 		/// Where a notice goes when the game won't take top-left updates (WestworldScript: the "Around town" box).
 		public static Action<string, string> Fallback;
@@ -88,6 +102,7 @@ namespace EnrageWestworld.InGame
 				_speech.Enqueue(new Line
 				{
 					Text = speaker + ": \"" + item + "\"",
+					Part = item,
 					Ms = Duration(item),
 					OnShow = onShow,
 					Speaker = speaker,
@@ -108,7 +123,7 @@ namespace EnrageWestworld.InGame
 			List<Line> items = new List<Line>();
 			foreach (string item in Split(text, 150))
 			{
-				items.Add(new Line { Text = speaker + ": \"" + item + "\"", Ms = Duration(item), OnShow = onShow, Speaker = speaker, Full = text, Group = group, Spoken = true, Ped = ped });
+				items.Add(new Line { Text = speaker + ": \"" + item + "\"", Part = item, Ms = Duration(item), OnShow = onShow, Speaker = speaker, Full = text, Group = group, Spoken = true, Ped = ped });
 				onShow = null;
 			}
 			Line[] rest = _speech.ToArray();
@@ -171,13 +186,19 @@ namespace EnrageWestworld.InGame
 				if (line != null)
 				{
 					int ms = line.Ms;
+					string words = null;
+					bool played = false;
 					if (line.OnShow != null)
 					{
 						try
 						{
-							// the voice plays now; when its words are known the written line goes to the ticker as the
-							// speaker's thought, and the rest of it (split over several turns) is dropped
-							string words = line.OnShow();
+							// the voice plays now (Speech.LastPlayed says whether it really did); when its words are known
+							// the written line goes to the ticker as the speaker's thought, and the rest of it is dropped
+							Speech.LastPlayed = false;
+							words = line.OnShow();
+							played = Speech.LastPlayed;
+							if (played)
+								_voicedGroup = line.Group;
 							if (!string.IsNullOrEmpty(words))
 							{
 								ms = Duration(words);
@@ -190,10 +211,25 @@ namespace EnrageWestworld.InGame
 							Log.Write("Voice: " + ex.Message);
 						}
 					}
+					string sub = line.ToYou ? SubtitleRule.Text(true, played, line.OnShow == null && line.Group != null && line.Group == _voicedGroup, SubtitlesOn,
+					                                            HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON(), InView(line.Ped), line.Speaker, words, line.Part) : null;
+					if (sub != null)
+					{
+						Screen.PrintSubtitle(Clean(sub));
+						SubtitlesShown++;
+						LastSubtitle = sub;
+						Log.Write("SUBTITLE " + sub + " (" + (!string.IsNullOrEmpty(words) ? "the recorded words" : "the written line") + ")");
+					}
 					_lastShownAt = gameTime;
 					_nextAt = gameTime + ms;
 				}
 			}
+		}
+
+		/// The speaker on screen with a clear line of sight to the player (or not known: then yes).
+		private static bool InView(int ped)
+		{
+			return ped == 0 || (ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.IS_ENTITY_ON_SCREEN(ped) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(Game.Player.Character.Handle, ped, 17));
 		}
 
 		private static int Duration(string text)

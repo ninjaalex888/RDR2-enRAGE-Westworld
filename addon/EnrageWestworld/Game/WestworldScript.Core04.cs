@@ -111,6 +111,7 @@ namespace EnrageWestworld.InGame
             Log.Debug = _cfg.DebugLog;
             Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
             Feed.Fallback = (title, text) => NewsPush(title, text, "news");   // when the game won't take top-left updates
+            Feed.SubtitlesOn = _cfg.Subtitles != "off";
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
