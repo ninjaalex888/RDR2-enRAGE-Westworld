@@ -685,6 +685,7 @@ namespace EnrageWestworld.InGame
             EncountersStep(now);
             TalkStep(now);
             SubtitleStep(now);
+            TerritoryStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);
             Safe("arrivals", _aArrival);

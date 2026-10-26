@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 50;
+        public const int CurrentVersion = 51;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -156,6 +156,7 @@ namespace EnrageWestworld.Core
         public bool UseGameFeed;
         public string TestKey = "F7";
         public string WarNewsTo = "feed";
+        public bool TerritoryNews = true;
         public string FlirtKey = "F2";
         public string WakeKey = "Y";
         public string ReaderKey = "N";
@@ -589,6 +590,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("UseGameFeed = " + B(UseGameFeed) + "   ; EXPERIMENTAL: the game's top-left toasts (same as NewsTo = gamefeed)");
             b.AppendLine("TestKey = " + TestKey + "   ; shows what the nearest person enRAGE knows thinks of you");
             b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: feed (the game's own updates, top left), corner (the \"Around town\" box) or ticker");
+            b.AppendLine("TerritoryNews = " + B(TerritoryNews) + "   ; enRAGE's territory changes (a gang gaining or losing its hold on a district) shown where WarNewsTo says. enRAGE also prints them itself, as white text, while its own [Menu] Messages is 3");
             b.AppendLine("FlirtKey = " + FlirtKey + "   ; look at someone (as if to greet them) and press it to flirt");
             b.AppendLine("WakeKey = " + WakeKey + "   ; wakes the grown-up you are facing by one stage, to see what each stage does (set it to something unused, or a combination like Ctrl+Y)");
             b.AppendLine("ReaderKey = " + ReaderKey + "   ; read the diaries, letters and clippings you carry");

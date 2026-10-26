@@ -849,7 +849,7 @@ namespace EnrageWestworld.InGame
             _bridge.RosterChanged();
             a.RecordId = rec.Id;
             a.Stage = 3;
-            _bridge.GrudgeNotice(a.Name + " has come west for you. " + (a.Woman ? "She" : "He") + " means to settle " + theirs + " " + relDead + " " + deadFirst + "'s account.");
+            Feed.Notice("Avenger", a.Name + " has come west for you. " + (a.Woman ? "She" : "He") + " means to settle " + theirs + " " + relDead + " " + deadFirst + "'s account.");   // a top-left update (it was enRAGE's white line)
             Log.Write("AVENGER " + a.Name + " is on enRAGE's roster now (" + rec.Id + "), hate " + rec.Hate);
         }
     }

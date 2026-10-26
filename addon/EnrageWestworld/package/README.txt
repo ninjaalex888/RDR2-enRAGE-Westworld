@@ -549,6 +549,8 @@ in the file. The new ones:
                 gamefeed: the game's own updates, top left
             WarNewsTo (feed | corner | ticker): where gang and faction news goes (feed, the default:
                 the game's own updates, top left)
+            TerritoryNews (true): enRAGE's territory changes go there too. enRAGE also prints
+                them as white text while its own [Menu] Messages is 3 (2 or 4 stops that)
             Subtitles (on | off): what people say to you, on the game's subtitle line while their voice
                 plays (the game's own Subtitles option has to be on too)
             TestKey (F7), FlirtKey (F2), WakeKey (Y), ReaderKey (N), ReloadIni (true),
