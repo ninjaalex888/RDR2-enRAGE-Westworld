@@ -10,7 +10,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-**Version 0.6.1.** New in it: each town keeps its own people, ordinary people living through worries of their own, street scenes that happen for a reason and are remembered, bystanders who react, bars that show how the people near you feel about you, and support for enRAGE 0.9.5.3. Content notes: an adjustable chance (`AwakeningDespair`, default 75 percent, 0 turns it off) that a fully awake, armed ordinary person ends their own life; the crying woman's knife and ambush are violent (`CryingWoman = false` turns her off); and a sick child's worry sometimes ends in a burial. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RealNPCs/issues) and attach your log.
+**Version 0.6.1.** New in it: each town keeps its own people, ordinary people living through worries of their own, street scenes that happen for a reason and are remembered, bystanders who react, bars that show how the people near you feel about you, and support for enRAGE 0.9.5.3. Content notes: an adjustable chance (`AwakeningDespair`, default 75 percent, 0 turns it off) that a fully awake ordinary person ends their own life (with a gun that fits them, a knife, or by running at a wall); the crying woman's knife and ambush are violent (`CryingWoman = false` turns her off); and a sick child's worry sometimes ends in a burial. If something misbehaves, please [open an issue](https://github.com/ninjaalex888/RealNPCs/issues) and attach your log.
 
 ## What it does
 

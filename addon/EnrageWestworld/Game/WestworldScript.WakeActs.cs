@@ -6,7 +6,8 @@
 //   3 unravelling  distress: freezing mid-step, erratic pacing, shouting at the sky, kneeling, running with no goal
 //   4 awake        a lasting state: they come to you, talk to you (who is writing this, is there an outside), then
 //                  end in one of: pleading with you, trying to leave town, trying to wake someone, refusing to
-//                  get up; and, rarely and only if the setting allows, being unable to bear it
+//                  get up; and, if the setting allows, being unable to bear it (a gun that fits them, a knife, or
+//                  a wall run at: Core/Despair.cs)
 // Who is directed: ordinary people no script owns are moved about. enRAGE's own people and script-owned peds (the
 // soldiers in its camps, for example) are only given the passive part - head turns, thoughts, a voice - because
 // their movement belongs to someone else. Nothing happens during story missions, in a scene, or in danger, and
@@ -35,6 +36,12 @@ namespace EnrageWestworld.InGame
             public bool ToB, Arrived, Blocked, Issued, Passive;
             public string Ending;
             public string Name;
+            public string Method, Weapon;   // despair: gun, wall or knife; the weapon to fetch (null: their own)
+            public uint Arm;                // despair: the weapon in their hand
+            public bool Given, Done, Clip;  // despair: we gave the weapon; the death was booked; the blade clip played
+            public int Sub, RunFrom;
+            public float TopSpeed;
+            public Vector3 WallAt, WallDir;
             public Person P;
             public PersonState St;
             public Resident Res;
@@ -43,6 +50,16 @@ namespace EnrageWestworld.InGame
         private readonly List<WakeAct> _wakeActs = new List<WakeAct>();
         private readonly Dictionary<int, int> _wakeCool = new Dictionary<int, int>();
         private readonly HashSet<int> _selfHarmed = new HashSet<int>();
+        private readonly HashSet<string> _despairWhyTold = new HashSet<string>();
+        private readonly Dictionary<string, int> _despairCount = new Dictionary<string, int>();
+        private string _despairLast;
+        private int _bladeSet = -1;   // the blade hit-react set: -1 not looked for yet, 0 missing, 1 there
+        // one roll per person: "rolled2" since 0.6.2, so everyone who had one when only the armed could (and so knelt)
+        // gets a roll with the new endings
+        private const string DespairMark = "despair:rolled2";
+        private const string BladeDict = "mech_melee@blade@_male@_ambient@_healthy@_hit_reacts@stationary";
+        private const string BladeClip = "hit_from_front_torso_impact_front_heavy_v1";
+        private const uint GiveReason = 0x2CD419DC, TakeReason = 0xF77DE93D;   // the game's default reasons for giving and taking a weapon
         private int _nextWakeScan, _lastWakeActAt;
         private const int MaxWakeActs = 3;
 
@@ -155,6 +172,8 @@ namespace EnrageWestworld.InGame
                 string why = WhyEnded(act, me, now);
                 if (why != null)
                 {
+                    if (why == "ended")
+                        DespairDied(act);
                     EndWakeAct(act, why);
                     _wakeActs.RemoveAt(i);
                     continue;
@@ -598,6 +617,7 @@ namespace EnrageWestworld.InGame
                     ChooseEnding(act, me, pos, dist, now);
                     break;
                 case 3:
+                default:   // and despair's last steps, 4 to 6
                     StepEnding(act, me, pos, dist, now);
                     break;
             }
@@ -611,9 +631,9 @@ namespace EnrageWestworld.InGame
             {
                 int r = _rng.Next(100);
                 ending = Breaks() ? (r < 50 ? "escape" : "kneel") : (r < 55 ? "wake" : "plead");
-                if (DespairRoll(act, me, dist))
-                    ending = WEAPON.IS_PED_ARMED(h, 4) ? "despair" : "giveup";
             }
+            if (DespairRoll(act, me, dist))
+                ending = "despair";
             act.Ending = ending;
             act.Phase = 3;
             act.Arrived = false;
@@ -667,12 +687,29 @@ namespace EnrageWestworld.InGame
                     act.NextThought = now + 3500;
                     break;
                 case "despair":
+                {
+                    // how: a gun if they carry one or are the kind to keep one, else a wall to run at, else a knife
+                    // (Core/Despair.cs); nothing is put in their hand until the last moment (StepDespair)
+                    Ped ped = new Ped(h);
+                    bool armed = WEAPON.IS_PED_ARMED(h, 4);
+                    Vector3 wall, dir;
+                    bool hasWall = DespairWall(ped, me, out wall, out dir);
+                    act.Method = Despair.Method(act.P, armed, hasWall, act.P.Id);
+                    act.WallAt = wall;
+                    act.WallDir = dir;
+                    act.Weapon = act.Method == "gun" ? (armed ? null : Despair.Gun(act.P)) : act.Method == "knife" ? Despair.Knife : null;
+                    DespairSets();
+                    if (act.Method == "knife" && _bladeSet == 1)
+                        STREAMING.REQUEST_ANIM_DICT(BladeDict);
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.TASK_STAND_STILL(h, 4500);
-                    act.Until = now + 12000;
+                    act.Until = now + 30000;
                     ActSay(act, WakeBeats.Aloud("last", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|last"), me, null);
                     act.PhaseUntil = now + 3400;
+                    Log.Write("WAKE despair: " + act.Name + " can't bear it: " + DespairHow(act) + (hasWall ? " (a wall " + Flat(wall, ped.Position).ToString("0.0") + " m off)" : " (no wall to run at)") +
+                              (armed ? ", armed" : ""));
                     break;
+                }
             }
         }
 
@@ -723,47 +760,309 @@ namespace EnrageWestworld.InGame
 
         // ---- the rare breakdown --------------------------------------------------------------------------------
 
-        /// Rolled once for each awake person, at the end of their encounter, and only for an ordinary person nobody
-        /// else owns, with no one near enough to stop them.
+        /// One roll for each awake person, once their encounter with the player is over, whatever they carry. Why it
+        /// isn't rolled is logged once for each person and reason.
         private bool DespairRoll(WakeAct act, Ped me, float dist)
         {
-            if (act.Res == null || act.Res.PostId != null || act.Passive || _cfg.AwakeningDespair <= 0 || act.St.Has("despair:rolled") || dist < 3f || MISC.GET_MISSION_FLAG() ||
-                PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, act.Handle) || ENTITY.IS_ENTITY_A_MISSION_ENTITY(act.Handle))
+            string why = DespairWhyNot(act, dist);
+            if (why != null)
+            {
+                if (_despairWhyTold.Add(act.P.Id + "|" + why))
+                    Log.Write("WAKE despair: not for " + act.Name + " (" + why + ")");
                 return false;
-            act.St.Mark("despair:rolled");
-            return _rng.Next(100) < _cfg.AwakeningDespair;
+            }
+            act.St.Mark(DespairMark);
+            bool yes = _rng.Next(100) < _cfg.AwakeningDespair;
+            Log.Write("WAKE despair roll: " + act.Name + (yes ? " can't bear it" : " bears it") + " (" + _cfg.AwakeningDespair + "% chance, once for each person)");
+            return yes;
         }
 
-        private unsafe void StepDespair(WakeAct act, Ped me, int now)
+        /// Why this awake person won't end it here, or null. Only RealNPCs' own residents (enRAGE tracks its townsfolk's
+        /// deaths and runs its records); never a counter keeper, a story character or a child, nor in a story mission;
+        /// not with the player near enough to stop them, or aiming at them.
+        private string DespairWhyNot(WakeAct act, float dist)
         {
             int h = act.Handle;
-            if (act.Phase == 3 && now >= act.PhaseUntil)
+            if (_cfg.AwakeningDespair <= 0)
+                return "AwakeningDespair is 0";
+            if (act.Res == null)
+                return _bridge.RecordAt(h) != null ? "one of enRAGE's own people" : "one of enRAGE's townsfolk: only RealNPCs' residents";
+            if (act.Res.PostId != null)
+                return "keeps a counter";
+            if (act.Passive)
+                return "can't be directed now";
+            if (act.St.Has(DespairMark))
+                return "already had their one chance";
+            Ped ped = new Ped(h);
+            if (Natives.StoryModel(ped) || !IsGrownUp(ped))
+                return "a story character, or not grown";
+            if (MISC.GET_MISSION_FLAG())
+                return "a story mission";
+            if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h))
+                return "a mission character";
+            if (dist < 3f)
+                return "you were " + dist.ToString("0.0") + " m off, near enough to stop them";
+            if (PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, h))
+                return "you were aiming at them";
+            return null;
+        }
+
+        /// Phase 3: the last words. 4: the act itself (each way has its own steps and the act a deadline, since
+        /// nothing else stops it now: WhyEnded). 5: limp, then dead.
+        private void StepDespair(WakeAct act, Ped me, int now)
+        {
+            int h = act.Handle;
+            if (act.Phase == 3)
             {
+                if (now < act.PhaseUntil)
+                    return;
                 act.Phase = 4;
-                ulong slot = 0;
-                WEAPON.GET_CURRENT_PED_WEAPON(h, (uint*)&slot, true, 0, false);
-                uint weapon = (uint)slot;
-                Vector3 pos = new Ped(h).Position;
-                double heading = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
-                Vector3 head = pos + new Vector3(0f, 0f, 0.62f);
-                Vector3 from = head + new Vector3((float)-Math.Sin(heading) * 0.35f, (float)Math.Cos(heading) * 0.35f, 0f);
+                act.Sub = 0;
+                act.Until = now + (act.Method == "wall" ? 20000 : 9000);
                 _selfHarmed.Add(h);   // theirs alone: never booked as the player's doing
-                MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, weapon, h, true, false, 1000f, false);
-                act.PhaseUntil = now + 1500;
+                if (act.Method == "wall")
+                    DespairRunStart(act, now);
+                else
+                    DespairArm(act, now);
+                return;
             }
-            else if (act.Phase == 4 && now >= act.PhaseUntil)
+            if (act.Phase == 4)
             {
-                act.Phase = 5;
+                if (act.Method == "wall")
+                    DespairRun(act, now);
+                else if (now >= act.PhaseUntil)
+                {
+                    if (act.Method == "knife")
+                        DespairKnife(act, now);
+                    else
+                        DespairShot(act, now);
+                }
+                return;
+            }
+            if (act.Phase == 5 && now >= act.PhaseUntil)
+            {
+                act.Phase = 6;
                 if (!ENTITY.IS_ENTITY_DEAD(h))
                     ENTITY.SET_ENTITY_HEALTH(h, 0, h);
-                if (act.Res != null)
-                {
-                    act.Res.Dead = true;
-                    _engine.KeepResident(act.Res, Bridge.Now());
-                }
-                Log.Write("WAKE despair: " + act.Name + " (a resident) could not bear it and ended their own life");
-                act.Until = now;
+                act.Until = now + 1500;   // dead by the next look (WhyEnded "ended" books it), or let go
             }
+        }
+
+        /// The gun or the knife into their hand, only now, at the last moment, so nobody is ever left standing there
+        /// holding one we gave them; a moment's hold before it's used.
+        private void DespairArm(WakeAct act, int now)
+        {
+            int h = act.Handle;
+            uint w = 0;
+            if (act.Method == "gun" && act.Weapon == null)
+            {
+                w = WEAPON.GET_BEST_PED_WEAPON(h, false, false);
+                if (w == 0 || w == Natives.Hash("WEAPON_UNARMED"))
+                    act.Weapon = Despair.Gun(act.P);   // armed with nothing we can find: a gun that fits them
+            }
+            if (act.Weapon != null)
+            {
+                w = Natives.Hash(act.Weapon);
+                if (!WEAPON.HAS_PED_GOT_WEAPON(h, w, 0, false))
+                {
+                    WEAPON.GIVE_WEAPON_TO_PED(h, w, act.Method == "gun" ? 6 : 1, true, false, 0, false, 0.5f, 1f, GiveReason, true, 0f, false);
+                    WEAPON.SET_PED_DROPS_WEAPONS_WHEN_DEAD(h, false);   // nothing of ours to pick up off them
+                    act.Given = true;
+                }
+            }
+            act.Arm = w;
+            WEAPON.SET_CURRENT_PED_WEAPON(h, w, true, 0, false, false);
+            TASK.TASK_STAND_STILL(h, 3000);
+            act.PhaseUntil = now + 1400;
+        }
+
+        /// The gun: one shot, close, into the head.
+        private void DespairShot(WakeAct act, int now)
+        {
+            int h = act.Handle;
+            Vector3 pos = new Ped(h).Position;
+            double heading = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
+            Vector3 head = pos + new Vector3(0f, 0f, 0.62f);
+            Vector3 from = head + new Vector3((float)-Math.Sin(heading) * 0.35f, (float)Math.Cos(heading) * 0.35f, 0f);
+            MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, act.Arm, h, true, false, 1000f, false);
+            act.Phase = 5;
+            act.PhaseUntil = now + 1500;
+        }
+
+        /// The knife: the game's own reeling from a blade to the body (when the set is there), the wound, and down.
+        private void DespairKnife(WakeAct act, int now)
+        {
+            int h = act.Handle;
+            if (act.Sub == 0)
+            {
+                act.Sub = 1;
+                act.Clip = _bladeSet == 1 && STREAMING.HAS_ANIM_DICT_LOADED(BladeDict);
+                if (act.Clip)
+                    TASK.TASK_PLAY_ANIM(h, BladeDict, BladeClip, 8f, -4f, -1, 0, 0f, false, 0, false, "", false);
+                PED.APPLY_DAMAGE_TO_PED(h, 60, 0, 0, h);
+                act.PhaseUntil = now + (act.Clip ? 700 : 200);
+                return;
+            }
+            Log.Write("WAKE despair: " + act.Name + "'s knife: " + (act.Clip ? (ENTITY.IS_ENTITY_PLAYING_ANIM(h, BladeDict, BladeClip, 3) ? "the blade reel played" : "the blade reel didn't play") : "no blade reel (set not loaded)") + ", then down");
+            PED.SET_PED_TO_RAGDOLL(h, 5000, 8000, 0, false, false, "");
+            act.Phase = 5;
+            act.PhaseUntil = now + 1800;
+        }
+
+        /// The wall: a few stiff steps toward it if it's far, then a run straight at it.
+        private void DespairRunStart(WakeAct act, int now)
+        {
+            int h = act.Handle;
+            if (Flat(new Ped(h).Position, act.WallAt) > 4.5f)
+            {
+                Vector3 to = act.WallAt - act.WallDir * 3.2f;
+                TASK.TASK_GO_STRAIGHT_TO_COORD(h, to.X, to.Y, to.Z, 1f, 9000, 40000f, 0f, 0);
+                act.Sub = 0;
+                act.PhaseUntil = now + 9000;
+            }
+            else
+                DespairRunGo(act, now);
+        }
+
+        private void DespairRunGo(WakeAct act, int now)
+        {
+            Vector3 past = act.WallAt + act.WallDir * 1.5f;
+            TASK.TASK_GO_STRAIGHT_TO_COORD(act.Handle, past.X, past.Y, past.Z, 3f, 5000, 40000f, 0f, 0);
+            act.Sub = 1;
+            act.RunFrom = now;
+            act.TopSpeed = 0f;
+            act.PhaseUntil = now + 5000;
+        }
+
+        /// Watched closely while they run: into the wall, and limp; or, if they never get there, limp where they stand.
+        private void DespairRun(WakeAct act, int now)
+        {
+            int h = act.Handle;
+            act.NextStep = now + 50;
+            float d = Flat(new Ped(h).Position, act.WallAt);
+            if (act.Sub == 0)
+            {
+                if (d <= 3.6f || now >= act.PhaseUntil)
+                    DespairRunGo(act, now);
+                return;
+            }
+            float speed = ENTITY.GET_ENTITY_SPEED(h);
+            act.TopSpeed = Math.Max(act.TopSpeed, speed);
+            if (d <= 0.75f || (now - act.RunFrom > 900 && speed < 0.8f && d <= 1.8f))
+            {
+                // limp as they meet it, the run carrying them in, with a push for the throw
+                PED.SET_PED_TO_RAGDOLL(h, 6000, 9000, 0, false, false, "");
+                ENTITY.APPLY_FORCE_TO_ENTITY(h, 1, act.WallDir.X * 3f, act.WallDir.Y * 3f, 0.5f, 0f, 0f, 0f, 0, false, true, true, false, true);
+                PED.APPLY_DAMAGE_TO_PED(h, 60, 0, 0, h);
+                Log.Write("WAKE despair: " + act.Name + " ran into the wall (" + act.TopSpeed.ToString("0.0") + " m/s at most, " + d.ToString("0.0") + " m from it)");
+                act.Phase = 5;
+                act.PhaseUntil = now + 1600;
+                return;
+            }
+            if (now >= act.PhaseUntil || (now - act.RunFrom > 1500 && speed < 0.3f))
+            {
+                Log.Write("WAKE despair: " + act.Name + " never reached the wall (" + d.ToString("0.0") + " m short); went limp where they stood");
+                PED.SET_PED_TO_RAGDOLL(h, 6000, 9000, 0, false, false, "");
+                act.Phase = 5;
+                act.PhaseUntil = now + 1200;
+            }
+        }
+
+        /// A wall to run at: 2.5-10 m off at chest height, met square on, nothing low in the way, and the player not
+        /// on the line to it.
+        private bool DespairWall(Ped p, Ped me, out Vector3 at, out Vector3 dir)
+        {
+            at = dir = Vector3.Zero;
+            Vector3 pos = p.Position, mp = me.Position, hit, normal;
+            float floor = Natives.Probe(pos, new Vector3(pos.X, pos.Y, pos.Z - 2.5f), p.Handle, out hit, out normal) ? hit.Z : pos.Z - 1f;
+            float best = float.MaxValue;
+            for (int i = 0; i < 16; i++)
+            {
+                float a = i * 22.5f * (float)Math.PI / 180f, dx = -(float)Math.Sin(a), dy = (float)Math.Cos(a);
+                Vector3 chest = new Vector3(pos.X, pos.Y, floor + 1.4f);
+                if (!Natives.Probe(chest, new Vector3(chest.X + dx * 10f, chest.Y + dy * 10f, chest.Z), p.Handle, out hit, out normal) || Math.Abs(normal.Z) > 0.35f)
+                    continue;
+                float d = Flat(hit, chest);
+                if (d < 2.5f || d > 10f || -(dx * normal.X + dy * normal.Y) < 0.6f)
+                    continue;   // too near for a run, too far, or a glancing wall
+                Vector3 knee = new Vector3(pos.X, pos.Y, floor + 0.5f), kh, kn;
+                if (Natives.Probe(knee, new Vector3(knee.X + dx * (d - 0.5f), knee.Y + dy * (d - 0.5f), knee.Z), p.Handle, out kh, out kn))
+                    continue;   // a rail, a crate or a step in the way
+                float t = Math.Max(0f, Math.Min(d, (mp.X - pos.X) * dx + (mp.Y - pos.Y) * dy));
+                if (Flat(mp, new Vector3(pos.X + dx * t, pos.Y + dy * t, mp.Z)) < 2f)
+                    continue;   // the player is on the line
+                float score = Math.Abs(d - 6f);
+                if (score < best)
+                {
+                    best = score;
+                    at = new Vector3(hit.X, hit.Y, pos.Z);
+                    dir = new Vector3(dx, dy, 0f);
+                }
+            }
+            return best < float.MaxValue;
+        }
+
+        /// Whether the blade set exists, looked for once and logged.
+        private void DespairSets()
+        {
+            if (_bladeSet >= 0)
+                return;
+            _bladeSet = STREAMING.DOES_ANIM_DICT_EXIST(BladeDict) ? 1 : 0;
+            Log.Write("WAKE despair sets: the blade reel (" + BladeDict + ") " + (_bladeSet == 1 ? "is there" : "is MISSING, so the knife goes straight to the fall"));
+        }
+
+        private static string DespairHow(WakeAct act)
+        {
+            return act.Method == "wall" ? "running at a wall" : act.Method == "knife" ? "a knife" : "a gun, " + (act.Weapon == null ? "their own" : Despair.Words(act.Weapon));
+        }
+
+        /// The death booked once, however it came (the shot can kill before the last step).
+        private void DespairDied(WakeAct act)
+        {
+            if (act.Done || act.Ending != "despair")
+                return;
+            act.Done = true;
+            if (act.Res != null)
+            {
+                act.Res.Dead = true;
+                _engine.KeepResident(act.Res, Bridge.Now());
+            }
+            string how = act.Method ?? "gun";
+            int c;
+            _despairCount.TryGetValue(how, out c);
+            _despairCount[how] = c + 1;
+            _despairLast = act.Name + " (" + DespairHow(act) + ")";
+            Log.Write("WAKE despair: " + act.Name + " (a resident) could not bear it and ended their own life (" + DespairHow(act) + ")");
+        }
+
+        /// F7: the setting, the blade set, this session's by way, and the awake within 30 m with what would happen.
+        private string DespairStatus()
+        {
+            DespairSets();
+            Ped me = Game.Player.Character;
+            var near = new List<string>();
+            foreach (Ped p in World.GetAllPeds())
+            {
+                if (p == null || !p.Exists() || p.Handle == me.Handle || ENTITY.IS_ENTITY_DEAD(p.Handle) || !PED.IS_PED_HUMAN(p.Handle))
+                    continue;
+                float dist = p.Position.DistanceTo(me.Position);
+                Person who;
+                PersonState st;
+                Resident res;
+                bool passive;
+                if (dist > 30f || !WakeIdentity(p, false, out who, out st, out res, out passive) || st.WakeStage < Awakening.Awake)
+                    continue;
+                bool armed = WEAPON.IS_PED_ARMED(p.Handle, 4);
+                Vector3 w, d;
+                bool wall = DespairWall(p, me, out w, out d);
+                string verdict = res == null ? (_bridge.RecordAt(p.Handle) != null ? "enRAGE's own: never" : "enRAGE's townsfolk: never")
+                               : res.PostId != null ? "keeps a counter: never" : st.Has(DespairMark) ? "had their chance"
+                               : (passive ? "can't be directed now; " : "") + "would use " + Despair.Method(who, armed, wall, who.Id) + (wall ? " (wall " + Flat(w, p.Position).ToString("0") + " m)" : "");
+                near.Add(who.Name + " (" + (int)dist + " m, " + verdict + ")");
+            }
+            return "AwakeningDespair " + _cfg.AwakeningDespair + "% (one roll each); blade reel " + (_bladeSet == 1 ? "there" : "MISSING") + "; this session " +
+                   (_despairCount.Count == 0 ? "none" : string.Join(", ", _despairCount.Select(kv => kv.Key + " " + kv.Value))) + (_despairLast != null ? ", last " + _despairLast : "") +
+                   "; awake within 30 m: " + (near.Count == 0 ? "none" : string.Join("; ", near.Take(8)));
         }
 
         // ---- shared ----------------------------------------------------------------------------------------------
@@ -772,8 +1071,8 @@ namespace EnrageWestworld.InGame
         private string WhyEnded(WakeAct act, Ped me, int now)
         {
             if (!ENTITY.DOES_ENTITY_EXIST(act.Handle)) return "gone";
-            if (ENTITY.IS_ENTITY_DEAD(act.Handle)) return act.Ending == "despair" ? "ended" : "died";
-            if (act.Phase >= 4 && act.Ending == "despair") return null;   // let the last moments play out
+            if (ENTITY.IS_ENTITY_DEAD(act.Handle)) return act.Ending == "despair" && act.Phase >= 4 ? "ended" : "died";
+            if (act.Phase >= 4 && act.Ending == "despair") return now >= act.Until ? "it didn't happen" : null;   // the last moments play out, to a deadline
             if (now >= act.Until) return act.Kind == "awake" && act.Phase == 0 ? "never reached you" : "finished";
             if (PED.IS_PED_IN_COMBAT(act.Handle, 0)) return "got into a fight";
             if (PED.IS_PED_RAGDOLL(act.Handle) && act.Kind != "run") return "was knocked down";
@@ -816,7 +1115,9 @@ namespace EnrageWestworld.InGame
                 return;
             if (act.Blocked)
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
-            if (!act.Passive && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h) && act.Ending != "despair")
+            if (act.Given && !ENTITY.IS_ENTITY_DEAD(h))
+                WEAPON.REMOVE_WEAPON_FROM_PED(h, Natives.Hash(act.Weapon), true, TakeReason);   // never left holding what we gave them
+            if (!act.Passive && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h))
                 TASK.CLEAR_PED_TASKS(h, true, false);
         }
 

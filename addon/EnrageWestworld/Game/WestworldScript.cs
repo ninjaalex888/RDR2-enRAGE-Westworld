@@ -1031,6 +1031,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST now: " + NowStatus());
 			Log.Write("TEST records: " + RecordsStatus());
 			Log.Write("TEST romance: " + RomanceStatus());
+			Log.Write("TEST despair: " + DespairStatus());
 			Log.Write("TEST settings: " + SettingsStatus());
 			if (nemesisRecord == null)
 			{

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 55;
+        public const int CurrentVersion = 56;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -497,7 +497,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("AwakeningShare = " + AwakeningShare + "   ; percent of people who slowly wake up and see the world for what it is (0 turns the Awakening off)");
             b.AppendLine("AwakeningDays = " + AwakeningDays + "   ; in-game days a woken person spends on each of the first three stages");
             b.AppendLine("AwakeningBreakdown = " + AwakeningBreakdown + "   ; percent of the time an unravelling or awake person breaks down (kneels, shouts at the sky, runs) rather than keeping it together");
-            b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, armed and alone, can't bear it and ends their own life (0-100, 0 turns this off; a content note is in the readme)");
+            b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, alone, can't bear it and ends their own life, with a gun that fits them, a knife, or by running at a wall (0-100, 0 turns this off; a content note is in the readme)");
             b.AppendLine("HostsQuestionReality = " + B(HostsQuestionReality) + "   ; people sometimes wonder whether their world is real");
             b.AppendLine("RealityChance = " + RealityChance + "   ; percent of remarks and thoughts that drift that way");
             b.AppendLine("Glitches = " + B(Glitches) + "   ; rarely, someone freezes or repeats themselves");
