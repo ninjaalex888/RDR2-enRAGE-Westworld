@@ -42,8 +42,8 @@ namespace EnrageWestworld.InGame
 		// Lex chose that over the white objective line). A notice is a toast at the top left of the screen (Toaster),
 		// or the "Around town" box (Fallback).
 
-		/// The face the game's subtitles are set in (found with the font test, Shift+F2).
-		public static string SubtitleFace = "$body1";
+		/// The face for the subtitles: the font test (Shift+F2) found $body the closest to the game's own (Lex, line 1).
+		public static string SubtitleFace = "$body";
 
 		public const float SubtitleScale = 0.42f, SubtitleBottom = 0.846f, SubtitleWidth = 0.62f;
 
