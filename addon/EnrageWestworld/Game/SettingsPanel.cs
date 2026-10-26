@@ -39,6 +39,7 @@ namespace EnrageWestworld.InGame
         // the pad's menu buttons (used only while a pad is the last thing touched, so keys don't count twice)
         private const uint PadUp = 1662638961u, PadDown = 97156178u, PadLeft = 2791226036u, PadRight = 3736290067u, PadLB = 3901091606u, PadRB = 398377320u,
                            PadAccept = 3350541322u, PadCancel = 359624985u, PadX = 1840825903u;
+        private const uint WheelUp = 1652558994u, WheelDown = 2346611779u;   // the mouse wheel (the game's CursorScrollUp / CursorScrollDown)
         private const int WriteAfterMs = 450;   // holding Left or Right: written once it settles, not on every step
 
         // text sizes: about half as large again as enRAGE's own panel
@@ -62,7 +63,7 @@ namespace EnrageWestworld.InGame
             { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
             { "CryingWomanChance", "CryingWoman" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
             { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" },
-            { "FeelingBarsMetres", "FeelingBars" }, { "FeelingBarsShowEmpty", "FeelingBars" }        };
+            { "FeelingBarsMetres", "FeelingBars" }, { "FeelingBarsShowEmpty", "FeelingBars" }, { "RealVoiceTalkSeconds", "RealVoiceTalk" }        };
 
         // sections whose first setting switches the whole section on or off
         private static readonly Dictionary<string, string> Masters = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
@@ -88,7 +89,7 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
-            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "White subtitles" }, { "OverheardTalk", "Overheard talk in real voices" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
+            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "White subtitles" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "OverheardTalk", "Overheard talk in real voices" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMin", "He does odd things at least (metres)" }, { "StalkerActMax", "... and at most (metres)" },
             { "StalkerKey", "Make a stalker now" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
@@ -608,12 +609,24 @@ namespace EnrageWestworld.InGame
             return !Open;
         }
 
+        /// The mouse wheel, on keyboard and mouse: each notch chooses the row above or below, as Up/Down do (not while
+        /// a key is being set).
+        private void WheelInput()
+        {
+            if (_capture != null)
+                return;
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, WheelUp))
+                Key(Keys.Up, false, false, false);
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, WheelDown))
+                Key(Keys.Down, false, false, false);
+        }
+
         private void DrawHints(float left, bool pad)
         {
             if (_note.Length > 0)
                 Draw.Text(Draw.Fit(_note, SmallScale, W - 0.05f), left, Y + H - 0.072f, SmallScale, 236, 196, 120);
             string keys = pad ? "D-pad choose and change   hold X: x10, or the next section   LB/RB page   A: set a key (then press it on the keyboard)   B: close"
-                : "Up/Down choose   Left/Right change   Shift: x10, or the next section   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
+                : "Up/Down or wheel choose   Left/Right change   Shift: x10, or the next section   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
             Draw.Text(Draw.Fit(keys, SmallScale * 0.94f, W - 0.04f), left, Y + H - 0.04f, SmallScale * 0.94f, 140, 128, 110);
         }
 
@@ -626,6 +639,8 @@ namespace EnrageWestworld.InGame
             bool pad = !PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
             if (pad && PadInput())
                 return;   // the pad closed it
+            if (!pad)
+                WheelInput();
             Draw.Rect(0f, 0f, 1f, 1f, 0, 0, 0, 110);
             Draw.Rect(X, Y, W, H, 18, 15, 12, 238);
             Draw.Rect(X, Y, W, 0.004f, 196, 156, 92, 255);

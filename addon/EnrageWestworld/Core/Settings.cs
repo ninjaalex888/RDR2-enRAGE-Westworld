@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 40;
+        public const int CurrentVersion = 41;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -125,6 +125,8 @@ namespace EnrageWestworld.Core
 
         // [Scenes]
         public bool SceneReactions = true;
+        public bool RealVoiceTalk = true;
+        public int RealVoiceTalkSeconds = 120;
         public bool Standoffs = true;
         public bool Songs = true;
         public bool TallTales = true;
@@ -394,6 +396,7 @@ namespace EnrageWestworld.Core
             TickerWidth = Math.Max(0.2f, Math.Min(1f, TickerWidth));
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
+            RealVoiceTalkSeconds = Math.Max(30, Math.Min(1800, RealVoiceTalkSeconds));
             string subs = (Subtitles ?? "").Trim().ToLowerInvariant();
             Subtitles = subs == "on" || subs == "off" ? subs : "matched";
             OverheardTalk = (OverheardTalk ?? "").Trim().ToLowerInvariant() == "captions" ? "captions" : "none";
@@ -527,6 +530,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("Debts = " + B(Debts) + "   ; people collect what they're owed");
             b.AppendLine();
             b.AppendLine("[Scenes]");
+            b.AppendLine("RealVoiceTalk = " + B(RealVoiceTalk) + "   ; now and then two people standing together near you have a word in their real recorded voices: the weather, how they're getting on, a piece of news, a hello");
+            b.AppendLine("RealVoiceTalkSeconds = " + RealVoiceTalkSeconds + "   ; about how often (seconds, 30 to 1800); each person then rests five minutes, and the pair fifteen");
             b.AppendLine("SceneReactions = " + B(SceneReactions) + "   ; greet or antagonize someone in a scene: take a side, break up a fight, or stir it up");
             b.AppendLine("Standoffs = " + B(Standoffs) + "   ; two men square off in the street (guns come out only away from the law)");
             b.AppendLine("Songs = " + B(Songs) + "   ; drunks sing old songs in saloons and at night");
