@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 47;
+        public const int CurrentVersion = 48;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -156,7 +156,7 @@ namespace EnrageWestworld.Core
         public bool UseGameFeed;
         public string TestKey = "F7";
         public string WarNewsTo = "feed";
-        public string FlirtKey = "F6";
+        public string FlirtKey = "5";
         public string WakeKey = "Y";
         public string ReaderKey = "N";
         public bool ReloadIni = true;
@@ -290,6 +290,11 @@ namespace EnrageWestworld.Core
                 // 0.6.2: the ticker keeps only the thoughts of people you can see; news has its own box
                 if (KeyIs(s.NewsTo, "ticker")) { s.NewsTo = "corner"; raised.Add("NewsTo ticker -> corner"); }
                 if (KeyIs(s.WarNewsTo, "right")) { s.WarNewsTo = "corner"; raised.Add("WarNewsTo right -> corner"); }
+            }
+            if (s.SettingsVersion < 48 && KeyIs(s.FlirtKey, "F6"))
+            {
+                s.FlirtKey = "5";   // F6 is the game's camera (a key of your own is kept)
+                raised.Add("FlirtKey F6 -> 5");
             }
             if (s.SettingsVersion < 46)
             {

@@ -346,7 +346,7 @@ YOUR DEEDS
 The add-on notices what you do and where:
 - Towns you ride into, and shops: the gunsmith, general store, saloon, church, bank, doctor,
   barber, bath, hotel, sheriff, station, tailor, fence, theatre, photographer, stable.
-- Who you sweet-talk (F6), and the people enRAGE knows that you beat and then let go.
+- Who you sweet-talk (5), and the people enRAGE knows that you beat and then let go.
 - Hunting (what you bring down), killing (strangers, lawmen, people enRAGE knows), and the crimes
   the game itself sees: robbery, bank, coach and train robbery, theft, horse theft, assault,
   looting, grave robbing, kidnapping, arson, cheating.
@@ -551,7 +551,7 @@ in the file. The new ones:
                 the game's own updates, top left)
             Subtitles (on | off): what people say to you, on the game's subtitle line while their voice
                 plays (the game's own Subtitles option has to be on too)
-            TestKey (F7), FlirtKey (F6), WakeKey (Y), ReaderKey (N), ReloadIni (true),
+            TestKey (F7), FlirtKey (5), WakeKey (Y), ReaderKey (N), ReloadIni (true),
             ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel (enRAGE 0.9.5.3 only),
             SettingsKey (Ctrl+F7) and SettingsKey2 (Alt+F) open and close it with any enRAGE version
 All the older options are still there and work the same.
@@ -565,7 +565,7 @@ Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           About 15 seconds after loading, a notice says which key to use.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
           regulars around you show on the map for a minute
-F6  flirt with the person you're looking at
+5         flirt with the person you're looking at (FlirtKey; it was F6, the game's camera)
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)
 Y         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
