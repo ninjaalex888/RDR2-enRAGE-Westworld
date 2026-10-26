@@ -1032,6 +1032,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST now: " + NowStatus());
 			Log.Write("TEST records: " + RecordsStatus());
 			Log.Write("TEST romance: " + RomanceStatus());
+			Log.Write("TEST trysts: " + TrystStatus());
 			Log.Write("TEST thoughts: " + OverHeadStatus());
 			Log.Write("TEST despair: " + DespairStatus());
 			Log.Write("TEST disbelief: " + _disbeliefSaid + " this session" + (_disbeliefLast != null ? ", last " + _disbeliefLast : "") + " (GENERIC_SHOCKED_DISBELIEF, else a shocked line)");
@@ -1165,6 +1166,8 @@ namespace EnrageWestworld.InGame
 				Log.Write("FLIRT ignored: one of the story's own people.");   // never anyone the story holds
 				return;
 			}
+			if (TrystAsked(ped))
+				return;   // she said yes a moment ago: this flirt asks her somewhere quieter (WestworldScript.Trysts.cs)
 			long now = Bridge.Now();
 			_engine.PlayerCash = MONEY._MONEY_GET_CASH_BALANCE() / 100;   // what the greedy and the proud look at
 			NemesisRecord nemesisRecord = _bridge.RecordAt(num);
@@ -1232,6 +1235,7 @@ namespace EnrageWestworld.InGame
 				         toYou: true, ahead: true);
 			}
 			_flirtSaidUntil = Game.GameTime + 7000;
+			TrystOffered(r, name, ped);
 			foreach (KeyValuePair<Person, string> jealou in r.Jealous)
 			{
 				Feed.Mutter(jealou.Key.Name, jealou.Key.Woman, jealou.Value);

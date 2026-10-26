@@ -150,6 +150,7 @@ namespace EnrageWestworld.InGame
                 _director.Abort("stopping");
                 EndEncounters("the add-on stopped");
                 WakeActsAbort();
+                TrystAbort();
                 if (_rough != null)
                     RoughEnd(_rough, "stopped: the add-on stopped", _now);
                 if (_stalker != null)
@@ -682,6 +683,7 @@ namespace EnrageWestworld.InGame
             _director.Abort("a mission started");
             EndEncounters("a mission started");
             WakeActsAbort();
+            TrystAbort();
             if (_rough != null)
                 RoughEnd(_rough, "stopped: a mission started", now);
             _glitch = null;
@@ -724,6 +726,8 @@ namespace EnrageWestworld.InGame
             }
             Safe("lines", _aLater);
             LedgerStep(now);   // deaths are noted whether or not the player has control (not in story missions)
+            TrystWatchdog(now);   // never left dark (outside the trysts' own guard)
+            TrystStep(now);       // runs with the player's controls off while it's dark
             if (!PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;
             QuietStep(now);

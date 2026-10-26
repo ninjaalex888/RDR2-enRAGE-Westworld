@@ -14,6 +14,14 @@ namespace EnrageWestworld.Core
 
 		public string Why;      // the reason that weighed most
 
+		public int Chance = -1; // the percent her answer came to (Interest.ForPlayer), -1 for the old rule
+
+		public bool Tryst;      // a woman said yes: flirting with her again soon takes them somewhere quieter (Trysts.cs)
+
+		public string TrystKind;   // saloon, taken or single
+
+		public Person Who;      // who answered
+
 		public List<KeyValuePair<Person, string>> Jealous = new List<KeyValuePair<Person, string>>();
 	}
 }

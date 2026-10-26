@@ -312,6 +312,10 @@ namespace EnrageWestworld.Core
 					return Voice.Pick(seed, "Been a long while since anybody said a thing like that to me.", "Lord. I'd forgotten what that sounds like.");
 				case "tipsy":
 					return Voice.Pick(seed, "Buy me another and say that again.", "Keep talking. The whiskey likes you.");
+				case "saloon":
+					return Voice.Pick(seed, "Well, aren't you a sight. Sit a while.", "Buy a girl a drink, and we'll see where the evening goes.");
+				case "stolen":
+					return Voice.Pick(seed, "Hush. Not so loud. Folks talk in this town.", "I shouldn't. ...Say it again, quieter.");
 				}
 			}
 			if (heart >= 4)

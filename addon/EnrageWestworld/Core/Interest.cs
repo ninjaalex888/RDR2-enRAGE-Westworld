@@ -3,6 +3,7 @@
 // a man, set against what he is here (his money, the good and the bad the town says he did). Their day tips it (sore
 // from a bad turn, glad from a good one; a worry at its worst means not today), and someone spoken for says no. No
 // dice: the same person in the same state answers the same way, and the reason they give is the one that weighed most.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -25,6 +26,80 @@ namespace EnrageWestworld.Core
             public int BadHere;        // the bad deeds of his the town still talks about
             public int GoodHere;       // ...and the good: mercy, a thief caught, peace kept
             public bool Saloon;        // asked in a saloon
+            public bool SaloonGirl;    // the saloon's own: a working girl, or any woman drinking where he is
+            public string Id;          // who, for the day's roll (ForPlayer)
+            public long Day = -1;      // the game day, for the day's roll
+        }
+
+        /// Married or spoken for: a sweetheart, someone courting them, an affair, or a husband.
+        public static bool Spoken(Ask a)
+        {
+            return a.Taken || (a.Who != null && (a.Who.Family == "married" || a.Who.SpouseName != null));
+        }
+
+        /// How much what someone thinks of the player tips their odds, in percent.
+        public static int RegardTilt(string regard)
+        {
+            switch (regard)
+            {
+                case "smitten": return 30;
+                case "grateful": case "fond": return 15;
+                case "met": return 5;
+                case "wary": return -10;
+                case "witnessed": case "afraid": return -15;
+                case "hostile": return -35;
+                default: return 0;
+            }
+        }
+
+        /// The player's flirting with a woman (Lex, 2026-10-26: he kills so many in self-defence that fear had every
+        /// woman saying no). One of the saloon's women always goes along; any other woman by a roll: single ones likely
+        /// (single, percent), the married or spoken for less so (taken), with what she thinks of him, her nature and her
+        /// day tipping it (5 points a weight) rather than deciding it. Only having spurned him, flirting again a moment
+        /// later, or not being drawn to him at all is a flat no. The roll holds all game day for the same woman. Men are
+        /// answered as before (Answer). chance: the percent it came to, -1 for the old rule.
+        public static string ForPlayer(Ask a, int single, int taken, out string why, out int chance)
+        {
+            chance = -1;
+            if (a.Who == null || !a.Who.Woman)
+                return Answer(a, out why);
+            if (a.Spam)
+                return No("spam", out why);
+            if (a.Regard == "scorned")
+                return No("scorned", out why);
+            if (a.SaloonGirl)
+            {
+                chance = 100;
+                why = "saloon";
+                return "yes";
+            }
+            if (!a.Drawn)
+                return No("notdrawn", out why);
+            bool spoken = Spoken(a);
+            List<KeyValuePair<string, int>> taste = Taste(a);
+            int tilt = RegardTilt(a.Regard) + taste.Sum(t => t.Value) * 5 + (a.Mood == "glad" ? 5 : a.Mood == "sore" ? -5 : 0) - (a.AtWorst ? 15 : 0);
+            chance = spoken ? Math.Max(3, Math.Min(50, taken + tilt)) : Math.Max(10, Math.Min(95, single + tilt));
+            int roll = (int)((uint)Voice.Hash((a.Id ?? a.Who.Id) + "|willing|" + a.Day) % 100u);
+            if (roll < chance)
+            {
+                why = a.Regard == "smitten" ? "smitten" : spoken ? "stolen" : taste.Where(t => t.Value > 0).OrderByDescending(t => t.Value).Select(t => t.Key).FirstOrDefault() ?? a.Regard;
+                return "yes";
+            }
+            if (roll < chance + 15)
+            {
+                why = taste.Any(t => t.Key == "shy") ? "shy" : taste.Any(t => t.Key == "troubled") ? "troubled" : a.Regard;
+                return "maybe";
+            }
+            if (spoken)
+                return No(a.Worry == "letter" ? "elsewhere" : "married", out why);
+            switch (a.Regard)
+            {
+                case "hostile": return No("hate", out why);
+                case "afraid": return No("fear", out why);
+                case "witnessed": case "wary": return No("badrep", out why);
+            }
+            string worst = taste.Where(t => t.Value < 0).OrderBy(t => t.Value).Select(t => t.Key).FirstOrDefault();
+            return No(worst ?? (a.Mood == "sore" ? "sore" : a.AtWorst ? "busy" : "cold"), out why);
         }
 
         /// "yes", "maybe" or "no"; why: the reason the answer is given by (Romance's reasons).

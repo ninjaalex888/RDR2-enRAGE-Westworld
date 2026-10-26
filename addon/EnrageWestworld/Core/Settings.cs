@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 58;
+        public const int CurrentVersion = 59;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -28,6 +28,9 @@ namespace EnrageWestworld.Core
         public bool Romance = true;
         public bool FlirtPrompt = true;
         public bool NpcFlirting = true;
+        public bool Trysts = true;
+        public int WillingSingle = 70;
+        public int WillingTaken = 20;
         public bool NpcRomance = true;
         public bool AmbientFlirting = true;
         public bool SameSexRomance;
@@ -443,6 +446,8 @@ namespace EnrageWestworld.Core
             TickerWidth = Math.Max(0.2f, Math.Min(1f, TickerWidth));
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             ThoughtsOverHeadScale = Math.Max(0.12f, Math.Min(0.6f, ThoughtsOverHeadScale));
+            WillingSingle = Math.Max(0, Math.Min(100, WillingSingle));
+            WillingTaken = Math.Max(0, Math.Min(100, WillingTaken));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
             RealVoiceTalkSeconds = Math.Max(30, Math.Min(1800, RealVoiceTalkSeconds));
             Subtitles = (Subtitles ?? "").Trim().ToLowerInvariant() == "off" ? "off" : "on";   // the old matched and game are on
@@ -479,6 +484,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("[Romance]");
             b.AppendLine("Romance = " + B(Romance) + "   ; people flirt with you, and you can flirt back (FlirtKey)");
             b.AppendLine("NpcFlirting = " + B(NpcFlirting) + "   ; people near you make eyes at each other in street scenes and court, each answering by what they make of the other, as with you");
+            b.AppendLine("Trysts = " + B(Trysts) + "   ; when a woman says yes to your flirting, flirt with her again within two minutes to go somewhere quieter: the screen goes dark, an hour passes, nothing is shown");
+            b.AppendLine("WillingSingle = " + WillingSingle + "   ; percent chance a single woman takes to your flirting, before what she thinks of you tips it (the saloon's women always do)");
+            b.AppendLine("WillingTaken = " + WillingTaken + "   ; the same for a woman who's married or spoken for");
             b.AppendLine("FlirtPrompt = " + B(FlirtPrompt) + "   ; Flirt in the game's lock-on menu, with Greet and Antagonize, on its H key (D-pad down on a pad), as well as FlirtKey");
             b.AppendLine("NpcRomance = " + B(NpcRomance) + "   ; enRAGE's people court, marry, quarrel and fight over each other");
             b.AppendLine("AmbientFlirting = " + B(AmbientFlirting) + "   ; strangers in town flirt with each other now and then");

@@ -1114,7 +1114,7 @@ namespace EnrageWestworld.Core
 			string regard = Regard.OfPerson(p, personState, true);
 			string why;
 			Interest.Ask ask = AskFor(p, regard, personState, p.Home ?? CurrentTown, now, Romance.Suits(p, Cfg.SameSexRomance, John), !Romance.Free(p) || SpokenFor(p.Id));
-			string answer = Interest.Answer(ask, out why);
+			string answer = PlayerAnswer(p, ask, flirtResult, out why);
 			flirtResult.Answer = answer;
 			flirtResult.Why = why;
 			string text2 = answer == "no" ? why : null;
@@ -1183,7 +1183,7 @@ namespace EnrageWestworld.Core
 					flirtResult.Jealous.Add(new KeyValuePair<Person, string>(person, "That's my " + (p.Woman ? "girl" : "fella") + " you're sweet-talking, mister."));
 				}
 			}
-			Log("FLIRT " + p.Name + " (" + (p.Personality ?? "no temper") + "; thinks of you: " + Interest.Explain(ask) + " -> " + answer + " (" + why + "); affection " + personState.Affection + ", " +
+			Log("FLIRT " + p.Name + " (" + (p.Personality ?? "no temper") + "; thinks of you: " + Interest.Explain(ask) + ChanceText(flirtResult) + " -> " + answer + " (" + why + "); affection " + personState.Affection + ", " +
 			    Romance.HeartNames[personState.Heart + 1] + "): " + flirtResult.YouSay + " -> " + flirtResult.Reply);
 			return flirtResult;
 		}
@@ -1358,10 +1358,10 @@ namespace EnrageWestworld.Core
 			string regard = Regard.OfFolk(f, personState, true);
 			string why;
 			Interest.Ask ask = AskFor(p, regard, personState, f.Town ?? CurrentTown, now, Romance.DrawnTo(f.Key, f.Woman, otherIsWoman: false, Cfg.SameSexRomance), SpokenFor(f.Key));
-			string answer = Interest.Answer(ask, out why);
+			string answer = PlayerAnswer(p, ask, flirtResult, out why);
 			flirtResult.Answer = answer;
 			flirtResult.Why = why;
-			string seen = (p.Personality ?? "no temper") + "; thinks of you: " + Interest.Explain(ask) + " -> " + answer + " (" + why + ")";
+			string seen = (p.Personality ?? "no temper") + "; thinks of you: " + Interest.Explain(ask) + ChanceText(flirtResult) + " -> " + answer + " (" + why + ")";
 			if (answer == "no" && !Interest.Soft(why))
 			{
 				flirtResult.Reply = Romance.Rebuff(p, why, text);
@@ -1414,7 +1414,7 @@ namespace EnrageWestworld.Core
 			string regard = Regard.OfResident(personState, true, day.TownDeeds != null && day.TownDeeds.Count > 0, p.Personality);
 			string why;
 			Interest.Ask ask = AskFor(p, regard, personState, town, now, Romance.Suits(p, Cfg.SameSexRomance, John), SpokenFor(p.Id));
-			string answer = Interest.Answer(ask, out why);
+			string answer = PlayerAnswer(p, ask, flirtResult, out why);
 			flirtResult.Answer = answer;
 			flirtResult.Why = why;
 			if (why != "spam")
@@ -1438,7 +1438,7 @@ namespace EnrageWestworld.Core
 					personState.Affection = Romance.Clamp(personState.Affection - 2, -100, 100);
 			}
 			personState.Heart = Math.Min(3, Romance.HeartFor(personState.Affection, personState.Flirts));
-			Log("FLIRT " + p.Name + " (resident, " + (p.Personality ?? "no temper") + "; thinks of you: " + Interest.Explain(ask) + " -> " + answer + " (" + why + "); affection " + personState.Affection + ", " +
+			Log("FLIRT " + p.Name + " (resident, " + (p.Personality ?? "no temper") + "; thinks of you: " + Interest.Explain(ask) + ChanceText(flirtResult) + " -> " + answer + " (" + why + "); affection " + personState.Affection + ", " +
 			    Romance.HeartNames[personState.Heart + 1] + "): " + flirtResult.YouSay + " -> " + flirtResult.Reply);
 			return flirtResult;
 		}
@@ -1463,8 +1463,42 @@ namespace EnrageWestworld.Core
 			{
 				Regard = regard, Drawn = drawn, Taken = taken, AtWorst = worry && stage == 2, Spam = st.FlirtedAt > 0 && now - st.FlirtedAt < 30, Temper = p.Personality,
 				Mood = InnerLife.MoodOf(p, day, p.Id + "|flirtmood|" + day.GameDay), Who = p, Worry = worry ? kind : null, Cash = PlayerCash,
-				BadHere = day.TownDeeds != null ? day.TownDeeds.Count : 0, GoodHere = goodHere, Saloon = NowPlace == "saloon"
+				BadHere = day.TownDeeds != null ? day.TownDeeds.Count : 0, GoodHere = goodHere, Saloon = NowPlace == "saloon",
+				SaloonGirl = p.Woman && (NowPlace == "saloon" || InnerLife.TradeGroup(p.Trade) == "girl"), Id = p.Id, Day = day.GameDay
 			};
+		}
+
+		/// The answer to the player's flirting (Interest.ForPlayer: women by chance, men as before), and whether a night
+		/// together can follow (Trysts.cs: a woman's yes, with Trysts on).
+		private string PlayerAnswer(Person p, Interest.Ask ask, FlirtResult r, out string why)
+		{
+			int chance;
+			string answer = Interest.ForPlayer(ask, Cfg.WillingSingle, Cfg.WillingTaken, out why, out chance);
+			r.Chance = chance;
+			r.Who = p;
+			r.Tryst = Cfg.Trysts && answer == "yes" && p.Woman;
+			r.TrystKind = Trysts.Kind(ask.SaloonGirl, Interest.Spoken(ask));
+			return answer;
+		}
+
+		private static string ChanceText(FlirtResult r)
+		{
+			return r.Chance >= 0 ? ", chance " + r.Chance + "% (" + r.TrystKind + ")" : "";
+		}
+
+		/// After a night together (Trysts.cs): fonder of him (a little, for the saloon's women: it's their work), marked,
+		/// and one of enRAGE's townsfolk likes him more there. Returns what she thinks after.
+		public string Tryst(Person p, string kind, long now)
+		{
+			PersonState st = Store.Get(p);
+			st.Affection = Romance.Clamp(st.Affection + (kind == "saloon" ? 4 : 15), -100, 100);
+			st.Heart = Math.Min(3, Romance.HeartFor(st.Affection, st.Flirts));
+			st.Mark("tryst:" + now / 1440);
+			Store.Bump("trysts");
+			if (p.Id != null && p.Id.StartsWith("folk:"))
+				Effect(new EnrageEffect { PersonId = p.Id, Kind = "like", Amount = 5 });
+			Log("TRYST " + p.Name + " (" + kind + "): an hour together; affection " + st.Affection + ", " + Romance.HeartNames[st.Heart + 1]);
+			return Trysts.After(kind, p.Id + "|" + now / 60);
 		}
 
 		/// Spoken for: a sweetheart of their own (a warm romantic tie), someone they're courting, or one of enRAGE's people
