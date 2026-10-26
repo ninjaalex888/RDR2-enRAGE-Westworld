@@ -28,6 +28,7 @@ This plan was written overnight against 0.6.1. Since then 0.6.2 shipped and a fe
 - [x] Order of work: (b), the mind design's steps 1 to 5 first (the ledger, traits, needs, appraisal and emotion, the catalogue), then the living street (Q2 to Q6) built on them (Lex, 2026-10-26).
 - [x] A LICENSE (gap 8): none, all rights reserved, so it can be opened later; the notice ends both readmes (Lex, 2026-10-26).
 - [x] Direct writes into enRAGE (gap 5, P8 step 7): audited 2026-10-26. Eight direct writes, each now followed by enRAGE's own save and failing loudly; the list and the rule are in CLAUDE.md ("Writing to enRAGE"), and the README no longer says "only through its own methods".
+- [ ] Despair with a gun or a knife plays no act of its own (Lex, 2026-10-26, after watching it): the person stands, then dies. The run at a wall works as meant (seen: Gabriel Ridley, 17:45:57). The game has no self-harm animation (searched anims.lua), so the fix is pieced together; see P29.
 - [ ] The Want, Maybe and No columns in the idea banks.
 
 **Still true at 0.6.2:** a feature's error counter never resets; `Store.People` has no cap; the three big files grew (Engine.cs 2,049 lines, WestworldScript.cs 1,561, Engine.World.cs 1,213); there's no LICENSE file.
@@ -1215,6 +1216,18 @@ Read CLAUDE.md ("Who steers whom", written by P27) and the doc's "One person, on
 4. README.md and package/README.txt: say plainly that RealNPCs steers enRAGE's people only when enRAGE isn't using them, and hands them straight back.
 5. Log SHARE lent: name (scene) | returned | taken back by enRAGE, and RISE name -> enRAGE record (why). F7 TEST share.
 Offline check: the promotion rules over every worry ending and temper; the weekly cap; nobody promoted twice.
+```
+
+### P29. Despair with a gun or a knife, as an act (about 60 min)
+
+```text
+Read CLAUDE.md (Wake acts: the Despair bullet; Core/Despair.cs; StepDespair, DespairArm, DespairShot, DespairKnife in Game/WestworldScript.WakeActs.cs). Seen in game 2026-10-26: the wall run plays as meant, but with a gun or a knife the person only stands there and then dies, so it doesn't read as what it is. The game has no self-harm animation (searched rdr3_discoveries' anims.lua), so build it from parts that exist, each probed in game and logged (WAKE despair sets:), with today's behaviour as the fallback.
+
+- Both: before the act, they kneel (WORLD_HUMAN_GRAVE_MOURNING_KNEEL is verified in game) or stand and look down at their hands (TASK_LOOK_AT_COORD at the right hand bone), for 2-3 s, with the "last" line said there.
+- Gun: draw it (SET_CURRENT_PED_WEAPON), then raise it with TASK_AIM_GUN_AT_COORD toward a point on the ground in front of them, so the arm comes up and the barrel shows; hold 1.5 s; the shot as now. Log whether the aim task took (GET_SCRIPT_TASK_STATUS).
+- Knife: request the blade set when despair is chosen, not at the last step, and wait up to 2 s for it (it played once in two in game); the reel, then the ragdoll, then a writhe on the ground (ai_combat@damage@writhe, if it exists) for a few seconds before going still.
+- Never on enRAGE's records or story characters; the content note and AwakeningDespair stay as they are.
+Log each part (WAKE despair: name kneels | aims | reels | writhes, played yes/no). Tell me what to look for in game.
 ```
 
 ## Wave log
