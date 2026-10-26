@@ -777,17 +777,19 @@ namespace EnrageWestworld.InGame
             return yes;
         }
 
-        /// Why this awake person won't end it here, or null. Only RealNPCs' own residents (enRAGE tracks its townsfolk's
-        /// deaths and runs its records); never a counter keeper, a story character or a child, nor in a story mission;
-        /// not with the player near enough to stop them, or aiming at them.
+        /// Why this awake person won't end it here, or null. RealNPCs' residents and enRAGE's townsfolk (Lex, 2026-10-26:
+        /// enRAGE marks a townsperson dead however they die, and blames the player only when the game names him as the
+        /// cause, or no one and he had hurt them; here they are their own cause), never enRAGE's records, which it runs;
+        /// never a counter keeper, a story character or a child, nor in a story mission; not with the player near
+        /// enough to stop them, or aiming at them.
         private string DespairWhyNot(WakeAct act, float dist)
         {
             int h = act.Handle;
             if (_cfg.AwakeningDespair <= 0)
                 return "AwakeningDespair is 0";
-            if (act.Res == null)
-                return _bridge.RecordAt(h) != null ? "one of enRAGE's own people" : "one of enRAGE's townsfolk: only RealNPCs' residents";
-            if (act.Res.PostId != null)
+            if (act.Res == null && (_bridge.RecordAt(h) != null || _bridge.AcquaintanceAt(h) == null))
+                return _bridge.RecordAt(h) != null ? "one of enRAGE's own people" : "not someone we know";
+            if (act.Res != null && act.Res.PostId != null)
                 return "keeps a counter";
             if (act.Passive)
                 return "can't be directed now";
@@ -1032,7 +1034,7 @@ namespace EnrageWestworld.InGame
             _despairCount.TryGetValue(how, out c);
             _despairCount[how] = c + 1;
             _despairLast = act.Name + " (" + DespairHow(act) + ")";
-            Log.Write("WAKE despair: " + act.Name + " (a resident) could not bear it and ended their own life (" + DespairHow(act) + ")");
+            Log.Write("WAKE despair: " + act.Name + (act.Res != null ? " (a resident)" : " (one of enRAGE's townsfolk)") + " could not bear it and ended their own life (" + DespairHow(act) + ")");
         }
 
         private sealed class AwakeNear
@@ -1068,14 +1070,15 @@ namespace EnrageWestworld.InGame
                 Vector3 w, d;
                 bool wall = DespairWall(p, me, out w, out d);
                 string method = Despair.Method(who, armed, wall, who.Id);
-                bool may = res != null && res.PostId == null && !st.Has(DespairMark);
-                string verdict = res == null ? (_bridge.RecordAt(p.Handle) != null ? "enRAGE's own: never" : "enRAGE's townsfolk: never")
-                               : res.PostId != null ? "keeps a counter: never" : st.Has(DespairMark) ? "had their chance"
-                               : (passive ? "can't be directed now; " : "") + "would use " + method + (wall ? " (wall " + Flat(w, p.Position).ToString("0") + " m)" : "");
+                bool folk = res == null && _bridge.RecordAt(p.Handle) == null;   // WakeIdentity knows records, townsfolk and residents
+                bool may = (folk || (res != null && res.PostId == null)) && !st.Has(DespairMark);
+                string verdict = res == null && !folk ? "enRAGE's own: never"
+                               : res != null && res.PostId != null ? "keeps a counter: never" : st.Has(DespairMark) ? "had their chance"
+                               : (folk ? "townsfolk, " : "") + (passive ? "can't be directed now; " : "") + "would use " + method + (wall ? " (wall " + Flat(w, p.Position).ToString("0") + " m)" : "");
                 string way = Way(me.Position, p.Position);
                 near.Add(who.Name + " (" + (int)dist + " m " + way + ", " + verdict + ")");
                 _awakeNear.Add(new AwakeNear { Handle = p.Handle, Name = who.Name, Way = way, Dist = dist, May = may,
-                                               Mark = may ? method : res == null ? "never (enRAGE's)" : res.PostId != null ? "never (counter)" : "had their chance" });
+                                               Mark = may ? method : res == null && !folk ? "never (enRAGE's)" : res != null && res.PostId != null ? "never (counter)" : "had their chance" });
             }
             return "AwakeningDespair " + _cfg.AwakeningDespair + "% (one roll each); blade reel " + (_bladeSet == 1 ? "there" : "MISSING") + "; this session " +
                    (_despairCount.Count == 0 ? "none" : string.Join(", ", _despairCount.Select(kv => kv.Key + " " + kv.Value))) + (_despairLast != null ? ", last " + _despairLast : "") +
