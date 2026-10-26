@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 41;
+        public const int CurrentVersion = 42;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -127,6 +127,7 @@ namespace EnrageWestworld.Core
         public bool SceneReactions = true;
         public bool RealVoiceTalk = true;
         public int RealVoiceTalkSeconds = 120;
+        public bool CrudeTalk = true;
         public bool Standoffs = true;
         public bool Songs = true;
         public bool TallTales = true;
@@ -532,6 +533,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("[Scenes]");
             b.AppendLine("RealVoiceTalk = " + B(RealVoiceTalk) + "   ; now and then two people standing together near you have a word in their real recorded voices: the weather, how they're getting on, a piece of news, a hello");
             b.AppendLine("RealVoiceTalkSeconds = " + RealVoiceTalkSeconds + "   ; about how often (seconds, 30 to 1800); each person then rests five minutes, and the pair fifteen");
+            b.AppendLine("CrudeTalk = " + B(CrudeTalk) + "   ; in those conversations, the game's own crude remarks: a man to a woman in a saloon of an evening (she tells him off), or between sweethearts at night");
             b.AppendLine("SceneReactions = " + B(SceneReactions) + "   ; greet or antagonize someone in a scene: take a side, break up a fight, or stir it up");
             b.AppendLine("Standoffs = " + B(Standoffs) + "   ; two men square off in the street (guns come out only away from the law)");
             b.AppendLine("Songs = " + B(Songs) + "   ; drunks sing old songs in saloons and at night");
