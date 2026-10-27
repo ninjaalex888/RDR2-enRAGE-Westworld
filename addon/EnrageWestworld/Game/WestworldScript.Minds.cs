@@ -22,20 +22,10 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.Minds || people == null || people.Count < 2)
                 return;
-            // new code inside the scenes: a fault here costs the memory, never the scene
-            try
-            {
-                NoteMindsImpl(kind, people, names);
-            }
-            catch (System.Exception ex)
-            {
-                if (!_noteMindsFailed)
-                    Log.Write("MIND remembering failed (" + kind + "): " + ex);
-                _noteMindsFailed = true;
-            }
+            // its own guard inside the scenes: a fault here costs the memory, never the scene (and after 15, "minds"
+            // switches off on its own, logged)
+            Safe("minds", () => NoteMindsImpl(kind, people, names));
         }
-
-        private bool _noteMindsFailed;
 
         private void NoteMindsImpl(string kind, List<Ped> people, string[] names)
         {
@@ -143,40 +133,36 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.Minds || d == null || Minds.DeedGroup(d.Kind) == null || MISC.GET_MISSION_FLAG())
                 return;   // not during a story mission: its people are the story's
-            try
+            Safe("minds", () => NoteDeedMindsImpl(d, pos, except, only));
+        }
+
+        private void NoteDeedMindsImpl(Deed d, Vector3 pos, int except, Ped only)
+        {
+            Ped me = Game.Player.Character;
+            bool strong = Minds.DeedGroup(d.Kind) == "deed:violence";
+            var list = new List<Minds.Party>();
+            int saved = 0;
+            IEnumerable<Ped> around = only != null ? (IEnumerable<Ped>)new[] { only } : World.GetAllPeds().Where(x => x != null && x.Exists() && x.Position.DistanceTo(pos) <= 35f).OrderBy(x => x.Position.DistanceTo(pos));
+            foreach (Ped p in around)
             {
-                Ped me = Game.Player.Character;
-                bool strong = Minds.DeedGroup(d.Kind) == "deed:violence";
-                var list = new List<Minds.Party>();
-                int saved = 0;
-                IEnumerable<Ped> around = only != null ? (IEnumerable<Ped>)new[] { only } : World.GetAllPeds().Where(x => x != null && x.Exists() && x.Position.DistanceTo(pos) <= 35f).OrderBy(x => x.Position.DistanceTo(pos));
-                foreach (Ped p in around)
-                {
-                    int h = p.Handle;
-                    if (h == except || !CanWitness(p, me) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, me.Handle, 17))
-                        continue;
-                    string id, name;
-                    bool lasting = LastingId(p, out id, out name) && _engine.CanRemember(id);
-                    if (!lasting && !(strong && saved < NewMindsPerEvent))
-                        continue;
-                    Minds.Party w = PartyOf(p, !lasting);
-                    if (w == null || w.Id == null || !_engine.CanRemember(w.Id))
-                        continue;
-                    if (!lasting)
-                        saved++;
-                    list.Add(w);
-                    if (list.Count >= 12)
-                        break;
-                }
-                if (list.Count > 0)
-                    _engine.RememberDeed(d, list, _engine.NowIndoors ? _engine.NowPlace : null);
+                int h = p.Handle;
+                if (h == except || !CanWitness(p, me) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, me.Handle, 17))
+                    continue;
+                string id, name;
+                bool lasting = LastingId(p, out id, out name) && _engine.CanRemember(id);
+                if (!lasting && !(strong && saved < NewMindsPerEvent))
+                    continue;
+                Minds.Party w = PartyOf(p, !lasting);
+                if (w == null || w.Id == null || !_engine.CanRemember(w.Id))
+                    continue;
+                if (!lasting)
+                    saved++;
+                list.Add(w);
+                if (list.Count >= 12)
+                    break;
             }
-            catch (System.Exception ex)
-            {
-                if (!_noteMindsFailed)
-                    Log.Write("MIND remembering a deed failed (" + d.Kind + "): " + ex);
-                _noteMindsFailed = true;
-            }
+            if (list.Count > 0)
+                _engine.RememberDeed(d, list, _engine.NowIndoors ? _engine.NowPlace : null);
         }
 
         /// A death the ledger noted: whoever had a clear view of the body within 25 m remembers seeing it (a few
@@ -185,19 +171,12 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.Minds || e == null || e.By == "player" || MISC.GET_MISSION_FLAG())
                 return;
-            try
+            Safe("minds", () =>
             {
-                Ped body = new Ped(h);
-                List<Minds.Party> watchers = MindWatchers(new List<Ped> { body }, 25f, true);
+                List<Minds.Party> watchers = MindWatchers(new List<Ped> { new Ped(h) }, 25f, true);
                 if (watchers.Count > 0)
                     _engine.RememberDeathSaw(e, watchers);
-            }
-            catch (System.Exception ex)
-            {
-                if (!_noteMindsFailed)
-                    Log.Write("MIND remembering a death failed (" + e.Name + "): " + ex);
-                _noteMindsFailed = true;
-            }
+            });
         }
 
         /// For the F7 dump: what is on the minds of the nearest people with a name, strongest first.
