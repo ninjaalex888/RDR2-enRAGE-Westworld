@@ -1,6 +1,6 @@
 // Saving without a stutter (0.6.3; Lex's log, 2026-10-27: a 15-24 ms frame about once a minute "outside any feature",
 // which was the 60 s save of the 1.6 MB arthur.json on the game thread). When: Core/Saving.cs (a moment nobody can see,
-// else after three minutes in play). How: the store is turned into JSON here, on the game thread, since that thread
+// else after a minute in play). How: the store is turned into JSON here, on the game thread, since that thread
 // changes it every frame and it can't be read from another; the file is written and swapped in on a pool thread.
 // The pool thread's rules: one write at a time (nothing new is turned into bytes while one is out); every synchronous
 // save and every load waits for it (_saveLock), so a load never meets a half-swapped file, which Store.Load would take
@@ -215,8 +215,8 @@ namespace EnrageWestworld.InGame
                 _saveWhy + ", " + _saveKb + " KB, " + _saveMs.ToString("0.0") + " ms on the game thread, " +
                 (_saveWriting ? "still being written" : _saveWriteUs >= 0 ? (_saveWriteUs / 1000.0).ToString("0.0") + " ms writing it out in the background" : "not written");
             return (Environment.TickCount - _lastSaveAt) / 1000 + " s since the last save or load; the last background save: " + last + "; this session " + _savesQuiet +
-                   " while nobody could see, " + _savesInPlay + " in play, " + _savesFailed + " failed; in play a save waits up to " + Saving.InPlayMs / 60000 +
-                   " minutes for a quiet moment; warmed up at the load in " + _saveWarmMs.ToString("0.0") + " ms";
+                   " while nobody could see, " + _savesInPlay + " in play, " + _savesFailed + " failed; in play a save waits up to " + Saving.InPlayMs / 1000 +
+                   " s for a quiet moment; warmed up at the load in " + _saveWarmMs.ToString("0.0") + " ms";
         }
     }
 }

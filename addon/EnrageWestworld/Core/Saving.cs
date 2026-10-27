@@ -7,7 +7,7 @@ namespace EnrageWestworld.Core
     public static class Saving
     {
         public const int QuietGapMs = 20000;   // saves while nobody can see them, at most this often
-        public const int InPlayMs = 180000;    // in play, a save waits this long for a quiet moment, then happens anyway
+        public const int InPlayMs = 60000;     // in play, a save waits this long for a quiet moment, then happens anyway (180 s at first; the pause menu turned out to stop our ticks, 2026-10-27)
 
         /// Why a save is due now ("quiet" or "in play"), or null. quiet: nobody can see a slow frame now; sinceMs: since the
         /// last save or load; played: ticks in play since then (none: nothing can have changed); writing: the last save is

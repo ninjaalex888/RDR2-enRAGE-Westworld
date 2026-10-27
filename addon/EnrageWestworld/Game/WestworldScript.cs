@@ -296,7 +296,7 @@ namespace EnrageWestworld.InGame
 			{
 				Notices(gameTime);
 			}
-			SaveStep(null);   // in play: only after three minutes with no quiet moment (WestworldScript.Saving.cs)
+			SaveStep(null);   // in play: only after a minute with no quiet moment (WestworldScript.Saving.cs)
 		}
 
 		private static bool InWorld()
