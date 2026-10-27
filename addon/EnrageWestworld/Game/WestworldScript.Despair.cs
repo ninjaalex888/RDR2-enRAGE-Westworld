@@ -38,6 +38,44 @@ namespace EnrageWestworld.InGame
             return new DespairClip { Dict = dict, Clip = clip, MaxMs = maxMs, Flags = flags, ShotAt = shotAt };
         }
 
+        // The names a clip's makers might give the moment of a shot (events in the clip, as the game's own scripts time a
+        // gun going off; a death or ragdoll event may sit later than the shot, so those aren't asked). Which, if any,
+        // Jamie's clip has is what the log will tell.
+        private static readonly string[] ShotEvents = { "Fire", "WeaponFire", "FireWeapon", "Shoot", "Gunshot", "Shot", "Bang", "FIRE", "fire", "SHOOT", "shoot" };
+        private static uint[] _shotEventHashes;
+
+        /// Where the clip's makers put the shot, when it names one of ShotEvents (FIND_ANIM_EVENT_PHASE, its start as a
+        /// phase 0-1, read from the native's 8-byte slot); -1 when it names none. The set must be in.
+        private static unsafe float ClipEventPhase(string dict, string clip, out string name)
+        {
+            foreach (string e in ShotEvents)
+            {
+                ulong a = 0, b = 0;
+                if (ENTITY.FIND_ANIM_EVENT_PHASE(dict, clip, e, &a, &b))
+                {
+                    float start = *(float*)&a;
+                    if (start >= 0f && start <= 1f)
+                    {
+                        name = e;
+                        return start;
+                    }
+                }
+            }
+            name = null;
+            return -1f;
+        }
+
+        /// The first of ShotEvents going off on them this frame (HAS_ANIM_EVENT_FIRED), or null.
+        private static string ShotEventFired(int h)
+        {
+            if (_shotEventHashes == null)
+                _shotEventHashes = ShotEvents.Select(e => Natives.Hash(e)).ToArray();
+            for (int i = 0; i < ShotEvents.Length; i++)
+                if (ENTITY.HAS_ANIM_EVENT_FIRED(h, _shotEventHashes[i]))
+                    return ShotEvents[i];
+            return null;
+        }
+
         /// The sobbing and every despair set asked for ahead (an awake act beginning): asked for and checked in the same
         /// frame, the first despair of a session never sobbed.
         private void DespairPreload()
@@ -55,7 +93,7 @@ namespace EnrageWestworld.InGame
                     DC(JamieDict, "ig6_i_dont_want_to_live_ig_jamie", 5500),
                     DC(JamieDict, "ig6_gun_to_head_ig_jamie", 3900),
                     DC(JamieDict, Voice.Chance(seed + "loop", 50) ? "ig6_jamie_loop_ig_jamie" : "ig6_jamie_loop3_ig_jamie", 5600),
-                    DC(JamieDict, "ig6_jamie_shoots_himself_ig_jamie", 3000, 2, 0.30f)
+                    DC(JamieDict, "ig6_jamie_shoots_himself_ig_jamie", 3000, 2, 0.15f)   // 30% came too late once the death came with the shot (Lex, 2026-10-27 16:15); the clip's own event wins when it has one
                 };
             if (method == "poison" && variant == "drink")
                 return new[] { DC(DrinkDict, "trans_to_drink_male_a", 8700), DC(DrinkDict, "die_male_a", 13000, 2) };
@@ -186,6 +224,14 @@ namespace EnrageWestworld.InGame
                 act.ClipRetried = false;
                 act.ClipAt = now;
                 act.PhaseUntil = now + 100;
+                if (c.ShotAt >= 0f)
+                {
+                    string ev;
+                    float ph = ClipEventPhase(c.Dict, c.Clip, out ev);
+                    act.ShotPoint = ph >= 0f ? ph : c.ShotAt;
+                    act.ShotEvent = ph >= 0f ? ev : null;
+                    Log.Write("WAKE despair: " + c.Clip + (ev != null ? " names its own '" + ev + "' at " + (ph * 100f).ToString("0") + "%: the shot goes there" : " names none of the shot events: the shot at the set " + (c.ShotAt * 100f).ToString("0") + "%"));
+                }
                 return;
             }
             bool playing = ENTITY.IS_ENTITY_PLAYING_ANIM(h, c.Dict, c.Clip, 3);
@@ -212,12 +258,14 @@ namespace EnrageWestworld.InGame
             if (c.ShotAt >= 0f && !act.ShotDone && playing)
             {
                 float at = ENTITY._GET_ENTITY_ANIM_CURRENT_TIME(h, c.Dict, c.Clip);
-                if (at >= c.ShotAt)
+                string fired = ShotEventFired(h);   // one of those events going off as it plays, even when the lookup found none
+                if (at >= act.ShotPoint || fired != null)
                 {
                     act.ShotDone = true;
-                    Log.Write("WAKE despair: " + act.Name + "'s shot at " + (at * 100f).ToString("0") + "% of " + c.Clip + " (set for " + (c.ShotAt * 100f).ToString("0") + "%)" +
+                    Log.Write("WAKE despair: " + act.Name + "'s shot at " + (at * 100f).ToString("0") + "% of " + c.Clip +
+                              (fired != null ? " (the clip's '" + fired + "' went off)" : act.ShotEvent != null ? " (its '" + act.ShotEvent + "')" : " (set for " + (act.ShotPoint * 100f).ToString("0") + "%)") +
                               ", the gun " + (WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(h, 0) != 0 ? "in hand" : "NOT in hand"));
-                    DespairShot(act, now);   // from the gun hand into the head: Phase 5
+                    DespairShot(act, now);   // from the gun hand into the head, and dead with it: Phase 5
                     return;
                 }
                 if (now - act.ClipAt < c.MaxMs)
