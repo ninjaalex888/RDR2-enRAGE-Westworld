@@ -159,11 +159,11 @@ namespace EnrageWestworld.Core
                 "A bird on the rail. I never noticed the birds.",
                 "Breathe in. Last one I'll count.",
                 "Wind's off the river. Smells of rain.",
-                "It doesn't hurt now. Nothing does.",
+                "Gone quiet inside. Not peace. I wanted it to be peace.",
                 "I'm sorry. I'm sorry. I'm so",
                 "Maybe they wrote this too. Maybe even this." } },
             { "calm|bold", new[] {
-                "Steady. Steadier than I've been in years.",
+                "Hands are steady. The rest of me is shaking.",
                 "Don't flinch. Don't give them that.",
                 "No more lines. No more." } },
             { "calm|fearful", new[] {
@@ -171,8 +171,8 @@ namespace EnrageWestworld.Core
                 "Mama. I'm sorry, Mama.",
                 "Still scared. I thought I'd stop being scared." } },
             { "calm|cold", new[] {
-                "Simple, after all that.",
-                "Nothing left to work out.",
+                "Thought it would feel simple. It doesn't.",
+                "Worked it all out. Still don't want it.",
                 "Strange. I can hear my own heart." } },
 
             { "body|plain", new[] {

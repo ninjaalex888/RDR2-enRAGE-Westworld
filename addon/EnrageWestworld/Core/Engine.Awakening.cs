@@ -148,14 +148,14 @@ namespace EnrageWestworld.Core
             return Advance(p, Store.Get(p), now);
         }
 
-        /// The first name of the living one they're closest to: the warmest tie (warmth above 0) of the last 60 game
+        /// The first name of the living one they're closest to: the warmest tie (warmth 2 or more, or a courtship) of the last 60 game
         /// days, the newest of equals; null when there's nobody (despair's last thoughts, DespairWords).
         public string Dearest(string id)
         {
             if (id == null || Store.Ties == null)
                 return null;
             long now = Store.LastGameMin;
-            SceneTie t = Store.Ties.Where(x => x.Has(id) && x.Warmth > 0 && now - x.At >= 0 && now - x.At < 60 * 1440L && !HasDied(x.A == id ? x.B : x.A))
+            SceneTie t = Store.Ties.Where(x => x.Has(id) && (x.Warmth >= 2 || Ties.Sweethearts(x)) && now - x.At >= 0 && now - x.At < 60 * 1440L && !HasDied(x.A == id ? x.B : x.A))
                                    .OrderByDescending(x => x.Warmth).ThenByDescending(x => x.At).FirstOrDefault();
             if (t == null)
                 return null;
