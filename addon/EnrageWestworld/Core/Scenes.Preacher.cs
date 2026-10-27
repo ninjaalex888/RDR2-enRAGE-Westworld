@@ -22,25 +22,27 @@ namespace EnrageWestworld.Core
             string a = N(c, 0, seed), b = N(c, 1, seed);
             Scene s = new Scene { Kind = answerDevotion == "Godless" ? "argue" : "smalltalk", Summary = "someone preached in the street on a Sunday" };
             s.Add(0, Voice.Pick(seed + "p1", "Hear me, friends! The Lord keeps a ledger, and every name is in it!", "Brothers and sisters, it's the Sabbath. Have you thought on your souls today?",
-                                "Repent, I say! The road is wide that leads to ruin, and this street is wide enough!"), "cheer", "face")
+                                "Repent, I say! The road is wide that leads to ruin, and this street is wide enough!",
+                                "Gather round! It costs you nothing to listen, and it may save you everything!", "Friends! The dust on your boots is the dust you came from!"), "cheer", "face")
              .Add(0, Voice.Pick(seed + "p2", "Not a sparrow falls but He sees it. Nor a dollar spent in that saloon.", "The whiskey's free of a Sunday, they say. Nothing's free. Nothing.",
-                                "A man can run from the law. He can't outrun the Lord."), "mild");
+                                "A man can run from the law. He can't outrun the Lord.",
+                                "The railroad brought us everything but grace. That we have to walk to.", "Six days for the world. One for Him. Is that too dear a price?"), "mild");
             switch (answerDevotion)
             {
                 case "Devout":
-                    s.Add(1, Voice.Pick(seed + "b1", "Amen, " + a + "! Amen!", "Preach it, " + a + ". Preach it.", "Praise be. Say it again, " + a + "."), "cheer")
+                    s.Add(1, Voice.Pick(seed + "b1", "Amen, " + a + "! Amen!", "Preach it, " + a + ". Preach it.", "Praise be. Say it again, " + a + ".", "Every word, " + a + ". Every word true."), "cheer")
                      .Add(0, Voice.Pick(seed + "a1", "Bless you, " + b + ". Bring a friend next Sunday.", "There's one who listens! The Lord sees you, " + b + "."), "mild");
                     break;
                 case "Churchgoer":
-                    s.Add(1, Voice.Pick(seed + "b2", "Fine words, " + a + ". I was at service this morning.", "Can't argue with any of that.", "Save some for the pastor, " + a + "."), "mild")
+                    s.Add(1, Voice.Pick(seed + "b2", "Fine words, " + a + ". I was at service this morning.", "Can't argue with any of that.", "Save some for the pastor, " + a + ".", "Well said. Though the pastor says it longer."), "mild")
                      .Add(0, Voice.Pick(seed + "a2", "Then you know it's true. Spread it.", "The pastor has his flock. I have the street."), "mild");
                     break;
                 case "Lapsed":
-                    s.Add(1, Voice.Pick(seed + "b3", "...Haven't been to church in a while.", "Ma used to talk like that. Don't, " + a + ".", "Not today. Please, not today."), "mild")
+                    s.Add(1, Voice.Pick(seed + "b3", "...Haven't been to church in a while.", "Ma used to talk like that. Don't, " + a + ".", "Not today. Please, not today.", "I used to sit in the front pew. Long time ago, " + a + "."), "mild")
                      .Add(0, Voice.Pick(seed + "a3", "The door's never shut, " + b + ". Not even to you.", "It's never too late. That's the whole of it."), "mild");
                     break;
                 default:
-                    s.Add(1, Voice.Pick(seed + "b4", "Preach it somewhere else, " + a + ". Some of us are working.", "Your Lord never paid my rent.", "Save your breath for the hymns."), "mock")
+                    s.Add(1, Voice.Pick(seed + "b4", "Preach it somewhere else, " + a + ". Some of us are working.", "Your Lord never paid my rent.", "Save your breath for the hymns.", "If He's listening, " + a + ", He's got a funny way of showing it."), "mock")
                      .Add(0, Voice.Pick(seed + "a4", "You'll be in my prayers tonight, " + b + ", whether you want them or no.", "Mock, then. He hears the mocking too."), "angry");
                     break;
             }
