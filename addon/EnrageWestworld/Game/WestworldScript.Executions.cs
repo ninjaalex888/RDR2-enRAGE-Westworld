@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
         private const int ExecWaitMs = 40000, ExecAfterWarnMs = 25000, ExecUnseenMs = 240000;
         private Execution _exec;
         private bool _execRequested;
+        private KeySpec _execKey;
         private int _execCount;
         private string _execLast;
 

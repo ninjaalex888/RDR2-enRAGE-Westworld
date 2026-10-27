@@ -667,6 +667,7 @@ F2        flirt with the person you're looking at (FlirtKey; it was F6, the game
           Locked on to someone, the game's menu also offers Flirt, on H (FlirtPrompt).
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)
+[         stage an execution on the road near you, out of sight, to see one now (ExecutionKey)
 Y         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
 T         the next line on the ticker now (on a long line, its next part first; TickerNextKey).
           T is enRAGE's telegraph key too: near a telegraph clerk, both happen.

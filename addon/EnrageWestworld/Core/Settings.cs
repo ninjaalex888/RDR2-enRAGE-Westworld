@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 61;
+        public const int CurrentVersion = 62;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -104,6 +104,7 @@ namespace EnrageWestworld.Core
         public int CryingWomanChance = 15;
         public bool Executions = true;
         public int ExecutionChance = 20;
+        public string ExecutionKey = "[";
         public bool Hermits = true;
         public int HermitChance = 25;
         public bool Gatherings = true;
@@ -568,6 +569,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("CryingWomanChance = " + CryingWomanChance + "   ; percent on each roll, between ten at night and four in the morning");
             b.AppendLine("Executions = " + B(Executions) + "   ; out on the roads, two men holding one of a nearby town's people on his knees at gunpoint, for a reason from his own life. Ride on and they go through with it");
             b.AppendLine("ExecutionChance = " + ExecutionChance + "   ; percent on each roll, once a day at most, outside the towns");
+            b.AppendLine("ExecutionKey = " + ExecutionKey + "   ; stages an execution on the road near you now, out of sight, for testing (anywhere nothing else is going on)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: around midnight in the wilds, the awake stand in a silent circle");

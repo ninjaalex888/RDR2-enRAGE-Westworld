@@ -88,10 +88,10 @@ namespace EnrageWestworld.InGame
             { "TownPostsAfterDeath", new[] { "survive", "successor" } }
         };
 
-        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "StalkerKey" };
+        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "StalkerKey", "ExecutionKey" };
 
         // the order RealNPCs' keys are listed in on the Hotkeys page
-        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "WakeKey", "StalkerKey", "TickerNextKey", "TestKey", "SettingsKey", "SettingsKey2" };
+        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "WakeKey", "StalkerKey", "ExecutionKey", "TickerNextKey", "TestKey", "SettingsKey", "SettingsKey2" };
 
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -99,7 +99,7 @@ namespace EnrageWestworld.InGame
             { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "Subtitles for what's said to you" }, { "FlirtPrompt", "Flirt in the lock-on menu (H)" }, { "NpcFlirting", "People flirt and court each other" }, { "TerritoryNews", "enRAGE's territory changes as updates" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "CrudeTalk", "Crude remarks (saloons, sweethearts)" }, { "RoughHandling", "Faces into the bar (rough handling)" }, { "Reactions", "People react to what's done and said to them" }, { "EnragePeopleJoinIn", "enRAGE's own people join in" }, { "NpcThieves", "Pickpockets among townsfolk" }, { "DrunkChallenges", "Drunks who call men out" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtsOverHeads", "Thoughts above their heads" }, { "ThoughtsOverHeadScale", "Size of thoughts above heads" }, { "ShareWithEnrage", "Tell enRAGE of deaths it missed" }, { "Trysts", "A night together (off screen)" }, { "CasualHookupsDecides", "CasualHookups only for women who said yes" }, { "WillingSingle", "Single women willing (percent)" }, { "WillingTaken", "Married women willing (percent)" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMin", "He does odd things at least (metres)" }, { "StalkerActMax", "... and at most (metres)" },
-            { "StalkerKey", "Make a stalker now" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
+            { "StalkerKey", "Make a stalker now" }, { "ExecutionKey", "Stage an execution nearby (test)" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
             { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres)" },
             { "StalkerStrangers", "A stranger if nobody near" },
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },

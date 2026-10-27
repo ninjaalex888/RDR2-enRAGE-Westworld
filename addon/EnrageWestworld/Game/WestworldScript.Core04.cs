@@ -119,6 +119,7 @@ namespace EnrageWestworld.InGame
             _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F2);
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.N);
             _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.OemCloseBrackets);
+            _execKey = KeySpec.Parse(_cfg.ExecutionKey, Keys.OemOpenBrackets);
             _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.Y);
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
             _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
@@ -177,7 +178,7 @@ namespace EnrageWestworld.InGame
         /// press counts once the key has been let go (T tapped through a long ticker line).
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _wakeKey.Matches(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _execKey.Matches(e) || _wakeKey.Matches(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && !_hotkeyLetGo && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -221,6 +222,19 @@ namespace EnrageWestworld.InGame
             if (_stalkerKey.Matches(e))
             {
                 _stalkerRequested = true;
+                return true;
+            }
+            if (_execKey.Matches(e))
+            {
+                // an execution on the road, staged near you now (the encounters' tick starts it when nothing is in the way)
+                if (!_cfg.Executions)
+                    Hint("Executions are off ([Encounters] Executions).", 5000);
+                else
+                {
+                    _execRequested = true;
+                    Hint("An execution will be staged near you, out of sight. Look for the mark on the map.", 6000);
+                    Log.Write("EXECUTION key (" + _execKey + "): staging one near you");
+                }
                 return true;
             }
             if (_wakeKey.Matches(e))
