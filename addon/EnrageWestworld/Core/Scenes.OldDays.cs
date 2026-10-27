@@ -9,7 +9,7 @@ namespace EnrageWestworld.Core
 {
     public static partial class Scenes
     {
-        public static readonly string[] OldTopics = { "winter", "coffee", "railroad", "ridge" };
+        public static readonly string[] OldTopics = { "winter", "coffee", "railroad", "ridge", "sheriff", "dance" };
 
         public static Scene OldDays(SceneCast c, string seed)
         {
@@ -47,6 +47,26 @@ namespace EnrageWestworld.Core
                      .Add(1, "Everything's different when it's you.", "mock")
                      .Add(0, "...Smoke and noise, the whole of it.", "mild")
                      .Add(1, "Smoke and noise and a seat by the window. You loved it.", "cheer");
+                    break;
+                case "sheriff":
+                    s.Add(0, "Old Sheriff Pike. Now there was a lawman. Caught a horse thief before breakfast.", "mild", "face")
+                     .Add(1, "Pike? Pike couldn't hit a barn from inside it, " + a + ".", "mock")
+                     .Add(0, "He hit that thief, didn't he? Twice.", "mild")
+                     .Add(1, "The thief tripped. Pike shot the barn.", "mock")
+                     .Add(0, "You weren't even there, " + b + ".", "angry")
+                     .Add(1, "I was the one held his horse.", "mild")
+                     .Add(0, "...That was you?", "mild")
+                     .Add(1, "Gave me a nickel and never said thank you. That was Pike all over.", "cheer");
+                    break;
+                case "dance":
+                    s.Add(0, "Danced with your wife before you ever did, " + b + ". Harvest dance, '68.", "mild", "face")
+                     .Add(1, "She danced with you out of pity. Told me so herself.", "mock")
+                     .Add(0, "Pity. She stepped on my feet the whole night.", "mild")
+                     .Add(1, "That was on purpose.", "mock")
+                     .Add(0, "...Was it?", "mild")
+                     .Add(1, "Forty years she's dined out on that story, " + a + ".", "mild")
+                     .Add(0, "Well. Tell her I said she dances better now.", "mild")
+                     .Add(1, "I'll tell her. She'll laugh herself sick.", "cheer");
                     break;
                 default:
                     s.Add(0, "We'd have held that ridge if the captain had listened to me.", "mild", "face")
