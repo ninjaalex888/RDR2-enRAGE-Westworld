@@ -240,6 +240,12 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"preacher\")";
                         return PreacherScene(Game.Player.Character, now, true, out pw) ? null : pw;
                     }
+                case "bell":
+                    {
+                        string bw;
+                        skipped = "the hour (03:00-03:15), the roll and the rests (Pacing \"bell\")";
+                        return BellScene(Game.Player.Character, now, true, out bw) ? null : bw;
+                    }
                 case "sabbath":
                     {
                         if (_director.Busy)

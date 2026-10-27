@@ -88,6 +88,8 @@ namespace EnrageWestworld.InGame
                 return;   // a mother asking around for her child (WestworldScript.LostChild.cs)
             if (_interiorType == 0 && SabbathScene(me, now, false, out fallWhy))
                 return;   // a Sunday morning's kneel by the church (WestworldScript.Sabbath.cs)
+            if (_interiorType == 0 && BellScene(me, now, false, out fallWhy))
+                return;   // the bell at three that only the awake hear (WestworldScript.Bell.cs)
             if (_interiorType == 0 && FallScene(me, now, false, out fallWhy))
                 return;   // someone took a fall (WestworldScript.Kindness.cs)
             if (saloon && RoundScene(me, now, false, out fallWhy))

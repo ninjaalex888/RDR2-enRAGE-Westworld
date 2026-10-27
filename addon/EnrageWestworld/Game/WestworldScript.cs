@@ -1074,6 +1074,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST preacher and old days: " + PreacherStatus());
 			Log.Write("TEST lost child: " + LostChildStatus());
 			Log.Write("TEST sabbath: " + SabbathStatus());
+			Log.Write("TEST bell: " + BellStatus());
 			Log.Write("TEST condolences: " + _condoles + " this session" + (_condoleLast != null ? "; last: " + _condoleLast : ""));
 			Log.Write("TEST trouble: " + TroubleStatus());
 			Log.Write("TEST now: " + NowStatus());
