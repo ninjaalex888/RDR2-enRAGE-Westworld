@@ -558,6 +558,8 @@ namespace EnrageWestworld.InGame
             _crying = null;
             if (c == null)
                 return;
+            if (c.Woman != null && c.Woman.Exists() && c.Phase != "spawn")
+                Safe("world events", () => RecordEvent("encounter:crying", null, "a woman crying in the dark", "player", "you", c.Woman.Position, c.Woman.Handle, c.Woman.Handle, 0, why));
             Ped me = Game.Player.Character;
             foreach (Ped p in new[] { c.Woman }.Concat(c.Men))
             {

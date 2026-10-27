@@ -23,6 +23,19 @@ namespace EnrageWestworld.Core
         // passes the turn to the next thing on their mind
         private readonly Dictionary<string, KeyValuePair<long, HashSet<string>>> _today = new Dictionary<string, KeyValuePair<long, HashSet<string>>>();
 
+        // ---- what happened, and who saw it (WorldEvents.cs) ---------------------------------------------------
+
+        /// Writes down an event (its time is the store's clock), logged in detail.
+        public Happening NoteEvent(Happening e)
+        {
+            if (e == null)
+                return null;
+            e.At = Store.LastGameMin;
+            WorldEvents.Note(Store.WorldLog, e);
+            Detail("EVENT " + WorldEvents.Describe(e));
+            return e;
+        }
+
         // ---- remembering ---------------------------------------------------------------------------------
 
         /// Where someone's memories are kept: only for someone who can be met again (never a bare Store.Get for

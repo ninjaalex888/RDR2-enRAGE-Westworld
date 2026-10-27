@@ -131,6 +131,9 @@ namespace EnrageWestworld.InGame
         /// are kept as residents, as for a fight. `only`: just this one (someone who came upon the body and saw him).
         private void NoteDeedMinds(Deed d, Vector3 pos, int except, Ped only = null)
         {
+            // the plain record of it first, Minds or not (WorldEvents.cs); one who came upon the body adds no new event
+            if (d != null && only == null && !MISC.GET_MISSION_FLAG())
+                Safe("world events", () => RecordEvent("deed:" + d.Kind, "player", "you", null, d.Detail, pos, Game.Player.Character.Handle, except, 0, d.Unseen ? "unseen" : null));
             if (!_cfg.Minds || d == null || Minds.DeedGroup(d.Kind) == null || MISC.GET_MISSION_FLAG())
                 return;   // not during a story mission: its people are the story's
             Safe("minds", () => NoteDeedMindsImpl(d, pos, except, only));
@@ -169,6 +172,9 @@ namespace EnrageWestworld.InGame
         /// passers-by kept, as for a fight). The player's own killings are remembered as his deeds instead.
         private void NoteDeathMinds(int h, DeathEntry e)
         {
+            if (e != null && !MISC.GET_MISSION_FLAG())
+                Safe("world events", () => RecordEvent("death", e.By == "player" ? "player" : e.ById, e.By == "player" ? "you" : e.By == "self" ? "their own hand" : e.By == "another" ? "someone" : null,
+                                                       e.Id, e.Name, new Vector3(e.X, e.Y, e.Z), h, h, 0, e.How));
             if (!_cfg.Minds || e == null || e.By == "player" || MISC.GET_MISSION_FLAG())
                 return;
             Safe("minds", () =>

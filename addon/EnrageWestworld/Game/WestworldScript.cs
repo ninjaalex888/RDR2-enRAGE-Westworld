@@ -388,6 +388,17 @@ namespace EnrageWestworld.InGame
 			_player = (flag ? "john" : "arthur");
 			_store = Store.Load(StorePath, Log.Write);
 			_store.Player = _player;
+			try
+			{
+				// the save's size at load, and what grows in it (each capped)
+				long bytes = File.Exists(StorePath) ? new FileInfo(StorePath).Length : 0;
+				Log.Write("SAVE " + Path.GetFileName(StorePath) + ": " + (bytes / 1024) + " KB; " + _store.People.Count + " people, " + _store.Residents.Count + " residents, " + _store.Ties.Count + " ties, " +
+				          _store.Deaths.Count + " deaths, " + _store.WorldLog.Count + " events, " + _store.People.Values.Sum(st => st.Mind.Count) + " memories");
+			}
+			catch (Exception ex)
+			{
+				Log.Write("SAVE size unknown: " + ex.Message);
+			}
 			_engine = new Engine(_store, PlayerRef.For(flag), _cfg, Environment.TickCount)
 			{
 				DateText = (long m) => GameDate.FromMinutes(m).ToString("MMMM d, yyyy", CultureInfo.InvariantCulture),
@@ -1031,6 +1042,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST perf: " + PerfStatus());
 			Log.Write("TEST testing: " + TestingStatus());
 			Log.Write("TEST show minds: " + ShowMindsStatus());
+			Log.Write("TEST events: " + EventsStatus());
 			Log.Write("TEST near: " + NearStatus());
 			Log.Write("TEST regulars: " + RegularsStatus());
 			MarkRegulars();

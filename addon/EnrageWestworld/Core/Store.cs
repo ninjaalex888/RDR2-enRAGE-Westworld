@@ -48,6 +48,7 @@ namespace EnrageWestworld.Core
         [DataMember] public List<WorryLink> Links = new List<WorryLink>();   // the real person at the other end of a worry (see Links.cs)
         [DataMember] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
         [DataMember] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
+        [DataMember] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
         private Dictionary<string, DeathEntry> _deathIndex;
 
@@ -176,6 +177,8 @@ namespace EnrageWestworld.Core
             n += Debts.RemoveAll(d => d.Since > cut);
             if (Later != null)
                 n += Later.RemoveAll(l => l.At > cut);
+            if (WorldLog != null)
+                n += WorldLog.RemoveAll(e => e.At > cut);
             if (Deaths != null)
             {
                 foreach (DeathEntry d in Deaths.Where(d => d.At > cut).ToList())
@@ -292,6 +295,11 @@ namespace EnrageWestworld.Core
             if (Links == null) Links = new List<WorryLink>();
             if (Deaths == null) Deaths = new List<DeathEntry>();
             if (Later == null) Later = new List<LaterAct>();
+            if (WorldLog == null) WorldLog = new List<Happening>();
+            WorldLog.RemoveAll(e => e == null);
+            foreach (Happening e in WorldLog)
+                if (e.Witnesses == null)
+                    e.Witnesses = new List<EventWitness>();
             Papers.RemoveAll(p => p != null && p.Id != null && p.Id.StartsWith("test-"));   // the Testing page's test letters go on load
             if (RewoundShares == null) RewoundShares = new List<string>();
             foreach (Post p in Posts)

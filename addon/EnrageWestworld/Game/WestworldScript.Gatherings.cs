@@ -279,6 +279,8 @@ namespace EnrageWestworld.InGame
             _gathering = null;
             if (g == null)
                 return;
+            if (g.Phase != "spawn")
+                Safe("world events", () => RecordEvent("encounter:gathering", null, "the awake", "player", "you", g.Centre, 0, 0, 0, why));
             Ped me = Game.Player.Character;
             foreach (Gatherer m in g.Ring)
             {

@@ -485,6 +485,9 @@ namespace EnrageWestworld.InGame
             _exec = null;
             if (e == null)
                 return;
+            if (e.Captive != null && e.Captive.Exists() && e.Phase != "spawn")
+                Safe("world events", () => RecordEvent("encounter:execution", e.BossR != null ? e.BossR.Id : null, e.Plan != null ? e.Plan.Boss ?? "two men" : "two men", e.R.Id, e.R.Name,
+                                                       e.Captive.Position, e.Captive.Handle, e.Captive.Handle, 0, why));
             Ped me = Game.Player.Character;
             try
             {

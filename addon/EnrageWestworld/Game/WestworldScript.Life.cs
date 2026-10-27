@@ -295,6 +295,7 @@ namespace EnrageWestworld.InGame
         {
             NoteSceneTie(kind, p.People);
             NoteMinds(kind, p.People, p.Names);   // what they and those watching remember of it (Minds)
+            Safe("world events", () => RecordSceneEvent(kind, p.People));   // and the plain record, with its witnesses (WorldEvents.cs)
             if (kind != "lift" && p.People.Count >= 2)
             {
                 string aId, aName, bId, bName;
