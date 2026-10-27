@@ -65,6 +65,7 @@ namespace EnrageWestworld.Core
             new Entry("scene:beg", "Street scenes", "Someone begs a coin", "TestBegKey", needs: "two named people within 16 m"),
             new Entry("scene:tend", "Street scenes", "A friend tends the one who was hurt", "TestTendKey", needs: "two named people within 16 m"),
             new Entry("scene:avoid", "Street scenes", "Someone keeps clear of the one who wronged them", "TestAvoidKey", needs: "two named people within 16 m"),
+            new Entry("scene:standup", "Street scenes", "Someone stands up to a bully", "TestStandUpKey", needs: "two named men and a third named person within 16 m; a fistfight they step into"),
             new Entry("scene:standoff", "Street scenes", "A standoff", "TestStandoffKey", needs: "two named men within 16 m"),
             new Entry("scene:song", "Street scenes", "A song", "TestSongKey", needs: "two named people within 16 m"),
             new Entry("scene:talltale", "Street scenes", "A tall tale", "TestTallTaleKey", needs: "two named people within 16 m"),

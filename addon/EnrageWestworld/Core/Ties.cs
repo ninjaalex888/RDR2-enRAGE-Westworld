@@ -62,9 +62,9 @@ namespace EnrageWestworld.Core
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
                 case "lift":
                     return 0;    // the mark never saw who: nothing between them that he knows of (the thief knows)
-                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "help":
+                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "help": case "defend":
                     return 1;
-                case "scorn": case "passby":
+                case "scorn": case "passby": case "faced":
                     return -1;   // asked for a coin and sent off with a flea in the ear; left lying in the street
                 case "makeup":
                     return 2;   // a quarrel mended counts for more than one more kind word
@@ -91,7 +91,8 @@ namespace EnrageWestworld.Core
         public static bool Trouble(string kind)
         {
             return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" ||   // (the asking is A's doing too)
-                   kind == "help" || kind == "passby";   // A helped B up, or walked past B
+                   kind == "help" || kind == "passby" ||   // A helped B up, or walked past B
+                   kind == "defend" || kind == "faced";    // A stood up for B; A faced B down
         }
 
         public static SceneTie Note(List<SceneTie> all, string aId, string aName, string bId, string bName, string town, string kind, long now, string doer)
@@ -238,6 +239,11 @@ namespace EnrageWestworld.Core
         private static readonly string[] HelpDone = { "{other} picked me up when I fell. I owe {other} for that.", "{other} stopped. Plenty didn't." };
         private static readonly string[] PassDid = { "{other} took a tumble. Not my affair.", "{other} looked at me like I'd done something. I hadn't." };
         private static readonly string[] PassDone = { "{other} stepped right past me. Me lying in the street.", "I won't forget {other} walking on by." };
+        // standing up to a bully: {other} the one picked on (for the one who stepped in), or the one who stepped in; faced: the bully, or the one who faced him
+        private static readonly string[] DefendDid = { "Stood up for {other}. Hands shook after. Worth it.", "Couldn't stand by and watch it done to {other}." };
+        private static readonly string[] DefendDone = { "{other} stepped in for me. Didn't have to.", "Owe {other}. Plain as that." };
+        private static readonly string[] FacedDid = { "Told {other} to his face. About time somebody did.", "{other} looked at me like murder. Let him." };
+        private static readonly string[] FacedDone = { "{other} put their nose in my business. I won't forget it.", "{other}, playing the hero. In front of half the street." };
 
         private static readonly string[] CharityDid =
         {
@@ -299,7 +305,8 @@ namespace EnrageWestworld.Core
                 string[] trouble = t.Kind == "rough" ? (did ? RoughDid : RoughDone) : t.Kind == "lift" ? (did ? LiftDid : LiftDone)
                                  : t.Kind == "pickpocket" ? (did ? CaughtDid : CaughtDone) : t.Kind == "charity" ? (did ? CharityDid : CharityDone)
                                  : t.Kind == "scorn" ? (did ? ScornDid : ScornDone) : t.Kind == "help" ? (did ? HelpDid : HelpDone)
-                                 : t.Kind == "passby" ? (did ? PassDid : PassDone) : (did ? DrunkDid : DrunkDone);
+                                 : t.Kind == "passby" ? (did ? PassDid : PassDone) : t.Kind == "defend" ? (did ? DefendDid : DefendDone)
+                                 : t.Kind == "faced" ? (did ? FacedDid : FacedDone) : (did ? DrunkDid : DrunkDone);
                 return Voice.Pick(seed + "trouble", trouble).Replace("{other}", Person.FirstOf(t.Other(id)));
             }
             string[] pool = t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
@@ -410,7 +417,7 @@ namespace EnrageWestworld.Core
             return Quarrel.Concat(Blows).Concat(Money).Concat(Sweet).Concat(Known).Concat(Kindness).Concat(MadeUp).Concat(Shrugged)
                 .Concat(RoughDid).Concat(RoughDone).Concat(LiftDid).Concat(LiftDone).Concat(CaughtDid).Concat(CaughtDone).Concat(DrunkDid).Concat(DrunkDone).Concat(AvoidDid).Concat(AvoidDone)
                 .Concat(CharityDid).Concat(CharityDone).Concat(ScornDid).Concat(ScornDone).Concat(TownCharity).Concat(TownScorn)
-                .Concat(TownRough).Concat(TownCaught).Concat(TownDrunk).Concat(HelpDid).Concat(HelpDone).Concat(PassDid).Concat(PassDone).Concat(TownHelp).Concat(TownPassby)
+                .Concat(TownRough).Concat(TownCaught).Concat(TownDrunk).Concat(HelpDid).Concat(HelpDone).Concat(PassDid).Concat(PassDone).Concat(TownHelp).Concat(TownPassby).Concat(DefendDid).Concat(DefendDone).Concat(FacedDid).Concat(FacedDone)
                 .Concat(DeadFoe).Concat(DeadFriend).Concat(DeadKnown)
                 .Concat(TownHostile).Concat(TownBlows).Concat(TownWarm).Concat(TownMadeUp)
                 .Concat(TownDeadFoe).Concat(TownDeadWarm).Concat(TownDeadMended);

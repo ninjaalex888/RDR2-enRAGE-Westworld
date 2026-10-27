@@ -277,6 +277,9 @@ namespace EnrageWestworld.InGame
             if (people.Count < 2)
                 return "fewer than two named people free within " + (int)ReasonRange + " m";
             string courtAnswer = kind == "court" ? new[] { "yes", "maybe", "no" }[_courtTurn++ % 3] : null;
+            bool standUp = kind == "standup";
+            if (standUp)
+                kind = "brawl";   // a fistfight, with someone to step in before it
             var reasons = new List<string>();
             string last = null;
             foreach (Candidate a in people)
@@ -320,7 +323,17 @@ namespace EnrageWestworld.InGame
                         continue;
                     }
                     AddMeet(s, kind, a.Ped, b.Ped, apart);
-                    StartScene(s, new List<Ped> { a.Ped, b.Ped }, cast, seed, now, true);
+                    var cast2 = new List<Ped> { a.Ped, b.Ped };
+                    if (standUp)
+                    {
+                        string stood;
+                        if (!StandUpFor(s, cast2, cast, seed, now, true, out stood))
+                        {
+                            last = stood;
+                            continue;
+                        }
+                    }
+                    StartScene(s, cast2, cast, seed, now, true);
                     Log.Write("TEST scene " + kind + (courtAnswer != null ? " (" + courtAnswer + ")" : string.Empty) + ": " + a.Who.Name + " & " + b.Who.Name + ", " + (int)apart + " m apart, " +
                               (int)a.Ped.Position.DistanceTo(me.Position) + " m from you");
                     TestActions.Entry row = TestActions.Find("scene:" + kind);

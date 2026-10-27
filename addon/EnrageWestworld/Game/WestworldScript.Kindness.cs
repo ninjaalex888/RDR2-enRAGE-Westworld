@@ -154,6 +154,13 @@ namespace EnrageWestworld.InGame
                 return;   // the one helping is there already
             _fallWatch = null;
             bool nobodyElse = w.Answer == "pass" || w.Answer == "sneer";
+            if (nobodyElse && now - (w.Until - FallWatchMs) > 7000 && _pendingNote != null && _pendingNote.S.Kind == "passby")
+            {
+                // the one who saw it had walked past already: that stands, whoever helped them up after
+                Pending p = _pendingNote;
+                _pendingNote = null;
+                NoteHappened(p, "passby");
+            }
             _director.Abort("you gave " + w.Name + " a hand up");   // the end gets them up off the ground
             if (w.By != null && w.By.Exists() && (w.Answer == "help" || w.Answer == "gruff"))
                 TASK.TASK_WANDER_STANDARD(w.By.Handle, 10f, 10);   // the one who was coming goes on their way
@@ -181,7 +188,8 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Kindnesses)
                 return "off ([Scenes] Kindnesses)";
             return "on; falls this session: " + (_fallCount.Count == 0 ? "none yet" : string.Join(", ", _fallCount.Select(kv => kv.Key + " " + kv.Value))) + "; you helped " + _handUps +
-                   (_fallLast != null ? "; last: " + _fallLast : "") + (_fallWatch != null ? "; one going on" : _fallWhyNot != null ? "; now: " + _fallWhyNot : "");
+                   (_fallLast != null ? "; last: " + _fallLast : "") + (_fallWatch != null ? "; one going on" : _fallWhyNot != null ? "; now: " + _fallWhyNot : "") +
+                   "; standing up to a bully: " + StandUpStatus();
         }
     }
 }

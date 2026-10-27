@@ -155,6 +155,8 @@ namespace EnrageWestworld.InGame
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
                 AddJobTalk(s, seed);
             AddBarkeep(s, people, cast, seed, saloon);
+            string stood;
+            StandUpFor(s, people, cast, seed, now, false, out stood);
             AddBystander(s, people, cast, seed, now);
             StartScene(s, people, cast, seed, now);
         }
@@ -535,6 +537,11 @@ namespace EnrageWestworld.InGame
             if (what == "thief")
             {
                 StartTheft();
+                return;
+            }
+            if (what == "stoodup")
+            {
+                StoodUp();   // WestworldScript.StandUp.cs
                 return;
             }
             if (what == "reveal" && _sceneJob != null)

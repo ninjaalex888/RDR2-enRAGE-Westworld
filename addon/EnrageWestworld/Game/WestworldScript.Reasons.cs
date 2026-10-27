@@ -211,6 +211,8 @@ namespace EnrageWestworld.InGame
                           " (strength " + pr.Why.Strength + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
                 List<Ped> cast2 = new List<Ped> { first, second };
                 AddBarkeep(s, cast2, cast, seed, saloon);
+                string stood;
+                StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs)
                 AddBystander(s, cast2, cast, seed, now);
                 StartScene(s, cast2, cast, seed, now);
                 return true;
