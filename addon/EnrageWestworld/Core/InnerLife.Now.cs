@@ -242,8 +242,22 @@ namespace EnrageWestworld.Core
         public static string NowThought(Person p, string seed, List<string> told, Context day, out string what)
         {
             what = null;
-            if (day == null)
+            List<KeyValuePair<string, Func<string>>> parts = NowParts(p, seed, told, day);
+            if (parts.Count == 0)
                 return null;
+            // something seen just now comes first two times in three; otherwise any of what's there
+            int i = parts[0].Key == "seen" && Voice.Chance(seed + "loud", 66) ? 0 : Voice.Hash(seed + "now") % parts.Count;
+            what = parts[i].Key;
+            return parts[i].Value();
+        }
+
+        /// Each thing around them now that could be thought about, by name (seen, nearby, mood, weather, place), with
+        /// the line made only when asked for. Minds (Minds.cs) weighs them one by one.
+        public static List<KeyValuePair<string, Func<string>>> NowParts(Person p, string seed, List<string> told, Context day)
+        {
+            var parts = new List<KeyValuePair<string, Func<string>>>();
+            if (day == null)
+                return parts;
             var options = new List<Func<string>>();
             var names = new List<string>();
             Witnessed s = day.JustSaw;
@@ -276,12 +290,9 @@ namespace EnrageWestworld.Core
                 options.Add(() => Pick(ByPlace[day.Place], p, seed, told));
                 names.Add("place");
             }
-            if (options.Count == 0)
-                return null;
-            // something seen just now comes first two times in three; otherwise any of what's there
-            int i = saw && Voice.Chance(seed + "loud", 66) ? 0 : Voice.Hash(seed + "now") % options.Count;
-            what = names[i];
-            return options[i]();
+            for (int i = 0; i < options.Count; i++)
+                parts.Add(new KeyValuePair<string, Func<string>>(names[i], options[i]));
+            return parts;
         }
 
         /// How this person sees that one: envy of money, pity for a drunk, fear of a hothead (for the timid), else

@@ -387,6 +387,7 @@ namespace EnrageWestworld.InGame
 			{
 				DateText = (long m) => GameDate.FromMinutes(m).ToString("MMMM d, yyyy", CultureInfo.InvariantCulture),
 				Log = Log.Write,
+				Detail = Log.Detail,
 				John = flag,
 				IntelFor = IntelFor,
 				FolkDead = (string key) => _bridge != null && _bridge.FolkDead(key)
@@ -1033,6 +1034,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST stalker: " + StalkerStatus());
 			Log.Write("TEST stalker acts: " + Stalker.ActsStatus);
 			Log.Write("TEST worries: " + WorriesStatus());
+			Log.Write("TEST mind: " + MindsStatus());
 			Log.Write("TEST near: " + NearStatus());
 			Log.Write("TEST regulars: " + RegularsStatus());
 			MarkRegulars();

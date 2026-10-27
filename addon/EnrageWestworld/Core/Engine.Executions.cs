@@ -1,6 +1,7 @@
 // An execution on the road (Executions.cs): the plan from the captive's own life, and what follows a rescue or a death.
 // The death itself is the people ledger's (the game side binds him, so it's noted with how and by whose hand).
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace EnrageWestworld.Core
@@ -40,6 +41,12 @@ namespace EnrageWestworld.Core
             st.Mark("rescued:" + now / 1440);
             st.Mark("rescue reason:" + plan.Reason + ":" + plan.Boss);
             KeepResident(r, now);
+            if (Cfg.Minds)
+                Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "rescued", Sub = "rescue", How = "did", Names = plan.Boss != null ? new List<string> { plan.Boss } : null, Town = town,
+                    At = Store.LastGameMin, Feel = 3, Strength = 80, Key = "rescued:" + Store.LastGameMin / 1440
+                }, Store.LastGameMin);   // on his mind for days, fading (Minds.cs)
             OnDeed(Deeds.Make("rescue", p.Name, town, zone, now, x, y, z, 1), null, now);
             Log("EXECUTION " + p.Name + ": saved by you (" + plan.Reason + ", " + plan.Boss + ")");
         }

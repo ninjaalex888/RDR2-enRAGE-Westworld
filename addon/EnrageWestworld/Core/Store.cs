@@ -12,7 +12,7 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class Store
     {
-        [DataMember] public int Version = 2;
+        [DataMember] public int Version = 3;   // 3: people keep memories (PersonState.Mind, 0.6.3)
         [DataMember] public string Player = "arthur";
         [DataMember] public long InstalledAt;
         [DataMember] public long LastGameMin;
@@ -147,6 +147,10 @@ namespace EnrageWestworld.Core
             {
                 n += st.Heard.RemoveAll(h => h.At > cut);
                 n += st.Diary.RemoveAll(d => d.At > cut);
+                n += st.Mind.RemoveAll(m => m.At > cut);
+                foreach (MindMemory m in st.Mind)
+                    if (m.LastAt > cut)
+                        m.LastAt = cut;   // thought about after the cut: that hasn't happened either (the times stay)
                 if (st.NameAt > cut)
                 {
                     st.KnowsName = false;

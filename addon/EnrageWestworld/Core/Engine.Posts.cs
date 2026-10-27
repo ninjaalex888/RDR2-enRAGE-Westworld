@@ -132,6 +132,15 @@ namespace EnrageWestworld.Core
             // (not while new to the counter or freshly shot down: those thoughts come first)
             bool fresh = r.TookOverAt > 0 && Store.LastGameMin - r.TookOverAt < 3 * 1440;
             bool hurt = r.Wounds > 0 && Store.LastGameMin - r.WoundedAt < 3 * 1440;
+            if (Cfg.Minds)
+            {
+                // the counter is one thing on a keeper's mind; new to it or freshly shot down, a big one
+                string counter = post != null ? Posts.Thought(r, post, Posts.Of(post.Model), near, st != null ? st.Sightings : 0, Store.LastGameMin, seed) : null;
+                var extra = new List<Minds.Candidate>();
+                if (counter != null)
+                    extra.Add(new Minds.Candidate { Source = fresh ? "post:new" : hurt ? "post:shot" : "post", Pull = (fresh || hurt ? 50 : 30) + Minds.Jitter(seed, "post", 6), Make = () => counter });
+                return ResidentThought(PersonOfResident(r), hour, seed, look, extra);
+            }
             if (!fresh && !hurt && Store.LastGameMin > 0 && Voice.Chance(seed + "pw", 25))
             {
                 EnsureLink(PersonOfResident(r));

@@ -1008,8 +1008,34 @@ namespace EnrageWestworld.Core
         /// rumours, the player's fame), else something from their own life.
         public string ResidentThought(Person p, int hour, string seed, InnerLife.PlayerLook look = null)
         {
+            return ResidentThought(p, hour, seed, look, null);
+        }
+
+        /// The same, with what the caller knows besides (a keeper's counter) for the minds to weigh.
+        private string ResidentThought(Person p, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra)
+        {
             PersonState st = Store.Find(p.Id);
             EnsureLink(p);
+            if (Cfg.Minds)
+            {
+                // the world feeling unreal keeps its full RealityChance, first, as before
+                if (Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance))
+                {
+                    string unreal = StrangerThought(seed, p.Home, p.Woman, false);
+                    if (unreal != null)
+                        return unreal;
+                }
+                List<Minds.Candidate> more = extra ?? new List<Minds.Candidate>();
+                // saved from an execution on the road lately (Executions.cs): a memory now; before Minds, the old marks
+                string saved = st != null && st.Mind.Any(m => m.Kind == "rescued") ? null : AfterRescue(st, seed);
+                if (saved != null)
+                    more.Add(new Minds.Candidate { Source = "rescued", Pull = 55, Make = () => saved });
+                // the town's rumours and the player's fame (the same seed: its reality roll came out no above)
+                more.Add(new Minds.Candidate { Source = "heard:rumour", Pull = 20 + Minds.Jitter(seed, "rumour", 8), Make = () => StrangerThought(seed, p.Home, p.Woman, false) });
+                Minds.Choice c = Think(p, st, hour, seed, look, more);
+                if (c != null)
+                    return c.Text;
+            }
             string after = AfterRescue(st, seed);   // saved from an execution on the road lately (Executions.cs)
             if (after != null && Voice.Chance(seed + "resc", 45))
                 return after;
@@ -1031,6 +1057,15 @@ namespace EnrageWestworld.Core
             if (p.Personality == null)
                 p.Personality = f.Temper;
             EnsureLink(p);
+            if (Cfg.Minds)
+            {
+                // what they feel about the player is one of the things on their mind, strong or not
+                var extra = new List<Minds.Candidate>();
+                if (about != null)
+                    extra.Add(new Minds.Candidate { Source = strong ? "folk:strong" : "folk", Pull = (strong ? 50 : 25) + Minds.Jitter(seed, "folk", 6), Make = () => about });
+                Minds.Choice c = Think(p, st, hour, seed, look, extra);
+                return c != null ? c.Text : about;
+            }
             return InnerLife.Thought(p, hour, seed, st.Musings, look, ThoughtDay(p.Home, p.Id)) ?? about;
         }
 

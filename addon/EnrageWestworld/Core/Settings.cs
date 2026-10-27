@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 63;
+        public const int CurrentVersion = 64;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -51,6 +51,7 @@ namespace EnrageWestworld.Core
         public bool ThoughtsOverHeads = true;
         public float ThoughtsOverHeadScale = 0.24f;
         public bool ShareWithEnrage = true;
+        public bool Minds = true;
 
         // [Display] - drawn on screen besides the ticker
         public bool FeelingBars = true;
@@ -504,6 +505,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("RomanceAffectsEnrage = " + B(RomanceAffectsEnrage) + "   ; moods, memories, grudges, marriages and gang tips go into enRAGE's records");
             b.AppendLine();
             b.AppendLine("[Mind]");
+            b.AppendLine("Minds = " + B(Minds) + "   ; people think about what is most on their minds: what they lived through (a fight they were in or saw, a kind word, a slight), their worry, what's around them; false: the old mix of thoughts");
             b.AppendLine("ShareWithEnrage = " + B(ShareWithEnrage) + "   ; RealNPCs keeps its own record of who has died; when one of enRAGE's townsfolk dies and enRAGE didn't see it (the area unloaded before it looked), RealNPCs marks them dead in enRAGE's records too, so it doesn't bring them back");
             b.AppendLine();
             b.AppendLine("[Ticker]");

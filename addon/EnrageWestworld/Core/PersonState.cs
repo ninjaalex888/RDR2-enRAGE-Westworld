@@ -49,6 +49,7 @@ namespace EnrageWestworld.Core
         [DataMember] public int WakeStage;                         // 0 asleep, 1 stirring, 2 questioning, 3 unravelling, 4 awake
         [DataMember] public long WakeStageAt;                      // game minute the current stage began
         [DataMember] public bool WakeRolled;                       // the chance of starting already stirring has been rolled for this person
+        [DataMember] public List<MindMemory> Mind = new List<MindMemory>(); // what they lived through and may think about again (Minds.cs)
 
         public bool Has(string topic)
         {
@@ -71,6 +72,8 @@ namespace EnrageWestworld.Core
             if (Musings == null) Musings = new List<string>();
             if (KnownDeeds == null) KnownDeeds = new List<string>();
             if (SawDeeds == null) SawDeeds = new List<string>();
+            if (Mind == null) Mind = new List<MindMemory>();
+            Mind.RemoveAll(m => m == null);
             if (Family == null)
                 return;
             foreach (Relative r in Family)

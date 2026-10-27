@@ -1,0 +1,162 @@
+// Minds (Core/Minds.cs) on the game side: who was in a scene and who watched it, as the engine knows them, so each
+// keeps a memory of it. Watchers need a clear view of it; for a strong event (blows, a hand caught in a coat) up to
+// three passers-by, nearest first, are made residents on the spot so they remember it too (Lex: every grown-up who
+// isn't the story's own has a mind). Fewer than that keeps the 700 saved residents for the regulars.
+using System.Collections.Generic;
+using System.Linq;
+using EnrageWestworld.Core;
+using NemesisSystem;
+using RDR2;
+using RDR2.Math;
+using RDR2.Native;
+
+namespace EnrageWestworld.InGame
+{
+    public partial class WestworldScript
+    {
+        private const float SceneWatchMetres = 15f;
+        private const int NewMindsPerEvent = 3;
+
+        /// What a scene leaves in the minds of the two in it and of those who saw it.
+        private void NoteMinds(string kind, List<Ped> people, string[] names)
+        {
+            if (!_cfg.Minds || people == null || people.Count < 2)
+                return;
+            // new code inside the scenes: a fault here costs the memory, never the scene
+            try
+            {
+                NoteMindsImpl(kind, people, names);
+            }
+            catch (System.Exception ex)
+            {
+                if (!_noteMindsFailed)
+                    Log.Write("MIND remembering failed (" + kind + "): " + ex);
+                _noteMindsFailed = true;
+            }
+        }
+
+        private bool _noteMindsFailed;
+
+        private void NoteMindsImpl(string kind, List<Ped> people, string[] names)
+        {
+            string group = Minds.GroupOf(kind);
+            if (group == null)
+                return;
+            bool strong = group == "blows" || kind == "pickpocket";
+            Minds.Party a = PartyOf(people[0], strong), b = PartyOf(people[1], strong);
+            if (a == null || b == null)
+                return;
+            // someone the scene named itself is known by that name to the other
+            if (a.Name == null && names != null && names.Length > 0)
+                a.Name = names[0];
+            if (b.Name == null && names != null && names.Length > 1)
+                b.Name = names[1];
+            List<Minds.Party> watchers = MindWatchers(people, SceneWatchMetres, strong);
+            _engine.RememberScene(kind, a, b, watchers, _placeTown, _engine.NowIndoors ? _engine.NowPlace : null);
+        }
+
+        /// Someone as the minds know them: their lasting id (null if they can't be met again), name, town and look.
+        /// `save`: a passer-by may be made a resident for it.
+        private Minds.Party PartyOf(Ped p, bool save)
+        {
+            if (p == null || !p.Exists())
+                return null;
+            string id, name;
+            bool woman = !PED.IS_PED_MALE(p.Handle);
+            Minds.Party party = new Minds.Party { Label = Director.Kind(p, woman) };
+            if (!LastingId(p, out id, out name) && save && !Natives.StoryModel(p))
+            {
+                Resident r = ResidentOf(p);
+                if (r != null && !r.Dead && r.PostId == null)
+                {
+                    _engine.KeepResident(r, Bridge.Now());
+                    id = r.Id;
+                    name = r.Name;
+                    Log.Detail("MIND " + r.Name + " (" + party.Label + ") kept for what happened in front of them");
+                }
+            }
+            party.Id = id;
+            party.Name = name;
+            party.Home = HomeOf(p, id);
+            return party;
+        }
+
+        private string HomeOf(Ped p, string id)
+        {
+            if (id == null)
+                return null;
+            if (id.StartsWith("folk:"))
+            {
+                Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+                return ac != null ? Snapshot.Of(ac).Town : null;
+            }
+            Resident r = _store.FindResident(id);
+            return r != null ? r.Town : null;
+        }
+
+        /// Who saw it: people within reach with a clear view of the first of the two, nearest first. The lasting ones
+        /// remember; for a strong event a few passers-by are kept as residents to remember it as well.
+        private List<Minds.Party> MindWatchers(IList<Ped> people, float metres, bool strong)
+        {
+            var list = new List<Minds.Party>();
+            Ped first = people.Count > 0 ? people[0] : null;
+            if (first == null || !first.Exists())
+                return list;
+            Vector3 at = first.Position;
+            Ped me = Game.Player.Character;
+            int saved = 0;
+            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && x.Position.DistanceTo(at) <= metres).OrderBy(x => x.Position.DistanceTo(at)))
+            {
+                int h = p.Handle;
+                if (people.Any(x => x != null && x.Handle == h) || Spawner.IsOurs(h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) ||
+                    !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, first.Handle, 17))
+                    continue;
+                string id, name;
+                bool lasting = LastingId(p, out id, out name) && _engine.Lasting(id);
+                if (!lasting && !(strong && saved < NewMindsPerEvent))
+                    continue;
+                Minds.Party w = PartyOf(p, !lasting);
+                if (w == null || w.Id == null || !_engine.Lasting(w.Id))
+                    continue;
+                if (!lasting)
+                    saved++;
+                list.Add(w);
+                if (list.Count >= 12)
+                    break;
+            }
+            return list;
+        }
+
+        /// For the F7 dump: what is on the minds of the nearest people with a name, strongest first.
+        private string MindsStatus()
+        {
+            if (!_cfg.Minds)
+                return "off ([Mind] Minds)";
+            Ped me = Game.Player.Character;
+            int hour = CLOCK.GET_CLOCK_HOURS();
+            var parts = new List<string>();
+            foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && x.Position.DistanceTo(me.Position) < 25f)
+                                                 .OrderBy(x => x.Position.DistanceTo(me.Position)))
+            {
+                Person person = null;
+                Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+                ResBind b;
+                if (ac != null && !string.IsNullOrEmpty(ac.Name))
+                {
+                    Folk f = Snapshot.Of(ac);
+                    person = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, Bridge.Now());
+                    if (person.Personality == null)
+                        person.Personality = f.Temper;
+                }
+                else if (_resBind.TryGetValue(p.Handle, out b) && !b.R.Dead)
+                    person = _engine.PersonOfResident(b.R);
+                if (person == null)
+                    continue;
+                parts.Add((int)p.Position.DistanceTo(me.Position) + " m, " + _engine.MindStatus(person, hour, person.Id + "|f7", null));
+                if (parts.Count >= 3)
+                    break;
+            }
+            return parts.Count == 0 ? "nobody with a name within 25 m" : string.Join(" | ", parts);
+        }
+    }
+}

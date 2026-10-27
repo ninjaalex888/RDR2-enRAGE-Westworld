@@ -216,6 +216,12 @@ NEW IN 0.6.0
   they're back. TownPostsAfterDeath = successor makes a death final instead: the counter passes to
   a relative or a newcomer who bought the business. Sheriffs, preachers and anyone a story mission
   names are left alone. TownPosts = false turns it off.
+- People think about what is on their minds ([Mind] Minds). Each keeps memories of what they lived
+  through: a fight they were in or saw, a slight, a kindness, a theft, the drunk who called them
+  out. What they think is whatever pulls hardest right now: that, their worry, the weather,
+  someone in sight, you. Memories fade, come back when someone in them walks by, and weigh
+  differently on each temperament. Nobody thinks the same line twice in a day. So far from scenes
+  between people and from being saved; your deeds and deaths are next. Minds = false: the old mix.
 - An execution on the road ([Encounters] Executions, ExecutionChance 20). Away from the towns, once a
   day at most, one of the nearest town's regulars kneels at gunpoint, a mark on your map, for a
   reason from his own life: his debt (the creditor and a hired man), his feud (the other family),
@@ -638,8 +644,10 @@ in the file. The new ones:
             to that is its own (better after a greeting), then the screen goes dark, an hour passes
             CasualHookupsDecides (true): with CasualHookups installed, its Flirt works only on a
             woman who has said yes to you, and RealNPCs doesn't fade to black itself
-[Mind]      ShareWithEnrage (true): RealNPCs keeps its own record of who has died; when one of
-            enRAGE's townsfolk dies and enRAGE didn't see it, RealNPCs marks them dead there too
+[Mind]      Minds (true): people think about what is most on their minds, from what they lived through;
+            false: the old mix of thoughts. ShareWithEnrage (true): RealNPCs keeps its own record of
+            who has died; when one of enRAGE's townsfolk dies and enRAGE didn't see it, RealNPCs
+            marks them dead there too
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left

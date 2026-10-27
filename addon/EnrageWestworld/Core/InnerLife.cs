@@ -364,6 +364,19 @@ namespace EnrageWestworld.Core
         /// temper, town or faith (`pool` says which).
         public static string Filler(Person p, int hour, string seed, List<string> told, int roll, out string pool)
         {
+            return Pick(FillerLines(p, hour, roll, out pool), p, seed, told);
+        }
+
+        /// Which timeless frame a roll falls in for this person (the name Filler reports), without thinking it.
+        public static string FillerPool(Person p, int roll)
+        {
+            string pool;
+            FillerLines(p, 0, roll, out pool);
+            return pool;
+        }
+
+        private static string[] FillerLines(Person p, int hour, int roll, out string pool)
+        {
             string[] lines;
             if (roll < 68)
             {
@@ -420,7 +433,21 @@ namespace EnrageWestworld.Core
                 lines = ByFaith.ContainsKey(p.Devotion ?? "") ? ByFaith[p.Devotion] : ByFaith["Other"];
                 pool = "faith";
             }
-            return Pick(lines, p, seed, told);
+            return lines;
+        }
+
+        /// A thought about the player close by: knowing him again (a regular who has met him twice), else the look of him.
+        public static string AboutPlayer(Person p, string seed, List<string> told, PlayerLook look, bool again)
+        {
+            if (again)
+                return Pick(Again, p, seed, told);
+            return Pick(look != null && look.Armed && Voice.Chance(seed + "la", 55) ? SeenArmed : look != null && look.Mounted && Voice.Chance(seed + "lm", 55) ? SeenMounted : Seen, p, seed, told);
+        }
+
+        /// What the town is saying about the player's deeds here (InnerLife.Days.cs).
+        public static string TownTalkLine(Person p, List<Deed> deeds, string seed, List<string> told)
+        {
+            return deeds != null && deeds.Count > 0 ? TownTalk(p, deeds, seed, told) : null;
         }
 
         private static string Pick(string[] pool, Person p, string seed, List<string> told)

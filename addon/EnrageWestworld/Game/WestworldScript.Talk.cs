@@ -260,6 +260,7 @@ namespace EnrageWestworld.InGame
             // a word exchanged is remembered between them, as any small talk is
             if (how == "over" && t.People.All(p => p != null && p.Exists()))
                 NoteSceneTie("smalltalk", t.People.ToList());
+                NoteMinds("smalltalk", t.People.ToList(), null);
             if (_talkedAt.Count > 200)
                 foreach (int h in _talkedAt.Where(kv => now - kv.Value > TalkPersonRestMs || now < kv.Value).Select(kv => kv.Key).ToList())
                     _talkedAt.Remove(h);

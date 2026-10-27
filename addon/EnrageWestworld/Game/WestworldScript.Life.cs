@@ -294,6 +294,7 @@ namespace EnrageWestworld.InGame
         private void NoteHappened(Pending p, string kind)
         {
             NoteSceneTie(kind, p.People);
+            NoteMinds(kind, p.People, p.Names);   // what they and those watching remember of it (Minds)
             if (kind != "lift" && p.People.Count >= 2)
             {
                 string aId, aName, bId, bName;
