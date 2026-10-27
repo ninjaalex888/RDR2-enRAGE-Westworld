@@ -699,9 +699,10 @@ KEYS
 ----
 Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+F
           (SettingsKey2) opens it too, and either closes it again. Its Testing page lists everything
-          RealNPCs can make happen near you now, by group: Enter on a row fires it (the panel closes
-          first), Right sets its key, Delete leaves it without one. A key RealNPCs or enRAGE already
-          uses is refused, with whose it is. The keys are in [Testing] in the ini (TestKeys switches
+          RealNPCs can make happen near you now, by group: Enter on a row sets its key, Space fires it
+          (the panel closes first; on a gamepad, A fires it), Delete leaves it without a key. A key
+          another test has already moves to the new one and leaves that test without a key; one of
+          enRAGE's keys, or one RealNPCs needs (F7, the flirt key...), is refused, naming whose it is. The keys are in [Testing] in the ini (TestKeys switches
           them all off). Every street scene has a row (the nearest named pair that fits plays it),
           and so do pleading, arrivals, letters and the strange remarks. Show minds (on as it comes) puts a card over
           the people near you: their temper, mood, worry, ties and what is on their mind; Replay fires

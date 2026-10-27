@@ -29,7 +29,7 @@ namespace EnrageWestworld.InGame
             public bool Hookups;      // a line of CasualHookups.ini (another mod's, in the game folder)
             public string Label, Help;   // our own words for another mod's setting
             public string Action, ActionLabel, ActionAsk;   // a row that does something on Enter, after a second Enter
-            public bool Fire;         // a Testing row (Core/TestActions.cs): Enter fires it at once and closes the panel; Right sets its key
+            public bool Fire;         // a Testing row (Core/TestActions.cs): Enter sets its key, as on every key row; Space fires it now and closes the panel (a gamepad's A fires it)
         }
 
         private static bool Pickable(Row r)
@@ -440,6 +440,10 @@ namespace EnrageWestworld.InGame
                 case Keys.Enter:
                     Enter(page.Rows[_row]);
                     break;
+                case Keys.Space:
+                    if (page.Rows[_row].Fire)
+                        FireNow(page.Rows[_row]);
+                    break;
                 case Keys.Delete:
                     if (page.Rows[_row].Fire && page.Rows[_row].E != null)
                         Write(page.Rows[_row], "None");
@@ -460,7 +464,6 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        private Row _armCapture;
         private readonly Dictionary<string, string> _keyShown = new Dictionary<string, string>();
 
         /// A Testing row's key as shown: worked out once per value (never parsed each frame); an empty value is the
@@ -479,6 +482,24 @@ namespace EnrageWestworld.InGame
             return shown;
         }
 
+        /// The key a setting has now: its value, or for a Testing key left blank, its action's default.
+        private static string KeyNow(IniEntry e)
+        {
+            if (!string.IsNullOrWhiteSpace(e.Value))
+                return e.Value;
+            TestActions.Entry te = TestActions.ByKey(e.Key);
+            return te != null ? te.DefaultKey : "None";
+        }
+
+        /// Another of RealNPCs' keys already on this one (a blank Testing key counts as its default), or null.
+        private IniEntry OurKeyHolder(string spec, IniEntry self)
+        {
+            string want = Normal(spec);
+            if (want == null || _ours == null)
+                return null;
+            return _ours.Sections.SelectMany(x => x.Entries).FirstOrDefault(k => k != self && IsOurKey(k.Key) && Normal(KeyNow(k)) == want);
+        }
+
         /// Whose key this already is, or null: another of RealNPCs' keys, or one of enRAGE's ([Keys] in NemesisMod.ini).
         private string KeyOwner(string spec, IniEntry self)
         {
@@ -487,14 +508,20 @@ namespace EnrageWestworld.InGame
                 return null;
             if (_ours != null)
                 foreach (IniEntry k in _ours.Sections.SelectMany(x => x.Entries))
-                    if (k != self && IsOurKey(k.Key) && Normal(k.Value) == want)
+                    if (k != self && IsOurKey(k.Key) && Normal(KeyNow(k)) == want)
                         return "RealNPCs' " + Label(k.Key);
-            IniSection theirs = _theirs != null ? _theirs.Sections.FirstOrDefault(x => x.Name.Equals("Keys", StringComparison.OrdinalIgnoreCase)) : null;
+            return EnrageKeyOwner(spec);
+        }
+
+        /// One of enRAGE's keyboard keys on this one ([Keys] in NemesisMod.ini, the ones it rebinds itself), or null; the
+        /// telegraph key is meant to be shared (T: near a clerk, both happen), so only warned about after.
+        private string EnrageKeyOwner(string spec)
+        {
+            string want = Normal(spec);
+            IniSection theirs = want != null && _theirs != null ? _theirs.Sections.FirstOrDefault(x => x.Name.Equals("Keys", StringComparison.OrdinalIgnoreCase)) : null;
             if (theirs != null)
                 foreach (IniEntry k in theirs.Entries)
                 {
-                    // only enRAGE's keyboard keys (the ones it rebinds itself), not its pad and prompt controls; the
-                    // telegraph key is meant to be shared (T: near a clerk, both happen), so only warned about after
                     if (_bridge == null || !_bridge.EnrageRebinds("Keys", k.Key) || k.Key.IndexOf("Telegraph", StringComparison.OrdinalIgnoreCase) >= 0)
                         continue;
                     if (Normal(k.Value) == want)
@@ -524,16 +551,16 @@ namespace EnrageWestworld.InGame
         {
             if (r.Fire)
             {
-                try
+                // Enter sets the key, as on every other key row (Lex, 2026-10-27: Enter closed the panel); a gamepad can't
+                // set a keyboard key, so its A fires the test, as Space does
+                if (r.E == null || !PAD.IS_USING_KEYBOARD_AND_MOUSE(0))
                 {
-                    _note = _runAction != null ? _runAction(r.Action) : "Nothing to do.";
-                }
-                catch (Exception ex)
-                {
-                    _note = "That didn't work: " + ex.Message;
+                    FireNow(r);
                     return;
                 }
-                Close();   // it fires a second after the panel is gone
+                _capture = r;
+                _note = "Waiting for a key: whatever you press next fires " + r.ActionLabel + " (Ctrl, Shift or Alt with it is fine). Escape keeps " + KeyShown(r) +
+                        ". Delete leaves it without a key. Space fires it now.";
                 return;
             }
             if (r.Action != null)
@@ -586,6 +613,21 @@ namespace EnrageWestworld.InGame
             _note = "Left and Right change this one.";
         }
 
+        /// A Testing row's test, now: it fires a second after the panel is gone.
+        private void FireNow(Row r)
+        {
+            try
+            {
+                _note = _runAction != null ? _runAction(r.Action) : "Nothing to do.";
+            }
+            catch (Exception ex)
+            {
+                _note = "That didn't work: " + ex.Message;
+                return;
+            }
+            Close();
+        }
+
         private void Capture(Keys key, bool shift, bool ctrl, bool alt)
         {
             if (key == Keys.ShiftKey || key == Keys.ControlKey || key == Keys.Menu || key == Keys.LShiftKey || key == Keys.RShiftKey ||
@@ -595,12 +637,17 @@ namespace EnrageWestworld.InGame
             _capture = null;
             if (key == Keys.Escape || key == Keys.Back)
             {
-                _note = Label(r.E.Key) + " stays " + r.E.Value + ".";
+                _note = Label(r.E.Key) + " stays " + KeyNow(r.E) + ".";
                 return;
             }
             if (key == Keys.Delete && Clearable(r.E.Key))
             {
                 Write(r, "None");   // KeySpec reads None as no key at all
+                return;
+            }
+            if (key == Keys.Space && r.Fire && !ctrl && !shift && !alt)
+            {
+                FireNow(r);   // the note while waiting says Space fires it
                 return;
             }
             if (!ctrl && !shift && !alt && MovesSomething(key))
@@ -610,11 +657,30 @@ namespace EnrageWestworld.InGame
                 return;
             }
             string spec = (ctrl ? "Ctrl+" : string.Empty) + (shift ? "Shift+" : string.Empty) + (alt ? "Alt+" : string.Empty) + KeySpec.Name(key);
-            // a key RealNPCs or enRAGE already uses is refused, naming whose it is
+            // another of RealNPCs' keys already on it: the key moves here and that one is left without (Lex, 2026-10-27: setting
+            // a Testing row to [ was refused as the execution's); one that must keep a key (F7, the flirt key...) is never taken
+            IniEntry holder = OurKeyHolder(spec, r.E);
+            string enrage = EnrageKeyOwner(spec);
+            if (holder != null && enrage == null)
+            {
+                if (!Clearable(holder.Key))
+                {
+                    _note = spec + " is " + Label(holder.Key) + ", which needs a key of its own: give it another first. " + Label(r.E.Key) + " stays " + KeyNow(r.E) + ".";
+                    return;
+                }
+                TestActions.Entry held = TestActions.ByKey(holder.Key);
+                string from = held != null ? held.Label : Label(holder.Key), fromKey = holder.Key;
+                _ours.Set(holder, "None");   // saved with this one: Write saves the whole file and reloads the settings
+                Write(r, spec);
+                _note += "; taken from " + from + ", which has no key now";
+                Log.Write("SETTINGS RealNPCs " + fromKey + " = None (its key, " + spec + ", went to " + r.E.Key + ")");
+                return;
+            }
+            // one of enRAGE's keys is refused, naming it (its keys are enRAGE's to change)
             string owner = KeyOwner(spec, r.E);
             if (owner != null)
             {
-                _note = spec + " is taken: " + owner + ". " + Label(r.E.Key) + " stays " + r.E.Value + ".";
+                _note = spec + " is taken: " + owner + ". " + Label(r.E.Key) + " stays " + KeyNow(r.E) + ".";
                 return;
             }
             Write(r, spec);
@@ -645,21 +711,9 @@ namespace EnrageWestworld.InGame
             }
             if (r.Fire)
             {
-                // a Testing row: a deliberate second Right (or Left) sets its key, with the keyboard only; Enter fires it
-                if (!PAD.IS_USING_KEYBOARD_AND_MOUSE(0))
-                {
-                    _note = "Set a key with the keyboard. Enter fires it now.";
-                    return;
-                }
-                if (_armCapture != r)
-                {
-                    _armCapture = r;
-                    _note = "Press Right again to set a key for " + r.ActionLabel + ". Enter fires it now; Delete leaves it without a key.";
-                    return;
-                }
-                _armCapture = null;
-                _capture = r;
-                _note = "Waiting for a key: whatever you press next fires " + r.ActionLabel + " (Ctrl, Shift or Alt with it is fine). Escape keeps " + KeyShown(r) + ". Delete leaves it without a key.";
+                // a Testing row has no value to step: Enter sets its key, Space fires it
+                _note = PAD.IS_USING_KEYBOARD_AND_MOUSE(0) ? "Enter sets a key for " + r.ActionLabel + "; Space fires it now; Delete leaves it without a key."
+                    : "A fires " + r.ActionLabel + " now; set a key for it with the keyboard (Enter).";
                 return;
             }
             bool key = (!r.Theirs && IsOurKey(e.Key)) || (r.Theirs && _bridge != null && _bridge.EnrageRebinds(e.Section, e.Key));
@@ -1006,7 +1060,10 @@ namespace EnrageWestworld.InGame
         {
             if (_note.Length > 0)
                 Draw.Text(Draw.Fit(_note, SmallScale, W - 0.05f), left, Y + H - 0.072f, SmallScale, 236, 196, 120);
-            string keys = pad ? "D-pad choose and change   hold X: x10, or the next section   LB/RB page   A: set a key (then press it on the keyboard)   B: close"
+            bool testing = _pages.Count > 0 && _page < _pages.Count && _pages[_page].Rows.Any(x => x.Fire);
+            string keys = pad ? (testing ? "D-pad choose   bumpers turn the page   A: fire it now (set keys with the keyboard)   B: close"
+                                         : "D-pad choose and change   hold X: x10, or the next section   LB/RB page   A: set a key (then press it on the keyboard)   B: close")
+                : testing ? "Up/Down or wheel choose   Q/E page   Enter: set a key   Space: fire it now   Delete: no key   Backspace: close"
                 : "Up/Down or wheel choose   Left/Right change   Shift: x10, or the next section   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
             Draw.Text(Draw.Fit(keys, SmallScale * 0.94f, W - 0.04f), left, Y + H - 0.04f, SmallScale * 0.94f, 140, 128, 110);
         }
@@ -1079,7 +1136,7 @@ namespace EnrageWestworld.InGame
                         Draw.Rect(left - 0.006f, y - 0.002f, 0.003f, rowH, 222, 182, 96, 255);
                     }
                     Draw.Text(Draw.Fit(r.ActionLabel, RowScale, W * 0.58f), left + 0.006f, y, RowScale, onRow ? 255 : 226, onRow ? 246 : 216, onRow ? 230 : 196);
-                    // a Testing row shows its key (Enter fires it); others ask for Enter, twice for the memory wipe
+                    // a Testing row shows its key (Enter sets it, Space fires it); others ask for Enter, twice for the memory wipe
                     string act = r.Fire ? (_capture == r ? "press a key..." : KeyShown(r)) : asking ? "Enter again to confirm" : "Enter";
                     Draw.Text(act, right - 0.012f - Draw.Width(act, RowScale), y, RowScale, asking ? 236 : 200, asking ? 120 : 170, asking ? 96 : 120);
                     continue;
