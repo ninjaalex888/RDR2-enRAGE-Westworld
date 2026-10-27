@@ -26,6 +26,18 @@ namespace EnrageWestworld.InGame
             return ENTITY.IS_ENTITY_A_MISSION_ENTITY(h);
         }
 
+        private static readonly HashSet<int> Light = new HashSet<int>();
+
+        /// One of enRAGE's records, taken over lightly: ours to direct, but its mission-entity state is enRAGE's, and on
+        /// hand-back it is never marked "no longer needed" (that could let the game clear a ped enRAGE spawned).
+        public static void BorrowLight(Ped p)
+        {
+            int h = p.Handle;
+            Ours.Add(h);
+            Borrowed.Add(h);
+            Light.Add(h);
+        }
+
         public static bool IsBorrowed(int handle)
         {
             return Borrowed.Contains(handle);
@@ -42,6 +54,8 @@ namespace EnrageWestworld.InGame
             TASK.CLEAR_PED_TASKS(h, true, false);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             PED.SET_PED_KEEP_TASK(h, false);
+            if (Light.Remove(h))
+                return;   // one of enRAGE's records: enRAGE tasks them again itself
             if (!ENTITY.IS_ENTITY_DEAD(h))
                 TASK.TASK_WANDER_STANDARD(h, 10f, 10);
             ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);

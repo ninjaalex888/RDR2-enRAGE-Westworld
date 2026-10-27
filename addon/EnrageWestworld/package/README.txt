@@ -601,7 +601,8 @@ in the file. The new ones:
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
             Reveries (true), ReturnChance (35), StrangerReturnChance (15)
-[Stalkers]  Stalkers (true): the master switch. StalkerKey (]): make one now,
+[Stalkers]  Stalkers (true): the master switch. StalkerRecords (true): one of enRAGE's people may be
+            the stalker while enRAGE has no use for them. StalkerKey (]): make one now,
             StalkerEveryMinutes (34): real minutes between rolls, StalkerChance (20, percent per roll),
             StalkerNearbyMetres (60): someone this close becomes the stalker, StalkerStrangers (true):
             a stranger if nobody near can, StalkerMinutes (120), StalkerAppearMin (45) /
@@ -649,7 +650,9 @@ in the file. The new ones:
 [Output]    PerfMeter (true): times every part of RealNPCs each frame; F7 writes the costliest,
             and the log says when it goes over budget (PERF)
 [Mind]      Minds (true): people think about what is most on their minds, from what they lived through;
-            false: the old mix of thoughts. ShareWithEnrage (true): RealNPCs keeps its own record of
+            false: the old mix of thoughts. RecordMinds (true): enRAGE's own people too, weighed with
+            enRAGE's record of them. RecordFates (true): a death RealNPCs caused goes into enRAGE's record.
+            ShareWithEnrage (true): RealNPCs keeps its own record of
             who has died; when one of enRAGE's townsfolk dies and enRAGE didn't see it, RealNPCs
             marks them dead there too
 [Output]    NewsTo = corner | ticker | gamefeed

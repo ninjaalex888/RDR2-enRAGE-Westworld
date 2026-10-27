@@ -39,6 +39,7 @@ namespace EnrageWestworld.InGame
             public string Method, Weapon;   // despair: gun, wall or knife; the weapon to fetch (null: their own)
             public uint Arm;                // despair: the weapon in their hand
             public bool Given, Done, Clip;  // despair: we gave the weapon; the death was booked; the blade clip played
+            public NemesisRecord Rec;       // despair: one of enRAGE's records (its death is written into its record)
             public int Sub, RunFrom;
             public float TopSpeed;
             public Vector3 WallAt, WallDir;
@@ -701,6 +702,7 @@ namespace EnrageWestworld.InGame
                     Vector3 wall, dir;
                     bool hasWall = DespairWall(ped, me, out wall, out dir);
                     act.Method = Despair.Method(act.P, armed, hasWall, act.P.Id);
+                    act.Rec = _bridge.RecordAt(h);   // one of enRAGE's people: booked in its record when it's over
                     act.WallAt = wall;
                     act.WallDir = dir;
                     act.Weapon = act.Method == "gun" ? (armed ? null : Despair.Gun(act.P)) : act.Method == "knife" ? Despair.Knife : null;
@@ -807,10 +809,10 @@ namespace EnrageWestworld.InGame
                 return "keeps a counter";
             if (act.Passive)
                 return "can't be directed now";
-            // Lex's session rules (2026-10-26, later): harm and despair of enRAGE's full records only through a
-            // record-safe path that books the change in enRAGE; none is built yet, so not for them
-            if (_bridge.RecordAt(h) != null)
-                return "one of enRAGE's records (only through a record-safe path, not built yet)";
+            // harm and despair of enRAGE's full records only through the record-safe path that books the death in enRAGE
+            // (RecordFates: its history, and IsAlive if it missed the death; Lex's overnight brief, Tier 1.4)
+            if (_bridge.RecordAt(h) != null && (!_cfg.RecordFates || !_bridge.CanRevive))
+                return "one of enRAGE's records (" + (!_cfg.RecordFates ? "RecordFates is off" : "enRAGE's history and roster saving weren't found") + ")";
             if (act.St.Has(DespairMark))
                 return "already had their one chance";
             Ped ped = new Ped(h);
@@ -1106,6 +1108,9 @@ namespace EnrageWestworld.InGame
                 _engine.KeepResident(act.Res, Bridge.Now());
             }
             LedgerNote(act.Handle, act.P.Id, act.Name, act.Res != null ? "resident" : _bridge.RecordAt(act.Handle) != null ? "record" : "folk", DespairHow(act), "self");   // known dead: no knocked-out test
+            NemesisRecord rec = act.Rec ?? _bridge.RecordAt(act.Handle);
+            if (rec != null)
+                QueueRecordFate(rec, act.Name, "Died by " + (act.P.Woman ? "her" : "his") + " own hand (" + DespairHow(act) + ")" + (_placeTown != null ? ", in " + _placeTown : string.Empty) + ".");
             string how = act.Method ?? "gun";
             int c;
             _despairCount.TryGetValue(how, out c);

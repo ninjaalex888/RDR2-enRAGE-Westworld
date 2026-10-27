@@ -106,11 +106,15 @@ namespace EnrageWestworld.InGame
 
         /// Someone already near you becomes the stalker: they stop what they're doing and stare, then follow. They are
         /// handed back to the game afterwards, never deleted.
-        public void Adopt(Ped p, Ped player, string why)
+        public void Adopt(Ped p, Ped player, string why, bool light = false)
         {
             _ped = p;
             int h = p.Handle;
-            bool held = Spawner.Borrow(p);
+            bool held = true;
+            if (light)
+                Spawner.BorrowLight(p);   // one of enRAGE's records (Lex's overnight brief): its own state left alone
+            else
+                held = Spawner.Borrow(p);
             TASK.CLEAR_PED_TASKS(h, true, false);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);

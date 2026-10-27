@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 67;
+        public const int CurrentVersion = 68;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -52,6 +52,8 @@ namespace EnrageWestworld.Core
         public float ThoughtsOverHeadScale = 0.24f;
         public bool ShareWithEnrage = true;
         public bool Minds = true;
+        public bool RecordMinds = true;
+        public bool RecordFates = true;
 
         // [Display] - drawn on screen besides the ticker
         public bool FeelingBars = true;
@@ -79,6 +81,7 @@ namespace EnrageWestworld.Core
         public int StalkerChance = 20;
         public int StalkerNearbyMetres = 60;
         public bool StalkerStrangers = true;
+        public bool StalkerRecords = true;
         public int StalkerMinutes = 120;
         public int StalkerAppearMin = 45;
         public int StalkerAppearMax = 70;
@@ -540,6 +543,8 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[Mind]");
             b.AppendLine("Minds = " + B(Minds) + "   ; people think about what is most on their minds: what they lived through (a fight they were in or saw, a kind word, a slight), their worry, what's around them; false: the old mix of thoughts");
+            b.AppendLine("RecordMinds = " + B(RecordMinds) + "   ; enRAGE's own people think the same way: what RealNPCs saw them live through, weighed with enRAGE's own record of them (what they feel about you, its memories of you, what they've heard, their goals, their mood)");
+            b.AppendLine("RecordFates = " + B(RecordFates) + "   ; when one of enRAGE's people dies of something RealNPCs did (despair, a street fight gone too far), it is written into enRAGE's record of them (their history, and their death if enRAGE missed it); it also lets despair reach them");
             b.AppendLine("ShareWithEnrage = " + B(ShareWithEnrage) + "   ; RealNPCs keeps its own record of who has died; when one of enRAGE's townsfolk dies and enRAGE didn't see it (the area unloaded before it looked), RealNPCs marks them dead in enRAGE's records too, so it doesn't bring them back");
             b.AppendLine();
             b.AppendLine("[Ticker]");
@@ -579,6 +584,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Stalkers = " + B(Stalkers) + "   ; master switch: rarely, someone follows you from a distance and hides when you look. false turns off everything in this section");
             b.AppendLine("StalkerEveryMinutes = " + StalkerEveryMinutes + "   ; every this many real minutes of play, a roll for a stalker (1-120)");
             b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent chance on each roll");
+            b.AppendLine("StalkerRecords = " + B(StalkerRecords) + "   ; one of enRAGE's people may be the stalker (one who hates you most likely), while enRAGE has no use for them; handed back the moment it has, and after 20 minutes at most");
             b.AppendLine("StalkerNearbyMetres = " + StalkerNearbyMetres + "   ; on a hit, someone within this distance starts following you, someone with a history with you first (20-150)");
             b.AppendLine("StalkerStrangers = " + B(StalkerStrangers) + "   ; if nobody near can be turned for a few minutes, a stranger turns up behind you instead");
             b.AppendLine("StalkerMinutes = " + StalkerMinutes + "   ; how long a stalker keeps it up (real minutes, up to 240)");

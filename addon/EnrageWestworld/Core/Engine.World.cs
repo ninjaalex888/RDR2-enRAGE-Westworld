@@ -961,8 +961,9 @@ namespace EnrageWestworld.Core
                 if (c != null)
                     return c;
             }
-            // what they lived through that RealNPCs saw, when it weighs on them (Minds)
-            string lived = RecordMemoryThought(p, st, seed);
+            // what they lived through that RealNPCs saw, weighed with enRAGE's own record of them (Minds, RecordMinds);
+            // with RecordMinds off, only a memory pulling hard enough, and enRAGE's way below
+            string lived = Cfg.RecordMinds ? RecordThought(p, st, you, seed, now) : RecordMemoryThought(p, st, seed);
             if (lived != null)
                 return lived;
             if (Cfg.Romance && st.Heart != 0 && Voice.Chance(seed + "heart", 60))
@@ -986,10 +987,22 @@ namespace EnrageWestworld.Core
                 return Voice.HearsayThought(p, Person.FirstOf(h.FromName), h.Text, h.FromWoman, you, seed);
             Debt debt = Store.Debts.FirstOrDefault(x => !x.Settled && (x.FromId == p.Id || x.ToId == p.Id));
             if (debt != null && Voice.Chance(seed + "debt", 40))
-                return debt.ToId == p.Id ? Person.FirstOf(debt.FromName) + " owes me " + Voice.Number(debt.Amount) + " dollars. I ain't forgot." : "Still owe " + Person.FirstOf(debt.ToName) + " that money. Got to find it somewhere.";
+                return DebtThought(debt, p);
             if (st.Talks == 0 && st.Sightings > 0 && m == null)
-                return Voice.Pick(seed + "first", "Who's that? Never seen him before.", "Big fella. Looks like trouble.", "Stranger's watching me. Or I'm watching him.", you.Scarred ? "That face. Somebody carved him up good once." : "Another drifter.");
+                return FirstSight(you, seed);
             return Voice.MoodLine(p, p.TopThought, seed);
+        }
+
+        /// A debt between this person and another, from their side.
+        private static string DebtThought(Debt debt, Person p)
+        {
+            return debt.ToId == p.Id ? Person.FirstOf(debt.FromName) + " owes me " + Voice.Number(debt.Amount) + " dollars. I ain't forgot." : "Still owe " + Person.FirstOf(debt.ToName) + " that money. Got to find it somewhere.";
+        }
+
+        /// One of enRAGE's people seeing the player for the first time.
+        private static string FirstSight(PlayerRef you, string seed)
+        {
+            return Voice.Pick(seed + "first", "Who's that? Never seen him before.", "Big fella. Looks like trouble.", "Stranger's watching me. Or I'm watching him.", you.Scarred ? "That face. Somebody carved him up good once." : "Another drifter.");
         }
 
         /// A stranger's passing thought, for the ticker when nobody enRAGE knows is near.

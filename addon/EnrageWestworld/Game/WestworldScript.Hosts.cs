@@ -243,6 +243,20 @@ namespace EnrageWestworld.InGame
                     }
                     return;
                 }
+                if (_stalkerRecord && now >= _nextRecordCheck)
+                {
+                    // one of enRAGE's people: looked at every second, and handed back the moment enRAGE has a use for them
+                    _nextRecordCheck = now + 1000;
+                    Ped sp = _stalker.Handle != 0 ? new Ped(_stalker.Handle) : null;
+                    string back = sp == null || !sp.Exists() ? "gone" : RecordStalkWhyNot(sp) ?? (now - _stalkerSince > RecordStalkMs ? "his twenty minutes are up" : null);
+                    if (back != null)
+                    {
+                        Log.Write("STALKER " + _stalkerLabel + ": one of enRAGE's people, handed back (" + back + ")");
+                        _stalker.Finish(false);
+                        EndStalker(now);
+                        return;
+                    }
+                }
                 _stalker.Tick(Game.Player.Character, _engine.Player, StalkerSay);
                 return;
             }
@@ -356,9 +370,26 @@ namespace EnrageWestworld.InGame
                     close++;   // any nearer and he'd be "caught" at once
                     continue;
                 }
-                if (_bridge.RecordAt(h) != null)
+                NemesisRecord rec = _bridge.RecordAt(h);
+                if (rec != null)
                 {
-                    enrage++;  // enRAGE runs its own people
+                    // one of enRAGE's people, while it has no use for them (StalkerRecords); one who hates you is likeliest
+                    string no = !_cfg.StalkerRecords ? "StalkerRecords off" : RecordStalkWhyNot(ped);
+                    if (no != null || Natives.InteriorType(h) != 0 || _director.Involves(h) || _wakeActs.Any(w => w.Handle == h))
+                    {
+                        enrage++;
+                        continue;
+                    }
+                    Person rp = PersonOf(rec);
+                    PersonState rst = _store.Find(rp.Id);
+                    int rscore = StalkerPick.Score(null, rst, false) + Math.Max(0, rp.Hate) / 2 + 5;
+                    if (rscore > bestScore || (rscore == bestScore && d < bestD))
+                    {
+                        best = ped;
+                        bestScore = rscore;
+                        bestD = d;
+                        bestWhy = rp.Name + ": one of enRAGE's own, hate " + rp.Hate + ", score " + rscore;
+                    }
                     continue;
                 }
                 if (Natives.IsChild(ped) || Natives.StoryModel(ped) || Natives.IsLaw(ped) || !IsGrownUp(ped) || !CanDirect(ped) ||
@@ -430,8 +461,13 @@ namespace EnrageWestworld.InGame
             _stalkDueSince = 0;
             _stalkWait = null;
             _stalkFails = 0;
+            NemesisRecord rec = _bridge.RecordAt(h);
+            if (rec != null)
+                _stalkerLabel = PersonOf(rec).Name;
+            _stalkerRecord = rec != null;
+            _stalkerSince = now;
             _stalker = new Stalker(null, _stalkerLabel, woman, _cfg);
-            _stalker.Adopt(who, Game.Player.Character, why);
+            _stalker.Adopt(who, Game.Player.Character, why, rec != null);
             Log.Write("STALKER begins: " + _stalkerLabel + (_stalkerIsTest ? " (key)" : "") + ", game time " + Clock(Bridge.Now()));
         }
 

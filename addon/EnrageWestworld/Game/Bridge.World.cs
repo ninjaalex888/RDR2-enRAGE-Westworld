@@ -441,6 +441,34 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// A record died of something RealNPCs did (despair, a street fight gone too far): its history says how, in plain
+        /// words, through enRAGE's own History; if enRAGE hadn't marked them dead (the area unloaded first), IsAlive goes
+        /// false too. Fate is left to enRAGE (a Fate keeps a record out of its funerals and burials). Then SaveRoster.
+        /// True if RealNPCs marked the death itself.
+        public bool BookDeath(NemesisRecord r, string history)
+        {
+            if (r == null || !CanRevive)
+                return false;
+            try
+            {
+                bool marked = false;
+                if (r.IsAlive)
+                {
+                    r.IsAlive = false;
+                    marked = true;
+                }
+                if (history != null)
+                    History(r, history);
+                RosterChanged();
+                return marked;
+            }
+            catch (Exception ex)
+            {
+                Fail("BookDeath", ex);
+                return false;
+            }
+        }
+
         public bool CanMakePeople { get { ResolveMore(); return _newRecord != null && _roster != null && _saveRoster != null; } }
 
         /// A brand-new person through enRAGE's own generator (name, backstory, traits), not yet on the roster.

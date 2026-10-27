@@ -73,6 +73,40 @@ namespace EnrageWestworld.Core
             return c != null ? c.Text : null;
         }
 
+        /// One of enRAGE's records on the ticker (Minds and RecordMinds on): our memories of what they lived through,
+        /// weighed with enRAGE's own record of them: what they feel about the player (its memories of him, raised by
+        /// hate and fear), the deeds of his they know, what they've heard, a debt, their goal, a first sight of him, their
+        /// mood. Whatever pulls hardest is the thought, so it agrees with enRAGE's dossier. Null: the old way.
+        public string RecordThought(Person p, PersonState st, PlayerRef you, string seed, long now)
+        {
+            if (!Cfg.Minds || !Cfg.RecordMinds || p == null || st == null)
+                return null;
+            var extra = new List<Minds.Candidate>();
+            Func<string, double> j = src => Minds.Jitter(seed, src, 6);
+            if (Cfg.Romance && st.Heart != 0)
+                extra.Add(new Minds.Candidate { Source = "enrage:heart", Pull = 40 + j("heart"), Make = () => Romance.Thought(p, st.Heart, you, seed) });
+            MemoryItem m = p.Memories.Where(x => x.AboutYou && x.Intensity >= 30).OrderByDescending(x => x.Intensity + (now - x.At < 1440 ? 25 : 0)).FirstOrDefault();
+            if (m != null)
+                extra.Add(new Minds.Candidate { Source = "enrage:memory", Pull = 18 + m.Intensity / 2 + (now - m.At < 1440 ? 15 : 0) + Math.Max(p.Hate, p.Fear) / 6 + j("mem"), Make = () => Voice.MemoryThought(p, m, you, seed) });
+            Deed d = st.KnownDeeds.Count > 0 ? Store.Deeds.LastOrDefault(x => st.KnownDeeds.Contains(x.Id)) : null;
+            if (d != null)
+                extra.Add(new Minds.Candidate { Source = "enrage:deed", Pull = 32 + j("deed"), Make = () => Deeds.Thought(p, d, Voice.YouPrivate(p, you, true), seed) });
+            Hearsay h = st.Heard.LastOrDefault();
+            if (h != null)
+                extra.Add(new Minds.Candidate { Source = "enrage:heard", Pull = 26 + j("heard"), Make = () => Voice.HearsayThought(p, Person.FirstOf(h.FromName), h.Text, h.FromWoman, you, seed) });
+            Debt debt = Store.Debts.FirstOrDefault(x => !x.Settled && (x.FromId == p.Id || x.ToId == p.Id));
+            if (debt != null)
+                extra.Add(new Minds.Candidate { Source = "enrage:debt", Pull = 28 + j("debt"), Make = () => DebtThought(debt, p) });
+            GoalItem g = p.Goals.FirstOrDefault();
+            if (g != null)
+                extra.Add(new Minds.Candidate { Source = "enrage:goal:" + g.Type, Pull = (g.Type == "Avenge" && g.Target == "you" && p.Hate >= 40 ? 42 : 22) + j("goal"), Make = () => Voice.GoalLine(p, g, seed) });
+            if (st.Talks == 0 && st.Sightings > 0 && m == null)
+                extra.Add(new Minds.Candidate { Source = "enrage:first sight", Pull = 22 + j("first"), Make = () => FirstSight(you, seed) });
+            extra.Add(new Minds.Candidate { Source = "enrage:mood", Pull = 14 + j("mood"), Make = () => Voice.MoodLine(p, p.TopThought, seed) });
+            Minds.Choice c = Think(p, st, (int)(now % 1440 / 60), seed, null, extra, -1, true);
+            return c != null ? c.Text : null;
+        }
+
         /// A scene between a and b (a first, as the scene was built: the one who did it in a one-sided scene): each
         /// remembers being in it, and whoever was watching remembers seeing it.
         public void RememberScene(string kind, Minds.Party a, Minds.Party b, IList<Minds.Party> watchers, string town, string place)
@@ -251,12 +285,12 @@ namespace EnrageWestworld.Core
 
         /// What this person is thinking now, by what pulls hardest on them (Minds on): the line and where it came from.
         /// `extra`: what the caller knows besides (a townsperson's feeling about the player, a keeper's counter).
-        public Minds.Choice Think(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra, int memoriesOver = -1)
+        public Minds.Choice Think(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra, int memoriesOver = -1, bool onlyOwn = false)
         {
             // new code under the ticker: a fault here gives the old way for that thought, and is logged once
             try
             {
-                return ThinkImpl(p, st, hour, seed, look, extra, memoriesOver);
+                return ThinkImpl(p, st, hour, seed, look, extra, memoriesOver, onlyOwn);
             }
             catch (Exception ex)
             {
@@ -279,7 +313,7 @@ namespace EnrageWestworld.Core
         }
 
         /// memoriesOver: only memories pulling harder than this (for enRAGE's records); -1 everything.
-        private Minds.Choice ThinkImpl(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra, int memoriesOver)
+        private Minds.Choice ThinkImpl(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra, int memoriesOver, bool onlyOwn)
         {
             long now = Store.LastGameMin;
             if (now < _thinkClock - 5)
@@ -290,6 +324,8 @@ namespace EnrageWestworld.Core
                 return was.Value;
             InnerLife.Context day = ThoughtDay(p.Home, p.Id);
             List<Minds.Candidate> all = Candidates(p, st, hour, seed, look, day, now);
+            if (onlyOwn)
+                all = all.Where(k => k.M != null).ToList();   // a record: our memories and what the caller brings (enRAGE's dossier), nothing else
             if (extra != null)
                 all.AddRange(extra);
             if (memoriesOver >= 0)
