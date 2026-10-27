@@ -316,7 +316,7 @@ namespace EnrageWestworld.Core
                 return d;
             }
             DeedTalk(d, now);
-            if (Cfg.Newspaper && (d.Kind == "wedding" || d.Kind == "spared" || d.Kind == "peace" || d.Kind == "thiefcaught" || d.Kind == "mercy"))
+            if (Cfg.Newspaper && (d.Kind == "wedding" || d.Kind == "spared" || d.Kind == "peace" || d.Kind == "thiefcaught" || d.Kind == "mercy" || d.Kind == "rescue"))
                 Requests.Add(new WorldRequest { Kind = "gooddeed", Text = Deeds.Rumour(d, "You"), Town = d.Town });
             return d;
         }
@@ -1005,6 +1005,9 @@ namespace EnrageWestworld.Core
         {
             PersonState st = Store.Find(p.Id);
             EnsureLink(p);
+            string after = AfterRescue(st, seed);   // saved from an execution on the road lately (Executions.cs)
+            if (after != null && Voice.Chance(seed + "resc", 45))
+                return after;
             // the world feeling unreal keeps its full RealityChance; town rumours and the player's fame get a third of
             // the rest, so their own life (InnerLife) has most of it
             bool reality = Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance);

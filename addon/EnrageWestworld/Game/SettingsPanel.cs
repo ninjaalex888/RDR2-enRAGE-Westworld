@@ -59,7 +59,7 @@ namespace EnrageWestworld.InGame
         private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Encounters", "Quiet", "Features", "World", "Scenes", "Romance", "Mind", "Ticker", "Display", "Pacing", "Output" };
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
         {
-            { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Encounters", "Night encounters" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
+            { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Encounters", "Encounters" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
             { "Romance", "Romance" }, { "Mind", "The mind" }, { "Ticker", "The ticker" }, { "Display", "Bars and meter" }, { "Pacing", "Pacing" }, { "Output", "Notices and the panel" }
         };
 
@@ -69,7 +69,7 @@ namespace EnrageWestworld.InGame
             { "FlirtPrompt", "Romance" }, { "Trysts", "Romance" }, { "CasualHookupsDecides", "Trysts" }, { "WillingSingle", "Romance" }, { "WillingTaken", "Romance" }, { "NpcFlirting", "Drama" }, { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
             { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
-            { "CryingWomanChance", "CryingWoman" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
+            { "CryingWomanChance", "CryingWoman" }, { "ExecutionChance", "Executions" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
             { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" },
             { "FeelingBarsMetres", "FeelingBars" }, { "FeelingBarsShowEmpty", "FeelingBars" }, { "RealVoiceTalkSeconds", "RealVoiceTalk" }, { "CrudeTalk", "RealVoiceTalk" }, { "Reactions", "Drama" }, { "EnragePeopleJoinIn", "Drama" }, { "ThoughtsOverHeadScale", "ThoughtsOverHeads" }, { "RoughHandling", "Drama" }, { "NpcThieves", "Drama" }, { "DrunkChallenges", "Drama" }        };
 
@@ -107,8 +107,8 @@ namespace EnrageWestworld.InGame
             { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
             { "SelfDefenceNoBounty", "No bounty for self-defence" },
             { "FeelingBars", "Bars under people: fear, liking, anger" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
-            { "Encounters", "Night encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
-            { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" },
+            { "Encounters", "Encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
+            { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" }, { "Executions", "Executions on the road" }, { "ExecutionChance", "An execution's chance on each roll (percent)" },
             { "Hermits", "Hermits who woke" }, { "HermitChance", "A new camp's chance (percent)" },
             { "Gatherings", "Gatherings of the awake" }, { "GatheringChance", "A gathering's chance (percent)" },
             { "ReaderKey", "Letters, diaries and clippings" }, { "FlirtKey", "Flirt" }, { "WakeKey", "Wake the person you face" },
@@ -223,6 +223,13 @@ namespace EnrageWestworld.InGame
                     Page mind = _pages.FirstOrDefault(p => p.Title == OurTitles["Mind"]);
                     if (mind == null)
                         _pages.Add(mind = new Page { Title = OurTitles["Mind"] });
+                    Page enc = _pages.FirstOrDefault(p => p.Title == OurTitles["Encounters"]);
+                    if (enc != null)
+                    {
+                        enc.Rows.Add(new Row { Heading = "Testing" });
+                        enc.Rows.Add(new Row { Action = "stage-execution", ActionLabel = "Stage an execution nearby",
+                                               ActionAsk = "Put a man on his knees at gunpoint somewhere near you, out of sight, to see the scene? Press Enter again to stage it; any other key doesn't." });
+                    }
                     mind.Rows.Add(new Row { Heading = "Testing" });
                     mind.Rows.Add(new Row { Action = "wipe-memories", ActionLabel = "Wipe every NPC's memory",
                                             ActionAsk = "Wipe everything RealNPCs remembers of the people in this world (who they are, what they know and feel about you, their ties, their deaths)? enRAGE's own memory stays. A copy of the save is kept. Press Enter again to wipe; any other key keeps it all." });

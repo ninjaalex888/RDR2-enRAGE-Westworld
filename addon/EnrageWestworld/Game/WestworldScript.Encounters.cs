@@ -46,7 +46,7 @@ namespace EnrageWestworld.InGame
             Safe("encounters", _aEncounters);
         }
 
-        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null; } }
+        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null; } }
 
         /// What's going on, for the log and the stalker key.
         private string EncounterWhat
@@ -55,6 +55,8 @@ namespace EnrageWestworld.InGame
             {
                 if (_crying != null)
                     return "the crying woman is out";
+                if (_exec != null)
+                    return "a man is held at gunpoint nearby";
                 if (_hermit != null)
                     return _hermit.R.Name + " is at " + Their(_hermit.R) + " camp nearby";
                 return _gathering != null ? "a gathering is standing out there" : null;
@@ -71,7 +73,19 @@ namespace EnrageWestworld.InGame
                 CryingStep(now);
             if (_gathering != null)
                 GatherStep(now);
+            if (_exec != null)
+                ExecutionStep(now);
             HermitStep(now);   // a hermit at his camp, when you come near one
+            if (_execRequested && !EncounterLive)
+            {
+                // the settings panel's test: one staged nearby now, if nothing stands in the way
+                _execRequested = false;
+                string block = EncounterBlocker();
+                if (block != null)
+                    Log.Write("EXECUTION test not now: " + block);
+                else
+                    StartExecution(now, true);
+            }
             if (EncounterLive || !_cfg.Encounters)
                 return;
             int every = _cfg.EncounterEveryMinutes * 60000;
@@ -101,6 +115,19 @@ namespace EnrageWestworld.InGame
                     _encounterWait = null;
                     StartCrying(now);
                     return;
+                }
+            }
+            if (_cfg.Executions)
+            {
+                string not = ExecutionNotNow();
+                if (not != null)
+                    notNow.Add("an execution on the road: " + not);
+                else if (EncounterRoll("an execution on the road", _cfg.ExecutionChance))
+                {
+                    _encounterWait = null;
+                    StartExecution(now, false);
+                    if (_exec != null)
+                        return;
                 }
             }
             if (_cfg.Hermits)
@@ -503,6 +530,8 @@ namespace EnrageWestworld.InGame
                 EndHermit("left (" + why + ")");
             if (_gathering != null)
                 EndGathering(why);
+            if (_exec != null)
+                EndExecution(why);
         }
 
         /// One line for the F7 dump.
@@ -511,9 +540,10 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Encounters)
                 return "off";
             int now = Game.GameTime;
-            string live = _crying != null ? "the crying woman (" + _crying.Phase + ")" : _hermit != null ? "a hermit (" + _hermit.Phase + ")" : _gathering != null ? "a gathering (" + _gathering.Phase + ")" : "none";
+            string live = _crying != null ? "the crying woman (" + _crying.Phase + ")" : _exec != null ? "an execution (" + _exec.Phase + ")" : _hermit != null ? "a hermit (" + _hermit.Phase + ")" : _gathering != null ? "a gathering (" + _gathering.Phase + ")" : "none";
             return "live: " + live + ", next roll in " + Math.Max(0, (_nextEncounterRoll - now) / 1000) + " s every " + _cfg.EncounterEveryMinutes + " min" +
                    ", crying woman " + (_cfg.CryingWoman ? _cfg.CryingWomanChance + "% (10 pm - 4 am, the wilds)" + (DoneToday("crying") ? ", done today" : "") : "off") +
+                   ", executions " + ExecutionsStatus() +
                    ", hermits " + HermitsStatus() +
                    ", gatherings " + GatheringsStatus() +
                    (_encounterWait != null ? ", last roll skipped: " + _encounterWait : "");

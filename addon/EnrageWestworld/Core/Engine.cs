@@ -155,6 +155,13 @@ namespace EnrageWestworld.Core
 			foreach (LaterAct a in Store.Later.Where((LaterAct x) => x.DueAt <= now).ToList())
 			{
 				Store.Later.Remove(a);
+				if (a.Kind == "news")
+				{
+					// what a town hears once it's found (an execution on the road): about the dead, so no one need be alive
+					Push(new Toast { Kind = "life", Title = a.Title, PersonId = a.PersonId, Weight = 40, Text = a.Text });
+					Log("NEWS " + a.Title + ": " + a.Text);
+					continue;
+				}
 				Person p = Find(a.PersonId);
 				if (p == null || !p.IsAlive)
 				{

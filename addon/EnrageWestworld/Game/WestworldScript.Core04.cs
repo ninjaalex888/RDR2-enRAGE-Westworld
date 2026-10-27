@@ -506,6 +506,13 @@ namespace EnrageWestworld.InGame
                         GatherNear(ped, gd);
                     continue;
                 }
+                if (IsExecutionPed(h))
+                {
+                    float ed = ped.Position.DistanceTo(pos);
+                    if (ed <= r && !ENTITY.IS_ENTITY_DEAD(h))
+                        ExecutionNear(ped, ed);
+                    continue;
+                }
                 if (h == me.Handle || Spawner.IsOurs(h))
                     continue;
                 float d = ped.Position.DistanceTo(pos);

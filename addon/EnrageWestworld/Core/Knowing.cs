@@ -19,7 +19,8 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class LaterAct
     {
-        [DataMember] public string Kind;   // "diary" or "word"
+        [DataMember] public string Kind;   // "diary", "word", or "news" (a notice for the corner, Title and Text)
+        [DataMember] public string Title;
         [DataMember] public string PersonId;
         [DataMember] public string Text, Emotion, Cause;
         [DataMember] public int Intensity;

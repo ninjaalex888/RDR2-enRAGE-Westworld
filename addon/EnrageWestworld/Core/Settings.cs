@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 60;
+        public const int CurrentVersion = 61;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -102,6 +102,8 @@ namespace EnrageWestworld.Core
         public int EncounterEveryMinutes = 12;
         public bool CryingWoman = true;
         public int CryingWomanChance = 15;
+        public bool Executions = true;
+        public int ExecutionChance = 20;
         public bool Hermits = true;
         public int HermitChance = 25;
         public bool Gatherings = true;
@@ -233,6 +235,7 @@ namespace EnrageWestworld.Core
             if (!g.Encounters)
             {
                 g.CryingWoman = false;
+                g.Executions = false;
                 g.Hermits = false;
                 g.Gatherings = false;
             }
@@ -434,6 +437,7 @@ namespace EnrageWestworld.Core
             QuietStillSeconds = Math.Max(1, Math.Min(60, QuietStillSeconds));
             EncounterEveryMinutes = Math.Max(2, Math.Min(120, EncounterEveryMinutes));
             CryingWomanChance = Math.Max(0, Math.Min(100, CryingWomanChance));
+            ExecutionChance = Math.Max(0, Math.Min(100, ExecutionChance));
             HermitChance = Math.Max(0, Math.Min(100, HermitChance));
             GatheringChance = Math.Max(0, Math.Min(100, GatheringChance));
             TownPostsAfterDeath = (TownPostsAfterDeath ?? "").Trim().ToLowerInvariant() == "successor" ? "successor" : "survive";
@@ -562,6 +566,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("EncounterEveryMinutes = " + EncounterEveryMinutes + "   ; real minutes of play between rolls for an encounter, when the time and place are right (2-120)");
             b.AppendLine("CryingWoman = " + B(CryingWoman) + "   ; at night in the wilds, a woman sobbing in the dark. Go close and she may draw a knife, or not be alone");
             b.AppendLine("CryingWomanChance = " + CryingWomanChance + "   ; percent on each roll, between ten at night and four in the morning");
+            b.AppendLine("Executions = " + B(Executions) + "   ; out on the roads, two men holding one of a nearby town's people on his knees at gunpoint, for a reason from his own life. Ride on and they go through with it");
+            b.AppendLine("ExecutionChance = " + ExecutionChance + "   ; percent on each roll, once a day at most, outside the towns");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: around midnight in the wilds, the awake stand in a silent circle");

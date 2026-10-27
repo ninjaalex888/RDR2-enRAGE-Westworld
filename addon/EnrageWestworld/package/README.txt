@@ -216,6 +216,13 @@ NEW IN 0.6.0
   they're back. TownPostsAfterDeath = successor makes a death final instead: the counter passes to
   a relative or a newcomer who bought the business. Sheriffs, preachers and anyone a story mission
   names are left alone. TownPosts = false turns it off.
+- An execution on the road ([Encounters] Executions, ExecutionChance 20). Away from the towns, once a
+  day at most, one of the nearest town's regulars kneels at gunpoint, a mark on your map, for a
+  reason from his own life: his debt (the creditor and a hired man), his feud (the other family),
+  or talking to the law (the region's outlaws). Shoot or rush them and they fight you, with no
+  crime noted. Save him and the town hears of it; wait or ride on and they shoot him, and his kin
+  and his town hear. To see it now: the settings panel's Encounters page, Stage an execution nearby.
+  CONTENT NOTE: a man can be shot dead in front of you. Executions = false turns it off.
 - Night encounters ([Encounters]). Out in the wilds between ten at night and four in the morning,
   you may hear a woman crying somewhere off the road (CryingWomanChance, 15 percent on each roll
   every EncounterEveryMinutes, 12, at most once a night). She kneels in the dark and calls for
@@ -599,7 +606,8 @@ in the file. The new ones:
             tension stops building, QuietStillSeconds (3), QuietInCinematic (true): the same in the
             cinematic camera
 [Encounters] Encounters (true): the master switch. EncounterEveryMinutes (12): real minutes
-            between rolls, CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
+            between rolls, Executions (true), ExecutionChance (20, percent per roll, away from the
+            towns, once a day), CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
             4 am in the wilds), Hermits (true, needs WestWorld), HermitChance (25, a new
             camp's chance per roll in the wilds), Gatherings (true, needs WestWorld),
             GatheringChance (15, percent per roll, midnight to 3:30 am in the wilds)

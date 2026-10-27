@@ -153,6 +153,11 @@ namespace EnrageWestworld.Core
             { "mercy", new Kind { Weight = 20, Mood = "Steady", Rumour = "{who} had a gun on {detail} {place} and let them live",
                 Thoughts = new[] { "{Who} held a gun on {detail} {place}. Then put it away. Strange man.", "They say {detail} begged and {who} listened. Didn't think he had it in him." },
                 Remarks = new[] { "Heard you had a gun on {detail} and let them walk. Mercy's rare out here.", "You let that poor soul live. Folks are talking about it." } } },
+            // a man saved from an execution on the road (Executions.cs)
+            { "rescue", new Kind { Weight = 35, Mood = "Steady", Rumour = "{who} saved {detail} from two gunmen {place}",
+                Thoughts = new[] { "{Who} shot two men off {detail} {place}. They had him on his knees.", "{detail} would be in the ground if {who} hadn't come along. Funny old world." },
+                Remarks = new[] { "You're the one who saved {detail} on the road. Folks are grateful.", "Folks say you came for {detail} when nobody else would." },
+                Paper = "{detail} was rescued {place} from two armed men by a stranger who did not stay to be thanked." } },
             { "execution", new Kind { Weight = 90, Mood = "Shaken", Violent = true, Rumour = "{who} shot {detail} while they begged for mercy {place}",
                 Thoughts = new[] { "{Who} shot {detail} while they begged {place}. What kind of animal does that?", "They say {detail} begged. Begged, and {who} shot anyway." },
                 Remarks = new[] { "You shot somebody begging for their life. I hope you hear it every night.", "Folks say you don't stop when they beg. Is that true?" },
