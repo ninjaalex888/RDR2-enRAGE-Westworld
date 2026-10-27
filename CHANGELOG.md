@@ -6,6 +6,7 @@ Built on 2026-10-26, the night after (Lex's overnight brief, 2026-10-27) and the
 
 ### After the first play-test (2026-10-27)
 
+- Show minds is on as it comes (Lex, 2026-10-27): the small card over named people near you, with their temper, mood, worry, ties and what is on their mind. An ini that still has it off (the old default) is switched on once; settings version 77. Turn it off on the Testing page or with `[Testing] ShowMinds = false`.
 - Wake stages over heads (Testing page, `[Testing] ShowWakeStages`, off as it comes): a small tag over each person within 25 m who has begun to wake, "Stirring (1 of 4)" to "Awake (4 of 4)", coloured from pale to red, with what holds them back (riding, can't be directed now, keeps a counter, had their chance). A thought over the same person sits on top of it. F7 `TEST wake stages:`. Settings version 76. Seen in game: Lex, 2026-10-27.
 - Thoughts above heads never fall back to the bar at the bottom any more (Lex saw them there again): a thought whose thinker is out of view is passed over after a moment and the next one comes, and a scene speaker's own line, shown when the recording's words are known, goes over their head too. The bar keeps the news. The wake key says when the one woken is riding (they only look at you until they're on foot).
 - The wake key (Y) wakes the person you're locked on to, whoever they are; before, it did so only for enRAGE's records and otherwise woke whoever was nearest. Someone who can't be woken (a child, one of the story's own) is named with the reason.

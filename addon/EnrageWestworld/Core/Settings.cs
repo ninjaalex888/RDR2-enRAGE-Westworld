@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 76;
+        public const int CurrentVersion = 77;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -203,7 +203,7 @@ namespace EnrageWestworld.Core
         // [Testing] (overnight 2026-10-27): the Testing page's keys (Core/TestActions.cs). The ones that were settings
         // already (StalkerKey, WakeKey, ExecutionKey...) stay fields; the rest are kept here by their ini name.
         public bool TestKeys = true;
-        public bool ShowMinds;
+        public bool ShowMinds = true;   // on since settings version 77 (Lex, 2026-10-27)
         public bool ShowWakeStages;   // [Testing] a tag over each person who has begun to wake (2026-10-27)
         public Dictionary<string, string> TestKeyMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
@@ -371,6 +371,13 @@ namespace EnrageWestworld.Core
                 // your own is kept)
                 s.TickerNearbyMetres = 20f;
                 raised.Add("TickerNearbyMetres 30 -> 20");
+            }
+            if (s.SettingsVersion < 77 && !s.ShowMinds)
+            {
+                // 0.6.3: the mind cards are on as they come (Lex, 2026-10-27); off until now, so an ini's "off" was the old
+                // default, not a choice
+                s.ShowMinds = true;
+                raised.Add("ShowMinds off -> on");
             }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");
