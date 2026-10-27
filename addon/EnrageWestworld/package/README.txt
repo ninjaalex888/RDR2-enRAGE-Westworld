@@ -661,7 +661,7 @@ in the file. The new ones:
 [Romance]   NpcFlirting (true): people near you make eyes at each other and court, each answering by
             what they make of the other; their thoughts on the ticker show it as it happens;
             sweethearts fall out now and then, and one comes back with a small gift to make it up
-            FlirtPrompt (true): Flirt in the game's lock-on menu, with Greet and Antagonize, on H
+            FlirtPrompt (true): Flirt in the game's lock-on menu, with Greet and Antagonize, on H (only on women while SameSexRomance is off)
             (D-pad down on a pad)
             WillingSingle (70), WillingTaken (20): percent chance a single, or a married or
             spoken-for, woman takes to your flirting before what she thinks of you tips it (the

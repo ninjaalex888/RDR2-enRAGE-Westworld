@@ -83,22 +83,27 @@ namespace EnrageWestworld.InGame
             _perfFrames++;
             double totalMs = stepTicks * TicksToMs;
             Roll(_perfTotal, totalMs, 1, window);
-            Roll(_perfOther, Math.Max(0, stepTicks - _perfTop) * TicksToMs, 1, window);
+            double otherMs = Math.Max(0, stepTicks - _perfTop) * TicksToMs;
+            Roll(_perfOther, otherMs, 1, window);
             _perfTop = 0;
             PerfSlot worst = null;
+            double worstMs = 0;   // kept apart: each slot's Frame is zeroed below, so comparing with worst.Frame named the last to run
             for (int i = 0; i < _perfList.Count; i++)
             {
                 PerfSlot s = _perfList[i];
-                if (worst == null || s.Frame > worst.Frame)
-                    worst = s;
                 double ms = s.Frame * TicksToMs;
+                if (worst == null || ms > worstMs)
+                {
+                    worst = s;
+                    worstMs = ms;
+                }
                 int calls = s.FrameCalls;
                 s.Frame = 0;
                 s.FrameCalls = 0;
                 Roll(s, ms, calls, window);
             }
             if (_perfFrames < 120)
-                return;   // the first two seconds after loading settle first
+                return;   // the first two seconds after loading (and after the save loads: LoadStore) settle first
             // over budget on average for 10 s: once a minute at most, with what costs most
             if (_perfTotal.Avg > BudgetAvgMs)
             {
@@ -117,7 +122,7 @@ namespace EnrageWestworld.InGame
             {
                 _perfPeakLogged = now;
                 Log.Write("PERF: peak: one frame took " + totalMs.ToString("0.00") + " ms (budget " + BudgetPeakMs.ToString("0.0") + " ms)" +
-                          (worst != null ? "; the most of it: " + worst.Name : string.Empty));
+                          (worst != null && worstMs >= otherMs ? "; the most of it: " + worst.Name : "; the most of it: step (other), outside any feature"));
             }
         }
 

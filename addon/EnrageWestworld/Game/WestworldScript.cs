@@ -388,6 +388,7 @@ namespace EnrageWestworld.InGame
 			_player = (flag ? "john" : "arthur");
 			_store = Store.Load(StorePath, Log.Write);
 			_store.Player = _player;
+			_perfFrames = 0;   // loading the save is a long frame by nature (400 ms at Ready, 2026-10-27): the meter settles again from here
 			PassingAbort();
 			WanderLaterClear();
 			SightsReset("a save loaded");
