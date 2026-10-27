@@ -106,10 +106,11 @@ namespace EnrageWestworld.InGame
             }
             if (t.Phase == 1)
             {
-                // watched every frame for 0.6 s after each shot: did they fire, did something land near the spot
+                // watched every frame after each shot (0.6 s; 2 s for the aimed trigger and the shoot task, which raise the gun
+                // first): did they fire, did something land near the spot
                 t.Shooting |= PED.IS_PED_SHOOTING(h);
                 t.Impact |= MISC.HAS_BULLET_IMPACTED_IN_AREA(t.Spot.X, t.Spot.Y, t.Spot.Z, 2.5f, true, true) || MISC.HAS_BULLET_IMPACTED_IN_AREA(t.Spot.X, t.Spot.Y, t.Spot.Z, 2.5f, false, false);
-                if (now - t.FiredAt < 600)
+                if (now - t.FiredAt < (t.Idx >= 4 ? 2000 : 600))
                     return;
                 bool recently = Function.Call<bool>(HasPedShotRecently, h, 1.5f);
                 int ammo = WEAPON.GET_AMMO_IN_PED_WEAPON(h, TestRevolver);

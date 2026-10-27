@@ -889,6 +889,8 @@ namespace EnrageWestworld.InGame
             }
             if (act.Phase == 4)
             {
+                if (act.Sub >= 10 && act.Seq != null)
+                    act.NextStep = now + 50;   // the clips watched closely, set here ahead of the PhaseUntil gate: the tick re-arms each act 400 ms on before stepping it, which left the shot ~0.45 s late (44% and 51% for 30 and 35) and 0.4 s between clips
                 if (act.Method == "wall")
                     DespairRun(act, now);
                 else if (now >= act.PhaseUntil)
@@ -904,6 +906,8 @@ namespace EnrageWestworld.InGame
                 }
                 return;
             }
+            if (act.Phase == 5 && act.ShotCheckAt > 0)
+                act.NextStep = now + 50;   // the shot's look at 0.3 s, not at the tick's next 400 ms
             if (act.Phase == 5 && act.ShotCheckAt > 0 && now >= act.ShotCheckAt)
             {
                 // no gunshot was heard (Lex, 2026-10-27, twice): did a bullet come? The limp's health 0 kills them either

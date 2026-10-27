@@ -164,7 +164,6 @@ namespace EnrageWestworld.InGame
         private void DespairSeq(WakeAct act, int now)
         {
             int h = act.Handle;
-            act.NextStep = now + 50;   // watched closely throughout: the tick's 400 ms between steps left the shot ~0.45 s late (44% and 51% for 30 and 35) and a gap between clips
             DespairClip c = act.Seq[act.ClipIdx];
             if (!act.ClipOn)
             {
