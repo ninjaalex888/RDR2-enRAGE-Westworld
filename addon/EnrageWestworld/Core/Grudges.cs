@@ -79,8 +79,8 @@ namespace EnrageWestworld.Core
         public static string ToYourFace(string temper, string dead, string seed)
         {
             string[] pool = temper == "Hothead"
-                ? new[] { "You killed " + dead + ". Don't pretend you didn't.", "You put " + dead + " in the ground. One day, mister. One day.", "I know your face. I know what you did to " + dead + "." }
-                : new[] { "I called " + dead + " friend. I won't forget it, and neither will this town.", "You're the one who killed " + dead + ". Thought you should hear it said.", "Look at me. " + dead + " had a family. Look at me." };
+                ? new[] { "You killed " + dead + ". Don't pretend you didn't.", "You put " + dead + " in the ground. One day, mister. One day.", "I know your face. I know what you did to " + dead + ".", "Look at me when I say it. You killed " + dead + ".", "I've had " + dead + "'s face in my head since. Now I've got yours to put with it." }
+                : new[] { "I called " + dead + " friend. I won't forget it, and neither will this town.", "You're the one who killed " + dead + ". Thought you should hear it said.", "Look at me. " + dead + " had a family. Look at me.", "You don't know what " + dead + " was to this town. I do. I know what you did.", "I won't raise a hand. I only want you to hear " + dead + "'s name from me." };
             return Voice.Pick(seed + "yf", pool);
         }
 
@@ -88,8 +88,8 @@ namespace EnrageWestworld.Core
         public static string Stare(string temper, string dead, string seed)
         {
             string[] pool = temper == "Coward"
-                ? new[] { "That's him. That's who killed " + dead + ". Keep walking.", "Don't let him see you looking. Not after " + dead + "." }
-                : new[] { "There he goes. " + dead + "'s blood on his hands, and walking about free.", "Killed " + dead + ", and buys his tobacco same as anyone." };
+                ? new[] { "That's him. That's who killed " + dead + ". Keep walking.", "Don't let him see you looking. Not after " + dead + ".", "Him. " + dead + "'s killer. Don't look. Don't look.", "Walks right past the sheriff's office. After " + dead + ". Lord." }
+                : new[] { "There he goes. " + dead + "'s blood on his hands, and walking about free.", "Killed " + dead + ", and buys his tobacco same as anyone.", dead + "'s grave is still fresh, and there he stands.", "Somebody ought to say something about " + dead + ". Not me. Not today." };
             return Voice.Pick(seed + "ys", pool);
         }
 
