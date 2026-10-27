@@ -70,19 +70,19 @@ namespace EnrageWestworld.InGame
         // ---- a new camp -------------------------------------------------------------------------------
 
         /// Why a new hermit's camp can't turn up here and now; null when it can.
-        private string HermitNotNow()
+        private string HermitNotNow(bool test = false)
         {
             string town = _bridge.TownOnly(Game.Player.Character.Position);   // TownAt gives the region out in the wilds
             if (town != null)
                 return "you're in " + town + " (camps are only out in the wilds)";
-            if (DoneToday("hermit"))
+            if (!test && DoneToday("hermit"))
                 return "one turned up already today";
             if (_engine.Camps().Count >= Engine.MaxCamps)
                 return "there are " + Engine.MaxCamps + " camps already";
             return null;
         }
 
-        private bool NewCamp(int now)
+        private bool NewCamp(int now, bool test = false)
         {
             Ped me = Game.Player.Character;
             Vector3 at;
@@ -101,10 +101,11 @@ namespace EnrageWestworld.InGame
                 r = _engine.MakeHermit(Spawner.ModelFor(null, woman, _rng.Next()), woman, town, woman ? "a townswoman" : "a townsman", "hermit|" + now, g);
             }
             _engine.SetCamp(r, at.X, at.Y, at.Z, g);
-            MarkDone("hermit");
+            if (!test)
+                MarkDone("hermit");
             _nextCampCheck = 0;
             _newCampId = r.Id;
-            Log.Write("ENCOUNTER hermit: " + r.Name + ", who walked out of " + (r.Town ?? "town") + ", makes camp " + (int)at.DistanceTo(me.Position) + " m away");
+            Log.Write("ENCOUNTER hermit: " + r.Name + ", who walked out of " + (r.Town ?? "town") + ", makes camp " + (int)at.DistanceTo(me.Position) + " m away" + (test ? " (a test)" : string.Empty));
             return true;
         }
 

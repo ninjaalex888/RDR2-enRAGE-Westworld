@@ -39,7 +39,7 @@ namespace EnrageWestworld.InGame
         private const int ExecWaitMs = 25000, ExecAfterWarnMs = 12000, ExecUnseenMs = 240000;
         private Execution _exec;
         private bool _execRequested;
-        private KeySpec _execKey;
+        private KeySpec _execKey, _cryingKey, _hermitKey, _gatherKey;
         private int _execCount;
         private string _execLast;
 
@@ -87,6 +87,8 @@ namespace EnrageWestworld.InGame
             if (r == null)
             {
                 Log.Write("EXECUTION: nobody to put there (no town regulars saved yet)");
+                if (test)
+                    Hint("Nobody to put there yet: walk round a town first, so it has regulars.", 6000);
                 return;
             }
             string seed = r.Id + "|" + Bridge.Now() / 1440;
@@ -502,8 +504,8 @@ namespace EnrageWestworld.InGame
                 bool enrageKnows = alive && _bridge != null && _bridge.Looked(p.Handle);
                 Spawner.Release(p, alive && !enrageKnows && (!seen || p.Position.DistanceTo(me.Position) > 120f));
             }
-            if (e.Phase != "spawn")
-                MarkDone("execution");   // nowhere to put them doesn't use up the day
+            if (e.Phase != "spawn" && !e.Test)
+                MarkDone("execution");   // nowhere to put them doesn't use up the day, nor does a test
             Log.Write("EXECUTION " + e.R.Name + ": over (" + why + ")");
         }
 

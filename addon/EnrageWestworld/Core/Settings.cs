@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 62;
+        public const int CurrentVersion = 63;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -102,13 +102,16 @@ namespace EnrageWestworld.Core
         public int EncounterEveryMinutes = 12;
         public bool CryingWoman = true;
         public int CryingWomanChance = 15;
+        public string CryingWomanKey = "None";
         public bool Executions = true;
         public int ExecutionChance = 20;
         public string ExecutionKey = "[";
         public bool Hermits = true;
         public int HermitChance = 25;
+        public string HermitKey = "None";
         public bool Gatherings = true;
         public int GatheringChance = 15;
+        public string GatheringKey = "None";
 
         // [World]
         public bool Deeds = true;
@@ -567,13 +570,16 @@ namespace EnrageWestworld.Core
             b.AppendLine("EncounterEveryMinutes = " + EncounterEveryMinutes + "   ; real minutes of play between rolls for an encounter, when the time and place are right (2-120)");
             b.AppendLine("CryingWoman = " + B(CryingWoman) + "   ; at night in the wilds, a woman sobbing in the dark. Go close and she may draw a knife, or not be alone");
             b.AppendLine("CryingWomanChance = " + CryingWomanChance + "   ; percent on each roll, between ten at night and four in the morning");
+            b.AppendLine("CryingWomanKey = " + CryingWomanKey + "   ; for testing: brings her out near you now, out of sight, at any hour (None: no key)");
             b.AppendLine("Executions = " + B(Executions) + "   ; out on the roads, two men holding one of a nearby town's people on his knees at gunpoint, for a reason from his own life. Ride on and they go through with it");
             b.AppendLine("ExecutionChance = " + ExecutionChance + "   ; percent on each roll, once a day at most, outside the towns");
             b.AppendLine("ExecutionKey = " + ExecutionKey + "   ; stages an execution on the road near you now, out of sight, for testing (anywhere nothing else is going on)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
+            b.AppendLine("HermitKey = " + HermitKey + "   ; for testing: makes a hermit's camp near you now, out of sight, outside the towns (it stays, like any camp; None: no key)");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: around midnight in the wilds, the awake stand in a silent circle");
             b.AppendLine("GatheringChance = " + GatheringChance + "   ; percent on each roll, between midnight and half past three");
+            b.AppendLine("GatheringKey = " + GatheringKey + "   ; for testing: stands a gathering near you now, out of sight, at any hour (None: no key)");
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");

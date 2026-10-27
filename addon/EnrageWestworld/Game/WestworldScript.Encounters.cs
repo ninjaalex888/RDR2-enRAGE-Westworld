@@ -26,7 +26,7 @@ namespace EnrageWestworld.InGame
             public uint WomanModel, ManModel;
             public uint OwnGroup;
             public int StartedAt, NextCry, PhaseUntil, Tries;
-            public bool Moved;
+            public bool Moved, Test;
         }
 
         private static readonly string[] HelpLines = { "SCARED_HELP", "PANIC_HELP", "GENERIC_FRIGHTENED_HIGH" };
@@ -37,6 +37,7 @@ namespace EnrageWestworld.InGame
         private int _nextEncounterRoll, _nextEncounterTick;
         private uint _hostileGroup;
         private string _encounterWait;
+        private string _encounterRequested;   // crying, hermit or gathering, from the Testing page (the execution has _execRequested)
         private Action _aEncounters;
 
         private void EncountersStep(int now)
@@ -76,15 +77,20 @@ namespace EnrageWestworld.InGame
             if (_exec != null)
                 ExecutionStep(now);
             HermitStep(now);   // a hermit at his camp, when you come near one
-            if (_execRequested && !EncounterLive)
+            if ((_execRequested || _encounterRequested != null) && !EncounterLive)
             {
-                // the settings panel's test: one staged nearby now, if nothing stands in the way
+                // the Testing page: one staged nearby now, if nothing stands in the way
+                string kind = _execRequested ? "execution" : _encounterRequested;
                 _execRequested = false;
+                _encounterRequested = null;
                 string block = EncounterBlocker();
                 if (block != null)
-                    Log.Write("EXECUTION test not now: " + block);
+                {
+                    Log.Write("ENCOUNTER test, " + kind + ": not now: " + block);
+                    Hint("Not now: " + block + ".", 5000);
+                }
                 else
-                    StartExecution(now, true);
+                    StageEncounter(kind, now);
             }
             if (EncounterLive || !_cfg.Encounters)
                 return;
@@ -157,6 +163,72 @@ namespace EnrageWestworld.InGame
                 Log.Write("Encounter roll skipped: " + _encounterWait);
         }
 
+        /// The Testing page's key or row for an encounter: asked for now, or why not. What to say back.
+        private string RequestEncounter(string kind, string how, out bool asked)
+        {
+            asked = false;
+            string off = !_cfg.Encounters ? "Encounters are off ([Encounters] Encounters)."
+                : kind == "execution" ? (_cfg.Executions ? null : "Executions are off ([Encounters] Executions).")
+                : kind == "crying" ? (_cfg.CryingWoman ? null : "The crying woman is off ([Encounters] CryingWoman).")
+                : kind == "hermit" ? (_cfg.Hermits ? null : "Hermits are off ([Encounters] Hermits; they need West World on too).")
+                : _cfg.Gatherings ? null : "Gatherings are off ([Encounters] Gatherings; they need West World on too).";
+            if (off != null)
+                return off;
+            if (EncounterLive || _execRequested || _encounterRequested != null)
+                return "One is going on already" + (EncounterWhat != null ? " (" + EncounterWhat + ")" : string.Empty) + ". Let it finish first.";   // a second press used to queue another
+            if (kind == "execution")
+                _execRequested = true;
+            else
+                _encounterRequested = kind;
+            asked = true;
+            Log.Write("ENCOUNTER test, " + kind + " (" + how + "): staging one near you");
+            switch (kind)
+            {
+                case "execution":
+                    return "An execution will be staged near you, out of sight. Look for the mark on the map.";
+                case "crying":
+                    return "A woman will be crying somewhere near you, out of sight. Listen for her.";
+                case "hermit":
+                    return "A hermit's camp will be made near you, out of sight. Go looking for it.";
+                default:
+                    return "The awake will gather somewhere near you, out of sight.";
+            }
+        }
+
+        private string KeyOf(string kind)
+        {
+            KeySpec k = kind == "execution" ? _execKey : kind == "crying" ? _cryingKey : kind == "hermit" ? _hermitKey : _gatherKey;
+            return k.ToString();
+        }
+
+        /// A test: the encounter now, whatever the hour and wherever you are (a hermit's camp, which stays, only outside the towns).
+        private void StageEncounter(string kind, int now)
+        {
+            switch (kind)
+            {
+                case "execution":
+                    StartExecution(now, true);
+                    break;
+                case "crying":
+                    StartCrying(now, true);
+                    break;
+                case "hermit":
+                    string not = HermitNotNow(true);
+                    if (not != null)
+                    {
+                        Log.Write("ENCOUNTER test, hermit: not now: " + not);
+                        Hint("No camp now: " + not + ".", 5000);
+                    }
+                    else if (!NewCamp(now, true))
+                        Hint("Nowhere out of sight for a camp here. Try somewhere more open.", 5000);
+                    break;
+                default:
+                    if (!StartGathering(now, true))
+                        Hint("Nowhere out of sight for them here. Try somewhere more open.", 5000);
+                    break;
+            }
+        }
+
         private bool EncounterRoll(string what, int chance)
         {
             bool hit = _rng.Next(100) < chance;
@@ -212,15 +284,16 @@ namespace EnrageWestworld.InGame
 
         // ---- the crying woman ---------------------------------------------------------------------------
 
-        private void StartCrying(int now)
+        private void StartCrying(int now, bool test = false)
         {
             _crying = new Crying
             {
                 StartedAt = now,
+                Test = test,
                 WomanModel = Spawner.ModelFor(null, true, _rng.Next()),
                 ManModel = Spawner.ModelFor(null, false, _rng.Next())
             };
-            Log.Write("ENCOUNTER crying woman: begins, game time " + Clock(Bridge.Now()));
+            Log.Write("ENCOUNTER crying woman: begins, game time " + Clock(Bridge.Now()) + (test ? " (a test)" : string.Empty));
         }
 
         private void CryingStep(int now)
@@ -495,8 +568,8 @@ namespace EnrageWestworld.InGame
                 bool seen = alive && ENTITY.IS_ENTITY_ON_SCREEN(p.Handle);
                 Spawner.Release(p, alive && (!seen || p.Position.DistanceTo(me.Position) > 120f));
             }
-            if (c.Phase != "spawn")
-                MarkDone("crying");   // nowhere to put her doesn't use up the night
+            if (c.Phase != "spawn" && !c.Test)
+                MarkDone("crying");   // nowhere to put her doesn't use up the night, nor does a test
             Log.Write("ENCOUNTER crying woman: over (" + why + ")");
         }
 

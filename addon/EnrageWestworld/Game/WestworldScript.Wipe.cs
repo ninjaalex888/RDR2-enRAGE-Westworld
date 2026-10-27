@@ -20,10 +20,13 @@ namespace EnrageWestworld.InGame
                 case "wipe-memories":
                     return WipeMemories();
                 case "stage-execution":
-                    if (!_cfg.Executions)
-                        return "Executions are off: turn them on above first.";
-                    _execRequested = true;   // started by the encounters' tick, once the panel is closed
-                    return "Close the panel: a man will be held at gunpoint somewhere near you, out of sight (a mark on the map).";
+                case "stage-crying":
+                case "stage-hermit":
+                case "stage-gathering":
+                    // started by the encounters' tick, once the panel is closed
+                    bool asked;
+                    string said = RequestEncounter(id.Substring("stage-".Length), "the settings panel", out asked);
+                    return asked ? "Close the panel. " + said : said;
                 default:
                     return "Nothing to do for " + id + ".";
             }

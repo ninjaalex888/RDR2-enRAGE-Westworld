@@ -31,7 +31,7 @@ namespace EnrageWestworld.InGame
             public Vector3 Centre;
             public readonly List<Gatherer> Ring = new List<Gatherer>();
             public int StartedAt, PhaseAt, NextCreep, NextMurmur;
-            public bool Moving, Spoke;
+            public bool Moving, Spoke, Test;
         }
 
         private Gathering _gathering;
@@ -55,7 +55,7 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
-        private bool StartGathering(int now)
+        private bool StartGathering(int now, bool test = false)
         {
             Ped me = Game.Player.Character;
             Vector3 centre;
@@ -65,7 +65,7 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             int n = Encounters.GatherSize(_rng.Next(100));
-            Gathering g = new Gathering { Centre = centre, StartedAt = now };
+            Gathering g = new Gathering { Centre = centre, StartedAt = now, Test = test };
             // the awake first, as they looked when they were met; strangers make up the rest
             List<Resident> awake = _store.Residents.Where(r => !r.Dead && r.PostId == null && (_hermit == null || _hermit.R != r) && _engine.StageOf(r.Id) >= Awakening.Unravelling)
                 .OrderBy(r => _rng.Next()).Take(n).ToList();
@@ -289,8 +289,8 @@ namespace EnrageWestworld.InGame
                 bool seen = alive && ENTITY.IS_ENTITY_ON_SCREEN(m.Ped.Handle);
                 Spawner.Release(m.Ped, alive && (!seen || m.Ped.Position.DistanceTo(me.Position) > 120f));
             }
-            if (g.Phase != "spawn")
-                MarkDone("gather");   // nowhere to put them doesn't use up the night
+            if (g.Phase != "spawn" && !g.Test)
+                MarkDone("gather");   // nowhere to put them doesn't use up the night, nor does a test
             Log.Write("ENCOUNTER gathering: over (" + why + ")");
         }
 

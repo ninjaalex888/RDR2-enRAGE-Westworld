@@ -120,6 +120,9 @@ namespace EnrageWestworld.InGame
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.N);
             _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.OemCloseBrackets);
             _execKey = KeySpec.Parse(_cfg.ExecutionKey, Keys.OemOpenBrackets);
+            _cryingKey = KeySpec.Parse(_cfg.CryingWomanKey, Keys.None);   // the Testing page's keys: none unless the player sets one
+            _hermitKey = KeySpec.Parse(_cfg.HermitKey, Keys.None);
+            _gatherKey = KeySpec.Parse(_cfg.GatheringKey, Keys.None);
             _wakeKey = KeySpec.Parse(_cfg.WakeKey, Keys.Y);
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
             _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
@@ -178,7 +181,7 @@ namespace EnrageWestworld.InGame
         /// press counts once the key has been let go (T tapped through a long ticker line).
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _execKey.Matches(e) || _wakeKey.Matches(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _execKey.Matches(e) || _cryingKey.Matches(e) || _hermitKey.Matches(e) || _gatherKey.Matches(e) || _wakeKey.Matches(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && !_hotkeyLetGo && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -224,19 +227,12 @@ namespace EnrageWestworld.InGame
                 _stalkerRequested = true;
                 return true;
             }
-            if (_execKey.Matches(e))
+            // the Testing page's keys: an encounter staged near you now (the encounters' tick starts it when nothing is in the way)
+            string staged = _execKey.Matches(e) ? "execution" : _cryingKey.Matches(e) ? "crying" : _hermitKey.Matches(e) ? "hermit" : _gatherKey.Matches(e) ? "gathering" : null;
+            if (staged != null)
             {
-                // an execution on the road, staged near you now (the encounters' tick starts it when nothing is in the way)
-                if (!_cfg.Executions)
-                    Hint("Executions are off ([Encounters] Executions).", 5000);
-                else if (_exec != null || _execRequested)
-                    Hint("There's one staged already. Finish it first.", 4000);   // a second press used to queue another after it
-                else
-                {
-                    _execRequested = true;
-                    Hint("An execution will be staged near you, out of sight. Look for the mark on the map.", 6000);
-                    Log.Write("EXECUTION key (" + _execKey + "): staging one near you");
-                }
+                bool asked;
+                Hint(RequestEncounter(staged, "key " + KeyOf(staged), out asked), asked ? 6000 : 5000);
                 return true;
             }
             if (_wakeKey.Matches(e))

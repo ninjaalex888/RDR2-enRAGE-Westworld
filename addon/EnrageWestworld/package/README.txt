@@ -221,7 +221,7 @@ NEW IN 0.6.0
   reason from his own life: his debt (the creditor and a hired man), his feud (the other family),
   or talking to the law (the region's outlaws). Shoot or rush them and they fight you, with no
   crime noted. Save him and the town hears of it; wait or ride on and they shoot him, and his kin
-  and his town hear. To see it now: the settings panel's Encounters page, Stage an execution nearby.
+  and his town hear. To see it now: press [, or the settings panel's Testing page.
   CONTENT NOTE: a man can be shot dead in front of you. Executions = false turns it off.
 - Night encounters ([Encounters]). Out in the wilds between ten at night and four in the morning,
   you may hear a woman crying somewhere off the road (CryingWomanChance, 15 percent on each roll
@@ -610,7 +610,8 @@ in the file. The new ones:
             towns, once a day), CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
             4 am in the wilds), Hermits (true, needs WestWorld), HermitChance (25, a new
             camp's chance per roll in the wilds), Gatherings (true, needs WestWorld),
-            GatheringChance (15, percent per roll, midnight to 3:30 am in the wilds)
+            GatheringChance (15, percent per roll, midnight to 3:30 am in the wilds), ExecutionKey ([),
+            CryingWomanKey, HermitKey, GatheringKey (None): bring one out near you now, for testing
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
             Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
@@ -657,8 +658,9 @@ All the older options are still there and work the same.
 KEYS
 ----
 Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+F
-          (SettingsKey2) opens it too, and either closes it again. For testing, its "The mind"
-          page can wipe every NPC's memory (Enter, then Enter again to confirm). Alt+F11 opens it as well, but
+          (SettingsKey2) opens it too, and either closes it again. Its Testing page has keys to bring
+          each encounter out near you now (none set as they come, but [ and ]), the same as rows you
+          run with Enter twice, and a row that wipes every NPC's memory. Alt+F11 opens it as well, but
           only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
           About 15 seconds after loading, a notice says which key to use.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town

@@ -88,10 +88,14 @@ namespace EnrageWestworld.InGame
             { "TownPostsAfterDeath", new[] { "survive", "successor" } }
         };
 
-        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "StalkerKey", "ExecutionKey" };
+        private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "StalkerKey", "ExecutionKey", "CryingWomanKey", "HermitKey", "GatheringKey" };
 
         // the order RealNPCs' keys are listed in on the Hotkeys page
-        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "WakeKey", "StalkerKey", "ExecutionKey", "TickerNextKey", "TestKey", "SettingsKey", "SettingsKey2" };
+        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "WakeKey", "TickerNextKey", "TestKey", "SettingsKey", "SettingsKey2" };
+
+        // the keys that make something happen now, on the Testing page instead (Lex, 2026-10-26); Delete leaves one without a key
+        private static readonly string[] TestingKeys = { "StalkerKey", "ExecutionKey", "CryingWomanKey", "HermitKey", "GatheringKey" };
+        private static readonly HashSet<string> Clearable = new HashSet<string>(TestingKeys.Concat(new[] { "SettingsKey2" }), StringComparer.OrdinalIgnoreCase);
 
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -99,7 +103,7 @@ namespace EnrageWestworld.InGame
             { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "Subtitles for what's said to you" }, { "FlirtPrompt", "Flirt in the lock-on menu (H)" }, { "NpcFlirting", "People flirt and court each other" }, { "TerritoryNews", "enRAGE's territory changes as updates" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "CrudeTalk", "Crude remarks (saloons, sweethearts)" }, { "RoughHandling", "Faces into the bar (rough handling)" }, { "Reactions", "People react to what's done and said to them" }, { "EnragePeopleJoinIn", "enRAGE's own people join in" }, { "NpcThieves", "Pickpockets among townsfolk" }, { "DrunkChallenges", "Drunks who call men out" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtsOverHeads", "Thoughts above their heads" }, { "ThoughtsOverHeadScale", "Size of thoughts above heads" }, { "ShareWithEnrage", "Tell enRAGE of deaths it missed" }, { "Trysts", "A night together (off screen)" }, { "CasualHookupsDecides", "CasualHookups only for women who said yes" }, { "WillingSingle", "Single women willing (percent)" }, { "WillingTaken", "Married women willing (percent)" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMin", "He does odd things at least (metres)" }, { "StalkerActMax", "... and at most (metres)" },
-            { "StalkerKey", "Make a stalker now" }, { "ExecutionKey", "Stage an execution nearby (test)" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
+            { "StalkerKey", "Make a stalker now" }, { "ExecutionKey", "Stage an execution nearby" }, { "CryingWomanKey", "Bring out the crying woman" }, { "HermitKey", "Make a hermit's camp nearby" }, { "GatheringKey", "Stand a gathering nearby" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
             { "StalkerChance", "Chance on each roll (percent)" }, { "StalkerNearbyMetres", "Turn someone within (metres)" },
             { "StalkerStrangers", "A stranger if nobody near" },
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
@@ -197,6 +201,7 @@ namespace EnrageWestworld.InGame
             string keepTitle = _pages.Count > 0 && _page < _pages.Count ? _pages[_page].Title : null;
             _pages.Clear();
             Page keys = new Page { Title = "Hotkeys" };
+            Page testing = new Page { Title = "Testing" };
             _ours = IniDoc.Read(_oursPath, true);
             if (_ours.Error == null)
             {
@@ -210,29 +215,33 @@ namespace EnrageWestworld.InGame
                         _pages.Add(new Page { Title = OurTitles.ContainsKey(s.Name) ? OurTitles[s.Name] : s.Name, Rows = rows });
                 }
                 List<IniEntry> ourKeys = KeyOrder.Select(k => _ours.FindKey(k)).Where(e => e != null)
-                    .Concat(_ours.Sections.SelectMany(s => s.Entries).Where(e => OurKeys.Contains(e.Key) && !KeyOrder.Contains(e.Key, StringComparer.OrdinalIgnoreCase)))
+                    .Concat(_ours.Sections.SelectMany(s => s.Entries).Where(e => OurKeys.Contains(e.Key) && !KeyOrder.Contains(e.Key, StringComparer.OrdinalIgnoreCase) && !TestingKeys.Contains(e.Key, StringComparer.OrdinalIgnoreCase)))
                     .ToList();
                 if (ourKeys.Count > 0)
                 {
                     keys.Rows.Add(new Row { Heading = "RealNPCs" });
                     keys.Rows.AddRange(ourKeys.Select(e => new Row { E = e }));
                 }
-                // things to do rather than set, on the page they belong with
+                // Testing: keys that make something happen now (none set but the stalker's and the execution's), and the same things to do from here
+                List<IniEntry> testKeys = TestingKeys.Select(k => _ours.FindKey(k)).Where(e => e != null).ToList();
+                if (testKeys.Count > 0)
+                {
+                    testing.Rows.Add(new Row { Heading = "Keys (Enter, then the key; Delete for none)" });
+                    testing.Rows.AddRange(testKeys.Select(e => new Row { E = e }));
+                }
                 if (_runAction != null)
                 {
-                    Page mind = _pages.FirstOrDefault(p => p.Title == OurTitles["Mind"]);
-                    if (mind == null)
-                        _pages.Add(mind = new Page { Title = OurTitles["Mind"] });
-                    Page enc = _pages.FirstOrDefault(p => p.Title == OurTitles["Encounters"]);
-                    if (enc != null)
-                    {
-                        enc.Rows.Add(new Row { Heading = "Testing" });
-                        enc.Rows.Add(new Row { Action = "stage-execution", ActionLabel = "Stage an execution nearby",
+                    testing.Rows.Add(new Row { Heading = "Now" });
+                    testing.Rows.Add(new Row { Action = "stage-execution", ActionLabel = "Stage an execution nearby",
                                                ActionAsk = "Put a man on his knees at gunpoint somewhere near you, out of sight, to see the scene? Press Enter again to stage it; any other key doesn't." });
-                    }
-                    mind.Rows.Add(new Row { Heading = "Testing" });
-                    mind.Rows.Add(new Row { Action = "wipe-memories", ActionLabel = "Wipe every NPC's memory",
-                                            ActionAsk = "Wipe everything RealNPCs remembers of the people in this world (who they are, what they know and feel about you, their ties, their deaths)? enRAGE's own memory stays. A copy of the save is kept. Press Enter again to wipe; any other key keeps it all." });
+                    testing.Rows.Add(new Row { Action = "stage-crying", ActionLabel = "Bring out the crying woman",
+                                               ActionAsk = "Put a woman crying in the dark somewhere near you, out of sight, whatever the hour? Press Enter again; any other key doesn't." });
+                    testing.Rows.Add(new Row { Action = "stage-hermit", ActionLabel = "Make a hermit's camp nearby",
+                                               ActionAsk = "Make a camp near you, out of sight, for someone who woke and walked out of town? It stays, like any camp. Press Enter again; any other key doesn't." });
+                    testing.Rows.Add(new Row { Action = "stage-gathering", ActionLabel = "Stand a gathering nearby",
+                                               ActionAsk = "Stand the awake in a silent ring somewhere near you, out of sight, whatever the hour? Press Enter again; any other key doesn't." });
+                    testing.Rows.Add(new Row { Action = "wipe-memories", ActionLabel = "Wipe every NPC's memory",
+                                               ActionAsk = "Wipe everything RealNPCs remembers of the people in this world (who they are, what they know and feel about you, their ties, their deaths)? enRAGE's own memory stays. A copy of the save is kept. Press Enter again to wipe; any other key keeps it all." });
                 }
                 // CasualHookups' settings with ours on romance, when it's installed
                 _hookups = !string.IsNullOrEmpty(HookupsIniPath) && File.Exists(HookupsIniPath) ? IniDoc.Read(HookupsIniPath, false) : null;
@@ -272,6 +281,8 @@ namespace EnrageWestworld.InGame
             }
             if (keys.Rows.Count > 0)
                 _pages.Add(keys);
+            if (testing.Rows.Count > 0)
+                _pages.Add(testing);
             _pages.Add(enrage);
             if (keepTitle != null)
             {
@@ -452,7 +463,8 @@ namespace EnrageWestworld.InGame
             if (!r.Theirs && OurKeys.Contains(e.Key))
             {
                 _capture = r;
-                _note = "Waiting for a key: whatever you press next becomes " + Label(e.Key) + " (Ctrl, Shift or Alt with it is fine). Escape keeps " + e.Value + ".";
+                _note = "Waiting for a key: whatever you press next becomes " + Label(e.Key) + " (Ctrl, Shift or Alt with it is fine). Escape keeps " + e.Value + "." +
+                        (Clearable.Contains(e.Key) ? " Delete leaves it without a key." : string.Empty);
                 return;
             }
             if (r.Theirs && _bridge != null && _bridge.EnrageRebinds(e.Section, e.Key))
@@ -475,6 +487,11 @@ namespace EnrageWestworld.InGame
             if (key == Keys.Escape || key == Keys.Back)
             {
                 _note = Label(r.E.Key) + " stays " + r.E.Value + ".";
+                return;
+            }
+            if (key == Keys.Delete && Clearable.Contains(r.E.Key))
+            {
+                Write(r, "None");   // KeySpec reads None as no key at all
                 return;
             }
             string spec = (ctrl ? "Ctrl+" : string.Empty) + (shift ? "Shift+" : string.Empty) + (alt ? "Alt+" : string.Empty) + KeySpec.Name(key);
