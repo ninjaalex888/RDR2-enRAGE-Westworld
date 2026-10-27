@@ -6,55 +6,55 @@ namespace EnrageWestworld.Core
 	[DataContract]
 	public sealed class Affair
 	{
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string AId;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string AName;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public bool AWoman;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string BId;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string BName;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public bool BWoman;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string BLine;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Town;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public int Stage;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public int Heat;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public int BLikes;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public long Since;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public long At;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Ended;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string RivalId;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string RivalName;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public List<string> Said = new List<string>();
 
 		public bool Active => Ended == null;

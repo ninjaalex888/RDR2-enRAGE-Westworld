@@ -5,13 +5,13 @@ namespace EnrageWestworld.Core
 	[DataContract]
 	public sealed class DiaryEntry
 	{
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public long At;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Date;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Text;
 	}
 }

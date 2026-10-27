@@ -19,13 +19,13 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class LaterAct
     {
-        [DataMember] public string Kind;   // "diary", "word", or "news" (a notice for the corner, Title and Text)
-        [DataMember] public string Title;
-        [DataMember] public string PersonId;
-        [DataMember] public string Text, Emotion, Cause;
-        [DataMember] public int Intensity;
-        [DataMember] public long At;       // when the memory was made (game minutes)
-        [DataMember] public long DueAt;
+        [DataMember(EmitDefaultValue = false)] public string Kind;   // "diary", "word", or "news" (a notice for the corner, Title and Text)
+        [DataMember(EmitDefaultValue = false)] public string Title;
+        [DataMember(EmitDefaultValue = false)] public string PersonId;
+        [DataMember(EmitDefaultValue = false)] public string Text, Emotion, Cause;
+        [DataMember(EmitDefaultValue = false)] public int Intensity;
+        [DataMember(EmitDefaultValue = false)] public long At;       // when the memory was made (game minutes)
+        [DataMember(EmitDefaultValue = false)] public long DueAt;
 
         public MemoryItem Memory()
         {

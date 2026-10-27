@@ -12,44 +12,44 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class Store
     {
-        [DataMember] public int Version = 3;   // 3: people keep memories (PersonState.Mind, 0.6.3)
-        [DataMember] public string Player = "arthur";
-        [DataMember] public long InstalledAt;
-        [DataMember] public long LastGameMin;
-        [DataMember] public Dictionary<string, PersonState> People = new Dictionary<string, PersonState>();
-        [DataMember] public List<Rumor> Rumors = new List<Rumor>();
-        [DataMember] public List<string> Announced = new List<string>();
-        [DataMember] public List<Affair> Affairs = new List<Affair>();
-        [DataMember] public long RomanceAt;
+        [DataMember(EmitDefaultValue = false)] public int Version = 3;   // 3: people keep memories (PersonState.Mind, 0.6.3)
+        [DataMember(EmitDefaultValue = false)] public string Player = "arthur";
+        [DataMember(EmitDefaultValue = false)] public long InstalledAt;
+        [DataMember(EmitDefaultValue = false)] public long LastGameMin;
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, PersonState> People = new Dictionary<string, PersonState>();
+        [DataMember(EmitDefaultValue = false)] public List<Rumor> Rumors = new List<Rumor>();
+        [DataMember(EmitDefaultValue = false)] public List<string> Announced = new List<string>();
+        [DataMember(EmitDefaultValue = false)] public List<Affair> Affairs = new List<Affair>();
+        [DataMember(EmitDefaultValue = false)] public long RomanceAt;
 
         // 0.4
-        [DataMember] public List<Deed> Deeds = new List<Deed>();
-        [DataMember] public List<TownRumour> TownRumours = new List<TownRumour>();
-        [DataMember] public List<Paper> Papers = new List<Paper>();
-        [DataMember] public List<Fallen> Fallen = new List<Fallen>();
-        [DataMember] public Dictionary<string, Reverie> Reveries = new Dictionary<string, Reverie>();
-        [DataMember] public List<Avenger> Avengers = new List<Avenger>();
-        [DataMember] public List<Wedding> Weddings = new List<Wedding>();
-        [DataMember] public List<Transfer> Transfers = new List<Transfer>();
-        [DataMember] public List<Debt> Debts = new List<Debt>();
-        [DataMember] public Dictionary<string, int> Counts = new Dictionary<string, int>();
-        [DataMember] public Dictionary<string, long> TownVisits = new Dictionary<string, long>();
-        [DataMember] public int LastStalkDay;
-        [DataMember] public int LastDayStalkDay = -1;
-        [DataMember] public long LastLetterAt;
-        [DataMember] public long LastWorldTickAt;
-        [DataMember] public bool DeadSeeded;
-        [DataMember] public bool SparedSeeded;                 // enRAGE's mercy counts read once, quietly
-        [DataMember] public int DiaryDayKey;
-        [DataMember] public List<Resident> Residents = new List<Resident>();   // ordinary people something has happened to (see Residents.cs)
-        [DataMember] public int NextResident;
-        [DataMember] public List<Post> Posts = new List<Post>();   // the counters with one person each, who pass them on (see Posts.cs)
-        [DataMember] public List<SceneTie> Ties = new List<SceneTie>();      // what street scenes left between two people (see Ties.cs)
-        [DataMember] public List<WorryLink> Links = new List<WorryLink>();   // the real person at the other end of a worry (see Links.cs)
-        [DataMember] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
-        [DataMember] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
-        [DataMember] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
-        [DataMember] public PaceState Pace = new PaceState();                           // when things may happen again (Pacing.cs)
+        [DataMember(EmitDefaultValue = false)] public List<Deed> Deeds = new List<Deed>();
+        [DataMember(EmitDefaultValue = false)] public List<TownRumour> TownRumours = new List<TownRumour>();
+        [DataMember(EmitDefaultValue = false)] public List<Paper> Papers = new List<Paper>();
+        [DataMember(EmitDefaultValue = false)] public List<Fallen> Fallen = new List<Fallen>();
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, Reverie> Reveries = new Dictionary<string, Reverie>();
+        [DataMember(EmitDefaultValue = false)] public List<Avenger> Avengers = new List<Avenger>();
+        [DataMember(EmitDefaultValue = false)] public List<Wedding> Weddings = new List<Wedding>();
+        [DataMember(EmitDefaultValue = false)] public List<Transfer> Transfers = new List<Transfer>();
+        [DataMember(EmitDefaultValue = false)] public List<Debt> Debts = new List<Debt>();
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, int> Counts = new Dictionary<string, int>();
+        [DataMember(EmitDefaultValue = false)] public Dictionary<string, long> TownVisits = new Dictionary<string, long>();
+        [DataMember(EmitDefaultValue = false)] public int LastStalkDay;
+        [DataMember(EmitDefaultValue = false)] public int LastDayStalkDay = -1;
+        [DataMember(EmitDefaultValue = false)] public long LastLetterAt;
+        [DataMember(EmitDefaultValue = false)] public long LastWorldTickAt;
+        [DataMember(EmitDefaultValue = false)] public bool DeadSeeded;
+        [DataMember(EmitDefaultValue = false)] public bool SparedSeeded;                 // enRAGE's mercy counts read once, quietly
+        [DataMember(EmitDefaultValue = false)] public int DiaryDayKey;
+        [DataMember(EmitDefaultValue = false)] public List<Resident> Residents = new List<Resident>();   // ordinary people something has happened to (see Residents.cs)
+        [DataMember(EmitDefaultValue = false)] public int NextResident;
+        [DataMember(EmitDefaultValue = false)] public List<Post> Posts = new List<Post>();   // the counters with one person each, who pass them on (see Posts.cs)
+        [DataMember(EmitDefaultValue = false)] public List<SceneTie> Ties = new List<SceneTie>();      // what street scenes left between two people (see Ties.cs)
+        [DataMember(EmitDefaultValue = false)] public List<WorryLink> Links = new List<WorryLink>();   // the real person at the other end of a worry (see Links.cs)
+        [DataMember(EmitDefaultValue = false)] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
+        [DataMember(EmitDefaultValue = false)] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
+        [DataMember(EmitDefaultValue = false)] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
+        [DataMember(EmitDefaultValue = false)] public PaceState Pace = new PaceState();                           // when things may happen again (Pacing.cs)
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
         private Dictionary<string, DeathEntry> _deathIndex;
 

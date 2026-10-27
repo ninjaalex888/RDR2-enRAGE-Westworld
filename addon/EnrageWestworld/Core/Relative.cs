@@ -6,22 +6,22 @@ namespace EnrageWestworld.Core
 	[DataContract]
 	public sealed class Relative
 	{
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Name;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Relation;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public bool Woman;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Town;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Line;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public List<Hearsay> Heard = new List<Hearsay>();
 
 		public string FirstName => Name.Split(' ')[0];

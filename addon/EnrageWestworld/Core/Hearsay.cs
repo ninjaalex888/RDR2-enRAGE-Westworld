@@ -5,31 +5,31 @@ namespace EnrageWestworld.Core
 	[DataContract]
 	public sealed class Hearsay
 	{
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string FromId;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string FromName;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Relation;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public bool FromWoman;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Text;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public int Hops;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public long At;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public bool Told;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public bool Thought;
 
 		public string Key => FromId + "|" + Text;

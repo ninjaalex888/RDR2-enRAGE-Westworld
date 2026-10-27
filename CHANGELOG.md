@@ -12,6 +12,7 @@ Built on 2026-10-26, the night after (Lex's overnight brief, 2026-10-27) and the
 - F7 marks enRAGE's records within 100 m on the map for a minute, each labelled free or why not, and names the nearest free one (for testing a record's despair or a record as the stalker). Log `RECORDS marked`.
 - Flirt in the lock-on menu no longer shows on men while same-sex romance is off (`[Romance] SameSexRomance`): none of them could say yes. Seen by Lex in game, 2026-10-27.
 - The frame-time meter no longer reports loading the save as a slow frame (it settles for two seconds after the save loads), and its slow-frame line names the part that really cost the most (it named the last feature to run).
+- The save file is about 40% smaller (Lex's went from 1,613 KB to 916 KB): empty, zero and false values are no longer written. Nothing is lost: the file reads back the same, and an older RealNPCs reads the new file as it read the old one. Saving takes a fifth less time.
 
 ### Built overnight (2026-10-27)
 

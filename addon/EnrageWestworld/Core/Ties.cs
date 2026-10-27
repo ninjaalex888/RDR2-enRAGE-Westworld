@@ -13,16 +13,16 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class SceneTie
     {
-        [DataMember] public string A, B;           // ids: res:N for a resident, folk:... for one of enRAGE's townsfolk
-        [DataMember] public string AName, BName;   // their full names, so a thought never has to look them up
-        [DataMember] public string Town;
-        [DataMember] public string Kind;           // the latest scene between them: argue, brawl, flirt, smalltalk...
-        [DataMember] public int Warmth;            // the scenes added up: warm above 0, hostile below (-3..3)
-        [DataMember] public int Count;             // scenes between them
-        [DataMember] public long At;               // game minute of the latest
-        [DataMember] public int Stage;             // how far a story between them has gone (follow-up scenes)
-        [DataMember] public string Doer;           // for trouble one did to the other (rough, pickpocket, lift, drunk): who did it
-        [DataMember] public bool Courted;          // they were sweethearts (a flirt, sweet words, a proposal): a quarrel since leaves them at odds (Scenes.Mend)
+        [DataMember(EmitDefaultValue = false)] public string A, B;           // ids: res:N for a resident, folk:... for one of enRAGE's townsfolk
+        [DataMember(EmitDefaultValue = false)] public string AName, BName;   // their full names, so a thought never has to look them up
+        [DataMember(EmitDefaultValue = false)] public string Town;
+        [DataMember(EmitDefaultValue = false)] public string Kind;           // the latest scene between them: argue, brawl, flirt, smalltalk...
+        [DataMember(EmitDefaultValue = false)] public int Warmth;            // the scenes added up: warm above 0, hostile below (-3..3)
+        [DataMember(EmitDefaultValue = false)] public int Count;             // scenes between them
+        [DataMember(EmitDefaultValue = false)] public long At;               // game minute of the latest
+        [DataMember(EmitDefaultValue = false)] public int Stage;             // how far a story between them has gone (follow-up scenes)
+        [DataMember(EmitDefaultValue = false)] public string Doer;           // for trouble one did to the other (rough, pickpocket, lift, drunk): who did it
+        [DataMember(EmitDefaultValue = false)] public bool Courted;          // they were sweethearts (a flirt, sweet words, a proposal): a quarrel since leaves them at odds (Scenes.Mend)
 
         /// This one did it to the other (the attacker, the thief, the drunk who called him out).
         public bool Did(string id)

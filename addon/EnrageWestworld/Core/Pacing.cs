@@ -14,12 +14,12 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class PaceState
     {
-        [DataMember(Name = "k")] public Dictionary<string, long> LastKind = new Dictionary<string, long>();
-        [DataMember(Name = "p")] public Dictionary<string, long> LastPlace = new Dictionary<string, long>();     // "kind|place"
-        [DataMember(Name = "w")] public Dictionary<string, long> LastWho = new Dictionary<string, long>();       // "kind|person or pair"
-        [DataMember(Name = "b")] public long BigAt = -100000;
-        [DataMember(Name = "n")] public long Night = -1;
-        [DataMember(Name = "c")] public int BigTonight;
+        [DataMember(Name = "k", EmitDefaultValue = false)] public Dictionary<string, long> LastKind = new Dictionary<string, long>();
+        [DataMember(Name = "p", EmitDefaultValue = false)] public Dictionary<string, long> LastPlace = new Dictionary<string, long>();     // "kind|place"
+        [DataMember(Name = "w", EmitDefaultValue = false)] public Dictionary<string, long> LastWho = new Dictionary<string, long>();       // "kind|person or pair"
+        [DataMember(Name = "b", EmitDefaultValue = false)] public long BigAt = -100000;
+        [DataMember(Name = "n", EmitDefaultValue = false)] public long Night = -1;
+        [DataMember(Name = "c", EmitDefaultValue = false)] public int BigTonight;
 
         internal void Fix()
         {

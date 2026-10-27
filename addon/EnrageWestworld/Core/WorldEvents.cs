@@ -15,28 +15,28 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class Happening
     {
-        [DataMember(Name = "k")] public string Kind;          // scene:<kind>, deed:<kind>, death, encounter:<kind>
-        [DataMember(Name = "d")] public string DoerId;
-        [DataMember(Name = "dn")] public string DoerName;     // a name, or how they looked ("a farmhand", "you")
-        [DataMember(Name = "t")] public string TargetId;
-        [DataMember(Name = "tn")] public string TargetName;
-        [DataMember(Name = "w")] public string Town;
-        [DataMember(Name = "p")] public string Place;         // saloon, church... (null: the street or the wilds)
-        [DataMember(Name = "x")] public float X;
-        [DataMember(Name = "y")] public float Y;
-        [DataMember(Name = "z")] public float Z;
-        [DataMember(Name = "a")] public long At;              // game minute (Store.LastGameMin)
-        [DataMember(Name = "o")] public string Outcome;       // how it came out, in a word or two (null while unknown)
-        [DataMember(Name = "s")] public List<EventWitness> Witnesses = new List<EventWitness>();
+        [DataMember(Name = "k", EmitDefaultValue = false)] public string Kind;          // scene:<kind>, deed:<kind>, death, encounter:<kind>
+        [DataMember(Name = "d", EmitDefaultValue = false)] public string DoerId;
+        [DataMember(Name = "dn", EmitDefaultValue = false)] public string DoerName;     // a name, or how they looked ("a farmhand", "you")
+        [DataMember(Name = "t", EmitDefaultValue = false)] public string TargetId;
+        [DataMember(Name = "tn", EmitDefaultValue = false)] public string TargetName;
+        [DataMember(Name = "w", EmitDefaultValue = false)] public string Town;
+        [DataMember(Name = "p", EmitDefaultValue = false)] public string Place;         // saloon, church... (null: the street or the wilds)
+        [DataMember(Name = "x", EmitDefaultValue = false)] public float X;
+        [DataMember(Name = "y", EmitDefaultValue = false)] public float Y;
+        [DataMember(Name = "z", EmitDefaultValue = false)] public float Z;
+        [DataMember(Name = "a", EmitDefaultValue = false)] public long At;              // game minute (Store.LastGameMin)
+        [DataMember(Name = "o", EmitDefaultValue = false)] public string Outcome;       // how it came out, in a word or two (null while unknown)
+        [DataMember(Name = "s", EmitDefaultValue = false)] public List<EventWitness> Witnesses = new List<EventWitness>();
     }
 
     [DataContract]
     public sealed class EventWitness
     {
-        [DataMember(Name = "i")] public string Id;            // a lasting id, or null for someone who can't be met again
-        [DataMember(Name = "n")] public string Name;          // their name, or how they looked
-        [DataMember(Name = "m")] public float Metres;
-        [DataMember(Name = "h")] public string How;           // saw, heard
+        [DataMember(Name = "i", EmitDefaultValue = false)] public string Id;            // a lasting id, or null for someone who can't be met again
+        [DataMember(Name = "n", EmitDefaultValue = false)] public string Name;          // their name, or how they looked
+        [DataMember(Name = "m", EmitDefaultValue = false)] public float Metres;
+        [DataMember(Name = "h", EmitDefaultValue = false)] public string How;           // saw, heard
     }
 
     public static class WorldEvents

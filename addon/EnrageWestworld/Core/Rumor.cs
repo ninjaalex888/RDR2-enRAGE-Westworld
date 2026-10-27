@@ -5,40 +5,40 @@ namespace EnrageWestworld.Core
 	[DataContract]
 	public sealed class Rumor
 	{
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string FromId;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public bool NotByYou;   // a death someone else caused (an execution on the road): no avenger, no grief letter to him
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string FromName;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public bool FromWoman;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Text;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public int Hops = 1;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string ToId;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string ToRelative;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string Relation;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public string How;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public long SentAt;
 
-		[DataMember]
+		[DataMember(EmitDefaultValue = false)]
 		public long DueAt;
 	}
 }

@@ -16,20 +16,20 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class Post
     {
-        [DataMember] public string Id;            // "post:<model>"
-        [DataMember] public string Model;         // the model name the game plays the post with
-        [DataMember] public string Town;
-        [DataMember] public string Role;          // "the gunsmith"
-        [DataMember] public string HolderId;      // the resident at the post now (null: nobody yet)
-        [DataMember] public List<string> Former = new List<string>();   // earlier holders, oldest first (they may be forgotten)
-        [DataMember] public string LastName;      // the holder before, by name, for whoever comes next
-        [DataMember] public long VacantAt;        // game minute the last holder died, 0 if nobody has
-        [DataMember] public bool KilledByPlayer;
-        [DataMember] public bool KillerKnown;     // somebody saw him do it
-        [DataMember] public int Outfit = -1;      // the outfit preset the holder is dressed in, -1 = as the game made them
-        [DataMember] public long FellAt;          // game minute the holder was last shot down (the game brings them back bandaged)
-        [DataMember] public long BackAt;          // ...and when they were seen back at the counter
-        [DataMember] public List<string> SawFall = new List<string>();   // who saw them fall, to find it uncanny
+        [DataMember(EmitDefaultValue = false)] public string Id;            // "post:<model>"
+        [DataMember(EmitDefaultValue = false)] public string Model;         // the model name the game plays the post with
+        [DataMember(EmitDefaultValue = false)] public string Town;
+        [DataMember(EmitDefaultValue = false)] public string Role;          // "the gunsmith"
+        [DataMember(EmitDefaultValue = false)] public string HolderId;      // the resident at the post now (null: nobody yet)
+        [DataMember(EmitDefaultValue = false)] public List<string> Former = new List<string>();   // earlier holders, oldest first (they may be forgotten)
+        [DataMember(EmitDefaultValue = false)] public string LastName;      // the holder before, by name, for whoever comes next
+        [DataMember(EmitDefaultValue = false)] public long VacantAt;        // game minute the last holder died, 0 if nobody has
+        [DataMember(EmitDefaultValue = false)] public bool KilledByPlayer;
+        [DataMember(EmitDefaultValue = false)] public bool KillerKnown;     // somebody saw him do it
+        [DataMember(EmitDefaultValue = false)] public int Outfit = -1;      // the outfit preset the holder is dressed in, -1 = as the game made them
+        [DataMember(EmitDefaultValue = false)] public long FellAt;          // game minute the holder was last shot down (the game brings them back bandaged)
+        [DataMember(EmitDefaultValue = false)] public long BackAt;          // ...and when they were seen back at the counter
+        [DataMember(EmitDefaultValue = false)] public List<string> SawFall = new List<string>();   // who saw them fall, to find it uncanny
     }
 
     public sealed class PostKind

@@ -11,17 +11,17 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class DeathEntry
     {
-        [DataMember] public string Id;      // res:..., folk:..., or an enRAGE record's id
-        [DataMember] public string Name;
-        [DataMember] public string Kind;    // resident, folk, record
-        [DataMember] public long At;        // game minutes
-        [DataMember] public string Town;
-        [DataMember] public float X, Y, Z;
-        [DataMember] public string How;     // "a revolver", "running at a wall"... or null
-        [DataMember] public string By;      // player, self, another, unknown
-        [DataMember] public string ById;    // the one who did it, when we know them
-        [DataMember] public bool Seen;      // in the player's view when it happened
-        [DataMember] public bool SharedWithEnrage;   // we marked enRAGE's townsperson dead: it hadn't seen it
+        [DataMember(EmitDefaultValue = false)] public string Id;      // res:..., folk:..., or an enRAGE record's id
+        [DataMember(EmitDefaultValue = false)] public string Name;
+        [DataMember(EmitDefaultValue = false)] public string Kind;    // resident, folk, record
+        [DataMember(EmitDefaultValue = false)] public long At;        // game minutes
+        [DataMember(EmitDefaultValue = false)] public string Town;
+        [DataMember(EmitDefaultValue = false)] public float X, Y, Z;
+        [DataMember(EmitDefaultValue = false)] public string How;     // "a revolver", "running at a wall"... or null
+        [DataMember(EmitDefaultValue = false)] public string By;      // player, self, another, unknown
+        [DataMember(EmitDefaultValue = false)] public string ById;    // the one who did it, when we know them
+        [DataMember(EmitDefaultValue = false)] public bool Seen;      // in the player's view when it happened
+        [DataMember(EmitDefaultValue = false)] public bool SharedWithEnrage;   // we marked enRAGE's townsperson dead: it hadn't seen it
     }
 
     public static class DeathLedger

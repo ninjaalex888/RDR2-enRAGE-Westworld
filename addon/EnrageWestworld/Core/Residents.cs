@@ -15,36 +15,36 @@ namespace EnrageWestworld.Core
     {
         public const string Prefix = "res:";
 
-        [DataMember] public string Id;
-        [DataMember] public string Name;
-        [DataMember] public bool Woman;
-        [DataMember] public uint Model;            // the ped model they were met in; a returning resident is cast on a matching passer-by
-        [DataMember] public string Town;
-        [DataMember] public string Trade;          // "a farmhand", "a townswoman"
-        [DataMember] public string Personality;    // Hothead, Coward, Proud, Cold, Greedy, Loyal, Drifter
-        [DataMember] public string Disposition;    // Friendly, Neutral, Surly
-        [DataMember] public string Sociability;    // Introvert, Outgoing
-        [DataMember] public string Devotion;       // Devout, Churchgoer, Lapsed, Godless
-        [DataMember] public string Smarts;         // Sharp, Average, Dim
-        [DataMember] public int BornYear;
-        [DataMember] public long MetAt;            // game minute they were made
-        [DataMember] public long TouchedAt;        // game minute something last happened to them
-        [DataMember] public bool Dead;
-        [DataMember] public string PostId;         // the counter they keep (see Posts.cs), if any
-        [DataMember] public string Kin;            // how they're related to the one who kept it before ("son"), null for a newcomer
-        [DataMember] public string KinOf;          // the one who kept it before, by name
-        [DataMember] public string From;           // a newcomer's old town
-        [DataMember] public long TookOverAt;       // game minute they took the post over, 0 for the first
-        [DataMember] public int Wounds;            // times they were shot down at their counter and the game brought them back
-        [DataMember] public long WoundedAt;
-        [DataMember] public bool WoundedByPlayer;
-        [DataMember] public bool KnowsShooter;     // they saw, or someone told them, that it was the player
-        [DataMember] public bool Fled;             // woke and walked out of their town (the wake acts' escape): lives rough now, never recast on a passer-by
-        [DataMember] public long FledAt;
-        [DataMember] public bool HasCamp;          // where they live in the wilds, chosen once
-        [DataMember] public float CampX, CampY, CampZ;
-        [DataMember] public bool Regular;          // one of their town's regulars (Regulars.cs): met again and again, kept
-        [DataMember] public int Outfit;            // a regular's outfit preset, put on whenever they're cast (read only when Regular)
+        [DataMember(EmitDefaultValue = false)] public string Id;
+        [DataMember(EmitDefaultValue = false)] public string Name;
+        [DataMember(EmitDefaultValue = false)] public bool Woman;
+        [DataMember(EmitDefaultValue = false)] public uint Model;            // the ped model they were met in; a returning resident is cast on a matching passer-by
+        [DataMember(EmitDefaultValue = false)] public string Town;
+        [DataMember(EmitDefaultValue = false)] public string Trade;          // "a farmhand", "a townswoman"
+        [DataMember(EmitDefaultValue = false)] public string Personality;    // Hothead, Coward, Proud, Cold, Greedy, Loyal, Drifter
+        [DataMember(EmitDefaultValue = false)] public string Disposition;    // Friendly, Neutral, Surly
+        [DataMember(EmitDefaultValue = false)] public string Sociability;    // Introvert, Outgoing
+        [DataMember(EmitDefaultValue = false)] public string Devotion;       // Devout, Churchgoer, Lapsed, Godless
+        [DataMember(EmitDefaultValue = false)] public string Smarts;         // Sharp, Average, Dim
+        [DataMember(EmitDefaultValue = false)] public int BornYear;
+        [DataMember(EmitDefaultValue = false)] public long MetAt;            // game minute they were made
+        [DataMember(EmitDefaultValue = false)] public long TouchedAt;        // game minute something last happened to them
+        [DataMember(EmitDefaultValue = false)] public bool Dead;
+        [DataMember(EmitDefaultValue = false)] public string PostId;         // the counter they keep (see Posts.cs), if any
+        [DataMember(EmitDefaultValue = false)] public string Kin;            // how they're related to the one who kept it before ("son"), null for a newcomer
+        [DataMember(EmitDefaultValue = false)] public string KinOf;          // the one who kept it before, by name
+        [DataMember(EmitDefaultValue = false)] public string From;           // a newcomer's old town
+        [DataMember(EmitDefaultValue = false)] public long TookOverAt;       // game minute they took the post over, 0 for the first
+        [DataMember(EmitDefaultValue = false)] public int Wounds;            // times they were shot down at their counter and the game brought them back
+        [DataMember(EmitDefaultValue = false)] public long WoundedAt;
+        [DataMember(EmitDefaultValue = false)] public bool WoundedByPlayer;
+        [DataMember(EmitDefaultValue = false)] public bool KnowsShooter;     // they saw, or someone told them, that it was the player
+        [DataMember(EmitDefaultValue = false)] public bool Fled;             // woke and walked out of their town (the wake acts' escape): lives rough now, never recast on a passer-by
+        [DataMember(EmitDefaultValue = false)] public long FledAt;
+        [DataMember(EmitDefaultValue = false)] public bool HasCamp;          // where they live in the wilds, chosen once
+        [DataMember(EmitDefaultValue = false)] public float CampX, CampY, CampZ;
+        [DataMember(EmitDefaultValue = false)] public bool Regular;          // one of their town's regulars (Regulars.cs): met again and again, kept
+        [DataMember(EmitDefaultValue = false)] public int Outfit;            // a regular's outfit preset, put on whenever they're cast (read only when Regular)
 
         public static bool IsResident(string id)
         {

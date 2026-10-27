@@ -14,13 +14,13 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class WorryLink
     {
-        [DataMember] public string Id, Name;          // the one worrying
-        [DataMember] public string Kind;              // debt, feud or courting
-        [DataMember] public long Arc;                 // the run of worry days it belongs to
-        [DataMember] public string OtherId, OtherName;
-        [DataMember] public string Town;
-        [DataMember] public long At;                  // game minute made
-        [DataMember] public bool Ended;               // its ending (stage 3) has been played between them: not again
+        [DataMember(EmitDefaultValue = false)] public string Id, Name;          // the one worrying
+        [DataMember(EmitDefaultValue = false)] public string Kind;              // debt, feud or courting
+        [DataMember(EmitDefaultValue = false)] public long Arc;                 // the run of worry days it belongs to
+        [DataMember(EmitDefaultValue = false)] public string OtherId, OtherName;
+        [DataMember(EmitDefaultValue = false)] public string Town;
+        [DataMember(EmitDefaultValue = false)] public long At;                  // game minute made
+        [DataMember(EmitDefaultValue = false)] public bool Ended;               // its ending (stage 3) has been played between them: not again
     }
 
     public static class Links

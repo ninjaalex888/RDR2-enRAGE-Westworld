@@ -15,21 +15,21 @@ namespace EnrageWestworld.Core
     [DataContract]
     public sealed class MindMemory
     {
-        [DataMember(Name = "k")] public string Kind;          // the group: blows, quarrel, slight, theft, drunk, warmth, talk
-        [DataMember(Name = "s")] public string Sub;           // the exact scene kind: brawl, rough, argue, flirt...
-        [DataMember(Name = "w")] public List<string> Who;     // the others in it, by id (null for someone unknown)
-        [DataMember(Name = "n")] public List<string> Names;   // ...as this person knows them: a first name, or how they looked
-        [DataMember(Name = "t")] public string Town;
-        [DataMember(Name = "p")] public string Place;         // saloon, church, store... (null: the street)
-        [DataMember(Name = "a")] public long At;              // game minute (Store.LastGameMin)
-        [DataMember(Name = "h")] public string How;           // did, saw, heard
-        [DataMember(Name = "r")] public string Role;          // when one of the two did it to the other: doer, done; else null
-        [DataMember(Name = "f")] public int Feel;             // -3 .. 3
-        [DataMember(Name = "g")] public int Strength;         // 0 .. 100
-        [DataMember(Name = "x")] public int Times;            // times thought about since
-        [DataMember(Name = "l")] public long LastAt;          // when last thought about (game minute; 0 never)
-        [DataMember(Name = "y")] public string Key;           // the same thing noted twice is one memory
-        [DataMember(Name = "u")] public long DueAt;           // heard of: not on their mind until word reaches them (0: at once)
+        [DataMember(Name = "k", EmitDefaultValue = false)] public string Kind;          // the group: blows, quarrel, slight, theft, drunk, warmth, talk
+        [DataMember(Name = "s", EmitDefaultValue = false)] public string Sub;           // the exact scene kind: brawl, rough, argue, flirt...
+        [DataMember(Name = "w", EmitDefaultValue = false)] public List<string> Who;     // the others in it, by id (null for someone unknown)
+        [DataMember(Name = "n", EmitDefaultValue = false)] public List<string> Names;   // ...as this person knows them: a first name, or how they looked
+        [DataMember(Name = "t", EmitDefaultValue = false)] public string Town;
+        [DataMember(Name = "p", EmitDefaultValue = false)] public string Place;         // saloon, church, store... (null: the street)
+        [DataMember(Name = "a", EmitDefaultValue = false)] public long At;              // game minute (Store.LastGameMin)
+        [DataMember(Name = "h", EmitDefaultValue = false)] public string How;           // did, saw, heard
+        [DataMember(Name = "r", EmitDefaultValue = false)] public string Role;          // when one of the two did it to the other: doer, done; else null
+        [DataMember(Name = "f", EmitDefaultValue = false)] public int Feel;             // -3 .. 3
+        [DataMember(Name = "g", EmitDefaultValue = false)] public int Strength;         // 0 .. 100
+        [DataMember(Name = "x", EmitDefaultValue = false)] public int Times;            // times thought about since
+        [DataMember(Name = "l", EmitDefaultValue = false)] public long LastAt;          // when last thought about (game minute; 0 never)
+        [DataMember(Name = "y", EmitDefaultValue = false)] public string Key;           // the same thing noted twice is one memory
+        [DataMember(Name = "u", EmitDefaultValue = false)] public long DueAt;           // heard of: not on their mind until word reaches them (0: at once)
 
         public string WhoAt(int i)
         {

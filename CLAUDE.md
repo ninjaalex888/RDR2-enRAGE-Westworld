@@ -36,6 +36,7 @@ Built against enRAGE 0.9.5.3. When enRAGE updates: back up its data folder and t
 - Writing style for all player-facing text: plain, specific, no filler.
 - Settings: add a field in `Settings.cs`, a line in `ToIni()`, clamp it in `Clamp()`. Bump `CurrentVersion` when adding options so old inis are rewritten with the new lines (values kept).
 - Native out-parameters use 8-byte slots.
+- Saved types (0.6.3): every `[DataMember]` in Core is `[DataMember(EmitDefaultValue = false)]` (with `Name = ...` first where it has one); give new members the same. Null, 0 and false are left out of `<player>.json` (Lex's save: 1,613 KB to 916 KB). Loading runs no constructors or field initializers, so a left-out member reads back as its default, as it did when it was written out; proved by round trips (the new code twice, byte for byte; the old code reading the new file writes exactly its old output). Empty lists are still written. Nothing that reads the save may count on a field being there.
 
 ## Writing to enRAGE (audit, 2026-10-26)
 
