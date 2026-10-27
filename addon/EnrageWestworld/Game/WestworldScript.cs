@@ -1089,6 +1089,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST disbelief: " + _disbeliefSaid + " this session" + (_disbeliefLast != null ? ", last " + _disbeliefLast : "") + " (GENERIC_SHOCKED_DISBELIEF, else a shocked line)");
 			Log.Write("TEST ledger: " + LedgerStatus());
 			MarkAwake();
+			MarkRecords();   // after the awake marks, so its hint is the one shown when records are near
 			Log.Write("TEST settings: " + SettingsStatus());
 			if (nemesisRecord == null)
 			{

@@ -2,6 +2,8 @@
 
 ## Unreleased (overnight 2026-10-27)
 
+- The wake key (Y) wakes the person you're locked on to, whoever they are; before, it did so only for enRAGE's records and otherwise woke whoever was nearest. Someone who can't be woken (a child, one of the story's own) is named with the reason.
+- F7 marks enRAGE's records within 100 m on the map for a minute, each labelled free or why not, and names the nearest free one (for testing a record's despair or a record as the stalker). Log `RECORDS marked`.
 - Flirt in the lock-on menu no longer shows on men while same-sex romance is off (`[Romance] SameSexRomance`): none of them could say yes. Seen by Lex in game, 2026-10-27.
 - The frame-time meter no longer reports loading the save as a slow frame (it settles for two seconds after the save loads), and its slow-frame line names the part that really cost the most (it named the last feature to run).
 - More to think after tonight's kindnesses and unkindnesses: a round bought, a debt paid in the street, a friend's sympathy, good news shared, an apology, a hand up after a fall (yours too), a fall walked past, standing up to a bully and being faced down each have more lines, and lines of their own for the days after (before, some borrowed courting words).

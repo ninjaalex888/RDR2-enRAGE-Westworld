@@ -141,22 +141,26 @@ namespace EnrageWestworld.InGame
             return d <= 5f || (d <= 10f && PED.IS_PED_FACING_PED(me.Handle, p.Handle, 70f));
         }
 
-        /// The enRAGE person to wake: whoever the game would greet, else the nearest within 10 m that you're roughly
-        /// facing (any distance up to 5 m).
-        private unsafe NemesisRecord WakeTarget(Ped me, out int handle)
+        /// Whoever you're locked on to (the game's greet target), living and not you, else 0.
+        private unsafe int LockedOn(Ped me)
         {
-            handle = 0;
             int t = 0;
             if (!PLAYER.IS_PLAYER_FREE_AIMING(Game.Player.Handle))
                 PLAYER.GET_PLAYER_INTERACTION_TARGET_ENTITY(Game.Player.Handle, &t, p2: false, p3: false);
-            if (t != 0 && ENTITY.DOES_ENTITY_EXIST(t))
+            return t != 0 && t != me.Handle && ENTITY.DOES_ENTITY_EXIST(t) && ENTITY.IS_ENTITY_A_PED(t) && !ENTITY.IS_ENTITY_DEAD(t) ? t : 0;
+        }
+
+        /// The enRAGE person to wake: the one you're locked on to, else (locked on to nobody) the nearest within 10 m
+        /// that you're roughly facing (any distance up to 5 m).
+        private NemesisRecord WakeTarget(Ped me, int locked, out int handle)
+        {
+            handle = 0;
+            if (locked != 0)
             {
-                NemesisRecord r = _bridge.RecordAt(t);
+                NemesisRecord r = _bridge.RecordAt(locked);
                 if (r != null && r.IsAlive)
-                {
-                    handle = t;
-                    return r;
-                }
+                    handle = locked;
+                return handle != 0 ? r : null;   // locked on to someone else: them or nobody, never a record beside them
             }
             NemesisRecord best = null;
             float bestD = float.MaxValue;
@@ -232,17 +236,46 @@ namespace EnrageWestworld.InGame
             int handle;
             Person p = null;
             Resident res = null;
-            NemesisRecord rec = WakeTarget(me, out handle);
+            // locked on to someone (Lex, 2026-10-27: Y woke whoever was nearest, not the woman he was locked on to): that
+            // person and nobody else, whether one of enRAGE's records, its townsfolk or anyone ordinary
+            int locked = LockedOn(me);
+            NemesisRecord rec = WakeTarget(me, locked, out handle);
             if (rec != null)
                 p = PersonOf(rec);
             else
             {
-                Folk folk;
-                Ped folkPed = NearestFolk(me, out folk);
+                Folk folk = null;
+                Ped folkPed = null;
+                if (locked == 0)
+                    folkPed = NearestFolk(me, out folk);
+                else if (!Natives.StoryModel(new Ped(locked)))
+                {
+                    Acquaintance a = _bridge.AcquaintanceAt(locked);
+                    if (a != null && !string.IsNullOrEmpty(a.Name))
+                    {
+                        folkPed = new Ped(locked);
+                        folk = Snapshot.Of(a);
+                    }
+                }
                 if (folkPed != null)
                 {
                     p = _engine.PersonOfFolk(folk.Key, folk.Name, folk.Woman, folk.Town, Bridge.Now());
                     handle = folkPed.Handle;
+                }
+                else if (locked != 0)
+                {
+                    Ped other = new Ped(locked);
+                    string why = ResidentWhy(other);
+                    if (why != null)
+                    {
+                        WakeNote(TalkName(other) + " can't be woken: " + why + ".");
+                        Log.Write("WAKE key: locked on to " + TalkName(other) + " (" + Natives.ModelName(other) + "), who can't be woken: " + why);
+                        return;
+                    }
+                    res = ResidentOf(other);
+                    handle = locked;
+                    if (res != null)
+                        p = _engine.PersonOfResident(res);
                 }
                 else
                 {

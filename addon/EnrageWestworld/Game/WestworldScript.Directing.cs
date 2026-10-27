@@ -176,6 +176,40 @@ namespace EnrageWestworld.InGame
             return "stalk " + stalk + "; despair " + despair + "; minds " + (_cfg.Minds && _cfg.RecordMinds ? "yes" : "off") + "; dress never (enRAGE knows them by their look)";
         }
 
+        /// F7: enRAGE's records within 100 m on the map for a minute, each labelled free or why not, and a hint naming the
+        /// nearest free one (Lex, 2026-10-27: the records list was only in the log, so there was no finding one to test).
+        private void MarkRecords()
+        {
+            if (_bridge == null)
+                return;
+            Ped me = Game.Player.Character;
+            var near = World.GetAllPeds().Where(p => p != null && p.Exists() && p.Handle != me.Handle && !ENTITY.IS_ENTITY_DEAD(p.Handle) && IsRecord(p.Handle) &&
+                                                     p.Position.DistanceTo(me.Position) < 100f)
+                                         .OrderBy(p => p.Position.DistanceTo(me.Position)).Take(10).ToList();
+            if (near.Count == 0)
+            {
+                Log.Write("RECORDS marked: none of enRAGE's records within 100 m");
+                return;
+            }
+            int until = Game.GameTime + 60000;
+            Ped free = null;
+            var said = new List<string>();
+            foreach (Ped p in near)
+            {
+                string why = MayDirectWhyNot(p) ?? RecordFreeWhyNot(p, _bridge.RecordAt(p.Handle));
+                Blip b = p.AddBlip(BlipType.WhiteDot);
+                b.Label = TalkName(p) + " (enRAGE): " + (why ?? "free");
+                _regBlips.Add(new KeyValuePair<Blip, int>(b, until));   // taken off with the regulars' marks
+                said.Add(TalkName(p) + " " + (int)p.Position.DistanceTo(me.Position) + " m: " + (why ?? "free"));
+                if (why == null && free == null)
+                    free = p;
+            }
+            Hint(free != null ? "enRAGE's records near you: " + near.Count + " on your map for a minute. Nearest free: " + TalkName(free) + ", " +
+                                (int)free.Position.DistanceTo(me.Position) + " m " + Way(me.Position, free.Position) + "."
+                              : "enRAGE's records near you: " + near.Count + " on your map for a minute, none free now (enRAGE has a use for them).", 9000);
+            Log.Write("RECORDS marked " + near.Count + " on the map: " + string.Join("; ", said));
+        }
+
         /// F7: enRAGE's records within 30 m: whether enRAGE marks them as mission entities, the role it has them in, and
         /// whether RealNPCs may direct them (and why not).
         private string RecordsStatus()
