@@ -338,7 +338,7 @@ namespace EnrageWestworld.Core
             string tg = TemperGroup(p.Personality);
             string role = m.How == "did" && m.Role != null ? ":" + m.Role : string.Empty;
             string[] pool = null;
-            if (((m.How == "did" && InSight(m, day)) || (IsDeed(m) && youNear)) && Voice.Chance(seed + "|near", 55))
+            if (((m.How == "did" && InSight(m, day)) || (AboutYou(m) && youNear)) && Voice.Chance(seed + "|near", 55))
                 pool = Find(m, role, "near", tg);
             // their own part at this phase, then the plain words at this phase, then the nearest other phase
             string alt = phase == "fresh" ? "chewing" : phase == "chewing" ? "fresh" : "chewing";
@@ -355,6 +355,20 @@ namespace EnrageWestworld.Core
         public static bool IsDeed(MindMemory m)
         {
             return m.Kind != null && m.Kind.StartsWith("deed:");
+        }
+
+        /// A memory with the player in it (one of his deeds, or his flirting): worded with {you}, and back when he's near.
+        public static bool AboutYou(MindMemory m)
+        {
+            return m.Who != null && m.Who.Contains("player");
+        }
+
+        /// The kind of answer a flirt got, for its memory: yes, maybe, no, or afraid (a no from fear of him).
+        public static string FlirtSub(string answer, string why)
+        {
+            if (answer == "yes" || answer == "maybe")
+                return "flirt:" + answer;
+            return why == "afraid" || why == "fear" || why == "witnessed" || why == "hostile" || why == "hate" ? "flirt:afraid" : "flirt:no";
         }
 
         private static string[] Find(MindMemory m, string role, string phase, string tg)

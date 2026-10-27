@@ -1443,6 +1443,7 @@ namespace EnrageWestworld.Core
 			string answer = PlayerAnswer(p, ask, flirtResult, out why);
 			flirtResult.Answer = answer;
 			flirtResult.Why = why;
+			RememberFlirt(p, answer, why);   // it stays with them (Minds)
 			string seen = (p.Personality ?? "no temper") + "; thinks of you: " + Interest.Explain(ask) + ChanceText(flirtResult) + " -> " + answer + " (" + why + ")";
 			if (answer == "no" && !Interest.Soft(why))
 			{
@@ -1500,6 +1501,7 @@ namespace EnrageWestworld.Core
 			string answer = PlayerAnswer(p, ask, flirtResult, out why);
 			flirtResult.Answer = answer;
 			flirtResult.Why = why;
+			RememberFlirt(p, answer, why);   // it stays with them (Minds)
 			if (why != "spam")
 				personState.FlirtedAt = now;
 			if (answer == "yes")

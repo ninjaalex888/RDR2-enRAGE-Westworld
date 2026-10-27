@@ -149,6 +149,25 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// The player flirted with them: they remember it by their answer (Minds on; lasting people only).
+        public void RememberFlirt(Person p, string answer, string why)
+        {
+            if (!Cfg.Minds || p == null || why == "spam" || answer == null)
+                return;
+            PersonState st = MindOf(p.Id, p.Name);
+            if (st == null)
+                return;
+            long now = Store.LastGameMin;
+            string sub = Minds.FlirtSub(answer, why);
+            MindMemory m = Minds.Note(st.Mind, new MindMemory
+            {
+                Kind = "flirted", Sub = sub, How = "did", Who = new List<string> { "player" }, Town = p.Home, At = now,
+                Feel = sub == "flirt:yes" ? 2 : sub == "flirt:maybe" ? 1 : sub == "flirt:afraid" ? -2 : -1,
+                Strength = sub == "flirt:yes" ? 58 : sub == "flirt:afraid" ? 52 : sub == "flirt:maybe" ? 46 : 42, Key = "flirt:" + now / 60
+            }, now);
+            Detail("MIND " + p.Name + " remembers your flirting: " + sub + " (" + why + "; " + m.Strength + ", " + st.Mind.Count + " kept)");
+        }
+
         private void RememberDid(Minds.Party self, Minds.Party other, string kind, string group, string role, string town, string place, long now, string key)
         {
             PersonState st = MindOf(self.Id, self.Name);
@@ -277,7 +296,7 @@ namespace EnrageWestworld.Core
                     if (m.DueAt > now)
                         continue;   // word of it hasn't reached them yet
                     MindMemory mm = m;
-                    bool deed = Minds.IsDeed(m), youNear = look != null && look.Near;
+                    bool deed = Minds.AboutYou(m), youNear = look != null && look.Near;
                     // saved from an execution: its own words (Executions.After), for the three days they last; the
                     // player's deeds: him as they know him
                     Func<string> make = m.Kind == "rescued" ? (Func<string>)(() => AfterRescue(st, seed + "|" + mm.Times))

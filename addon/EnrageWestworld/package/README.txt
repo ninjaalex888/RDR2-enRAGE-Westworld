@@ -222,7 +222,7 @@ NEW IN 0.6.0
   someone in sight, you. Memories fade, come back when someone in them walks by, and weigh
   differently on each temperament. Nobody thinks the same line twice in a day. So far from scenes
   between people, from what they saw you do, from deaths (a friend grieves for weeks, once word
-  reaches them), and from being saved. Minds = false: the old mix.
+  reaches them), from your flirting, and from being saved. Minds = false: the old mix.
 - An execution on the road ([Encounters] Executions, ExecutionChance 20). Away from the towns, once a
   day at most, one of the nearest town's regulars kneels at gunpoint, a mark on your map, for a
   reason from his own life: his debt (the creditor and a hired man), his feud (the other family),
