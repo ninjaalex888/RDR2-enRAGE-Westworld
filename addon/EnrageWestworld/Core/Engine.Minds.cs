@@ -35,6 +35,17 @@ namespace EnrageWestworld.Core
             e.At = Store.LastGameMin;
             WorldEvents.Note(Store.WorldLog, e);
             Detail("EVENT " + WorldEvents.Describe(e));
+            if (Cfg.MindShadow)
+            {
+                try
+                {
+                    Shadow.Queue(e);   // the mind's own step appraises it (MindShadow.cs, WestworldScript.Mind.cs)
+                }
+                catch
+                {
+                    // a fault in the mind never costs the event
+                }
+            }
             return e;
         }
 

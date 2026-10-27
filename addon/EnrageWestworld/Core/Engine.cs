@@ -1611,6 +1611,14 @@ namespace EnrageWestworld.Core
 		/// Their mood today, as their thoughts show it (InnerLife.MoodOf).
 		public string MoodToday(Person p, string town)
 		{
+			if (Cfg.MindLive && p != null && Shadow.Felt(p.Id) != null)
+			{
+				// the mind's mood (MindShadow.cs, Mood.cs) once it has felt something: sore or glad against their own baseline
+				Traits t = Shadow.TraitsOf(TraitSource.From(p, p.Facets != null && p.Facets.Count > 0 ? "record" : p.Id != null && p.Id.StartsWith("folk:") ? "folk" : "resident"));
+				string mind = Mood.SoreOrGlad(Shadow.MoodOf(p.Id, t, Store.LastGameMin), Mood.Baseline(t));
+				if (mind != null)
+					return mind;   // even by the mind: the day's ties and the weather still count, the old way
+			}
 			InnerLife.Context day = ThoughtDay(town, p.Id);
 			return InnerLife.MoodOf(p, day, p.Id + "|mood|" + day.GameDay);
 		}

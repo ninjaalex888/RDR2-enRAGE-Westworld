@@ -69,6 +69,125 @@ namespace EnrageWestworld.InGame
             }
             for (int k = 0; k < 2 && _mindCursor < _mindNear.Count; k++)
                 MindLook(_mindNear[_mindCursor++], now);
+            MindAppraiseStep(now);   // one person a frame from the happening being appraised
+        }
+
+        private int _mindFelt, _mindEvCursor, _mindEvStale;
+        private string _mindLastFelt;
+        private Happening _mindEv;            // the happening being appraised, one person a frame
+        private string _mindEvDoer;           // who really did it (the pair's tie), or null
+        private int _mindEvSaw;               // how many saw it (not those who only heard, not the player)
+        private readonly List<KeyValuePair<string, bool>> _mindEvPeople = new List<KeyValuePair<string, bool>>();   // id, only heard it
+
+        /// Step 4: each person in a happening, or who saw or heard it, whom the mind knows near the player now, appraises
+        /// it (Core's Appraisal): a feeling, its strength and its urge, kept for their mood (in memory), stamped with the
+        /// happening's own time. One person a frame; one MIND line per person per event, within the 20 a minute (the old
+        /// two-word mood is worked out only for a line that will be written, and the same line says where it and the
+        /// mind's disagree). A happening more than 10 game minutes old when its turn comes (a mission, a fade) is dropped:
+        /// whoever is near by then didn't live it. Nobody is tasked; with MindLive off nothing reaches play.
+        private void MindAppraiseStep(int now)
+        {
+            long g = _store.LastGameMin;
+            if (_mindEv == null || _mindEvCursor >= _mindEvPeople.Count)
+            {
+                _mindEv = _engine.Shadow.Next();
+                if (_mindEv == null)
+                    return;
+                if (g - _mindEv.At > 10 || g < _mindEv.At)
+                {
+                    _mindEvStale++;
+                    _mindEv = null;
+                    return;
+                }
+                MindAppraiseStart(_mindEv);
+                return;
+            }
+            KeyValuePair<string, bool> who = _mindEvPeople[_mindEvCursor++];
+            MindAppraiseOne(_mindEv, who.Key, who.Value, now);
+        }
+
+        private void MindAppraiseStart(Happening ev)
+        {
+            _mindEvPeople.Clear();
+            _mindEvCursor = 0;
+            _mindEvSaw = 0;
+            _mindEvDoer = null;
+            // who did it to whom: the scene's cast is by who speaks first, so the pair's tie says (one-sided kinds)
+            if (ev.DoerId != null && ev.TargetId != null)
+                foreach (SceneTie t in _store.Ties)
+                    if (t.Has(ev.DoerId) && t.Has(ev.TargetId))
+                    {
+                        _mindEvDoer = t.Doer;
+                        break;
+                    }
+            var seen = new HashSet<string>();
+            Action<string, bool> add = (id, heard) =>
+            {
+                if (id != null && id != "player" && !(ev.Kind == "death" && id == ev.TargetId) && seen.Add(id))
+                    _mindEvPeople.Add(new KeyValuePair<string, bool>(id, heard));
+            };
+            add(ev.TargetId, false);
+            add(ev.DoerId, false);
+            if (ev.Witnesses != null)
+                foreach (EventWitness wt in ev.Witnesses)
+                {
+                    if (wt.How == "saw" && wt.Id != "player")
+                        _mindEvSaw++;
+                    add(wt.Id, wt.How != "saw");
+                }
+        }
+
+        private void MindAppraiseOne(Happening ev, string id, bool heardOnly, int now)
+        {
+            MindWho w = MindWhoById(id);
+            if (w == null || w.Traits == null || w.P == null)
+                return;   // only people near the player now whom the mind already knows (the doc's level 0)
+            Func<string, string, int> warmth = (x, y) =>
+            {
+                foreach (SceneTie t in _store.Ties)
+                    if (t.Has(x) && t.Has(y))
+                        return t.Warmth;
+                return 0;
+            };
+            AppraisalEvent ae = Appraisal.From(ev, id, w.P.Woman, w.P.Home, warmth, _mindEvDoer, heardOnly, _mindEvSaw);
+            if (ae == null)
+                return;
+            Feeling f = Appraisal.Of(ae, w.Traits);
+            if (f.Kind == "none")
+                return;
+            _engine.Shadow.Feel(id, f, ev.At);
+            _mindFelt++;
+            string about = ae.Doer == "player" && f.About == ev.DoerName ? "you" : f.About;
+            _mindLastFelt = w.Name + ": " + f.Kind + (about != null ? " at " + about : "");
+            if (!MindLogRoom(now))
+            {
+                _mindLogHeld++;
+                return;
+            }
+            long g = _store.LastGameMin;
+            PadMood b = Mood.Baseline(w.Traits), m = _engine.Shadow.MoodOf(id, w.Traits, g);
+            string mind = Mood.SoreOrGlad(m, b), old = _cfg.MindLive ? null : _engine.MoodToday(w.P, w.P.Home ?? _placeTown);
+            MindLog(now, "MIND " + w.Name + " (" + (w.Src.Temper ?? "plain") + "): " + f.Kind + " (" + f.Strength + ")" + (about != null ? " at " + about : "") + ", urge " + f.Urge +
+                         " <- " + ev.Kind + " (" + ae.Role + (heardOnly ? ", only heard it" : "") + ", " + ae.Witnesses + " saw); mood " + Mood.Words(m, b) +
+                         (!_cfg.MindLive && old != mind ? "; the old mood says " + (old ?? "nothing") + ", the mind's " + (mind ?? "nothing") : ""));
+        }
+
+        /// Whether a MIND line could be written now (the 20 a minute), without writing one.
+        private bool MindLogRoom(int now)
+        {
+            return now - _mindLogMinuteAt >= 60000 || now < _mindLogMinuteAt || _mindLogCount < MindLinesAMinute;
+        }
+
+        /// Someone known to the mind by id, alive and near the player this second (in this second's scan).
+        private MindWho MindWhoById(string id)
+        {
+            foreach (int h in _mindNear)
+            {
+                MindWho w;
+                if (_mindWho.TryGetValue(h, out w) && w.Id == id)
+                    return ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) ? w : null;
+            }
+            return null;
         }
 
         private void MindShadowForget()
@@ -79,6 +198,10 @@ namespace EnrageWestworld.InGame
             _mindNear.Clear();
             _mindTraitsTold.Clear();
             _mindCursor = 0;
+            _mindEv = null;
+            _mindEvPeople.Clear();
+            _mindFelt = 0;
+            _mindLastFelt = null;   // nothing from a rewound future in F7
         }
 
         /// The living people within MindMetres, nearest first (reused lists; the world's ped array is the one allocation).
@@ -228,6 +351,25 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        /// Their mood against their own baseline and the last thing they felt ("sore and keyed up, last felt anger at you"),
+        /// or "even" with nothing felt lately.
+        private string MindFeelingWords(MindWho w)
+        {
+            long g = _store != null ? _store.LastGameMin : 0;
+            List<FeltAt> felt = _engine.Shadow.Felt(w.Id);
+            PadMood b = Mood.Baseline(w.Traits), m = Mood.Now(b, felt, g);
+            string mood = Mood.Words(m, b);
+            if (felt == null || felt.Count == 0)
+                return mood;
+            FeltAt last = felt[felt.Count - 1];
+            return mood + ", last felt " + Feeling.Kinds[last.Kind] + (last.About != null ? " at " + last.About : "") + (g - last.At >= 0 ? " " + MindAgo(g - last.At) : "");
+        }
+
+        private static string MindAgo(long minutes)
+        {
+            return minutes < 60 ? minutes + " min ago" : minutes < 1440 ? minutes / 60 + " h ago" : minutes / 1440 + " d ago";
+        }
+
         /// The Show minds card's line for this body: their traits in words and the temper they read as. Only what the
         /// mind's own step already worked out (no lookup here, nothing the card's own guard could trip over).
         private string MindCardLine(int h)
@@ -237,7 +379,7 @@ namespace EnrageWestworld.InGame
                 MindWho w;
                 if (_cfg == null || !_cfg.MindShadow || !_mindWho.TryGetValue(h, out w) || w.Id == null || w.Traits == null)
                     return null;
-                return "mind: " + w.Traits.Words(2) + (w.Traits.Label != null ? " (" + w.Traits.Label.ToLowerInvariant() + ")" : "") +
+                return "mind: " + w.Traits.Words(2) + (w.Traits.Label != null ? " (" + w.Traits.Label.ToLowerInvariant() + ")" : "") + "; " + MindFeelingWords(w) +
                        (w.Needs != null ? "; " + w.Needs.Words() : "") + (w.Concerns != null && w.Concerns.Count > 0 ? "; " + w.Concerns[0].Words : "");
             }
             catch
@@ -261,11 +403,12 @@ namespace EnrageWestworld.InGame
                     MindWho w;
                     if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.Traits == null)
                         continue;
-                    near.Add(w.Name + ", " + w.Traits.Words(2) + (w.Traits.Label != null ? " (reads as " + w.Traits.Label + ")" : " (plain)") +
+                    // Lex's example: "Earl Adair, proud and anxious, sore, worried about the bank, last felt anger at Arthur"
+                    near.Add(w.Name + ", " + w.Traits.Words(2) + (w.Traits.Label != null ? " (reads as " + w.Traits.Label + ")" : " (plain)") + ", " + MindFeelingWords(w) +
                              (w.Needs != null ? ", " + w.Needs.Words() : "") + (w.Concerns != null ? ", " + Needs.Words(w.Concerns) : ""));
                 }
-                return "on, " + (_cfg.MindLive ? "LIVE" : "reporting only") + "; " + _mindNear.Count + " people within " + (int)MindMetres + " m, " + _mindLooks + " looks, traits worked out for " +
-                       (_engine != null ? _engine.Shadow.TraitsMade + " (" + _engine.Shadow.Count + " kept)" : "nobody") + ", " + _mindLogged + " MIND lines, " + _mindLogHeld + " held back by the 20 a minute" +
+                return "on, " + (_cfg.MindLive ? "LIVE (sore and glad from the mind)" : "reporting only") + "; " + _mindNear.Count + " people within " + (int)MindMetres + " m, " + _mindLooks + " looks, traits worked out for " +
+                       (_engine != null ? _engine.Shadow.TraitsMade + " (" + _engine.Shadow.Count + " kept)" : "nobody") + ", " + _mindLogged + " MIND lines, " + _mindLogHeld + " held back by the 20 a minute; events appraised " + _mindFelt + " feelings from " + _engine.Shadow.EventsQueued + " happenings (" + _engine.Shadow.Waiting + " waiting, " + _engine.Shadow.EventsDropped + " dropped from a full queue, " + _mindEvStale + " too old by their turn), last: " + (_mindLastFelt ?? "none") +
                        (near.Count > 0 ? "; near: " + string.Join("; ", near) : "; nobody near it knows");
             }
             catch (Exception ex)
