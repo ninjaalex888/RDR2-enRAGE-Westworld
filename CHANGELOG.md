@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased (daytime 2026-10-27, on top of 0.6.3)
+
+### Fixes from a review of the overnight work
+
+- Your save is never written over with an empty one at load. If something else had the save file open when the game loaded (OneDrive syncing Documents, a virus scanner, an editor), RealNPCs took it for a damaged file, started fresh and saved that over your real file twenty seconds later. Now it waits a moment, then leaves the file alone and saves nothing for that session (the log and F7 say so); a damaged file is kept as a dated copy, and the copy a crash leaves behind mid-save is recovered.
+- One of enRAGE's people who died by RealNPCs' doing can no longer be written dead into enRAGE after you load a save: anything still waiting when a loading screen comes, or the clock jumps, is left to enRAGE.
+- Despair: lassoing or hogtying someone in their last moments stops it; shooting them yourself is your doing, not "by their own hand" (nor in enRAGE's history of a record); the shot heard is fired at the ground by their feet, so no stray round flies past; someone let be at the last moment keeps the orders enRAGE just gave them; a survivor puts their gun away. Four of the calm-before-the-end lines read as relief and are reworded, and the one they're closest to is a real friend (one hand up no longer makes someone that).
+- People know only what they could: a friend takes up a wrong once they saw it or two hours have passed, and standing up to a bully is no wrong to avenge; a friend offers sympathy only for a death they've heard of; the town talks of the night visitor's body only if someone besides you saw it.
+- A mother asking after her lost child is asking after her youngest, never the child the fever took, and not every week. A drinker mourning a child, a son or a black-edged letter mourns; it's no longer "bad luck". A coward never calls a man out at noon.
+- Smaller: greetings in passing had who greeted whom backwards; falls never happen under an awning, so nobody is helped "off the boards"; the traveller no longer hails "You, on the horse!" when you're on foot; the old men's dance of '68 is thirty years back in 1899; shutting down stops a grudge walk, drunk voices and a waking voice; the street scenes' search for people costs less.
+
 ## 0.6.3 (not released yet)
 
 Built on 2026-10-26, the night after (Lex's overnight brief, 2026-10-27) and the morning's first play-test of that night's work. Seen working in game: the execution on the road (both saving him and the shooting), the settings panel's Testing page, women answering your flirting by chance (better, still being tested), the awake running at a wall, and the wake stages over heads. Not yet seen in game: most of the night's work (the encounters, the street scenes and kindnesses, enRAGE's records as stalkers and their deaths booked in enRAGE), and from 2026-10-26 Minds, the despair act, news taking time, greeting first, the "Hook up" prompt, the CasualHookups fallback and the body-watch witness.
