@@ -18,6 +18,8 @@ namespace EnrageWestworld.InGame
             public string Name, Kind;
             public Person Who;
             public bool Hookups;   // the night is CasualHookups' (WestworldScript.Hookups.cs): no fade of ours
+            public bool Night;     // her yes to the flirting is a yes to the night too; else asking gets her no (Trysts.NightChance)
+            public int Greeted;    // he greeted her first (1) or flirted cold (-1)
         }
 
         private sealed class TrystRun
@@ -38,15 +40,18 @@ namespace EnrageWestworld.InGame
         {
             if (r == null || !r.Tryst || r.Who == null || !_cfg.Trysts)
                 return;
-            bool hookups = HookupsLinked && !HookupsWont(ped);   // a kind CasualHookups turns down: the night is ours
-            _trystOffer = new TrystOffer { Handle = ped, Name = name, Kind = r.TrystKind, Who = r.Who, Hookups = hookups, Until = Game.GameTime + (hookups ? HookupWillingMs : Trysts.OfferMs) };
-            Log.Write("TRYST offered: " + name + " (" + r.TrystKind + ", chance " + r.Chance + "%): " +
-                      (hookups ? "willing for CasualHookups' Flirt (" + HookupsKeyText + ") for " + HookupWillingMs / 1000 + " s" : "flirt again within " + Trysts.OfferMs / 1000 + " s"));
-            if (_trystHints < 3)
+            // a kind CasualHookups turns down, or no to the night: the night is ours, or nobody's
+            bool hookups = r.Night && HookupsLinked && !HookupsWont(ped);
+            _trystOffer = new TrystOffer { Handle = ped, Name = name, Kind = r.TrystKind, Who = r.Who, Hookups = hookups, Night = r.Night, Greeted = r.Greeted,
+                                           Until = Game.GameTime + (hookups ? HookupWillingMs : Trysts.OfferMs) };
+            Log.Write("TRYST offered: " + name + " (" + r.TrystKind + ", chance " + r.Chance + "%, the night " + r.NightChance + "% -> " + (r.Night ? "yes" : "no") +
+                      (r.Greeted > 0 ? ", greeted first" : r.Greeted < 0 ? ", flirted cold" : "") + "): " +
+                      (!r.Night ? "asking her (Hook up, H) gets a no today" : hookups ? "willing for CasualHookups' Flirt (" + HookupsKeyText + ") for " + HookupWillingMs / 1000 + " s" : "Hook up (H) within " + Trysts.OfferMs / 1000 + " s"));
+            if (r.Night && _trystHints < 3)
             {
                 _trystHints++;
-                Feed.Notice("RealNPCs", hookups ? name + " is willing: CasualHookups' Flirt (" + HookupsKeyText + ") with her in the next five minutes."
-                                                : name + " is willing: flirt with her again within two minutes to go somewhere quieter.");
+                Feed.Notice("RealNPCs", hookups ? name + " is willing: Hook up (H), then CasualHookups' Flirt (" + HookupsKeyText + "), in the next five minutes."
+                                                : name + " is willing: Hook up (H) within two minutes to go somewhere quieter.");
             }
         }
 
@@ -67,6 +72,16 @@ namespace EnrageWestworld.InGame
             string seed = o.Who.Id + "|" + Bridge.Now() / 60;
             string ask = Trysts.Ask(seed), yes = Trysts.Yes(o.Kind, seed);
             Feed.Say(_engine.Player.FirstName, ask, FlirtVoice(_engine.Player.FirstName, Speech.WhenFirst(me.Handle, FlirtVoices.You(true, seed), her.Handle)), ahead: true);
+            if (!o.Night)
+            {
+                // she liked the flirting, not that much: her no, in words and a voice that fit (a cold approach hears of it)
+                string no = Trysts.NotTonight(o.Kind, o.Greeted, seed);
+                Feed.Say(o.Name, no, FlirtVoice(o.Name, Speech.WhenFirst(her.Handle, FlirtVoices.Reply(o.Who, "no", o.Greeted < 0 ? "cold" : "busy", 0, seed), me.Handle)), toYou: true, ahead: true);
+                _flirtSaidUntil = Game.GameTime + 7000;
+                _trystOffer = null;
+                Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + "): " + ask + " -> not tonight" + (o.Greeted < 0 ? " (flirted cold)" : "") + ": " + no);
+                return true;
+            }
             Feed.Say(o.Name, yes, FlirtVoice(o.Name, Speech.WhenFirst(her.Handle, FlirtVoices.Night(o.Kind, seed), me.Handle)), toYou: true, ahead: true);
             _flirtSaidUntil = Game.GameTime + 7000;
             if (o.Hookups)

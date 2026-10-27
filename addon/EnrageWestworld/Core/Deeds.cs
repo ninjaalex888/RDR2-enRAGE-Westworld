@@ -340,6 +340,8 @@ namespace EnrageWestworld.Core
             Kind k;
             if (!Kinds.TryGetValue(d.Kind, out k) || k.Paper == null)
                 return null;
+            if (d.Unseen)   // nobody lived to tell who did it (Knowing.cs)
+                return Grammar.Sentence(Fill(k.Paper.Replace(" Witnesses describe the killer as {desc}.", " Nobody saw who did it."), d, null).Replace("{desc}", "persons unknown"));
             string desc = named ? "a man answering to the name of " + you.FullName
                 : you.Scarred ? Voice.Pick(seed, "a scarred man on a dark horse", "a lean man with a scarred face")
                 : Voice.Pick(seed, "a big man in a worn hat", "a rough-looking stranger", "a tall man who gave no name");

@@ -47,6 +47,7 @@ namespace EnrageWestworld.Core
         [DataMember] public List<SceneTie> Ties = new List<SceneTie>();      // what street scenes left between two people (see Ties.cs)
         [DataMember] public List<WorryLink> Links = new List<WorryLink>();   // the real person at the other end of a worry (see Links.cs)
         [DataMember] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
+        [DataMember] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
         private Dictionary<string, DeathEntry> _deathIndex;
 
@@ -169,6 +170,8 @@ namespace EnrageWestworld.Core
             n += Avengers.RemoveAll(a => a.Stage < 2 && a.DueAt > cut + 10080);
             n += Weddings.RemoveAll(w => !w.Done && w.At > cut + 20160);
             n += Debts.RemoveAll(d => d.Since > cut);
+            if (Later != null)
+                n += Later.RemoveAll(l => l.At > cut);
             if (Deaths != null)
             {
                 foreach (DeathEntry d in Deaths.Where(d => d.At > cut).ToList())
@@ -284,6 +287,7 @@ namespace EnrageWestworld.Core
             if (Ties == null) Ties = new List<SceneTie>();
             if (Links == null) Links = new List<WorryLink>();
             if (Deaths == null) Deaths = new List<DeathEntry>();
+            if (Later == null) Later = new List<LaterAct>();
             if (RewoundShares == null) RewoundShares = new List<string>();
             foreach (Post p in Posts)
             {

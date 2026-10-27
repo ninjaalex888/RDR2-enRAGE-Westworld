@@ -460,7 +460,7 @@ namespace EnrageWestworld.InGame
                 _engine.NoteDeath(rec.Id, place, how, headshot);
                 bool defended = hit.CameAtYou && !Natives.IsLaw(victim);
                 if (_cfg.Deeds && !defended)
-                    _engine.OnDeed(Deeds.Make("namedkill", rec.Name, town, zone, gameMin, pos.X, pos.Y, pos.Z, seen), witnesses, gameMin);
+                    NoteDeedEyes(_engine.OnDeed(Deeds.Make("namedkill", rec.Name, town, zone, gameMin, pos.X, pos.Y, pos.Z, seen), witnesses, gameMin), pos, h);
                 Log.Write("KILLED " + rec.Name + (how != null ? " with " + how : "") + (headshot ? " (head)" : "") + " near " + place +
                           (defended ? "; self-defence (" + hit.Why + "): no crime noted" : ""));
                 return;
@@ -489,7 +489,7 @@ namespace EnrageWestworld.InGame
                 }
                 else
                 {
-                    _engine.OnDeed(d, witnesses, gameMin);
+                    NoteDeedEyes(_engine.OnDeed(d, witnesses, gameMin), pos, h);
                 }
             }
             // story missions and story characters stay out of the reveries: nobody from a mission walks again
@@ -552,7 +552,7 @@ namespace EnrageWestworld.InGame
             string detail = kind == "robbery" ? (_placeKind != null ? "the " + PlaceName(_placeKind) : Voice.Pick(now.ToString(), "a traveller", "a farmer", "a townsman"))
                 : kind == "assault" || kind == "kidnap" ? "a stranger" : null;
             int seen = Math.Max(witness != 0 ? 1 : 0, CountPeopleNear(pos, 0, 35f));
-            _engine.OnDeed(Deeds.Make(kind, detail, _bridge.TownAt(pos), ZoneAt(pos), gameMin, pos.X, pos.Y, pos.Z, seen), WitnessesNear(pos, 0, 35f), gameMin);
+            NoteDeedEyes(_engine.OnDeed(Deeds.Make(kind, detail, _bridge.TownAt(pos), ZoneAt(pos), gameMin, pos.X, pos.Y, pos.Z, seen), WitnessesNear(pos, 0, 35f), gameMin), pos, 0);
         }
 
         private readonly Dictionary<string, long> _flirtNoted = new Dictionary<string, long>();
@@ -608,6 +608,70 @@ namespace EnrageWestworld.InGame
                     ids.Add(r.Id);
             }
             return ids;
+        }
+
+        // who saw a violent deed, until its talk starts (Knowing.cs): a witness the player kills too tells nobody, so the
+        // deed's Witnesses goes down as they die; one seen dead stays dead, even once the body is cleared away
+        private sealed class DeedEyes
+        {
+            public List<int> Handles = new List<int>();
+            public HashSet<int> Dead = new HashSet<int>();
+        }
+
+        private readonly Dictionary<string, DeedEyes> _deedEyes = new Dictionary<string, DeedEyes>();
+        private int _nextDeedEyes;
+        private Action _aDeedEyes;
+
+        private void NoteDeedEyes(Deed d, Vector3 pos, int except)
+        {
+            if (d == null || d.TalkAt <= 0 || d.Witnesses <= 0)
+                return;
+            DeedEyes e = new DeedEyes();
+            int me = Game.Player.Character.Handle;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                int h = p.Handle;
+                if (h != except && h != me && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_HUMAN(h) && p.Position.DistanceTo(pos) <= 35f)
+                    e.Handles.Add(h);
+            }
+            if (e.Handles.Count > 0)
+                _deedEyes[d.Id] = e;
+            if (_deedEyes.Count > 40)
+                _deedEyes.Remove(_deedEyes.Keys.First());
+        }
+
+        private void DeedEyesStep(int now)
+        {
+            if (_deedEyes.Count == 0 || now < _nextDeedEyes)
+                return;
+            _nextDeedEyes = now + 1000;
+            if (_aDeedEyes == null)
+                _aDeedEyes = DeedEyesTick;
+            Safe("witnesses", _aDeedEyes);
+        }
+
+        private void DeedEyesTick()
+        {
+            foreach (KeyValuePair<string, DeedEyes> kv in _deedEyes.ToList())
+            {
+                Deed d = _store.Deeds.LastOrDefault(x => x.Id == kv.Key);
+                if (d == null || d.TalkAt <= 0 || d.Unseen)
+                {
+                    _deedEyes.Remove(kv.Key);   // talk has started, or it's waiting for the body to be found
+                    continue;
+                }
+                DeedEyes e = kv.Value;
+                foreach (int h in e.Handles)
+                    if (!e.Dead.Contains(h) && ENTITY.DOES_ENTITY_EXIST(h) && ENTITY.IS_ENTITY_DEAD(h))
+                        e.Dead.Add(h);
+                int alive = e.Handles.Count - e.Dead.Count;
+                if (alive < d.Witnesses)
+                {
+                    d.Witnesses = alive;
+                    if (alive == 0)
+                        Log.Write("DEED " + d.Kind + " " + Deeds.Place(d) + ": everyone who saw it is dead now");
+                }
+            }
         }
 
         private static int CountPeopleNear(Vector3 pos, int except, float radius)

@@ -504,6 +504,17 @@ namespace EnrageWestworld.InGame
 			return Snapshot.Of(r, _bridge, _recById, Bridge.Now());
 		}
 
+		// when the player last greeted each ped (game time), for flirting after a greeting
+		private readonly Dictionary<int, int> _greetedAt = new Dictionary<int, int>();
+		private const int GreetCountsMs = 180000;
+
+		/// 1 if he greeted them in the last three minutes, else -1 (he flirted cold).
+		private int GreetedFirst(int ped)
+		{
+			int at;
+			return _greetedAt.TryGetValue(ped, out at) && Game.GameTime - at <= GreetCountsMs ? 1 : -1;
+		}
+
 		private unsafe void PollGreets(int now)
 		{
 			if (!_cfg.Conversations && !_cfg.Romance && !_cfg.SceneReactions)
@@ -531,6 +542,12 @@ namespace EnrageWestworld.InGame
 					int num2 = (int)(*ptr);
 					int target = (int)ptr[2];
 					int wait = _director.Involves(target) ? 900 : 3200;   // stepping into a scene gets an answer quickly
+					if (num2 == 3 && target != 0)
+					{
+						_greetedAt[target] = now;   // greeted before a flirt counts for it (Interest.GreetTilt, Trysts.NightChance)
+						if (_greetedAt.Count > 60)
+							_greetedAt.Remove(_greetedAt.OrderBy(kv => kv.Value).First().Key);
+					}
 					if (num2 == 3 && target != 0 && !_greets.Any((KeyValuePair<int, int> g) => g.Key == target))
 					{
 						_greets.Add(new KeyValuePair<int, int>(target, now + wait));
@@ -1172,6 +1189,7 @@ namespace EnrageWestworld.InGame
 				return;   // she said yes a moment ago: this flirt asks her somewhere quieter (WestworldScript.Trysts.cs)
 			long now = Bridge.Now();
 			_engine.PlayerCash = MONEY._MONEY_GET_CASH_BALANCE() / 100;   // what the greedy and the proud look at
+			_engine.GreetedFirst = GreetedFirst(num);   // greeting her first counts (Lex, 2026-10-26)
 			NemesisRecord nemesisRecord = _bridge.RecordAt(num);
 			if (nemesisRecord != null && nemesisRecord.IsAlive)
 			{

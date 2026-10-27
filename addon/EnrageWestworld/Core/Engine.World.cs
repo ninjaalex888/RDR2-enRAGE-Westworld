@@ -180,11 +180,14 @@ namespace EnrageWestworld.Core
                 if (_rng.Next(100) < 45)
                     QueueLetter(Letters.Grief(rel, dead.Name, dead.Woman, relTo, Player, knows, false, now));
             }
-            Push(new Toast
-            {
-                Kind = "letter", Title = "Word reaches " + ShortTown(rel.Town), PersonId = dead.Id, Weight = 45,
-                Text = rel.Name + " got a telegram: " + (rel.Woman ? "her" : "his") + " " + relTo + " " + dead.FirstName + " is dead. " + reaction
-            });
+            // one notice per death: the second of kin to hear it is in the log only (two were too many)
+            if (!st.Family.Any(x => x != rel && x.Heard.Any(h => h.FromId == dead.Id && h.Text == "died")))
+                Push(new Toast
+                {
+                    Kind = "letter", Title = "Word reaches " + ShortTown(rel.Town), PersonId = dead.Id, Weight = 45,
+                    Text = rel.Name + " got a telegram: " + (rel.Woman ? "her" : "his") + " " + relTo + " " + dead.FirstName + " is dead. " + reaction
+                });
+            Log("WORD of " + dead.Name + "'s death reaches " + rel.Name + " (" + rel.Relation + ", " + rel.Town + ")");
         }
 
         private void WakeTick(long now)
@@ -234,6 +237,7 @@ namespace EnrageWestworld.Core
                 return;
             Store.LastWorldTickAt = now;
             WakeTick(now);
+            DeedTalkTick(now);
             AvengerTick(now);
             if (Cfg.RumoursTravel)
                 RumourTick(now);
@@ -303,12 +307,50 @@ namespace EnrageWestworld.Core
                 else if (tag != null)
                     WThought(w.Id, Deeds.MoodOf(d.Kind), tag, 1, 24);
             }
+            if (Deeds.IsViolent(d.Kind))
+            {
+                // talk waits until someone who saw it has lived to tell it, or, nobody having seen it, until the body
+                // is found; the game side lowers Witnesses as they die meanwhile (Knowing.cs, DeedTalkTick)
+                d.TalkAt = Knowing.TalkDue(d.At, d.Witnesses > 0, d.Id);
+                d.Unseen = d.Witnesses <= 0;
+                return d;
+            }
+            DeedTalk(d, now);
+            if (Cfg.Newspaper && (d.Kind == "wedding" || d.Kind == "spared" || d.Kind == "peace" || d.Kind == "thiefcaught" || d.Kind == "mercy"))
+                Requests.Add(new WorldRequest { Kind = "gooddeed", Text = Deeds.Rumour(d, "You"), Town = d.Town });
+            return d;
+        }
+
+        /// Violent deeds whose talk is due: seen by someone still alive an hour on, it starts as it always did; nobody
+        /// left who saw, it waits until the body would be found and the talk doesn't know who did it.
+        private void DeedTalkTick(long now)
+        {
+            foreach (Deed d in Store.Deeds.Where(x => x.TalkAt > 0 && now >= x.TalkAt).ToList())
+            {
+                if (!d.Unseen && d.Witnesses <= 0)
+                {
+                    d.Unseen = true;
+                    d.TalkAt = Knowing.TalkDue(d.At, false, d.Id);
+                    Log("DEED " + d.Kind + " " + Deeds.Place(d) + ": nobody who saw it lived to tell; it'll be talked of once the body's found, " + Math.Max(0, d.TalkAt - now) / 60 + " h on, without a name");
+                    if (now < d.TalkAt)
+                        continue;
+                }
+                d.TalkAt = 0;
+                Log("DEED " + d.Kind + " " + Deeds.Place(d) + ": talk starts" + (d.Unseen ? ", nobody knowing who did it" : " (" + d.Witnesses + " who saw it are alive)"));
+                DeedTalk(d, now);
+            }
+        }
+
+        /// Talk of a deed: the rumour, a few locals hearing of it, the paper.
+        private void DeedTalk(Deed d, long now)
+        {
+            string tag = ThoughtTag(d);
             if (d.Weight >= 12 && Cfg.RumoursTravel)
                 Rumours.Start(Store, d, now);
-            if (d.Weight >= 25 && tag != null && d.Town != null)
+            if (d.Weight >= 25 && tag != null && d.Town != null && !d.Unseen)
             {
-                // the town talks: a few locals who weren't there hear of it today
-                foreach (Person local in _byId.Values.Where(x => x.IsAlive && x.Home == d.Town && x.Name != d.Detail && !(witnesses ?? new List<string>()).Contains(x.Id)).Take(4))
+                // the town talks: a few locals who weren't there hear of it today (not of who did it, when nobody saw)
+                foreach (Person local in _byId.Values.Where(x => x.IsAlive && x.Home == d.Town && x.Name != d.Detail && !Store.Get(x).SawDeeds.Contains(d.Id)).Take(4))
                 {
                     PersonState st = Store.Get(local);
                     if (!st.KnownDeeds.Contains(d.Id))
@@ -323,16 +365,13 @@ namespace EnrageWestworld.Core
             {
                 if (Deeds.IsShop(d.Kind))
                     Store.Counts[paperKey] = day;
-                string item = Deeds.Paper(d, Player, Store.People.Values.Count(s => s.KnowsName) >= 6 || d.Witnesses >= 3 && d.Weight >= 70, d.Id);
+                string item = Deeds.Paper(d, Player, !d.Unseen && (Store.People.Values.Count(s => s.KnowsName) >= 6 || d.Witnesses >= 3 && d.Weight >= 70), d.Id);
                 if (item != null)
                 {
                     d.Printed = true;
                     Requests.Add(new WorldRequest { Kind = "paper", Text = item, Town = d.Town ?? Rumours.NearestTown(d.X, d.Y) });
                 }
             }
-            if (Cfg.Newspaper && (d.Kind == "wedding" || d.Kind == "spared" || d.Kind == "peace" || d.Kind == "thiefcaught" || d.Kind == "mercy"))
-                Requests.Add(new WorldRequest { Kind = "gooddeed", Text = Deeds.Rumour(d, "You"), Town = d.Town });
-            return d;
         }
 
         private static string WitnessText(Deed d)
@@ -408,9 +447,13 @@ namespace EnrageWestworld.Core
                 foreach (Person local in _byId.Values.Where(x => x.IsAlive && x.Home == r.Town).Take(3))
                 {
                     PersonState st = Store.Get(local);
-                    if (st.KnownDeeds.Contains(d.Id))
+                    // nobody saw who did it: they hear of the killing, not of him (KnownDeeds feeds what they say to his face)
+                    if (d.Unseen ? st.Has("heard:" + d.Id) : st.KnownDeeds.Contains(d.Id))
                         continue;
-                    st.KnownDeeds.Add(d.Id);
+                    if (d.Unseen)
+                        st.Mark("heard:" + d.Id);
+                    else
+                        st.KnownDeeds.Add(d.Id);
                     if (r.Fidelity < 40)
                         st.Awareness = Math.Min(100, st.Awareness + 3);   // "they say he can't be killed"
                     if (tag != null && _rng.Next(100) < 50)
@@ -662,7 +705,7 @@ namespace EnrageWestworld.Core
                         other + " smiled at me across the street. I walked into a post."));
             }
             Deed d = st.KnownDeeds.Count > 0 ? Store.Deeds.LastOrDefault(x => st.KnownDeeds.Contains(x.Id) && !st.Has("dd:" + x.Id)) : null;
-            if (d != null && now - d.At < 4320)
+            if (d != null && now - d.At >= Knowing.DiaryAfterMinutes && now - d.At < 4320)   // a deed they know of, once there was time to write it
             {
                 st.Mark("dd:" + d.Id);
                 string th = Deeds.Thought(p, d, Voice.YouPrivate(p, you, true), seed);

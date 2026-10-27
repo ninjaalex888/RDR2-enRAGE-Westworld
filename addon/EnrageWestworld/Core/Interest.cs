@@ -29,6 +29,7 @@ namespace EnrageWestworld.Core
             public bool SaloonGirl;    // the saloon's own: a working girl, or any woman drinking where he is
             public string Id;          // who, for the day's roll (ForPlayer)
             public long Day = -1;      // the game day, for the day's roll
+            public int Greeted;        // 1: he greeted her first (R, a few minutes before); -1: he flirted cold; 0: not known
         }
 
         /// Married or spoken for: a sweetheart, someone courting them, an affair, or a husband.
@@ -58,6 +59,8 @@ namespace EnrageWestworld.Core
         /// day tipping it (5 points a weight) rather than deciding it. Only having spurned him, flirting again a moment
         /// later, or not being drawn to him at all is a flat no. The roll holds all game day for the same woman. Men are
         /// answered as before (Answer). chance: the percent it came to, -1 for the old rule.
+        public const int GreetTilt = 15;   // percent, for a greeting first (or against, flirting cold)
+
         public static string ForPlayer(Ask a, int single, int taken, out string why, out int chance)
         {
             chance = -1;
@@ -77,7 +80,8 @@ namespace EnrageWestworld.Core
                 return No("notdrawn", out why);
             bool spoken = Spoken(a);
             List<KeyValuePair<string, int>> taste = Taste(a);
-            int tilt = RegardTilt(a.Regard) + taste.Sum(t => t.Value) * 5 + (a.Mood == "glad" ? 5 : a.Mood == "sore" ? -5 : 0) - (a.AtWorst ? 15 : 0);
+            // greeting her first counts, and flirting cold counts against (Lex, 2026-10-26: greet, then flirt, then ask)
+            int tilt = RegardTilt(a.Regard) + taste.Sum(t => t.Value) * 5 + (a.Mood == "glad" ? 5 : a.Mood == "sore" ? -5 : 0) - (a.AtWorst ? 15 : 0) + a.Greeted * GreetTilt;
             chance = spoken ? Math.Max(3, Math.Min(50, taken + tilt)) : Math.Max(10, Math.Min(95, single + tilt));
             int roll = (int)((uint)Voice.Hash((a.Id ?? a.Who.Id) + "|willing|" + a.Day) % 100u);
             if (roll < chance)

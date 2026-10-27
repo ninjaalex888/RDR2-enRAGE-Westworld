@@ -109,16 +109,19 @@ namespace EnrageWestworld.Core
             int f = r.Fidelity;
             Deed told = new Deed
             {
-                Id = d.Id, Kind = d.Kind, Detail = d.Detail, Town = d.Town, Zone = d.Zone, Witnesses = d.Witnesses, Count = d.Count, Weight = d.Weight
+                Id = d.Id, Kind = d.Kind, Detail = d.Detail, Town = d.Town, Zone = d.Zone, Witnesses = d.Witnesses, Count = d.Count, Weight = d.Weight, Unseen = d.Unseen
             };
             if (f < 75 && (Deeds.IsViolent(d.Kind) || d.Kind == "hunt"))
                 told.Count = f < 35 ? Math.Max(d.Count * 4, 6) : f < 55 ? d.Count * 3 : d.Count + 1;
-            string who = Who(you, nameKnown, f, seed);
+            // nobody lived to tell who did it (Knowing.cs): the talk never names him, however it grows in the telling
+            string who = d.Unseen ? Voice.Pick(seed + "u", "somebody", "someone nobody saw", "whoever it was") : Who(you, nameKnown, f, seed);
             string text = Deeds.Rumour(told, who);
             if (text == null)
                 return null;
             if (f < 75 && Deeds.IsViolent(d.Kind))
                 text = text.Replace(" killed ", " gunned down ");
+            if (d.Unseen)
+                return text;
             if (f < 55)
                 text += " " + Voice.Pick(seed + "x", "in broad daylight", "and never even blinked", "and rode off laughing", "and nobody lifted a finger");
             if (f < 35)

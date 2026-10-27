@@ -726,6 +726,7 @@ namespace EnrageWestworld.InGame
             }
             Safe("lines", _aLater);
             LedgerStep(now);   // deaths are noted whether or not the player has control (not in story missions)
+            DeedEyesStep(now);   // who saw a killing is still alive to tell it (WestworldScript.Watch.cs)
             TrystWatchdog(now);   // never left dark (outside the trysts' own guard)
             TrystStep(now);       // runs with the player's controls off while it's dark
             HookupsStep(now);     // CasualHookups' scene may take the controls too (WestworldScript.Hookups.cs)

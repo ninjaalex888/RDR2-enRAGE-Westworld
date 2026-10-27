@@ -24,6 +24,12 @@ namespace EnrageWestworld.Core
 
 		public int Heart;       // how fond of him they were already (0-3; FlirtVoices picks a voice by it)
 
+		public bool Night;      // her yes to the flirting is a yes to the night too (Trysts.NightChance)
+
+		public int NightChance = -1;
+
+		public int Greeted;     // 1 he greeted her first, -1 he flirted cold, 0 not known
+
 		public List<KeyValuePair<Person, string>> Jealous = new List<KeyValuePair<Person, string>>();
 	}
 }

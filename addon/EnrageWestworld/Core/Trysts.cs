@@ -16,6 +16,38 @@ namespace EnrageWestworld.Core
             return saloonGirl ? "saloon" : spoken ? "taken" : "single";
         }
 
+        /// Whether her yes to his flirting is a yes to the night too, in percent (Lex, 2026-10-26: greet her, then flirt,
+        /// then ask; flirting cold does worse). greeted: 1 he greeted her first, -1 he didn't, 0 not known.
+        public static int NightChance(string kind, int greeted)
+        {
+            switch (kind)
+            {
+                case "saloon": return greeted < 0 ? 80 : 100;
+                case "taken": return greeted > 0 ? 70 : greeted < 0 ? 40 : 55;
+                default: return greeted > 0 ? 85 : greeted < 0 ? 55 : 70;
+            }
+        }
+
+        /// The day's roll for the night, the same all day for her.
+        public static bool NightYes(string id, long day, int chance)
+        {
+            return (uint)Voice.Hash((id ?? "") + "|night|" + day) % 100u < chance;
+        }
+
+        /// Her no to the night, when she liked the flirting well enough: a cold approach hears about it.
+        public static string NotTonight(string kind, int greeted, string seed)
+        {
+            if (greeted < 0)
+                return Voice.Pick(seed + "tn", "You didn't so much as say good evening. Not tonight.", "Manners first, mister. Then we'll see.",
+                    "A woman likes to be greeted before she's asked a thing like that.");
+            switch (kind)
+            {
+                case "saloon": return Voice.Pick(seed + "tn", "Not tonight. I'm spoken for till the piano stops.", "Another night, cowboy. Tonight I'm tired.");
+                case "taken": return Voice.Pick(seed + "tn", "I can't. Lord knows I'd like to, but I can't.", "Not tonight. Not with him home.");
+                default: return Voice.Pick(seed + "tn", "Slow down. I said I liked you, not that I'd follow you anywhere.", "Another time, maybe. Not tonight.");
+            }
+        }
+
         /// What the player says, asking.
         public static string Ask(string seed)
         {
@@ -52,6 +84,8 @@ namespace EnrageWestworld.Core
                 {
                     yield return Yes(k, "s" + i);
                     yield return After(k, "s" + i);
+                    yield return NotTonight(k, 1, "s" + i);
+                    yield return NotTonight(k, -1, "s" + i);
                 }
             for (int i = 0; i < 12; i++)
                 yield return Ask("s" + i);

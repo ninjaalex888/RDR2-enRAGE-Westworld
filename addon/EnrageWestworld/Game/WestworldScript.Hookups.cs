@@ -235,7 +235,7 @@ namespace EnrageWestworld.InGame
             if (target == 0 || !ENTITY.DOES_ENTITY_EXIST(target) || !ENTITY.IS_ENTITY_A_PED(target) || !PED.IS_PED_HUMAN(target) || PED.IS_PED_MALE(target) || PED.IS_PED_A_PLAYER(target))
                 return;
             TrystOffer o = _trystOffer;
-            bool willing = o != null && o.Hookups && o.Handle == target && now <= o.Until;
+            bool willing = o != null && o.Hookups && o.Night && o.Handle == target && now <= o.Until;
             if (!willing)
             {
                 // its Flirt does nothing on her; never G, which enRAGE's own lock-on prompts use (Interrogate, its money)
@@ -251,13 +251,15 @@ namespace EnrageWestworld.InGame
                 {
                     _hookupsHeld++;
                     string name = TalkName(new Ped(target));
-                    bool ours = o != null && o.Handle == target && now <= o.Until;   // willing, but CasualHookups won't take her kind
-                    Log.Write("HOOKUPS held: " + name + (ours ? " is willing, but CasualHookups turns her kind down; the night is RealNPCs' own" : " hasn't said yes to your flirting") + ", so CasualHookups' Flirt (" + HookupsKeyText + ") was held");
+                    bool flirted = o != null && o.Handle == target && now <= o.Until;
+                    bool ours = flirted && o.Night;   // willing, but CasualHookups won't take her kind
+                    Log.Write("HOOKUPS held: " + name + (ours ? " is willing, but CasualHookups turns her kind down; the night is RealNPCs' own" : flirted ? " liked your flirting, but not that much today" : " hasn't said yes to your flirting") + ", so CasualHookups' Flirt (" + HookupsKeyText + ") was held");
                     if (_hookupsHints < 3)
                     {
                         _hookupsHints++;
-                        Feed.Notice("RealNPCs", ours ? name + " is willing. CasualHookups won't take her, so flirt with her again (H) to go somewhere quieter."
-                                                     : name + " hasn't said yes to you. Flirt with her first (H); CasualHookups follows her answer.");
+                        Feed.Notice("RealNPCs", ours ? name + " is willing. CasualHookups won't take her, so Hook up (H) to go somewhere quieter."
+                                                     : flirted ? name + " liked your flirting, but she won't go further today. Hook up (H) to hear it from her."
+                                                     : name + " hasn't said yes to you. Greet her (R), then Flirt (H); CasualHookups follows her answer.");
                     }
                     if (_hookRun == null)
                     {

@@ -16,7 +16,8 @@ namespace EnrageWestworld.InGame
     {
         private const uint FlirtControl = 0x84543902;   // INPUT_INTERACT_OPTION2: H, or D-pad down
         private const ulong SetPromptText = 0x5DD02A8318420DD7, VarText = 0xFA925AC00EB830B9;
-        private static IntPtr _literalTag, _flirtWord;   // kept for good: the game may hold on to the text
+        private static IntPtr _literalTag, _flirtWord, _hookWord;   // kept for good: the game may hold on to the text
+        private bool _flirtPromptHook;   // it reads "Hook up": she said yes to the flirting (Trysts.cs)
         private int _flirtPrompt, _flirtPromptGroup, _flirtPromptFor, _flirtPresses;
         private string _flirtPromptWho;
         private Action _aFlirtPrompt;
@@ -45,10 +46,13 @@ namespace EnrageWestworld.InGame
                 return;
             }
             int group = HUD._UI_PROMPT_GET_GROUP_ID_FOR_TARGET_ENTITY(target);
-            if (_flirtPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_flirtPrompt) || _flirtPromptFor != target || _flirtPromptGroup != group)
+            // after her yes the same prompt asks her somewhere quieter (Lex: greet, flirt, then hook up)
+            bool hook = _trystOffer != null && _trystOffer.Handle == target && Game.GameTime <= _trystOffer.Until;
+            if (_flirtPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_flirtPrompt) || _flirtPromptFor != target || _flirtPromptGroup != group || _flirtPromptHook != hook)
             {
                 FlirtPromptEnd();
-                _flirtPrompt = NewFlirtPrompt(group);
+                _flirtPrompt = NewFlirtPrompt(group, hook);
+                _flirtPromptHook = hook;
                 _flirtPromptFor = target;
                 _flirtPromptGroup = group;
                 _flirtPromptWho = TalkName(who);
@@ -63,17 +67,19 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// The game's own prompt: "Flirt" on INTERACT_OPTION2, pressed (not held), in this lock-on group.
-        private static int NewFlirtPrompt(int group)
+        /// The game's own prompt: "Flirt" (or "Hook up", after her yes) on INTERACT_OPTION2, pressed (not held), in this
+        /// lock-on group.
+        private static int NewFlirtPrompt(int group, bool hook)
         {
             if (_literalTag == IntPtr.Zero)
             {
                 _literalTag = Kept("LITERAL_STRING");
                 _flirtWord = Kept("Flirt");
+                _hookWord = Kept("Hook up");
             }
             int prompt = HUD._UI_PROMPT_REGISTER_BEGIN();
             HUD._UI_PROMPT_SET_CONTROL_ACTION(prompt, FlirtControl);
-            ulong word = Function.Call<ulong>(VarText, 10, new InputArgument((ulong)_literalTag.ToInt64()), new InputArgument((ulong)_flirtWord.ToInt64()));
+            ulong word = Function.Call<ulong>(VarText, 10, new InputArgument((ulong)_literalTag.ToInt64()), new InputArgument((ulong)(hook ? _hookWord : _flirtWord).ToInt64()));
             Function.Call(SetPromptText, prompt, new InputArgument(word));
             HUD._UI_PROMPT_SET_STANDARD_MODE(prompt, true);
             HUD._UI_PROMPT_SET_GROUP(prompt, group, 0);

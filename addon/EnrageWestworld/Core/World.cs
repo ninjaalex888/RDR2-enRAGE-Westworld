@@ -22,6 +22,8 @@ namespace EnrageWestworld.Core
         [DataMember] public string VictimId;
         [DataMember] public bool Printed;     // went to the newspaper
         [DataMember] public bool Spread;      // started a rumour
+        [DataMember] public long TalkAt;      // a violent deed: when talk of it starts (0: started, or never waited; Knowing.cs)
+        [DataMember] public bool Unseen;      // nobody lived to tell who did it: the talk doesn't know
 
         public string Where { get { return Town ?? Zone; } }
     }

@@ -113,24 +113,85 @@ namespace EnrageWestworld.Core
 						Log("NEW " + item2.Name + ": " + memory.Emotion + " " + memory.Intensity + " \"" + memory.Text + "\"");
 						MemoryMovesHeart(item2, personState, memory, now);
 						bool flag = memory.Text == "fell for you" || memory.Text.StartsWith("you broke");
+						// written that evening and told an hour on, if they live that long (Knowing.cs); before, both
+						// happened in the same second, so a man killed half a minute after a killing had it in his diary
 						if (Cfg.Diaries && memory.Intensity >= 40 && !flag)
 						{
-							WriteDiary(item2, personState, memory, now);
+							Later(LaterAct.Of("diary", item2.Id, memory, Knowing.DiaryDue(Math.Max(memory.At, now), item2.Id + memory.Key)));
 						}
 						if (Cfg.WordOfMouth)
 						{
-							Spread(item2, memory, now);
+							Later(LaterAct.Of("word", item2.Id, memory, Math.Max(memory.At, now) + Knowing.WordAfterMinutes));
 						}
 					}
 				}
 			}
 			ObserveDeaths(roster, now);
 			Deliver(now);
+			DueLater(now);
 			if (Cfg.Romance || Cfg.NpcRomance)
 			{
 				RomanceTick(roster, now);
 			}
 			WorldTick(now);
+		}
+
+		private void Later(LaterAct a)
+		{
+			Store.Later.Add(a);
+			if (Store.Later.Count > Knowing.Max)
+			{
+				Store.Later.RemoveRange(0, Store.Later.Count - Knowing.Max);
+			}
+		}
+
+		/// The diary entries and word of mouth whose time has come, from the living only: the dead write and tell nothing.
+		private void DueLater(long now)
+		{
+			if (Store.Later.Count == 0)
+			{
+				return;
+			}
+			foreach (LaterAct a in Store.Later.Where((LaterAct x) => x.DueAt <= now).ToList())
+			{
+				Store.Later.Remove(a);
+				Person p = Find(a.PersonId);
+				if (p == null || !p.IsAlive)
+				{
+					Log("LATER " + (p != null ? p.Name : a.PersonId) + " didn't live to " + (a.Kind == "diary" ? "write of" : "tell") + " \"" + a.Text + "\"");
+					continue;
+				}
+				MemoryItem m = a.Memory();
+				if (a.Kind == "diary" && Cfg.Diaries)
+				{
+					WriteDiary(p, Store.Get(p), m, now);
+				}
+				else if (a.Kind == "word" && Cfg.WordOfMouth)
+				{
+					Spread(p, m, now);
+				}
+			}
+		}
+
+		// what the corner has said today about each thing that happened (Knowing.Topic -> game day), so five friends
+		// grieving one man make one notice; not saved
+		private readonly Dictionary<string, long> _cornerTopics = new Dictionary<string, long>();
+
+		/// Whether a notice about this may still be shown today; marks it shown when it may.
+		private bool CornerFresh(string text, long now)
+		{
+			string topic = Knowing.Topic(text);
+			long day;
+			if (topic.Length == 0 || (_cornerTopics.TryGetValue(topic, out day) && day == now / 1440))
+			{
+				return false;
+			}
+			_cornerTopics[topic] = now / 1440;
+			if (_cornerTopics.Count > 200)
+			{
+				_cornerTopics.Clear();
+			}
+			return true;
 		}
 
 		private void WriteDiary(Person p, PersonState st, MemoryItem m, long now)
@@ -152,7 +213,7 @@ namespace EnrageWestworld.Core
 				}
 				DiaryChanged.Add(p.Id);
 				st.Thought.Add(m.Key);
-				Push(new Toast
+				PushAbout(p, new Toast
 				{
 					Kind = "diary",
 					Title = p.Name + "'s diary",
@@ -325,7 +386,7 @@ namespace EnrageWestworld.Core
 			Log("WORD " + person.Name + " heard from " + r.FromName + " (" + r.Relation + ", hop " + r.Hops + "): " + r.Text);
 			string text = Voice.Retell(r.Text, r.FromWoman);
 			string text2 = ((r.Relation == "friend") ? "friend " : (r.Relation + " ")) + Person.FirstOf(r.FromName);
-			Push(new Toast
+			PushAbout(Knows(person) ? person : Find(r.FromId), new Toast
 			{
 				Kind = "word",
 				Title = "Word gets around",
@@ -389,7 +450,7 @@ namespace EnrageWestworld.Core
 					string text3 = Family.Letter(person, m, you, person.Id + r.Text);
 					string text4 = Family.Reaction(relative, person, m, person.Id + r.Text + relative.Name);
 					Log("LETTER " + person.Name + " -> " + relative.Name + " (" + relative.Relation + ", " + relative.Town + "): " + r.Text);
-					Push(new Toast
+					PushAbout(person, new Toast
 					{
 						Kind = "letter",
 						Title = "Word reaches " + ShortTown(relative.Town),
@@ -647,23 +708,29 @@ namespace EnrageWestworld.Core
 				}
 				Person who = value;
 				PersonState personState = Store.Find(value.Id);
+				if (!Knowing.Met(personState))
+				{
+					continue;   // only people the player has met speak in the corner (Knowing.cs); before, strangers' grief filled it
+				}
 				foreach (MemoryItem item in value.Memories.Where((MemoryItem x) => x.AboutYou && x.Intensity >= 30))
 				{
-					if (personState == null || !personState.Thought.Contains(item.Key))
+					if (!personState.Thought.Contains(item.Key))
 					{
 						MemoryItem mem = item;
 						int key = item.Intensity + ((now - item.At < 1440) ? 25 : 0);
-						list.Add(new KeyValuePair<int, Func<Toast>>(key, () => MemoryThoughtToast(who, mem)));
+						list.Add(new KeyValuePair<int, Func<Toast>>(key, () => CornerFresh(mem.Text, now) ? MemoryThoughtToast(who, mem) : Skip(who, mem.Key)));
 					}
-				}
-				if (personState == null)
-				{
-					continue;
 				}
 				foreach (Hearsay item2 in personState.Heard.Where((Hearsay x) => !x.Thought))
 				{
 					Hearsay hs = item2;
-					list.Add(new KeyValuePair<int, Func<Toast>>(40, () => HearsayToast(who, hs)));
+					list.Add(new KeyValuePair<int, Func<Toast>>(40, () =>
+					{
+						if (CornerFresh(hs.FromName + " " + hs.Text, now))
+							return HearsayToast(who, hs);
+						hs.Thought = true;   // the same thing, already said today by someone else
+						return null;
+					}));
 				}
 				if (personState.KnowsName && !personState.Thought.Contains("name") && personState.Heart < 2)
 				{
@@ -698,6 +765,13 @@ namespace EnrageWestworld.Core
 				Log("THOUGHT " + toast.Title + ": " + toast.Text);
 			}
 			return toast;
+		}
+
+		/// A thought not shown, because the corner said the same today: marked thought, so it doesn't come back stale.
+		private Toast Skip(Person p, string key)
+		{
+			Store.Get(p).Thought.Add(key);
+			return null;
 		}
 
 		private Toast MemoryThoughtToast(Person p, MemoryItem m)
@@ -807,22 +881,11 @@ namespace EnrageWestworld.Core
 			return toast;
 		}
 
+		/// The player knows them: he has met them (Knowing.Met). It used to count anyone with a memory of him, or who had
+		/// heard of him, so news "of people you know" came from strangers.
 		public bool Knows(Person p)
 		{
-			PersonState personState = Store.Find(p.Id);
-			if (p.Memories.Any((MemoryItem m) => m.AboutYou && m.Intensity >= 30))
-			{
-				return true;
-			}
-			if (personState != null)
-			{
-				if (personState.Talks <= 0 && personState.Sightings < 2 && personState.Heard.Count <= 0 && personState.Affection <= 0)
-				{
-					return personState.Heart != 0;
-				}
-				return true;
-			}
-			return false;
+			return p != null && Knowing.Met(Store.Find(p.Id));
 		}
 
 		/// Small fixes to event titles built from names: "hit the The Klan" -> "hit the Klan", doubled spaces.
@@ -985,6 +1048,16 @@ namespace EnrageWestworld.Core
 		private void Push(Toast t)
 		{
 			Out.Add(t);
+		}
+
+		/// A notice about someone, only if the player knows them (Knowing.cs): what strangers write, hear and tell stays
+		/// in their memories and the log, out of the corner.
+		private void PushAbout(Person p, Toast t)
+		{
+			if (Knows(p))
+			{
+				Out.Add(t);
+			}
 		}
 
 		public static string Short(string s, int max = 160)
@@ -1246,7 +1319,7 @@ namespace EnrageWestworld.Core
 						Text = text
 					});
 					DiaryChanged.Add(p.Id);
-					Push(new Toast
+					PushAbout(p, new Toast
 					{
 						Kind = "diary",
 						Title = p.Name + "'s diary",
@@ -1303,7 +1376,7 @@ namespace EnrageWestworld.Core
 					Text = text
 				});
 				DiaryChanged.Add(p.Id);
-				Push(new Toast
+				PushAbout(p, new Toast
 				{
 					Kind = "diary",
 					Title = p.Name + "'s diary",
@@ -1449,6 +1522,9 @@ namespace EnrageWestworld.Core
 		/// The player's money in dollars, set by the game side before a flirt (-1 unknown).
 		public int PlayerCash = -1;
 
+		/// Whether the player greeted them first, set by the game side before a flirt: 1 yes, -1 no, 0 not known.
+		public int GreetedFirst;
+
 		private static readonly HashSet<string> GoodDeeds = new HashSet<string> { "mercy", "spared", "thiefcaught", "peace" };
 
 		/// Everything that weighs when the player flirts with someone (Interest.Ask): what they think of him, who they are
@@ -1467,7 +1543,7 @@ namespace EnrageWestworld.Core
 				Regard = regard, Drawn = drawn, Taken = taken, AtWorst = worry && stage == 2, Spam = st.FlirtedAt > 0 && now - st.FlirtedAt < 30, Temper = p.Personality,
 				Mood = InnerLife.MoodOf(p, day, p.Id + "|flirtmood|" + day.GameDay), Who = p, Worry = worry ? kind : null, Cash = PlayerCash,
 				BadHere = day.TownDeeds != null ? day.TownDeeds.Count : 0, GoodHere = goodHere, Saloon = NowPlace == "saloon",
-				SaloonGirl = p.Woman && (NowPlace == "saloon" || InnerLife.TradeGroup(p.Trade) == "girl"), Id = p.Id, Day = day.GameDay
+				SaloonGirl = p.Woman && (NowPlace == "saloon" || InnerLife.TradeGroup(p.Trade) == "girl"), Id = p.Id, Day = day.GameDay, Greeted = GreetedFirst
 			};
 		}
 
@@ -1481,12 +1557,20 @@ namespace EnrageWestworld.Core
 			r.Who = p;
 			r.Tryst = Cfg.Trysts && answer == "yes" && p.Woman;
 			r.TrystKind = Trysts.Kind(ask.SaloonGirl, Interest.Spoken(ask));
+			r.Greeted = ask.Greeted;
+			if (r.Tryst)
+			{
+				// her yes to the flirting isn't a yes to the night: that has its own roll, better if he greeted her first
+				r.NightChance = Trysts.NightChance(r.TrystKind, ask.Greeted);
+				r.Night = Trysts.NightYes(ask.Id ?? p.Id, ask.Day, r.NightChance);
+			}
 			return answer;
 		}
 
 		private static string ChanceText(FlirtResult r)
 		{
-			return r.Chance >= 0 ? ", chance " + r.Chance + "% (" + r.TrystKind + ")" : "";
+			return (r.Chance >= 0 ? ", chance " + r.Chance + "% (" + r.TrystKind + ")" : "") + (r.Greeted != 0 ? (r.Greeted > 0 ? ", greeted first" : ", flirted cold") : "") +
+			       (r.NightChance >= 0 ? ", the night " + r.NightChance + "% -> " + (r.Night ? "yes" : "no") : "");
 		}
 
 		/// After a night together (Trysts.cs): fonder of him (a little, for the saloon's women: it's their work), marked,

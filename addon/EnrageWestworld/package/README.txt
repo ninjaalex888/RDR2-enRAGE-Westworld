@@ -624,8 +624,9 @@ in the file. The new ones:
             (D-pad down on a pad)
             WillingSingle (70), WillingTaken (20): percent chance a single, or a married or
             spoken-for, woman takes to your flirting before what she thinks of you tips it (the
-            saloon's women always do); Trysts (true): when she says yes, flirt again within two
-            minutes to go somewhere quieter (the screen goes dark, an hour passes, nothing shown)
+            saloon's women always do); greeting her first (R) helps by 15, flirting cold costs 15
+            Trysts (true): when she says yes, Flirt becomes Hook up (H) for two minutes; her answer
+            to that is its own (better after a greeting), then the screen goes dark, an hour passes
             CasualHookupsDecides (true): with CasualHookups installed, its Flirt works only on a
             woman who has said yes to you, and RealNPCs doesn't fade to black itself
 [Mind]      ShareWithEnrage (true): RealNPCs keeps its own record of who has died; when one of
