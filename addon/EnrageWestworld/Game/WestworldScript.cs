@@ -1067,6 +1067,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST kindness: " + KindnessStatus());
 			Log.Write("TEST vices: " + VicesStatus());
 			Log.Write("TEST grudges: " + GrudgesStatus());
+			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST trouble: " + TroubleStatus());
 			Log.Write("TEST now: " + NowStatus());
 			Log.Write("TEST records: " + RecordsStatus());

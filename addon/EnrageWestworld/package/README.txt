@@ -640,6 +640,8 @@ in the file. The new ones:
             the saloon (and a friend may sit with them)
             Grudges (true): a friend has it out with whoever wronged their friend; someone whose friend
             you killed may tell you so to your face (never violent)
+            (Standoffs also brings the noon callout: two men with bad blood face off in the street about
+            noon until one backs down; nobody fires)
             RoughHandling (true): a man with a grudge (or a hothead with drink in him) smashes another's
             face into the nearest table, bar or wall; NpcThieves (true): pickpockets among the
             townsfolk, and begging; DrunkChallenges (true): a drunk calls a man out at night
