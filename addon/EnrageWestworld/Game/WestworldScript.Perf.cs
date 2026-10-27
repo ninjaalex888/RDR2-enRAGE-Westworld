@@ -69,6 +69,25 @@ namespace EnrageWestworld.InGame
                 _perfChild[depth - 1] += elapsed;
         }
 
+        /// The parts of Step that run outside any Safe get slots of their own, "<name> (step)", so a slow frame there is
+        /// named, not "step (other)" (2026-10-27: a 15 ms frame every few seconds was left there once the save had its
+        /// own). Their errors still go to OnTick's catch, as before; a throw leaves the depth to PerfFrame's reset.
+        private long StepBegin(out int depth)
+        {
+            if (_cfg != null && !_cfg.PerfMeter)
+            {
+                depth = -1;
+                return 0;
+            }
+            return PerfBegin(out depth);
+        }
+
+        private void StepEnd(string slot, long start, int depth)
+        {
+            if (depth >= 0)
+                PerfEnd(PerfSlotOf(slot), start, depth);
+        }
+
         /// Once a frame, from OnTick with the whole Step's time: the averages, the peaks, and the warnings.
         private void PerfFrame(long stepTicks)
         {

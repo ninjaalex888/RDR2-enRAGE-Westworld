@@ -26,6 +26,7 @@ namespace EnrageWestworld.InGame
         private volatile string _saveError;       // set by the pool thread
         private volatile int _saveWriteUs = -1;   // the last background write's time, set by the pool thread
         private int _lastSaveAt, _playedSinceSave, _savesQuiet, _savesInPlay, _savesFailed, _saveKb;
+        private int _clockLast, _clockStillAt;   // Step: the game clock last seen moving, and when (a still clock is a quiet moment)
         private bool _saveReport, _saveToldQuiet, _saveToldInPlay;
         private string _saveWhyNow = "", _saveWhy = "", _saveFile = "";
         private double _saveMs, _saveWarmMs = -1;

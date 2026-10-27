@@ -225,9 +225,12 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			int gameTime = Game.GameTime;
+			int pd;   // the frame-time meter's slots for what runs here outside any Safe (WestworldScript.Perf.cs)
+			long pt = StepBegin(out pd);
 			Feed.Tick();
 			Frame(gameTime);
 			SettingsStep(gameTime);
+			StepEnd("frame and panel (step)", pt, pd);
 			if (_engine == null)
 			{
 				if (gameTime >= _nextFind && Environment.TickCount - _loadedAt >= 8000)
@@ -240,48 +243,66 @@ namespace EnrageWestworld.InGame
 			if (_testRequested)
 			{
 				_testRequested = false;
+				pt = StepBegin(out pd);
 				Test();
+				StepEnd("F7 dump (step)", pt, pd);
 			}
 			if (_flirtRequested)
 			{
 				_flirtRequested = false;
 				if (_cfg.Romance)
 				{
+					pt = StepBegin(out pd);
 					Flirt();
+					StepEnd("flirt (step)", pt, pd);
 				}
 			}
+			pt = StepBegin(out pd);
 			ReaderInput();
 			PollWorldEvents(gameTime);
 			PollGreets(gameTime);
 			Greets(gameTime);
 			Insults(gameTime);
+			StepEnd("greets and events (step)", pt, pd);
 			if (gameTime >= _nextObserve)
 			{
 				_nextObserve = gameTime + 5000;
+				pt = StepBegin(out pd);
 				Observe();
+				StepEnd("observe enRAGE's people (step)", pt, pd);
 			}
+			pt = StepBegin(out pd);
 			ApplyEffects();
 			WorldRequests();
 			if (!Feed.Busy)
 			{
 				RevealPlans();
 			}
+			StepEnd("effects and plans (step)", pt, pd);
+			pt = StepBegin(out pd);
 			Tick04(gameTime);
+			StepEnd("tick04 (step)", pt, pd);
 			bool flag = PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle);
 			if (_cfg.Remarks && flag && gameTime >= _nextRemarks)
 			{
 				_nextRemarks = gameTime + 1000;
+				pt = StepBegin(out pd);
 				Remarks(gameTime);
+				StepEnd("remarks (step)", pt, pd);
 			}
 			if (flag && (_cfg.AmbientFlirting || _cfg.NpcRomance) && gameTime >= _nextAmbient)
 			{
 				_nextAmbient = gameTime + 2000;
+				pt = StepBegin(out pd);
 				Ambient(gameTime);
+				StepEnd("ambient (step)", pt, pd);
 			}
 			if (_cfg.Thoughts && flag && gameTime >= _nextThought)
 			{
 				_nextThought = gameTime + (int)((double)(_cfg.ThoughtEverySeconds * 1000) * (0.75 + _rng.NextDouble() * 0.5));
+				pt = StepBegin(out pd);
 				Toast toast = _engine.NextThought(Bridge.Now(), _inViewId ?? (_inViewId = id => NearHandleOf(id) != 0));   // only people in view: over their heads
+				StepEnd("thoughts about you (step)", pt, pd);
 				if (toast != null)
 				{
 					_engine.Out.Add(toast);
@@ -290,13 +311,27 @@ namespace EnrageWestworld.InGame
 			if (_cfg.LifeUpdates && gameTime >= _nextLife)
 			{
 				_nextLife = gameTime + 10000;
+				pt = StepBegin(out pd);
 				Life();
+				StepEnd("life (step)", pt, pd);
 			}
 			if (flag)
 			{
+				pt = StepBegin(out pd);
 				Notices(gameTime);
+				StepEnd("notices (step)", pt, pd);
 			}
-			SaveStep(null);   // in play: only after a minute with no quiet moment (WestworldScript.Saving.cs)
+			// A game clock that has stood still half a second while we still tick counts as a quiet moment too, in case a
+			// menu or photo mode keeps our ticks going (the pause menu stopped them altogether, 2026-10-27).
+			if (gameTime != _clockLast)
+			{
+				_clockLast = gameTime;
+				_clockStillAt = Environment.TickCount;
+			}
+			bool still = Environment.TickCount - _clockStillAt >= 500;
+			if (still)
+				_perfUnseen = true;
+			SaveStep(still ? "the game clock stopped" : null);   // in play: only after a minute with no quiet moment (WestworldScript.Saving.cs)
 		}
 
 		private static bool InWorld()
