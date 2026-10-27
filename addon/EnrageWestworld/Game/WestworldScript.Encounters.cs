@@ -103,7 +103,7 @@ namespace EnrageWestworld.InGame
             if (now < _nextEncounterRoll)
                 return;
             _nextEncounterRoll = now + every;
-            string why = EncounterBlocker();
+            string why = EncounterBlocker() ?? Pacing.BigWhyNot(_store.Pace, _store.LastGameMin);   // and the quiet after a big moment (Pacing.cs)
             if (why != null)
             {
                 _encounterWait = why;
@@ -293,6 +293,8 @@ namespace EnrageWestworld.InGame
                 WomanModel = Spawner.ModelFor(null, true, _rng.Next()),
                 ManModel = Spawner.ModelFor(null, false, _rng.Next())
             };
+            if (!test)
+                Pacing.NoteBig(_store.Pace, _store.LastGameMin);   // a big moment: the quiet starts (a test's doesn't count)
             Log.Write("ENCOUNTER crying woman: begins, game time " + Clock(Bridge.Now()) + (test ? " (a test)" : string.Empty));
         }
 

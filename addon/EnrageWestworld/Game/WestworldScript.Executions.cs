@@ -118,6 +118,8 @@ namespace EnrageWestworld.InGame
                     e.MenModels.Add(Spawner.ModelFor(null, false, _rng.Next()));
             }
             _exec = e;
+            if (!test)
+                Pacing.NoteBig(_store.Pace, _store.LastGameMin);   // a big moment: the quiet starts (Pacing.cs)
             Log.Write("EXECUTION begins" + (test ? " (test)" : "") + ": " + r.Name + " (" + r.Trade + " of " + r.Town + "), " + plan.Reason + " (" + plan.Boss + "), held by " +
                       (e.BossR != null ? e.BossR.Name + " and a hired man" : plan.Captors == "outlaws" ? e.MenModels.Count + " of " + plan.Gang : plan.Captors == "kin" ? "the " + plan.Boss + " men" : "two men " + plan.Boss + " hired"));
         }

@@ -78,6 +78,8 @@ namespace EnrageWestworld.InGame
                 g.Ring.Add(new Gatherer { R = r, Woman = woman, Model = r != null ? r.Model : Spawner.ModelFor(null, woman, _rng.Next()), X = dx, Y = dy });
             }
             _gathering = g;
+            if (!test)
+                Pacing.NoteBig(_store.Pace, _store.LastGameMin);   // a big moment: the quiet starts (Pacing.cs)
             Log.Write("ENCOUNTER gathering: " + n + " in a ring " + (int)centre.DistanceTo(me.Position) + " m away, " + awake.Count + " of them people who woke" +
                       (awake.Count > 0 ? " (" + string.Join(", ", awake.Select(r => r.Name)) + ")" : ""));
             return true;

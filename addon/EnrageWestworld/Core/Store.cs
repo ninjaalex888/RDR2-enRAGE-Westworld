@@ -49,6 +49,7 @@ namespace EnrageWestworld.Core
         [DataMember] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
         [DataMember] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
         [DataMember] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
+        [DataMember] public PaceState Pace = new PaceState();                           // when things may happen again (Pacing.cs)
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
         private Dictionary<string, DeathEntry> _deathIndex;
 
@@ -179,6 +180,7 @@ namespace EnrageWestworld.Core
                 n += Later.RemoveAll(l => l.At > cut);
             if (WorldLog != null)
                 n += WorldLog.RemoveAll(e => e.At > cut);
+            Pacing.Rewind(Pace, cut);
             if (Deaths != null)
             {
                 foreach (DeathEntry d in Deaths.Where(d => d.At > cut).ToList())
@@ -296,11 +298,13 @@ namespace EnrageWestworld.Core
             if (Deaths == null) Deaths = new List<DeathEntry>();
             if (Later == null) Later = new List<LaterAct>();
             if (WorldLog == null) WorldLog = new List<Happening>();
+            if (Pace == null) Pace = new PaceState();
+            Papers.RemoveAll(p => p != null && p.Id != null && p.Id.StartsWith("test-"));   // the Testing page's test letters go on load
+            Pace.Fix();
             WorldLog.RemoveAll(e => e == null);
             foreach (Happening e in WorldLog)
                 if (e.Witnesses == null)
                     e.Witnesses = new List<EventWitness>();
-            Papers.RemoveAll(p => p != null && p.Id != null && p.Id.StartsWith("test-"));   // the Testing page's test letters go on load
             if (RewoundShares == null) RewoundShares = new List<string>();
             foreach (Post p in Posts)
             {
