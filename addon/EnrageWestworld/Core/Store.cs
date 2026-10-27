@@ -251,7 +251,7 @@ namespace EnrageWestworld.Core
             }
             if (last is IOException || last is UnauthorizedAccessException)
             {
-                log?.Invoke("Couldn't open " + path + " (" + last.Message + "): something else has it open. Nothing is saved this session, so the file is left as it is; close whatever has it and load the game again.");
+                log?.Invoke("Couldn't open " + path + " (" + last.Message + "): something else has it open. Nothing is saved this session, so the file stays untouched; close whatever has it and load the game again.");
                 return Fresh("the save was in use when it loaded (" + last.Message + ")");
             }
             string bad = path + "." + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".bad";

@@ -168,13 +168,13 @@ namespace EnrageWestworld.Core
         {
             { "warm|did", new[] { "There's {b}. Always a kind word, that one.", "Good to see {b} about.", "{b} looks well. That's something.",
                                   "{b}. One friendly face on this street, anyhow.", "Must ask after {b}'s people, next time we stop." } },
-            { "warm|did|hattip", new[] { "Tipped my hat to {b}. Felt neighbourly.", "Hat to {b}. Old habit. Good one.", "Touched my brim to {b}. Got a smile for it." } },
-            { "warm|did|wave", new[] { "Waved to {b}. Small thing. It matters.", "Raised a hand to {b}. Got one back.", "Waved at {b} across the street. Like old times." } },
+            { "warm|did|hattip", new[] { "Tipped my hat to {b}. Felt neighbourly.", "Hat to {b}. Old habit. Good one.", "Touched my brim to {b}, as a man should." } },
+            { "warm|did|wave", new[] { "Waved to {b}. Small thing. It matters.", "Raised a hand to {b}. Pleasant, that.", "Waved at {b} across the street. Like old times." } },
             { "warm|did|cold", new[] { "{b}. Worth staying friendly with.", "A good day to {b}. Costs nothing.", "{b} likes me. Might be useful, one day." } },
             { "warm|did|bold", new[] { "{b}. Good sort. Knows where they stand with me.", "Need a few on my side, in this town. {b}'s one.", "{b} would stand by me in a fight. I'd hope." } },
             { "warm|did|fearful", new[] { "Glad {b} doesn't hold anything against me.", "{b}'s friendly. One less thing to fret about.", "{b}'s friendly to me. Can't think why. Won't ask." } },
             { "warm|answered", new[] { "{b} greeted me first. I'll take that.", "A good day from {b}. Good.", "{b} always has a greeting for me." } },
-            { "warm|answered|fearful", new[] { "{b} spoke to me. Nothing went wrong. Good.", "{b} was friendly. Breathe out.", "{b} waved back. My heart going like a rabbit's. Over a wave." } },
+            { "warm|answered|fearful", new[] { "{b} spoke to me. Nothing went wrong. Good.", "{b} was friendly. Breathe out.", "{b} greeted me first. My heart going like a rabbit's. Over a greeting." } },
             { "sweet|did", new[] { "{b}. Don't stare. Too late.", "Heart jumped when {b} looked over.", "Walk on. Walk on. Don't look back at {b}.",
                                    "If {b} had stopped, what would I have said?", "Smell of {b}'s soap on the air. Or I imagined it." } },
             { "sweet|answered", new[] { "{b} saw me. Smiled, I think. I think so.", "{b} looked at me. Right at me.", "{b} looked a long while. That means something. Doesn't it?" } },
@@ -189,7 +189,7 @@ namespace EnrageWestworld.Core
             { "hostile|stared|cold", new[] { "Saw {b}. {b} saw me. That's all it needs.", "{b}'s glaring. Nothing new.", "{b} stares. Costs me nothing." } },
             { "hostile|spat", new[] { "{b} spat as I went by. I'll remember it.", "Spat on the boards, did {b}? Fine.", "{b}'s spit, an inch from my boot." } },
             { "known|did", new[] { "{b}. Know the face, at least.", "Nod to {b}. That's all we are, nods.", "Seen {b} about. Never said much.", "{b}. Same as ever." } },
-            { "known|answered", new[] { "{b} nodded back. That's about all we ever do.", "{b}. Polite, at least.", "{b} touched a hat. I touched mine. That's us." } },
+            { "known|answered", new[] { "{b} greeted me. I answered. That's about all we ever do.", "{b}. Polite, at least.", "A greeting from {b}, one back from me. That's us." } },
         };
 
         public static IEnumerable<string> AllLines()

@@ -62,7 +62,7 @@ namespace EnrageWestworld.Core
                     break;
                 case "sneer":
                     s.Add(0, null, null, "face", 900)
-                     .Add(0, Voice.Pick(seed + "sm", "Serves you right, " + b + ".", "Mind you don't crack the boards, " + b + "."), "mock", "walkaway")
+                     .Add(0, Voice.Pick(seed + "sm", "Serves you right, " + b + ".", "Mind you don't dent the road, " + b + "."), "mock", "walkaway")
                      .Add(1, null, null, "getup")
                      .Add(1, Voice.Pick(seed + "sb", a + ". Of course it was " + a + ".", "Laugh, then. I'll remember it."), "angry");
                     break;

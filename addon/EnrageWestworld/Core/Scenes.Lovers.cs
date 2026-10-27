@@ -46,9 +46,9 @@ namespace EnrageWestworld.Core
                      .Add(1, "Then dance by yourself next time. I'm going home.", "storm", "walkaway");
                     break;
                 case 2:
-                    s.Add(0, "You told the whole sewing circle our business, " + b + ".", "angry", "face")
+                    s.Add(0, "You told half the town our business, " + b + ".", "angry", "face")
                      .Add(1, "I told one person. One.", "mild")
-                     .Add(0, "In this town one person is the whole sewing circle.", "angry")
+                     .Add(0, "In a town this size one loose tongue does for the lot.", "angry")
                      .Add(1, "Then find somebody quieter to court, " + a + ".", "storm", "walkaway");
                     break;
                 default:

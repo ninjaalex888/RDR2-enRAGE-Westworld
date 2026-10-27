@@ -46,7 +46,7 @@ namespace EnrageWestworld.Core
 
         public static string Hail(string seed)
         {
-            return Voice.Pick(seed + "th", "Mister! Hold up a moment!", "Say there! You, on the horse!", "Excuse me! Sir!", "Hey! Hey, you there! A minute of your time!");
+            return Voice.Pick(seed + "th", "Mister! Hold up a moment!", "Say there! You, friend!", "Excuse me! Sir!", "Hey! Hey, you there! A minute of your time!");
         }
 
         public static string Ask(string town, string seed)

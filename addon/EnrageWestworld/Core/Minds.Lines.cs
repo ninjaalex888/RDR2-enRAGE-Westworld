@@ -174,7 +174,7 @@ namespace EnrageWestworld.Core
             { "deed:theft|saw|near", new[] { "There's {you}. Keep my coat buttoned.", "{you} again. Count the spoons after." } },
             { "looting|saw|fresh", new[] { "Saw {you} go through a dead man's pockets. Cold as a well.", "{you} robbed the dead. Even outlaws used to let a corpse keep its boots." } },
             // a fall: helped up, or walked past ({who} is the other one); the player's own hand up (helpup, {you})
-            { "help|did:doer|fresh", new[] { "Helped {who} up off the boards. Felt good, that.", "{who} went down hard. Glad I was near.", "Dust on my knees from kneeling by {who}. Don't mind it." } },
+            { "help|did:doer|fresh", new[] { "Helped {who} up out of the dirt. Felt good, that.", "{who} went down hard. Glad I was near.", "Dust on my knees from kneeling by {who}. Don't mind it." } },
             { "help|did:doer|chewing", new[] { "Hope {who}'s ankle mends.", "{who} thanked me twice. Once was plenty.", "{who} limping this morning. Hope it's nothing." } },
             { "help|did:doer|letting", new[] { "{who}. A small thing I did. Nice to think of.", "Helped {who} up, once. Small thing. Still glad of it." } },
             { "help|did:done|fresh", new[] { "{who} picked me up off the street. Didn't have to.", "Face still hot. But {who} was kind about it.", "Ground came up fast. {who}'s hand came quicker." } },
@@ -182,7 +182,7 @@ namespace EnrageWestworld.Core
             { "help|did:done|letting", new[] { "{who} helped me up, the day I fell. Good sort.", "Took a tumble, once. {who} was there. That's what I remember." } },
             { "help|saw|fresh", new[] { "{a} went straight to {b} when {b} fell. Decent.", "Saw {a} help {b} up. Some good left in this town.", "{b} hit the dirt hard. {a} was at {b}'s side before the dust settled." } },
             { "passby|did:done|fresh", new[] { "{who} walked right past me. Looked, and walked on.", "Lying there in the dirt, and {who} stepped around me.", "Lay there in the dirt and {who} just looked. Just looked." } },
-            { "passby|did:done|chewing", new[] { "{who}. Wouldn't stop for a fallen neighbour.", "Every time I see {who} I'm on those boards again.", "{who} walked right past me. I'll remember the boots." } },
+            { "passby|did:done|chewing", new[] { "{who}. Wouldn't stop for a fallen neighbour.", "Every time I see {who} I'm down in that dirt again.", "{who} walked right past me. I'll remember the boots." } },
             { "passby|did:done|letting", new[] { "{who} walked past me once. Old news. Mostly.", "{who} left me lying in the street, once. A body doesn't forget that." } },
             { "passby|did:doer|fresh", new[] { "{who} took a tumble. Not my business.", "Should I have stopped for {who}? Well. Didn't.", "Not my business, {who} falling. Kept walking." } },
             { "passby|did:doer|chewing", new[] { "{who}'s fine. People fall. People get up.", "{who} giving me looks since. Over a fall. Folk are tender." } },

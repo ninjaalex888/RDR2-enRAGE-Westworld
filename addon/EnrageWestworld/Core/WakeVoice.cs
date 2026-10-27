@@ -51,7 +51,7 @@ namespace EnrageWestworld.Core
             // ---- 1 Stirring: a word in the wrong place ------------------------------------------------------------
             new WakeVoiceMoment { Id = "s1:tailoff", Stage = 1, Lines = new[] { "CONVO_TAIL_OFF" }, Look = "none", Thoughts = new[] {
                 "Said that to nobody. Out loud, too.",
-                "Look at the time, I said. I wasn't looking at anything.",
+                "Said something to nobody. Can't even say what.",
                 "The words were out before I'd thought them.",
                 "Must be the heat. Talking to the air now." } },
             new WakeVoiceMoment { Id = "s1:noidea", Stage = 1, Lines = new[] { "NO_IDEA" }, Look = "none", Thoughts = new[] {
@@ -84,7 +84,7 @@ namespace EnrageWestworld.Core
                 "Listen. Hello, hello. Not a hair's difference.",
                 "A man ought to be able to say a thing two ways. I can't." } },
             new WakeVoiceMoment { Id = "s2:tailoff", Stage = 2, Lines = new[] { "CONVO_TAIL_OFF" }, Repeat = 2, Look = "sky", Thoughts = new[] {
-                "What a world, I keep saying. Like a bird that knows one song.",
+                "Same few words again. Like a bird that knows one song.",
                 "Same words, same tune. Who taught me only the one?" } },
             new WakeVoiceMoment { Id = "s2:staring", Stage = 2, Lines = new[] { "PLAYER_STARING" }, Look = "you", When = "watched", ToYou = true, Thoughts = new[] {
                 "When he looks my way, everything holds still for him.",

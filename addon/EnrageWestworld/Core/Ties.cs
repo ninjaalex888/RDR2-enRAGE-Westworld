@@ -813,7 +813,7 @@ namespace EnrageWestworld.Core
         private static readonly string[] TownHelp =
         {
             "{b} took a fall in the street and {a} was there before anybody. Helped {b} right up.",
-            "Saw {a} pick {b} up off the boards. Dusted {b} off and all."
+            "Saw {a} pick {b} up out of the dirt. Dusted {b} off and all."
         };
         private static readonly string[] TownPassby =
         {
