@@ -97,16 +97,16 @@ namespace EnrageWestworld.Core
             return Voice.Pick(seed + "br", "Leave me be, then! I'm snakebit, for God's sake!", "Go on. Go on and leave me.");
         }
 
-        public static string BittenIgnored(string seed)
+        public static string BittenIgnored(string seed, bool mounted)
         {
-            return Voice.Pick(seed + "bi", "Rode right by. Rode right by me.", "I'll crawl, then. Crawl to town.", "Leg's hot as a stove. Somebody else will come. Somebody.");
+            return Voice.Pick(seed + "bi", mounted ? "Rode right by. Rode right by me." : "Walked right by. Walked right by me.", "I'll crawl, then. Crawl to town.", "Leg's hot as a stove. Somebody else will come. Somebody.");
         }
 
         /// The town's word, some hours on, of the snakebit man the player stopped for.
-        public static string BittenNews(string town, string seed)
+        public static string BittenNews(string town, string seed, bool mounted)
         {
-            return Voice.Pick(seed + "bn", "A snakebit man limped into " + town + " off the road. Says a stranger on a horse stopped and saw to it.",
-                              "Fellow came into " + town + " with a rattler bite bound tight. Says a rider stopped when nobody else would.");
+            return Voice.Pick(seed + "bn", "A snakebit man limped into " + town + " off the road. Says a stranger" + (mounted ? " on a horse" : "") + " stopped and saw to it.",
+                              "Fellow came into " + town + " with a rattler bite bound tight. Says a " + (mounted ? "rider" : "stranger") + " stopped when nobody else would.");
         }
 
         /// Ridden past or run off, a snakebit man doesn't always make it: half the time (by the seed) the town hears so.
@@ -120,7 +120,7 @@ namespace EnrageWestworld.Core
         public static string BittenDied(string town, string seed)
         {
             return Voice.Pick(seed + "bd", "They found a man dead near " + town + ", snakebit. He'd sat by the road a good while, by the look of it.",
-                              "Stranger found dead in the ditch on the " + town + " road. Rattler bite. Folk wonder who rode past him.");
+                              "Stranger found dead in the ditch on the " + town + " road. Rattler bite. Folk wonder who passed him by.");
         }
 
         public static IEnumerable<string> Lines()
@@ -137,8 +137,8 @@ namespace EnrageWestworld.Core
                 yield return BittenAsk("a" + i);
                 yield return BittenThanks(town, "t" + i);
                 yield return BittenRefused("r" + i);
-                yield return BittenIgnored("i" + i);
-                yield return BittenNews(town, "n" + i);
+                yield return BittenIgnored("i" + i, i % 2 == 0);
+                yield return BittenNews(town, "n" + i, i % 2 == 0);
                 yield return BittenDied(town, "d" + i);
             }
         }

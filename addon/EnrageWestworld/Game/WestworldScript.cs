@@ -389,6 +389,7 @@ namespace EnrageWestworld.InGame
 			_store = Store.Load(StorePath, Log.Write);
 			_store.Player = _player;
 			PassingAbort();
+			WanderLaterClear();
 			SightsReset("a save loaded");
 			VicesReset();
 			GrudgesAbort();

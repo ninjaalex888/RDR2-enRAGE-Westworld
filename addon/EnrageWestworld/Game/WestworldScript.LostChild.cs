@@ -46,7 +46,7 @@ namespace EnrageWestworld.InGame
             }
             List<Candidate> people = ReasonCandidates(me, now, test);
             string ignored;
-            Candidate mother = people.Where(c => c.Who.Woman && !Director.OldModel(c.Ped) && c.Ped.Position.DistanceTo(me.Position) < 25f && NodInView(me, c.Ped) &&
+            Candidate mother = people.Where(c => c.Who.Woman && c.Who.P != null && LostChild.CouldBeMother(c.Who.P) && !Director.OldModel(c.Ped) && c.Ped.Position.DistanceTo(me.Position) < 25f && NodInView(me, c.Ped) &&
                                                  !PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) &&
                                                  (test || Pacing.WhyNot(_store.Pace, "lostchild", null, c.Who.Id, g, 0, false, out ignored) == null))
                                      .OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).FirstOrDefault();
@@ -56,7 +56,7 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             string seed = mother.Who.Id + "|lost|" + g / 1440;
-            LostChild.Child child = LostChild.Of(seed);
+            LostChild.Child child = LostChild.Of(mother.Who.Id);
             string first = Person.FirstOf(mother.Who.Name);
             int h = mother.Ped.Handle;
             bool you = mother.Ped.Position.DistanceTo(me.Position) < LostAskYou && !PED.IS_PED_ON_MOUNT(me.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false);
@@ -68,12 +68,15 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 5000, 0, 51, 0);
                 string line = LostChild.ToYou(child, seed);
                 Feed.Say(first, line, Speech.When(h, "scared", me.Handle), h, toYou: true);
+                NoteInScene(new List<Ped> { mother.Ped }, "lostchild", now);   // busy: no street scene takes her straight after
+                WanderLater(h, now + 7000);
                 _lostAskedYou++;
                 asked = "you";
             }
             else
             {
-                Candidate b = people.Where(c => c != mother && c.Who.Id != mother.Who.Id && c.Ped.Position.DistanceTo(mother.Ped.Position) < LostAskOther)
+                Candidate b = people.Where(c => c != mother && c.Who.Id != mother.Who.Id && c.Ped.Position.DistanceTo(mother.Ped.Position) < LostAskOther &&
+                                                !Ties.Sweethearts(_store.Ties.FirstOrDefault(t => t.Has(c.Who.Id) && t.Has(mother.Who.Id))))   // not her sweetheart: a cold answer would end it
                                     .OrderBy(c => c.Ped.Position.DistanceTo(mother.Ped.Position)).FirstOrDefault();
                 if (b == null)
                 {

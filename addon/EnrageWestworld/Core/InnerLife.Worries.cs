@@ -25,6 +25,12 @@ namespace EnrageWestworld.Core
         }
 
         private static readonly string[] NoFamily = { "trapper", "rough", "girl", "soldier", "card" };
+
+        /// Of a trade that has a family at home (not a trapper, a roughneck, a saloon girl, a soldier or a card player).
+        public static bool HasFamily(Person p)
+        {
+            return p != null && !NoFamily.Contains(TradeGroup(p.Trade));
+        }
         private static readonly string[] Settled = { "farm", "town", "old", "gentry", "working", "plain" };
 
         private static readonly WorryKind[] Worries =

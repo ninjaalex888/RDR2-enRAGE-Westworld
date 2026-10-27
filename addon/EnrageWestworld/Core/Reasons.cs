@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         public bool Taken;        // spoken for: a sweetheart, someone they're courting, an affair of enRAGE's
         public string Mood;       // their day: "sore", "glad" or null (InnerLife.MoodOf)
         public string Grief;      // the first name of a friend whose death they've had word of in the last three days, else null
+        public long GriefAt;      // the game minute that word reached them
         public bool Known;        // known lately for a face in the bar or a hand in a coat
     }
 
@@ -72,8 +73,9 @@ namespace EnrageWestworld.Core
             {
                 string[] what = { "it begins", "it's worse", "it's at the worst", "it's ended" };
                 int stage = InnerLife.StageFor(link.Id, gameDay);
-                return new Reason { Kind = "x:" + link.Kind, Strength = 85, BFirst = link.Id == b.Id,
-                                    Why = link.Name + "'s " + link.Kind + " with " + link.OtherName + " (" + what[stage] + ")" };
+                if (!(stage == 3 && link.Ended))   // its ending has been had out between them already
+                    return new Reason { Kind = "x:" + link.Kind, Strength = 85, BFirst = link.Id == b.Id,
+                                        Why = link.Name + "'s " + link.Kind + " with " + link.OtherName + " (" + what[stage] + ")" };
             }
             if (tie != null)
             {
@@ -110,12 +112,13 @@ namespace EnrageWestworld.Core
                     return new Reason { Kind = blows ? "brawl" : tie.Stage >= 1 || tie.Kind != "argue" ? "x:quarrel" : "argue", Strength = 70 - 10 * tie.Warmth,
                                         Why = blows ? "their quarrel comes to blows" : "their quarrel picks up again" };
                 }
-                // a friend of someone grieving (word of a friend's death in the last three days) offers sympathy, once a day
-                // between them (Scenes.Condole)
-                if (tie.Warmth > 0 && (a.Grief != null || b.Grief != null) && !(tie.Kind == "comfort" && now - tie.At >= 0 && now - tie.At < 1440))
+                // a friend of someone grieving (word of a friend's death in the last three days) offers sympathy, the first
+                // time they meet after the news reached them (Scenes.Condole; the grieving one is A)
+                if (tie.Warmth > 0 && (a.Grief != null || b.Grief != null))
                 {
                     Someone grieving = a.Grief != null ? a : b, friend = grieving == a ? b : a;
-                    return new Reason { Kind = "condole", Strength = 62, BFirst = friend == b, Why = friend.Name + " offers " + grieving.Name + " sympathy for " + grieving.Grief };
+                    if (tie.At < grieving.GriefAt)
+                        return new Reason { Kind = "condole", Strength = 62, BFirst = grieving == b, Why = friend.Name + " offers " + grieving.Name + " sympathy for " + grieving.Grief };
                 }
                 // a friend (or sweetheart) of someone who has just been roughed up or robbed goes to them: a small kindness
                 if (tie.Warmth > 0 && (a.Hurt != null || b.Hurt != null))

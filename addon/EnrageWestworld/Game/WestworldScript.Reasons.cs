@@ -105,7 +105,9 @@ namespace EnrageWestworld.InGame
             s.Taken = _engine.SpokenFor(s.Id);
             s.Known = _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
             s.Mood = s.P != null ? _engine.MoodToday(s.P, s.P.Home ?? _placeTown) : null;
-            s.Grief = _engine.GriefFor(s.Id, 3 * 1440);
+            long griefAt;
+            s.Grief = _engine.GriefFor(s.Id, 3 * 1440, out griefAt);
+            s.GriefAt = griefAt;
             return s;
         }
 
@@ -148,6 +150,16 @@ namespace EnrageWestworld.InGame
             return who.Has("drunk") || (InnerLife.WorryNow(who, Bridge.Now() / 1440, out kind, out stage, out good) && kind == "drink" && stage >= 1);   // a known drinker, or a drinking worry
         }
 
+        /// The link's worry is still the worrier's worry (an update that adds a worry kind can change which one someone has).
+        private static bool LinkStill(WorryLink l, Someone a, Someone b, long day)
+        {
+            Someone w = l.Id == a.Id ? a : l.Id == b.Id ? b : null;
+            string k;
+            int st;
+            bool g;
+            return w == null || w.P == null || !InnerLife.WorryNow(w.P, day, out k, out st, out g) || k == l.Kind;
+        }
+
         /// Every pair close enough to each other with a reason, strongest first.
         private List<PairReason> PairReasons(List<Candidate> people, bool saloon)
         {
@@ -165,7 +177,7 @@ namespace EnrageWestworld.InGame
                     float apart = people[i].Ped.Position.DistanceTo(people[j].Ped.Position);
                     Someone a = people[i].Who, b = people[j].Who;
                     // one is the real person at the other end of the other's worry: they'll cross a street for it
-                    WorryLink link = _store.Links.FirstOrDefault(l => ((l.Id == a.Id && l.OtherId == b.Id) || (l.Id == b.Id && l.OtherId == a.Id)) && InnerLife.ArcFor(l.Id, day) == l.Arc);
+                    WorryLink link = _store.Links.FirstOrDefault(l => ((l.Id == a.Id && l.OtherId == b.Id) || (l.Id == b.Id && l.OtherId == a.Id)) && InnerLife.ArcFor(l.Id, day) == l.Arc && LinkStill(l, a, b, day));
                     if (apart > (link != null ? LinkedApart : ReasonApart))
                         continue;
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(a.Id) && t.Has(b.Id));
@@ -233,15 +245,16 @@ namespace EnrageWestworld.InGame
                 return Scenes.Avoid(cast, seed);
             if (kind == "condole")
             {
-                // the grieving one's answer from their own nature; a test with nobody grieving says "your loss"
-                string manner = Exchanges.Manner(done, done.Hurt != null || done.Mood == "sore");
+                // A is the grieving one, B the friend; the answer from the grieving one's nature; a test with nobody
+                // grieving says "your loss"
+                string manner = Exchanges.Manner(doer, doer.Hurt != null || doer.Mood == "sore");
                 if (note)
                 {
                     _condoles++;
-                    _condoleLast = doer.Name + " to " + done.Name + " (" + (done.Grief ?? "a loss") + ", " + manner + ")";
-                    Log.Write("CONDOLE " + doer.Name + " offers " + done.Name + " sympathy for " + (done.Grief ?? "a loss") + " (" + manner + ")");
+                    _condoleLast = done.Name + " to " + doer.Name + " (" + (doer.Grief ?? "a loss") + ", " + manner + ")";
+                    Log.Write("CONDOLE " + done.Name + " offers " + doer.Name + " sympathy for " + (doer.Grief ?? "a loss") + " (" + manner + ")");
                 }
-                return Scenes.Condole(cast, seed, done.Grief, manner);
+                return Scenes.Condole(cast, seed, doer.Grief, manner);
             }
             if (kind == "tiff" || kind == "mend")
             {
@@ -307,6 +320,14 @@ namespace EnrageWestworld.InGame
                 bool atWorst = (InnerLife.WorryNow(done.P, day, out wk, out wst, out wg) && wst == 2) || done.Hurt != null;   // sore from today, too
                 SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(doer.Id) && t.Has(done.Id));
                 string fn = cast.Names[0] ?? Person.FirstOf(doer.Name), sn = cast.Names[1] ?? Person.FirstOf(done.Name);
+                if (note && (kind == "x:debt" || kind == "x:feud" || kind == "x:courting") && InnerLife.StageFor(doer.Id, day) == 3)
+                {
+                    // its ending, played: not again (Reasons.Between passes over an Ended link)
+                    long arc = InnerLife.ArcFor(doer.Id, day);
+                    WorryLink ended = _store.Links.FirstOrDefault(l => l.Id == doer.Id && l.OtherId == done.Id && l.Kind == kind.Substring(2) && l.Arc == arc);
+                    if (ended != null)
+                        ended.Ended = true;
+                }
                 return kind == "x:debt" || kind == "x:feud" || kind == "x:courting"
                     ? Exchanges.MakeLinked(kind, doer, done, fn, sn, day, seed)   // the worrier (A) and the one at the other end (B)
                     : Exchanges.Make(kind, doer, done, fn, sn, day, atWorst, tie, seed);
@@ -321,7 +342,7 @@ namespace EnrageWestworld.InGame
         {
             if (apart <= 2.6f)
                 return;
-            if (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind == "mend" || kind == "condole" || kind.StartsWith("court"))
+            if (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind == "mend" || kind.StartsWith("court"))
             {
                 s.Beats.Insert(0, new Beat(0, null, null, "meet"));
                 return;

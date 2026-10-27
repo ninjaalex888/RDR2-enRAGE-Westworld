@@ -34,6 +34,8 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             FallWanderStep(now);
+            WanderLaterStep(now);
+            SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
             if (_director.Busy)
             {
                 FallWatchStep(me, now);   // the player may give the fallen a hand up first (WestworldScript.Kindness.cs)

@@ -24,6 +24,7 @@ namespace EnrageWestworld.InGame
             public float TownX, TownY;
             public int StartedAt, PhaseAt, StoppedSince, Tries;
             public bool Test, Bitten;   // Bitten: snakebit, sitting by the road, asking for help (Tier 4)
+            public bool Helped, Left, Mounted;   // the snakebit man seen to, or left; whether you were on a horse
         }
 
         private TravellerRun _traveller;
@@ -145,6 +146,15 @@ namespace EnrageWestworld.InGame
                 t.Tries++;
                 return;
             }
+            if (t.Bitten)
+            {
+                // by the road, not in it: a few metres to one side (across the way you face, roughly across the road)
+                double hd = ENTITY.GET_ENTITY_HEADING(me.Handle) * Math.PI / 180.0;
+                float k = Voice.Hash(t.Seed) % 2 == 0 ? 3.5f : -3.5f;
+                Vector3 side;
+                if (Natives.StandSpot(at + new Vector3((float)Math.Cos(hd) * k, (float)Math.Sin(hd) * k, 0f), at.Z, out side))
+                    at = side;
+            }
             Ped m = Spawner.Spawn(t.Model, at, _rng.Next(360));
             if (m == null || ENTITY.IS_ENTITY_IN_WATER(m.Handle))
             {
@@ -214,8 +224,11 @@ namespace EnrageWestworld.InGame
                 Feed.Say("A traveller", t.Bitten ? Travellers.BittenRefused(t.Seed) : Travellers.Refused(t.Seed), Speech.When(handle, "scared", me.Handle), handle, toYou: true);
                 if (!t.Bitten)
                     TASK.TASK_SMART_FLEE_PED(handle, me.Handle, 25f, 8000, 0, 2f, 0);   // the snakebit can't run: he stays where he sat
-                else if (!t.Test)
-                    _engine.SnakebiteLeft(t.Town, t.Seed, _store.LastGameMin);
+                else
+                {
+                    t.Left = true;
+                    t.Mounted = PED.IS_PED_ON_MOUNT(me.Handle);
+                }
                 t.Phase = "done";
                 t.PhaseAt = Game.GameTime;
                 Log.Write("TRAVELLER: you ran him off");
@@ -233,8 +246,8 @@ namespace EnrageWestworld.InGame
                 // stopping for him is seeing to the bite: he gets up and thanks you, and the town hears of it later
                 TASK.CLEAR_PED_TASKS(h, true, false);
                 Feed.Say("A traveller", Travellers.BittenThanks(t.Town, t.Seed), Speech.When(h, "thanks", me.Handle), h, toYou: true);
-                if (!t.Test)
-                    _engine.SnakebiteTold(t.Town, Travellers.BittenNews(t.Town, t.Seed), _store.LastGameMin);
+                t.Helped = true;   // the town hears of it when it's over, if he's alive then (EndTraveller)
+                t.Mounted = PED.IS_PED_ON_MOUNT(me.Handle);
                 _bittenHelped++;
             }
             else
@@ -265,9 +278,12 @@ namespace EnrageWestworld.InGame
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             }
             if (t.Man.Position.DistanceTo(Game.Player.Character.Position) < 20f && NodInView(Game.Player.Character, t.Man))
-                _ticker.Push("A traveller, thinking", t.Bitten ? Travellers.BittenIgnored(t.Seed) : Travellers.Ignored(t.Seed), "near", h);
-            if (t.Bitten && !t.Test)
-                _engine.SnakebiteLeft(t.Town, t.Seed, _store.LastGameMin);   // he may not make it
+                _ticker.Push("A traveller, thinking", t.Bitten ? Travellers.BittenIgnored(t.Seed, PED.IS_PED_ON_MOUNT(Game.Player.Character.Handle)) : Travellers.Ignored(t.Seed), "near", h);
+            if (t.Bitten)
+            {
+                t.Left = true;   // he may not make it (EndTraveller)
+                t.Mounted = PED.IS_PED_ON_MOUNT(Game.Player.Character.Handle);
+            }
             t.Phase = "done";
             t.PhaseAt = now;
             Log.Write("TRAVELLER: you rode on; he goes on alone");
@@ -291,6 +307,15 @@ namespace EnrageWestworld.InGame
             _traveller = null;
             if (t == null)
                 return;
+            bool alive = t.Man != null && t.Man.Exists() && !t.Man.IsDead;
+            if (t.Bitten && !t.Test && alive && (t.Helped || t.Left))
+            {
+                // the town's word, only for a man alive when you left him: he limped in, or (half the time) he didn't
+                if (t.Helped)
+                    _engine.SnakebiteTold(t.Town, Travellers.BittenNews(t.Town, t.Seed, t.Mounted), _store.LastGameMin);
+                else
+                    _engine.SnakebiteLeft(t.Town, t.Seed, _store.LastGameMin);
+            }
             if (t.Man != null && t.Man.Exists())
             {
                 if (t.Phase != "spawn")

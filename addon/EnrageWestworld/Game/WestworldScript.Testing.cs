@@ -242,6 +242,8 @@ namespace EnrageWestworld.InGame
                     }
                 case "sabbath":
                     {
+                        if (_director.Busy)
+                            return "a scene is going on already";
                         string sw;
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;

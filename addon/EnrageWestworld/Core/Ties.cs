@@ -137,6 +137,8 @@ namespace EnrageWestworld.Core
             if (doer != null || kind != "avoid")
                 t.Doer = doer;   // keeping clear of him doesn't change who did what to whom
             t.Warmth = Math.Max(-3, Math.Min(3, t.Warmth + effect.Value));
+            if (kind == "settled" && t.Warmth < 1)
+                t.Warmth = 1;   // squared up: whatever the calling in left between them, it's mended
             t.Count++;
             t.At = now;
             while (all.Count > Max)

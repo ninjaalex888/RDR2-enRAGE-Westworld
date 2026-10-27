@@ -79,12 +79,22 @@ namespace EnrageWestworld.Core
         /// friend's death come due), or null.
         public string GriefFor(string id, long minutes)
         {
+            long at;
+            return GriefFor(id, minutes, out at);
+        }
+
+        /// The same, with the game minute the word reached them.
+        public string GriefFor(string id, long minutes, out long at)
+        {
+            at = 0;
             PersonState st = id != null ? Store.Find(id) : null;
             if (st == null || st.Mind == null)
                 return null;
             long now = Store.LastGameMin;
             MindMemory m = st.Mind.Where(x => x.Kind == "death" && x.Sub == "friend" && Math.Max(x.At, x.DueAt) <= now && now - Math.Max(x.At, x.DueAt) < minutes)
                                   .OrderByDescending(x => Math.Max(x.At, x.DueAt)).FirstOrDefault();
+            if (m != null)
+                at = Math.Max(m.At, m.DueAt);
             return m != null ? m.NameAt(0) : null;
         }
 

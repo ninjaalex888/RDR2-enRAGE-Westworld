@@ -160,6 +160,7 @@ namespace EnrageWestworld.InGame
         private void Shutdown04()
         {
             PassingAbort();
+            WanderLaterClear();
             SightsReset("shutdown");
             try
             {
@@ -704,6 +705,7 @@ namespace EnrageWestworld.InGame
             WakeActsAbort();
             TrystAbort();
             PassingAbort();
+            WanderLaterClear();
             SightsAbort();
             GrudgesAbort();
             SoberVoices(true);

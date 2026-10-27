@@ -67,6 +67,7 @@ namespace EnrageWestworld.InGame
             WakeActsAbort();
             TrystAbort();
             PassingAbort();
+            WanderLaterClear();
             SightsReset("memories wiped");
             VicesReset();
             GrudgesAbort();

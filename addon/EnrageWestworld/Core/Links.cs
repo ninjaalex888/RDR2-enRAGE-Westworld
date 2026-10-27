@@ -20,6 +20,7 @@ namespace EnrageWestworld.Core
         [DataMember] public string OtherId, OtherName;
         [DataMember] public string Town;
         [DataMember] public long At;                  // game minute made
+        [DataMember] public bool Ended;               // its ending (stage 3) has been played between them: not again
     }
 
     public static class Links

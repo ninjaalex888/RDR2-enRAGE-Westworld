@@ -23,7 +23,6 @@ namespace EnrageWestworld.InGame
         private bool SabbathScene(Ped me, int now, bool test, out string why)
         {
             why = null;
-            SabbathWatchStep(now);
             if (!_cfg.Drama)
             {
                 why = "[World] Drama is off";
@@ -41,6 +40,12 @@ namespace EnrageWestworld.InGame
             if (church.DistanceTo2D(me.Position) > 60f)
             {
                 why = _sabbathWhyNot = "not by the church (" + (int)church.DistanceTo2D(me.Position) + " m)";
+                return false;
+            }
+            string plan = PeacefulPlanDue(church, now);
+            if (plan != null)
+            {
+                why = _sabbathWhyNot = "enRAGE has " + plan + " by the church";   // never kneel through one of its funerals
                 return false;
             }
             long g = _store.LastGameMin;
@@ -69,6 +74,8 @@ namespace EnrageWestworld.InGame
             string seed = kneeler.Who.Id + day;
             string first = Person.FirstOf(kneeler.Who.Name);
             _ticker.Push(first + ", thinking", Sabbath.Prayer(seed), "near", h);
+            NoteInScene(new List<Ped> { kneeler.Ped }, "sabbath", now);   // busy: no street scene takes them off their knees
+            WanderLater(h, now + SabbathKneelMs + 1500);
             Pacing.Note(_store.Pace, "sabbath", _placeTown, kneeler.Who.Id, g);
             _kneels++;
             // someone lapsed or godless who sees it feels it, a moment later
@@ -100,6 +107,34 @@ namespace EnrageWestworld.InGame
                 _ticker.Push(_sabbathWatchName + ", thinking", _sabbathWatchLine, "near", p.Handle);
                 _watched++;
             }
+        }
+
+        // ---- let go after a short act of ours (the Sabbath's kneel, the lost child's mother) --------------------------
+
+        private readonly List<KeyValuePair<int, int>> _wanderLater = new List<KeyValuePair<int, int>>();   // handle, when
+
+        private void WanderLater(int h, int at)
+        {
+            _wanderLater.Add(new KeyValuePair<int, int>(h, at));
+        }
+
+        /// From DramaTick: anyone due who's still standing about, not taken by anything else, goes on their way.
+        private void WanderLaterStep(int now)
+        {
+            for (int i = _wanderLater.Count - 1; i >= 0; i--)
+            {
+                if (now < _wanderLater[i].Value)
+                    continue;
+                int h = _wanderLater[i].Key;
+                _wanderLater.RemoveAt(i);
+                if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !NotFree(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))
+                    TASK.TASK_WANDER_STANDARD(h, 10f, 10);
+            }
+        }
+
+        private void WanderLaterClear()
+        {
+            _wanderLater.Clear();
         }
 
         private string SabbathStatus()

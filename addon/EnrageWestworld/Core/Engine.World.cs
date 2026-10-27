@@ -1189,9 +1189,12 @@ namespace EnrageWestworld.Core
             string kind;
             int stage;
             bool good;
-            if (!InnerLife.WorryNow(p, day, out kind, out stage, out good) || !Links.Linkable(kind))
-                return;
+            bool worried = InnerLife.WorryNow(p, day, out kind, out stage, out good);
             long arc = InnerLife.ArcFor(p.Id, day);
+            if (worried)
+                Store.Links.RemoveAll(l => l.Id == p.Id && l.Arc == arc && l.Kind != kind);   // a link for a worry they no longer have (a worry kind added in an update)
+            if (!worried || !Links.Linkable(kind))
+                return;
             if (Links.Of(Store.Links, p.Id, kind, arc) != null)
                 return;
             string key = p.Id + "|" + arc;

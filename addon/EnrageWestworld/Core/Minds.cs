@@ -340,10 +340,16 @@ namespace EnrageWestworld.Core
             string tg = TemperGroup(p.Personality);
             string role = m.How == "did" && m.Role != null ? ":" + m.Role : string.Empty;
             string[] pool = null;
+            // the warmth group's own words are courting: a kindness (help, a round, comfort, a debt paid...) keeps to its own
+            // words at every phase before it would borrow those
+            bool own = m.Kind == "warmth" && m.Sub != null && !Ties.Romantic(m.Sub);
             if (((m.How == "did" && InSight(m, day)) || (AboutYou(m) && youNear)) && Voice.Chance(seed + "|near", 55))
-                pool = Find(m, role, "near", tg);
+                pool = Find(m, role, "near", tg, !own);
             // their own part at this phase, then the plain words at this phase, then the nearest other phase
             string alt = phase == "fresh" ? "chewing" : phase == "chewing" ? "fresh" : "chewing";
+            if (pool == null && own)
+                pool = Find(m, role, phase, tg, false) ?? Find(m, string.Empty, phase, tg, false) ?? Find(m, role, alt, tg, false) ?? Find(m, string.Empty, alt, tg, false) ??
+                       Find(m, role, "fresh", tg, false) ?? Find(m, string.Empty, "fresh", tg, false) ?? Find(m, role, "letting", tg, false) ?? Find(m, string.Empty, "letting", tg, false);
             if (pool == null)
                 pool = Find(m, role, phase, tg) ?? Find(m, string.Empty, phase, tg) ?? Find(m, role, alt, tg) ?? Find(m, string.Empty, alt, tg) ??
                        Find(m, role, "fresh", tg) ?? Find(m, string.Empty, "fresh", tg);
@@ -373,10 +379,10 @@ namespace EnrageWestworld.Core
             return why == "afraid" || why == "fear" || why == "witnessed" || why == "hostile" || why == "hate" ? "flirt:afraid" : "flirt:no";
         }
 
-        private static string[] Find(MindMemory m, string role, string phase, string tg)
+        private static string[] Find(MindMemory m, string role, string phase, string tg, bool group = true)
         {
             string[] pool;
-            foreach (string head in new[] { m.Sub, m.Kind })
+            foreach (string head in group ? new[] { m.Sub, m.Kind } : new[] { m.Sub })
             {
                 string key = head + "|" + m.How + role + "|" + phase;
                 if (head != null && (Pools.TryGetValue(key + "|" + tg, out pool) || Pools.TryGetValue(key, out pool)))

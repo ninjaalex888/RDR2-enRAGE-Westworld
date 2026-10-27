@@ -27,19 +27,26 @@ namespace EnrageWestworld.Core
             public string Years { get { return new[] { "five", "six", "seven", "eight", "nine" }[(Age - 5) % 5] + " years old"; } }
         }
 
-        private static readonly string[] Boys = { "Tommy", "Samuel", "Will", "Jesse", "Henry", "Eli", "Walter", "Johnny" };
-        private static readonly string[] Girls = { "Mary", "Annie", "Clara", "Lucy", "Ida", "Nell", "Rosie", "Hattie" };
         private static readonly string[] BoyMarks = { "a brown cap too big for him", "a patch on the knee of his trousers", "a red kerchief round his neck", "hair the color of straw", "a slingshot in his back pocket" };
         private static readonly string[] GirlMarks = { "a blue ribbon in her hair", "a yellow pinafore", "a rag doll she won't put down", "freckles, ever so many freckles", "a green gingham dress" };
 
-        public static Child Of(string seed)
+        /// Her own child: the same one InnerLife gives her everywhere (the fever worry's child, by her id), and the rest
+        /// from her id too, so it's the same child each time.
+        public static Child Of(string personId)
         {
-            bool boy = Voice.Hash(seed + "|boy") % 100 < 55;
-            string[] names = boy ? Boys : Girls, marks = boy ? BoyMarks : GirlMarks;
-            return new Child { Boy = boy, Name = names[Voice.Hash(seed + "|n") % names.Length], Mark = marks[Voice.Hash(seed + "|m") % marks.Length], Age = 5 + Voice.Hash(seed + "|age") % 5 };
+            bool girl = Voice.Hash(personId + "|cw") % 2 == 0;
+            string[] marks = girl ? GirlMarks : BoyMarks;
+            return new Child { Boy = !girl, Name = Residents.FirstName(girl, personId + "|child"), Mark = marks[Voice.Hash(personId + "|m") % marks.Length], Age = 5 + Voice.Hash(personId + "|age") % 5 };
         }
 
-        private static string Up(string s)
+        /// A woman who'd have a young child: of an age for it (or of no known age), and not of a trade with no family.
+        public static bool CouldBeMother(Person p)
+        {
+            int age = Romance.AgeOf(p);
+            return p != null && p.Woman && (age < 0 || (age >= 22 && age <= 50)) && InnerLife.HasFamily(p);
+        }
+
+        internal static string Up(string s)
         {
             return string.IsNullOrEmpty(s) ? s : char.ToUpperInvariant(s[0]) + s.Substring(1);
         }
@@ -56,7 +63,7 @@ namespace EnrageWestworld.Core
         {
             return Voice.Pick(seed + "ly", "Mister, please. Have you seen a little " + k.Kind + "? " + k.Name + ". " + Up(k.Mark) + ".",
                               "Have you seen my " + k.Kind + ", mister? " + k.Name + ", " + k.Years + ". " + Up(k.He) + " was right beside me.",
-                              "Please, sir. " + k.Name + "'s wandered off. " + k.Years + ", " + k.Mark + ".");
+                              "Please, sir. " + k.Name + "'s wandered off. " + Up(k.Years) + ", " + k.Mark + ".");
         }
 
         /// The town's word, an hour to three later: where the child turned up.
@@ -73,7 +80,7 @@ namespace EnrageWestworld.Core
         public static IEnumerable<Child> Samples()
         {
             for (int i = 0; i < 60; i++)
-                yield return Of("k" + i);
+                yield return Of("res:k" + i);
         }
     }
 
@@ -85,7 +92,7 @@ namespace EnrageWestworld.Core
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             Scene s = new Scene { Kind = manner == "kind" ? "comfort" : "brushoff", Summary = "a mother asking around for her child" };
-            s.Add(0, Voice.Pick(seed + "la", "Have you seen my " + k.Kind + ", " + b + "? " + k.Name + ". " + k.Years + ".",
+            s.Add(0, Voice.Pick(seed + "la", "Have you seen my " + k.Kind + ", " + b + "? " + k.Name + ". " + LostChild.Up(k.Years) + ".",
                                 b + ", have you seen " + k.Name + "? " + (k.Boy ? "He" : "She") + " was right beside me.",
                                 "Please, " + b + ". " + k.Name + "'s wandered off. " + (k.Boy ? "He" : "She") + "'s got " + k.Mark + "."), "scared", "face");
             if (manner == "kind")
