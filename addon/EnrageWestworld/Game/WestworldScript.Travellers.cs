@@ -433,11 +433,8 @@ namespace EnrageWestworld.InGame
                 Feed.Say("A traveller", t.Bitten ? Travellers.BittenRefused(t.Seed) : Travellers.Refused(t.Seed), Speech.When(handle, "scared", me.Handle), handle, toYou: true);
                 if (!t.Bitten)
                     TASK.TASK_SMART_FLEE_PED(handle, me.Handle, 25f, 8000, 0, 2f, 0);   // the snakebit can't run: he stays where he sat
-                else
-                {
-                    t.Left = true;
-                    t.Mounted = PED.IS_PED_ON_MOUNT(me.Handle);
-                }
+                t.Left = true;   // run off: he may not make it, or arrive (EndTraveller)
+                t.Mounted = PED.IS_PED_ON_MOUNT(me.Handle);
                 t.Phase = "done";
                 t.PhaseAt = Game.GameTime;
                 Log.Write("TRAVELLER: you ran him off");
@@ -488,11 +485,8 @@ namespace EnrageWestworld.InGame
             }
             if (t.Man.Position.DistanceTo(Game.Player.Character.Position) < 20f && NodInView(Game.Player.Character, t.Man))
                 _ticker.Push("A traveller, thinking", t.Bitten ? Travellers.BittenIgnored(t.Seed, PED.IS_PED_ON_MOUNT(Game.Player.Character.Handle)) : Travellers.Ignored(t.Seed), "near", h);
-            if (t.Bitten)
-            {
-                t.Left = true;   // he may not make it (EndTraveller)
-                t.Mounted = PED.IS_PED_ON_MOUNT(Game.Player.Character.Handle);
-            }
+            t.Left = true;   // he may not make it, or arrive (EndTraveller)
+            t.Mounted = PED.IS_PED_ON_MOUNT(Game.Player.Character.Handle);
             t.Phase = "done";
             t.PhaseAt = now;
             Log.Write("TRAVELLER: you rode on; he goes on alone");
@@ -538,6 +532,8 @@ namespace EnrageWestworld.InGame
                 }
                 Spawner.Release(rm, delete);
             }
+            if (!t.Bitten && !t.Robbed && !t.Test && alive && t.Left)
+                _engine.TravellerMissing(t.Town, t.Seed, _store.LastGameMin);   // the one you passed by, now and then, never arrives
             if (t.Bitten && !t.Test && alive && (t.Helped || t.Left))
             {
                 // the town's word, only for a man alive when you left him: he limped in, or (half the time) he didn't

@@ -109,6 +109,22 @@ namespace EnrageWestworld.Core
                               "Fellow came into " + town + " with a rattler bite bound tight. Says a " + (mounted ? "rider" : "stranger") + " stopped when nobody else would.");
         }
 
+        // the one who never arrived (Tier 4, toward the supper invitation's NPC version): a lost traveller you rode past or ran
+        // off, now and then, never reaches the town, and word goes round
+        public const int MissingChance = 15;
+
+        public static bool GoesMissing(string seed)
+        {
+            return Voice.Hash(seed + "|missing") % 100 < MissingChance;
+        }
+
+        public static string Missing(string town, string seed)
+        {
+            return Voice.Pick(seed + "tm", "A man walking to " + town + " never got there. They found his hat in a ditch, and that's all.",
+                              "Nobody's seen the fellow who was asking the way to " + town + ". His bundle turned up by a farm gate.",
+                              "Folk in " + town + " are talking of a stranger on foot who never arrived. Third this year, some say.");
+        }
+
         /// Ridden past or run off, a snakebit man doesn't always make it: half the time (by the seed) the town hears so.
         public const int BittenDiesChance = 50;
 
@@ -193,6 +209,7 @@ namespace EnrageWestworld.Core
                 yield return BittenIgnored("i" + i, i % 2 == 0);
                 yield return BittenNews(town, "n" + i, i % 2 == 0);
                 yield return BittenDied(town, "d" + i);
+                yield return Missing(town, "m" + i);
                 yield return RobThreat("rt" + i);
                 yield return RobPlead(town, "rp" + i);
                 yield return RobWarn(i % 2 == 0, "rw" + i);
@@ -214,6 +231,17 @@ namespace EnrageWestworld.Core
             long due = now + 120 + Voice.Hash(town + now) % 180;
             Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = text, DueAt = due });
             Log("TRAVELLER the town will hear of the snakebite in " + (due - now) + " game min");
+        }
+
+        /// A lost traveller you rode past or ran off: now and then (Travellers.GoesMissing) the town talks, a day or so on,
+        /// of a stranger on foot who never arrived.
+        public void TravellerMissing(string town, string seed, long now)
+        {
+            if (!Travellers.GoesMissing(seed))
+                return;
+            long due = now + 900 + Voice.Hash(seed + now) % 900;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = Travellers.Missing(town, seed), DueAt = due });
+            Log("TRAVELLER the one you passed won't arrive; the town will talk of it in " + (due - now) + " game min");
         }
 
         /// When the traveller was held up (or saved from it): the nearest town hears two to five hours on.
