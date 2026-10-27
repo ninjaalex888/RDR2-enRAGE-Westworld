@@ -87,7 +87,8 @@ namespace EnrageWestworld.InGame
             public NemesisRecord Rec;
             public string Id, Name, History;
             public int Handle, DueAt, Since, Last, Watched;   // Watched: ms with the player in control since (enRAGE's world loop runs then)
-            public long GameAt;
+            public long GameAt, PresumedAt;
+            public bool WasPresumed;                          // "presumed dead" already when he died (a man come back): only a new one counts
         }
 
         private const int FateWatchMs = 30000, FateGiveUpMs = 600000;
@@ -105,7 +106,8 @@ namespace EnrageWestworld.InGame
             if (!_cfg.RecordFates || rec == null || _recordFates.Any(f => f.Id == rec.Id))
                 return;
             int now = Game.GameTime;
-            _recordFates.Add(new RecordFate { Rec = rec, Id = rec.Id, Handle = handle, Name = name, History = history, DueAt = now + 5000, Since = now, Last = now, GameAt = _store.LastGameMin });
+            _recordFates.Add(new RecordFate { Rec = rec, Id = rec.Id, Handle = handle, Name = name, History = history, DueAt = now + 5000, Since = now, Last = now, GameAt = _store.LastGameMin,
+                                              WasPresumed = rec.PresumedDead, PresumedAt = rec.PresumedDeadAt });
         }
 
         private void RecordFatesStep(int now)
@@ -124,7 +126,7 @@ namespace EnrageWestworld.InGame
             {
                 RecordFate f = _recordFates[i];
                 if (control)
-                    f.Watched += now - f.Last;
+                    f.Watched += Math.Min(now - f.Last, 1000);   // a fade or a load in between counts for nothing (enRAGE settles after them)
                 f.Last = now;
                 if (now < f.DueAt)
                     continue;
@@ -136,7 +138,7 @@ namespace EnrageWestworld.InGame
                     drop = "the clock went back (a save loaded)";
                 else if (rec == null)
                     drop = "not on enRAGE's roster any more";
-                else if (rec.PresumedDead)
+                else if (rec.PresumedDead && (!f.WasPresumed || rec.PresumedDeadAt != f.PresumedAt))
                     drop = "enRAGE decided he lived (presumed dead): left to it";
                 else if (!rec.IsAlive)
                 {

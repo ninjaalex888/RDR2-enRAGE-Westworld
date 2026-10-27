@@ -249,7 +249,12 @@ namespace EnrageWestworld.InGame
 
         private bool InTalk(int h)
         {
-            return _talk != null && _talk.People != null && _talk.People.Any(p => p != null && p.Handle == h);
+            if (_talk == null || _talk.People == null)
+                return false;
+            for (int i = 0; i < _talk.People.Length; i++)
+                if (_talk.People[i] != null && _talk.People[i].Handle == h)
+                    return true;
+            return false;
         }
 
         /// Busy with a nod or a reaction to a sight (WestworldScript.Sights.cs): the street scenes, the talk and

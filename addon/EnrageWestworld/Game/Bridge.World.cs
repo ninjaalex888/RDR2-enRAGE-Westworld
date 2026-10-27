@@ -446,19 +446,20 @@ namespace EnrageWestworld.InGame
 
         /// A record died of something RealNPCs did (despair, a street fight gone too far): its history says how, in plain
         /// words, through enRAGE's own History; with `markDead` (the caller has waited, and enRAGE never resolved the
-        /// death: the area unloaded first), IsAlive goes false too. Never for a record enRAGE has decided lived
-        /// (PresumedDead: its cheat-death, a scar and a comeback). Fate is left to enRAGE (a Fate keeps a record out of
-        /// its funerals and burials). Then SaveRoster. Null when it was written, else why not.
+        /// death: the area unloaded first), IsAlive goes false and PresumedDead with it, as enRAGE's own death writes do
+        /// (the caller never asks this of one enRAGE has just decided lived). Fate is left to enRAGE (a Fate keeps a
+        /// record out of its funerals and burials). Then SaveRoster. Null when it was written, else why not.
         public string BookDeath(NemesisRecord r, string history, bool markDead)
         {
             if (r == null || !CanBookDeath)
                 return "enRAGE's history or roster saving wasn't found";
-            if (r.PresumedDead)
-                return "enRAGE decided he lived (presumed dead)";
             try
             {
                 if (markDead && r.IsAlive)
+                {
                     r.IsAlive = false;
+                    r.PresumedDead = false;
+                }
                 if (history != null)
                     History(r, history);
                 RosterChanged();
