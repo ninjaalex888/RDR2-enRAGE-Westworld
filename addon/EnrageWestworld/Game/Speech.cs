@@ -185,6 +185,18 @@ namespace EnrageWestworld.InGame
             return Function.Call<bool>(PlayAmbientSpeech, ped, p);
         }
 
+        /// That recording of the line (take 1..N), with either of the usual speech settings: the same words every time,
+        /// for the waking who hear themselves repeat (Core/WakeVoice.cs). Take 1 exists whenever the voice has the line.
+        public static bool PlayTake(int ped, string line, int take, int listener)
+        {
+            if (ped == 0 || string.IsNullOrEmpty(line) || take < 1 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
+                return false;
+            foreach (string prm in Params)
+                if (Play(ped, line, take, Natives.Hash(prm), null, listener))
+                    return true;
+            return false;
+        }
+
         public static unsafe bool Say(int ped, string line, int listener)
         {
             if (ped == 0 || string.IsNullOrEmpty(line) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))

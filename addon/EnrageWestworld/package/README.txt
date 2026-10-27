@@ -599,6 +599,7 @@ in the file. The new ones:
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
             AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
+            WakeVoices (true): the waking say the game's own lines in the wrong places, more each stage,
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
             Reveries (true), ReturnChance (35), StrangerReturnChance (15)
 [Stalkers]  Stalkers (true): the master switch. StalkerRecords (true): one of enRAGE's people may be

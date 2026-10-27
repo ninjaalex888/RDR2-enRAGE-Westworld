@@ -805,6 +805,7 @@ namespace EnrageWestworld.InGame
             Safe("voices", _aVoices);
             Safe("awakening", _aWake);
             Safe("wakeacts", _aWakeActs);
+            WakeVoiceStep();   // the waking say their own lines oddly (WestworldScript.WakeVoice.cs)
             Safe("scenes", _aDrama);
             Safe("court thoughts", _aCourtThoughts);
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)

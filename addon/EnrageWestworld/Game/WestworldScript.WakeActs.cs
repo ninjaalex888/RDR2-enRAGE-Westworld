@@ -113,6 +113,31 @@ namespace EnrageWestworld.InGame
             return st != null && st.WakeStage > 0;
         }
 
+        /// Why someone woken only looks and speaks (passive), for the log: the first test that held them.
+        private string PassiveWhy(Ped ped, Resident res)
+        {
+            if (res != null && res.PostId != null)
+                return "keeps a counter";
+            if (_bridge.RecordAt(ped.Handle) != null)
+                return MayDirectWhyNot(ped) ?? "one of enRAGE's people, busy then";
+            int h = ped.Handle;
+            if (PED.IS_PED_IN_COMBAT(h, 0))
+                return "fighting";
+            if (PED.IS_PED_FLEEING(h))
+                return "fleeing";
+            if (PED.IS_PED_RAGDOLL(h))
+                return "knocked down";
+            if (PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false))
+                return "riding";
+            if (PED.IS_PED_SWIMMING(h) || ENTITY.IS_ENTITY_IN_WATER(h))
+                return "in the water";
+            if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h))
+                return "a mission entity (another script's, or enRAGE's)";
+            if (Spawner.IsOurs(h))
+                return "one of ours";
+            return "held then, free now";
+        }
+
         /// Free to be moved about: nobody else's, not busy, not in danger.
         private bool CanDirect(Ped ped)
         {
@@ -197,12 +222,13 @@ namespace EnrageWestworld.InGame
             int examined = 0, bound = 0;
             foreach (Ped ped in World.GetAllPeds().Where(x => x.Handle != me.Handle && x.Position.DistanceTo(me.Position) <= 30f).OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
+                int h = ped.Handle;
+                if (!PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    continue;   // only living people count toward the eight (horses and bodies used up the slots, 2026-10-27)
                 if (examined++ >= 8)
                     break;
-                int h = ped.Handle;
                 int cool;
-                if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || !PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h) ||
-                    PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || LawBusy(ped))
+                if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || LawBusy(ped))
                     continue;
                 bool known = _resBind.ContainsKey(h);
                 if (!known && bound >= 3)
@@ -280,7 +306,7 @@ namespace EnrageWestworld.InGame
             }
             _wakeActs.Add(act);
             _lastWakeActAt = now;
-            Log.Write("WAKE act: " + p.Name + " (" + Awakening.StageName(st.WakeStage) + ") " + act.Kind + (passive ? " [passive]" : "") + ", " + (int)ped.Position.DistanceTo(me.Position) + " m away");
+            Log.Write("WAKE act: " + p.Name + " (" + Awakening.StageName(st.WakeStage) + ") " + act.Kind + (passive ? " [passive: " + PassiveWhy(ped, res) + "]" : "") + ", " + (int)ped.Position.DistanceTo(me.Position) + " m away");
         }
 
         /// Sets the act going. False if it can't be done here (no room to walk, nobody to talk to): the caller falls back.
@@ -607,8 +633,16 @@ namespace EnrageWestworld.InGame
                 case 1:   // saying it
                     if (now < act.PhaseUntil)
                         break;
+                    if (_wv != null && _wv.Handle == h)
+                        break;   // their waking line is still being said (WestworldScript.WakeVoice.cs)
                     if (act.Said < act.Lines)
                     {
+                        if (WakeVoiceForAct(act, me, dist, act.Said == act.Lines - 1, now))
+                        {
+                            act.Said++;
+                            act.PhaseUntil = now + 600;
+                            break;
+                        }
                         string line = WakeBeats.Aloud("plea", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|plea|" + act.Said + "|" + now / 1000);
                         act.Said++;
                         if (line != null)

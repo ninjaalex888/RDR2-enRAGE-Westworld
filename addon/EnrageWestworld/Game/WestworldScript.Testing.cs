@@ -326,6 +326,8 @@ namespace EnrageWestworld.InGame
                         return "nobody 3-16 m off to glitch";
                     skipped = "the 7-15 minutes between glitches";
                     return null;
+                case "wakevoices":
+                    return WakeVoiceProbeStart(now);   // every waking line once on the nearest person: which the game plays (WestworldScript.WakeVoice.cs)
                 case "disbelief":
                     if (!_cfg.WestWorld)
                         return "West World is off";
