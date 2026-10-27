@@ -164,6 +164,7 @@ namespace EnrageWestworld.InGame
         private void DespairSeq(WakeAct act, int now)
         {
             int h = act.Handle;
+            act.NextStep = now + 50;   // watched closely throughout: the tick's 400 ms between steps left the shot ~0.45 s late (44% and 51% for 30 and 35) and a gap between clips
             DespairClip c = act.Seq[act.ClipIdx];
             if (!act.ClipOn)
             {
@@ -211,7 +212,6 @@ namespace EnrageWestworld.InGame
             }
             if (c.ShotAt >= 0f && !act.ShotDone && playing)
             {
-                act.NextStep = now + 50;   // watched closely for the shot's point, as the wall run is
                 float at = ENTITY._GET_ENTITY_ANIM_CURRENT_TIME(h, c.Dict, c.Clip);
                 if (at >= c.ShotAt)
                 {
@@ -219,6 +219,11 @@ namespace EnrageWestworld.InGame
                     Log.Write("WAKE despair: " + act.Name + "'s shot at " + (at * 100f).ToString("0") + "% of " + c.Clip + " (set for " + (c.ShotAt * 100f).ToString("0") + "%)" +
                               ", the gun " + (WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(h, 0) != 0 ? "in hand" : "NOT in hand"));
                     DespairShot(act, now);   // from the gun hand into the head: Phase 5
+                    return;
+                }
+                if (now - act.ClipAt < c.MaxMs)
+                {
+                    act.PhaseUntil = now;   // the next step (50 ms) looks again
                     return;
                 }
             }
