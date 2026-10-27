@@ -55,6 +55,17 @@ namespace EnrageWestworld.InGame
             _engine.RememberScene(kind, a, b, watchers, _placeTown, _engine.NowIndoors ? _engine.NowPlace : null);
         }
 
+        /// Who can see something happen and remember it: any living grown-up who isn't the player or the story's own.
+        /// Not the scene-casting rule (Natives.Bystander), which leaves out the fleeing, the fighting and lawmen: around a
+        /// shooting that's most of the people who saw it.
+        private static bool CanWitness(Ped p, Ped me)
+        {
+            if (p == null || !p.Exists())
+                return false;
+            int h = p.Handle;
+            return h != me.Handle && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_HUMAN(h) && !PED.IS_PED_A_PLAYER(h) && !Natives.IsChild(p) && !Natives.StoryModel(p) && !Spawner.IsOurs(h);
+        }
+
         /// Someone as the minds know them: their lasting id (null if they can't be met again), name, town and look.
         /// `save`: a passer-by may be made a resident for it.
         private Minds.Party PartyOf(Ped p, bool save)
@@ -108,15 +119,14 @@ namespace EnrageWestworld.InGame
             foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && x.Position.DistanceTo(at) <= metres).OrderBy(x => x.Position.DistanceTo(at)))
             {
                 int h = p.Handle;
-                if (people.Any(x => x != null && x.Handle == h) || Spawner.IsOurs(h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) ||
-                    !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, first.Handle, 17))
+                if (people.Any(x => x != null && x.Handle == h) || !CanWitness(p, me) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, first.Handle, 17))
                     continue;
                 string id, name;
-                bool lasting = LastingId(p, out id, out name) && _engine.Lasting(id);
+                bool lasting = LastingId(p, out id, out name) && _engine.CanRemember(id);
                 if (!lasting && !(strong && saved < NewMindsPerEvent))
                     continue;
                 Minds.Party w = PartyOf(p, !lasting);
-                if (w == null || w.Id == null || !_engine.Lasting(w.Id))
+                if (w == null || w.Id == null || !_engine.CanRemember(w.Id))
                     continue;
                 if (!lasting)
                     saved++;
@@ -131,8 +141,8 @@ namespace EnrageWestworld.InGame
         /// are kept as residents, as for a fight. `only`: just this one (someone who came upon the body and saw him).
         private void NoteDeedMinds(Deed d, Vector3 pos, int except, Ped only = null)
         {
-            if (!_cfg.Minds || d == null || Minds.DeedGroup(d.Kind) == null)
-                return;
+            if (!_cfg.Minds || d == null || Minds.DeedGroup(d.Kind) == null || MISC.GET_MISSION_FLAG())
+                return;   // not during a story mission: its people are the story's
             try
             {
                 Ped me = Game.Player.Character;
@@ -143,14 +153,14 @@ namespace EnrageWestworld.InGame
                 foreach (Ped p in around)
                 {
                     int h = p.Handle;
-                    if (h == except || h == me.Handle || Spawner.IsOurs(h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, me.Handle, 17))
+                    if (h == except || !CanWitness(p, me) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, me.Handle, 17))
                         continue;
                     string id, name;
-                    bool lasting = LastingId(p, out id, out name) && _engine.Lasting(id);
+                    bool lasting = LastingId(p, out id, out name) && _engine.CanRemember(id);
                     if (!lasting && !(strong && saved < NewMindsPerEvent))
                         continue;
                     Minds.Party w = PartyOf(p, !lasting);
-                    if (w == null || w.Id == null || !_engine.Lasting(w.Id))
+                    if (w == null || w.Id == null || !_engine.CanRemember(w.Id))
                         continue;
                     if (!lasting)
                         saved++;
@@ -173,7 +183,7 @@ namespace EnrageWestworld.InGame
         /// passers-by kept, as for a fight). The player's own killings are remembered as his deeds instead.
         private void NoteDeathMinds(int h, DeathEntry e)
         {
-            if (!_cfg.Minds || e == null || e.By == "player")
+            if (!_cfg.Minds || e == null || e.By == "player" || MISC.GET_MISSION_FLAG())
                 return;
             try
             {

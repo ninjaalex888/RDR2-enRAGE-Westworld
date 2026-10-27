@@ -29,8 +29,11 @@ namespace EnrageWestworld.Core
         /// someone unsaved, which would leave an entry in the save for good).
         private PersonState MindOf(string id, string name)
         {
-            if (!Lasting(id))
+            if (!CanRemember(id))
                 return null;
+            Person rec;
+            if (id != null && _byId.TryGetValue(id, out rec))
+                return Store.Get(rec);   // one of enRAGE's records: its state is kept already
             PersonState st = Store.Find(id);
             if (st != null)
                 return st;
@@ -38,6 +41,23 @@ namespace EnrageWestworld.Core
                 return Store.Get(new Person { Id = id, Name = name });
             Resident r = Store.FindResident(id);
             return r != null ? Store.Get(PersonOfResident(r)) : null;
+        }
+
+        /// Who keeps memories: enRAGE's townsfolk, saved residents, and enRAGE's own records.
+        public bool CanRemember(string id)
+        {
+            return id != null && (Lasting(id) || _byId.ContainsKey(id));
+        }
+
+        /// One of enRAGE's records: a memory that pulls hard enough (over 40) is what they think of on the ticker,
+        /// after a reverie and the world feeling unreal (TickerThought). Null when nothing does.
+        public string RecordMemoryThought(Person p, PersonState st, string seed)
+        {
+            if (!Cfg.Minds || st == null || st.Mind.Count == 0)
+                return null;
+            int hour = (int)(Store.LastGameMin % 1440 / 60);
+            Minds.Choice c = Think(p, st, hour, seed, null, null, memoriesOver: 40);
+            return c != null ? c.Text : null;
         }
 
         /// A scene between a and b (a first, as the scene was built: the one who did it in a one-sided scene): each
@@ -218,12 +238,12 @@ namespace EnrageWestworld.Core
 
         /// What this person is thinking now, by what pulls hardest on them (Minds on): the line and where it came from.
         /// `extra`: what the caller knows besides (a townsperson's feeling about the player, a keeper's counter).
-        public Minds.Choice Think(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra)
+        public Minds.Choice Think(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra, int memoriesOver = -1)
         {
             // new code under the ticker: a fault here gives the old way for that thought, and is logged once
             try
             {
-                return ThinkImpl(p, st, hour, seed, look, extra);
+                return ThinkImpl(p, st, hour, seed, look, extra, memoriesOver);
             }
             catch (Exception ex)
             {
@@ -245,7 +265,8 @@ namespace EnrageWestworld.Core
             _worryWear.Clear();
         }
 
-        private Minds.Choice ThinkImpl(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra)
+        /// memoriesOver: only memories pulling harder than this (for enRAGE's records); -1 everything.
+        private Minds.Choice ThinkImpl(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra, int memoriesOver)
         {
             long now = Store.LastGameMin;
             if (now < _thinkClock - 5)
@@ -258,6 +279,8 @@ namespace EnrageWestworld.Core
             List<Minds.Candidate> all = Candidates(p, st, hour, seed, look, day, now);
             if (extra != null)
                 all.AddRange(extra);
+            if (memoriesOver >= 0)
+                all = all.Where(k => k.M != null && k.Pull > memoriesOver).ToList();
             Minds.Choice c = null;
             HashSet<string> said = SaidToday(p.Id, now);
             foreach (Minds.Candidate k in Minds.Order(all, seed))
@@ -278,7 +301,8 @@ namespace EnrageWestworld.Core
             }
             if (_thought.Count > 3000)
                 _thought.Clear();
-            _thought[p.Id] = new KeyValuePair<string, Minds.Choice>(seed, c);
+            if (c != null || memoriesOver < 0)
+                _thought[p.Id] = new KeyValuePair<string, Minds.Choice>(seed, c);   // a record with nothing strong enough thinks enRAGE's way
             if (c != null)
                 Detail("THOUGHT " + p.Name + ": \"" + c.Text + "\" <- " + c.Source + " (" + c.Pull + ")");
             return c;

@@ -961,6 +961,10 @@ namespace EnrageWestworld.Core
                 if (c != null)
                     return c;
             }
+            // what they lived through that RealNPCs saw, when it weighs on them (Minds)
+            string lived = RecordMemoryThought(p, st, seed);
+            if (lived != null)
+                return lived;
             if (Cfg.Romance && st.Heart != 0 && Voice.Chance(seed + "heart", 60))
             {
                 string r = Romance.Thought(p, st.Heart, you, seed);

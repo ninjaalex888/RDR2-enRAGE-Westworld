@@ -211,6 +211,7 @@ namespace EnrageWestworld.Core
             if (same != null)
             {
                 same.Strength = Math.Max(same.Strength, m.Strength);
+                same.DueAt = Math.Min(same.DueAt, m.DueAt);   // seen it with their own eyes: no waiting for word of it
                 if (Math.Abs(m.Feel) > Math.Abs(same.Feel))
                     same.Feel = m.Feel;
                 return same;
