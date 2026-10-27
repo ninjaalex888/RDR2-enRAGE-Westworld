@@ -98,7 +98,7 @@ namespace EnrageWestworld.InGame
         {
             public int Handle, Idx, Phase, NextAt, Until, Started;
             public string Name, Which, Dict, Clip;
-            public bool Woman, GunGiven, Started1, Flag0Tried, Retried;
+            public bool Woman, GunGiven, Started1, Flag0Tried, Retried, InHand;
             public AnimClip[] Clips;
             public Vector3 From;
             public readonly List<string> Results = new List<string>();
@@ -177,17 +177,20 @@ namespace EnrageWestworld.InGame
                     t.Dict = f ? c.FDict : c.Dict;
                     t.Clip = f ? c.FClip : c.Clip;
                     STREAMING.REQUEST_ANIM_DICT(t.Dict);
-                    if (c.Gun && !t.GunGiven)
+                    if (c.Gun)
                     {
+                        // forced into the hand before every gun clip: clearing their orders between clips puts it away, and
+                        // someone with no holster lost it (Lex, 2026-10-27: a woman had it for the first two clips only)
                         WEAPON.GIVE_WEAPON_TO_PED(h, TestRevolver, 6, true, false, 0, false, 0.5f, 1f, GiveReason, true, 0f, false);
                         WEAPON.SET_PED_DROPS_WEAPONS_WHEN_DEAD(h, false);
+                        WEAPON.SET_CURRENT_PED_WEAPON(h, TestRevolver, true, 0, false, false);
                         t.GunGiven = true;
                     }
-                    if (t.GunGiven)
-                        WEAPON.SET_CURRENT_PED_WEAPON(h, c.Gun ? TestRevolver : Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // in hand only for the gun clips
+                    else if (t.GunGiven)
+                        WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // in hand only for the gun clips
                     t.Phase = 1;
                     t.Until = now + 3000;
-                    t.NextAt = now + 100;
+                    t.NextAt = now + (c.Gun ? 500 : 100);   // a moment for the gun to reach the hand
                     return;
                 }
                 case 1:   // loaded: play it, numbered on screen
@@ -201,6 +204,7 @@ namespace EnrageWestworld.InGame
                         return;
                     }
                     t.From = ENTITY.GET_ENTITY_COORDS(h, true, true);
+                    t.InHand = c.Gun && WEAPON.IS_PED_ARMED(h, 4);
                     TASK.TASK_PLAY_ANIM(h, t.Dict, t.Clip, 4f, -4f, -1, c.Flags, 0f, false, 0, false, "", false);
                     float secs = ENTITY.GET_ANIM_DURATION(t.Dict, t.Clip);
                     int ms = secs > 0f ? (int)(secs * 1000f) : 4000;
@@ -240,6 +244,8 @@ namespace EnrageWestworld.InGame
                         Log.Write("WAKE anim #" + (t.Idx + 1) + " " + t.Clip + " didn't start: " + (PED.IS_PED_USING_ANY_SCENARIO(h) ? "in a scenario, " : "") +
                                   "the play task's status " + TASK.GET_SCRIPT_TASK_STATUS(h, Natives.Hash("SCRIPT_TASK_PLAY_ANIM"), true) + "; once more");
                         TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, false, true);
+                        if (c.Gun)
+                            WEAPON.GIVE_WEAPON_TO_PED(h, TestRevolver, 6, true, false, 0, false, 0.5f, 1f, GiveReason, true, 0f, false);   // the clear put it away
                         TASK.TASK_PLAY_ANIM(h, t.Dict, t.Clip, 8f, -4f, -1, c.Flags, 0f, false, 0, false, "", false);
                         t.Started = now;
                         t.Until = now + Math.Min(Math.Max(1000, (int)(ENTITY.GET_ANIM_DURATION(t.Dict, t.Clip) * 1000f)), 12000) + 400;
@@ -249,7 +255,8 @@ namespace EnrageWestworld.InGame
                     float moved = ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(t.From);
                     float secs = ENTITY.GET_ANIM_DURATION(t.Dict, t.Clip);
                     AnimTestResult(t, (t.Started1 ? "played" + (t.Flag0Tried ? " (over the whole body)" : "") + (t.Retried ? " (on the second try)" : "") : "didn't start") + ", " + secs.ToString("0.0") + " s long, ran " +
-                                      ((now - t.Started) / 1000.0).ToString("0.0") + " s, moved them " + moved.ToString("0.0") + " m" + (moved >= 1f ? " (it carries them off: drop it or play it in place)" : ""));
+                                      ((now - t.Started) / 1000.0).ToString("0.0") + " s, moved them " + moved.ToString("0.0") + " m" + (moved >= 1f ? " (it carries them off: drop it or play it in place)" : "") +
+                                      (c.Gun ? ", a gun in hand at the start: " + (t.InHand ? "yes" : "NO") : ""));
                     return;
                 }
             }
