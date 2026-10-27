@@ -61,6 +61,9 @@ namespace EnrageWestworld.InGame
             Candidate buyer = null;
             string roundWhy = null;
             int rank = 9;
+            Wedding wed = _store.Weddings.FirstOrDefault(w => w != null && w.Done && w.Town == _placeTown && g - w.At >= 0 && g - w.At < 720
+                && _store.Affairs.Any(a => a.AId == w.AId && a.BName == w.BName && a.Active && a.Stage >= 5));   // held, not called off
+            string couple = wed != null ? Person.FirstOf(wed.AName) + " and " + Person.FirstOf(wed.BName) : null;   // wed in this town today: a toast
             foreach (Candidate c in people)
             {
                 if (c.Who.P == null)
@@ -69,7 +72,8 @@ namespace EnrageWestworld.InGame
                 int ws;
                 bool good;
                 bool news = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && good;
-                string w = Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper) ?? (test ? "glad" : null);
+                string w = couple != null && c.Who.Temper != "Greedy" && c.Who.Id != wed.AId && c.Who.Id != wed.BId ? "wedding" :   // not the newlyweds themselves
+                            Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper) ?? (test ? "glad" : null);
                 int r = Array.IndexOf(Scenes.RoundWhys, w);
                 if (w == null || r >= rank || !people.Any(o => o != c && o.Ped.Position.DistanceTo(c.Ped.Position) < RoundBar && TieWarmth(o.Who.Id, c.Who) >= 0))
                     continue;
@@ -94,7 +98,7 @@ namespace EnrageWestworld.InGame
             }
             string seed = buyer.Who.Id + "|round|" + g / 60;
             SceneCast cast = BuildCast(buyer.Ped, b.Ped, null, true, me, now, seed);
-            Scene s = Scenes.Round(cast, seed, roundWhy);
+            Scene s = Scenes.Round(cast, seed, roundWhy, couple);
             _round = new RoundNote { Buyer = buyer.Ped, B = b.Ped, Name = buyer.Who.Name, Who = buyer.Who, Seed = seed, Test = test };
             StartScene(s, new List<Ped> { buyer.Ped, b.Ped }, cast, seed, now, test);
             if (!_director.Busy)

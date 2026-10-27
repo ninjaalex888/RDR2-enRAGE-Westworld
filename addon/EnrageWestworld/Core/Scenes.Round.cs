@@ -9,7 +9,7 @@ namespace EnrageWestworld.Core
 {
     public static partial class Scenes
     {
-        public static readonly string[] RoundWhys = { "goodnews", "glad", "flush" };
+        public static readonly string[] RoundWhys = { "wedding", "goodnews", "glad", "flush" };   // a wedding toast first (Tier 4: an enRAGE wedding in this town today)
 
         /// Why this person would buy the house a drink tonight, or null: good news today first, then a glad mood, then
         /// an outgoing nature and money in the pocket (never the Greedy, who'd sooner keep it).
@@ -24,18 +24,22 @@ namespace EnrageWestworld.Core
             return outgoing && wellOff ? "flush" : null;
         }
 
-        public static Scene Round(SceneCast c, string seed, string why)
+        public static Scene Round(SceneCast c, string seed, string why, string couple = null)
         {
             string a = N(c, 0, seed);
-            Scene s = new Scene { Kind = "round", Summary = "someone stood the house a round" };
-            string call = why == "goodnews" ? Voice.Pick(seed + "rg", "A round for the house! Good news came today, and I mean to drink to it.", "Drinks for everybody! Something finally went right.")
+            string pair = string.IsNullOrEmpty(couple) ? "the newlyweds" : couple;
+            Scene s = new Scene { Kind = "round", Summary = why == "wedding" ? "someone stood the house a round for the newlyweds" : "someone stood the house a round" };
+            string call = why == "wedding" ? Voice.Pick(seed + "rw", "A round for " + pair + "! Married this very day!", "Drinks all round! To " + pair + ", and long life to them!", "Fill 'em up! I mean to drink to " + pair + ", wed this very day.")
+                        : why == "goodnews" ? Voice.Pick(seed + "rg", "A round for the house! Good news came today, and I mean to drink to it.", "Drinks for everybody! Something finally went right.")
                         : why == "glad" ? Voice.Pick(seed + "rl", "Set 'em up, barkeep. One for everybody.", "Drinks all round! Don't ask why. Just drink.", "Everybody's glass, on me. It's been that kind of a day.")
                         : Voice.Pick(seed + "rf", "Put the room's drinks on my account tonight.", "A round for the house, and keep the change.");
             s.Add(0, call, "cheer", "face")
              .Add(0, null, null, "cb:round")
-             .Add(1, Voice.Pick(seed + "rt", "Well, I'll drink to that. Thank you kindly, " + a + ".", "Generous of you, " + a + ". Your health.",
+             .Add(1, why == "wedding" ? Voice.Pick(seed + "rx", "To " + pair + "! And to you, " + a + ", for the whiskey.", "Long life to them. Thank you, " + a + ".")
+                                     : Voice.Pick(seed + "rt", "Well, I'll drink to that. Thank you kindly, " + a + ".", "Generous of you, " + a + ". Your health.",
                                 a + ", you're " + (c.AWoman ? "a lady" : "a gentleman") + ". To you."), "thanks", "face")
-             .Add(0, Voice.Pick(seed + "rr", "Drink up before I come to my senses.", "To better days. All of us.", "Don't thank me. Thank the Lord, for once."), "mild");
+             .Add(0, why == "wedding" ? Voice.Pick(seed + "ry", "May they put up with each other forty years.", "Here's to a full table and a quiet house.")
+                                     : Voice.Pick(seed + "rr", "Drink up before I come to my senses.", "To better days. All of us.", "Don't thank me. Thank the Lord, for once."), "mild");
             return s;
         }
 
@@ -50,7 +54,11 @@ namespace EnrageWestworld.Core
         {
             for (int i = 0; i < 12; i++)
                 foreach (string why in RoundWhys)
+                {
                     yield return Round(c, "r" + i, why);
+                    if (why == "wedding")
+                        yield return Round(c, "r" + i, why, "Ruth and Eli");
+                }
         }
     }
 }

@@ -640,6 +640,7 @@ in the file. The new ones:
             Kindnesses (true): someone who trips in the street is helped up, or left lying, by the one
             who saw it; walk up while they're down and you help them yourself; someone may step in
             before a bully's blow lands; and of an evening someone glad stands the saloon a round
+            (the evening after a wedding, a toast to the newlyweds)
             Vices (true): someone with bad news, or word of a friend's death, drinks the night away in
             the saloon (and a friend may sit with them)
             Grudges (true): a friend has it out with whoever wronged their friend; someone whose friend
