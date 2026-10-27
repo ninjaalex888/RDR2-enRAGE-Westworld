@@ -31,7 +31,7 @@ namespace EnrageWestworld.Core
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             Scene s = new Scene { Kind = "argue", Summary = "sweethearts had words in the street" };
-            switch (Voice.Hash(seed + "|tt") % 3)
+            switch (Voice.Hash(seed + "|tt") % 4)
             {
                 case 0:
                     s.Add(0, "I waited all Sunday afternoon, " + b + ". You never came.", "angry", "face")
@@ -44,6 +44,12 @@ namespace EnrageWestworld.Core
                      .Add(1, "I was dancing, " + a + ". That's what a dance is for.", "mild")
                      .Add(0, "With every soul in the county but me.", "angry")
                      .Add(1, "Then dance by yourself next time. I'm going home.", "storm", "walkaway");
+                    break;
+                case 2:
+                    s.Add(0, "You told the whole sewing circle our business, " + b + ".", "angry", "face")
+                     .Add(1, "I told one person. One.", "mild")
+                     .Add(0, "In this town one person is the whole sewing circle.", "angry")
+                     .Add(1, "Then find somebody quieter to court, " + a + ".", "storm", "walkaway");
                     break;
                 default:
                     s.Add(0, "Folks say you're thinking of leaving for the city, " + b + ".", "angry", "face")
@@ -60,7 +66,9 @@ namespace EnrageWestworld.Core
             "Brought you something. Peppermint sticks, the striped kind.",
             "I picked these down by the creek. Don't laugh.",
             "A ribbon. Blue. You said once you liked blue.",
-            "It's a comb. Tortoiseshell, the man said."
+            "It's a comb. Tortoiseshell, the man said.",
+            "Lemon drops. You never let me buy you anything, so hush.",
+            "A bit of lace. The woman at the store swore it was French."
         };
 
         private static readonly string[] GiftsForHim =
@@ -68,7 +76,9 @@ namespace EnrageWestworld.Core
             "Brought you a pie. Peach. Mind, it's still warm.",
             "Tobacco. The good kind, in a tin.",
             "Knitted you a scarf. It's crooked, but it's warm.",
-            "A new pocketknife. Yours was a disgrace."
+            "A new pocketknife. Yours was a disgrace.",
+            "Cigars. Two of them. Don't smoke them both at once.",
+            "Darned your socks. Every pair. You're welcome."
         };
 
         /// A comes to B with a gift and says sorry; B takes it (kind makeup) or doesn't (brushoff).
