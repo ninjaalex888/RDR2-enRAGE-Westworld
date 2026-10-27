@@ -52,6 +52,7 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, string> _wvLast = new Dictionary<int, string>();
         private readonly Dictionary<int, int> _wvNearSince = new Dictionary<int, int>();
         private readonly HashSet<string> _wvLogged = new HashSet<string>();
+        private readonly HashSet<string> _wvHeard = new HashSet<string>();   // line names heard playing this session (the probe passes over them)
         private int _wvNextScan, _wvMoments, _wvLines, _wvTurnedDown;
         private string _wvLastSaid, _wvProbeResult;
         private Action _aWakeVoice;
@@ -270,8 +271,14 @@ namespace EnrageWestworld.InGame
             if (r.Speaking)
             {
                 bool busy = Speech.Busy(h);
-                if (busy)
+                if (busy && !r.SawBusy)
+                {
                     r.SawBusy = true;
+                    if (r.Line != null)
+                        _wvHeard.Add(r.Line);
+                    else if (r.M.Dump && r.LineIdx > 0)
+                        _wvHeard.Add(r.M.Lines[r.LineIdx - 1]);
+                }
                 if (busy && now - r.BusySince < 8000)
                     return;
                 if (!r.SawBusy && now - r.BusySince < 1000)
@@ -385,10 +392,14 @@ namespace EnrageWestworld.InGame
                 return "nobody within 12 m (a story character won't do)";
             if (_wv != null)
                 WakeVoiceEnd(now, "made way for the probe");
+            if (_wvProbe != null)
+                WakeVoiceProbeEnd("a new probe was started");
             Someone who = SomeoneOf(p);
             string name = who != null ? who.Name : Grammar.UpperFirst(Director.Kind(p, !PED.IS_PED_MALE(p.Handle)));
-            _wvProbe = new WakeVoiceProbe { Handle = p.Handle, Name = name, Lines = WakeVoice.AllLines(), NextAt = now + 800 };
-            Log.Write("WAKE voice probe: " + _wvProbe.Lines.Count + " lines on " + name + " (" + (NemesisSystem.Models.Name(ENTITY.GET_ENTITY_MODEL(p.Handle)) ?? "?") + ", bank " +
+            List<string> lines = WakeVoice.AllLines().Where(l => !_wvHeard.Contains(l)).ToList();
+            bool all = lines.Count == 0;   // every line heard already: the whole list again, on this voice
+            _wvProbe = new WakeVoiceProbe { Handle = p.Handle, Name = name, Lines = all ? WakeVoice.AllLines() : lines, NextAt = now + 800 };
+            Log.Write("WAKE voice probe: " + _wvProbe.Lines.Count + (all ? " lines (all heard before this session: the whole list again)" : " lines not heard yet this session") + " on " + name + " (" + (NemesisSystem.Models.Name(ENTITY.GET_ENTITY_MODEL(p.Handle)) ?? "?") + ", bank " +
                       (Speech.BankOf(p.Handle) ?? "not certain") + "), about 4 s each");
             return null;
         }
@@ -415,6 +426,7 @@ namespace EnrageWestworld.InGame
                 if (q.SawBusy)
                 {
                     q.Played++;
+                    _wvHeard.Add(said);
                     Log.Write("WAKE voice probe: " + said + " played (" + q.How + ")");
                 }
                 else

@@ -228,7 +228,8 @@ namespace EnrageWestworld.InGame
                 if (examined++ >= 8)
                     break;
                 int cool;
-                if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || LawBusy(ped))
+                if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || (_animTest != null && _animTest.Handle == h) || PED.IS_PED_IN_COMBAT(h, 0) ||
+                    PED.IS_PED_FLEEING(h) || LawBusy(ped))
                     continue;
                 bool known = _resBind.ContainsKey(h);
                 if (!known && bound >= 3)

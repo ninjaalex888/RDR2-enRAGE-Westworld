@@ -180,6 +180,7 @@ namespace EnrageWestworld.InGame
                 _director.Abort("stopping");
                 EndEncounters("the add-on stopped");
                 WakeActsAbort();
+                AnimTestEnd("the add-on stopped");
                 TrystAbort();
                 if (_rough != null)
                     RoughEnd(_rough, "stopped: the add-on stopped", _now);
@@ -731,6 +732,7 @@ namespace EnrageWestworld.InGame
             _director.Abort("a mission started");
             EndEncounters("a mission started");
             WakeActsAbort();
+            AnimTestEnd("a mission started");
             TrystAbort();
             PassingAbort();
             WanderLaterClear();
@@ -806,6 +808,7 @@ namespace EnrageWestworld.InGame
             Safe("awakening", _aWake);
             Safe("wakeacts", _aWakeActs);
             WakeVoiceStep();   // the waking say their own lines oddly (WestworldScript.WakeVoice.cs)
+            AnimTestStep();    // the Testing page's animation rows, while one runs (WestworldScript.AnimTest.cs)
             Safe("scenes", _aDrama);
             Safe("court thoughts", _aCourtThoughts);
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)

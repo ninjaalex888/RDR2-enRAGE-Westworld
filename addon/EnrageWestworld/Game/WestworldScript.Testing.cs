@@ -326,6 +326,10 @@ namespace EnrageWestworld.InGame
                         return "nobody 3-16 m off to glitch";
                     skipped = "the 7-15 minutes between glitches";
                     return null;
+                case "despairanims":
+                    return AnimTestStart("despair", now);   // each candidate clip, numbered, on the nearest free person (WestworldScript.AnimTest.cs)
+                case "stageanims":
+                    return AnimTestStart("stages", now);
                 case "wakevoices":
                     return WakeVoiceProbeStart(now);   // every waking line once on the nearest person: which the game plays (WestworldScript.WakeVoice.cs)
                 case "disbelief":
