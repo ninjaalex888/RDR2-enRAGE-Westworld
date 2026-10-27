@@ -59,6 +59,10 @@ namespace EnrageWestworld.InGame
         private const string DespairMark = "despair:rolled2";
         private const string BladeDict = "mech_melee@blade@_male@_ambient@_healthy@_hit_reacts@stationary";
         private const string BladeClip = "hit_from_front_torso_impact_front_heavy_v1";
+        private int _writheSet = -1;   // the game's wounded-on-the-ground loop: -1 not looked for yet, 0 missing, 1 there
+        private const string WritheDict = "ai_combat@damage@writhe@base";
+        private const string WritheClip = "writhe_loop";
+        private const int RightHandBone = 22798;   // SKEL_R_HAND
         private const uint GiveReason = 0x2CD419DC, TakeReason = 0xF77DE93D;   // the game's default reasons for giving and taking a weapon
         private int _nextWakeScan, _lastWakeActAt;
         private const int MaxWakeActs = 3;
@@ -702,9 +706,15 @@ namespace EnrageWestworld.InGame
                     act.Weapon = act.Method == "gun" ? (armed ? null : Despair.Gun(act.P)) : act.Method == "knife" ? Despair.Knife : null;
                     DespairSets();
                     if (act.Method == "knife" && _bladeSet == 1)
-                        STREAMING.REQUEST_ANIM_DICT(BladeDict);
+                        STREAMING.REQUEST_ANIM_DICT(BladeDict);   // asked for now: it played once in two when asked at the last step
+                    if (act.Method == "knife" && _writheSet == 1)
+                        STREAMING.REQUEST_ANIM_DICT(WritheDict);
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.TASK_STAND_STILL(h, 4500);
+                    // the last words said looking down at their own hands (Lex's P29)
+                    double hd = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
+                    Vector3 hands = ped.Position + new Vector3((float)-Math.Sin(hd) * 0.45f, (float)Math.Cos(hd) * 0.45f, -0.35f);
+                    TASK.TASK_LOOK_AT_COORD(h, hands.X, hands.Y, hands.Z, 4000, 0, 51, 0);
                     act.Until = now + 30000;
                     DespairLastWords(act, me);
                     act.PhaseUntil = now + 3400;
@@ -797,6 +807,10 @@ namespace EnrageWestworld.InGame
                 return "keeps a counter";
             if (act.Passive)
                 return "can't be directed now";
+            // Lex's session rules (2026-10-26, later): harm and despair of enRAGE's full records only through a
+            // record-safe path that books the change in enRAGE; none is built yet, so not for them
+            if (_bridge.RecordAt(h) != null)
+                return "one of enRAGE's records (only through a record-safe path, not built yet)";
             if (act.St.Has(DespairMark))
                 return "already had their one chance";
             Ped ped = new Ped(h);
@@ -840,10 +854,30 @@ namespace EnrageWestworld.InGame
                 {
                     if (act.Method == "knife")
                         DespairKnife(act, now);
+                    else if (act.Sub == 1)
+                        DespairAimed(act, now);
                     else
                         DespairShot(act, now);
                 }
                 return;
+            }
+            if (act.Phase == 5 && now >= act.PhaseUntil && act.Method == "knife" && act.Sub == 1)
+            {
+                // on the ground after the blade: the game's wounded writhe for a few seconds, then still
+                act.Sub = 2;
+                bool loaded = _writheSet == 1 && STREAMING.HAS_ANIM_DICT_LOADED(WritheDict);
+                if (loaded)
+                    TASK.TASK_PLAY_ANIM(h, WritheDict, WritheClip, 4f, -4f, -1, 1, 0f, false, 0, false, "", false);
+                act.PhaseUntil = now + (loaded ? 3500 : 0);
+                act.Clip = loaded;   // its check logged once, a second in
+                act.Until = Math.Max(act.Until, now + 6000);
+                Log.Detail("WAKE despair: " + act.Name + (loaded ? " writhes" : " lies still (no writhe set)"));
+                return;
+            }
+            if (act.Phase == 5 && act.Method == "knife" && act.Sub == 2 && act.PhaseUntil > 0 && now >= act.PhaseUntil - 2500 && act.Clip)
+            {
+                act.Clip = false;   // logged once, a second into the writhe
+                Log.Write("WAKE despair: " + act.Name + "'s writhe " + (ENTITY.IS_ENTITY_PLAYING_ANIM(h, WritheDict, WritheClip, 3) ? "played" : "didn't play"));
             }
             if (act.Phase == 5 && now >= act.PhaseUntil)
             {
@@ -877,19 +911,48 @@ namespace EnrageWestworld.InGame
                 }
             }
             act.Arm = w;
+            if (act.Method == "gun")
+            {
+                // drawn with the game's own draw (not snapped into the hand), then raised toward the ground a step in
+                // front of them, so the arm comes up and the barrel shows (Lex's P29; there's no self-harm animation)
+                WEAPON.SET_CURRENT_PED_WEAPON(h, w, false, 0, false, false);
+                Vector3 pos = new Ped(h).Position;
+                double hd = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
+                Vector3 ground = pos + new Vector3((float)-Math.Sin(hd) * 0.9f, (float)Math.Cos(hd) * 0.9f, -0.95f);
+                TASK.TASK_AIM_GUN_AT_COORD(h, ground.X, ground.Y, ground.Z, 4000, false, false);
+                act.Sub = 1;
+                act.PhaseUntil = now + 1100;   // a look at how the aim is going, then the hold
+                return;
+            }
             WEAPON.SET_CURRENT_PED_WEAPON(h, w, true, 0, false, false);
             TASK.TASK_STAND_STILL(h, 3000);
+            act.RunFrom = now;   // the knife may wait a moment for its set
             act.PhaseUntil = now + 1400;
         }
 
-        /// The gun: one shot, close, into the head.
+        /// The gun, after its first second: whether the aim took (logged), then held a moment longer before the shot.
+        private void DespairAimed(WakeAct act, int now)
+        {
+            int h = act.Handle;
+            int status = TASK.GET_SCRIPT_TASK_STATUS(h, Natives.Hash("SCRIPT_TASK_AIM_GUN_AT_COORD"), true);
+            bool inHand = WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(h, 0) != 0;
+            Log.Write("WAKE despair: " + act.Name + (status == 0 || status == 1 ? " aims it at the ground" : " didn't take the aim (task status " + status + ")") +
+                      ", the gun " + (inHand ? "in hand" : "not in hand"));
+            act.Sub = 2;
+            act.PhaseUntil = now + 1500;
+        }
+
+        /// The gun: one shot, from the gun hand into the head.
         private void DespairShot(WakeAct act, int now)
         {
             int h = act.Handle;
             Vector3 pos = new Ped(h).Position;
             double heading = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
-            Vector3 head = pos + new Vector3(0f, 0f, 0.62f);
-            Vector3 from = head + new Vector3((float)-Math.Sin(heading) * 0.35f, (float)Math.Cos(heading) * 0.35f, 0f);
+            Vector3 head = PED.GET_PED_BONE_COORDS(h, 21030, 0f, 0f, 0f);
+            if (head.DistanceTo(pos) > 2f)
+                head = pos + new Vector3(0f, 0f, 0.62f);
+            Vector3 hand = PED.GET_PED_BONE_COORDS(h, RightHandBone, 0f, 0f, 0f);
+            Vector3 from = hand.DistanceTo(pos) < 2f ? hand : head + new Vector3((float)-Math.Sin(heading) * 0.35f, (float)Math.Cos(heading) * 0.35f, 0f);
             MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, act.Arm, h, true, false, 1000f, false);
             act.Phase = 5;
             act.PhaseUntil = now + 1500;
@@ -901,6 +964,12 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             if (act.Sub == 0)
             {
+                if (_bladeSet == 1 && !STREAMING.HAS_ANIM_DICT_LOADED(BladeDict) && now - act.RunFrom < 2000)
+                {
+                    STREAMING.REQUEST_ANIM_DICT(BladeDict);   // a moment more for the set to load
+                    act.PhaseUntil = now + 100;
+                    return;
+                }
                 act.Sub = 1;
                 act.Clip = _bladeSet == 1 && STREAMING.HAS_ANIM_DICT_LOADED(BladeDict);
                 if (act.Clip)
@@ -910,9 +979,10 @@ namespace EnrageWestworld.InGame
                 return;
             }
             Log.Write("WAKE despair: " + act.Name + "'s knife: " + (act.Clip ? (ENTITY.IS_ENTITY_PLAYING_ANIM(h, BladeDict, BladeClip, 3) ? "the blade reel played" : "the blade reel didn't play") : "no blade reel (set not loaded)") + ", then down");
-            PED.SET_PED_TO_RAGDOLL(h, 5000, 8000, 0, false, false, "");
+            PED.SET_PED_TO_RAGDOLL(h, 1500, 2500, 0, false, false, "");
             act.Phase = 5;
-            act.PhaseUntil = now + 1800;
+            act.PhaseUntil = now + 1800;   // then the writhe (StepDespair), if the set is there
+            act.Clip = true;                // the writhe's check is logged once
         }
 
         /// The wall: a few stiff steps toward it if it's far, then a run straight at it.
@@ -1014,7 +1084,9 @@ namespace EnrageWestworld.InGame
             if (_bladeSet >= 0)
                 return;
             _bladeSet = STREAMING.DOES_ANIM_DICT_EXIST(BladeDict) ? 1 : 0;
-            Log.Write("WAKE despair sets: the blade reel (" + BladeDict + ") " + (_bladeSet == 1 ? "is there" : "is MISSING, so the knife goes straight to the fall"));
+            _writheSet = STREAMING.DOES_ANIM_DICT_EXIST(WritheDict) ? 1 : 0;
+            Log.Write("WAKE despair sets: the blade reel (" + BladeDict + ") " + (_bladeSet == 1 ? "is there" : "is MISSING, so the knife goes straight to the fall") +
+                      "; the writhe (" + WritheDict + ") " + (_writheSet == 1 ? "is there" : "is MISSING, so they lie still"));
         }
 
         private static string DespairHow(WakeAct act)
@@ -1084,7 +1156,7 @@ namespace EnrageWestworld.InGame
                 _awakeNear.Add(new AwakeNear { Handle = p.Handle, Name = who.Name, Way = way, Dist = dist, May = may,
                                                Mark = may ? method : res != null && res.PostId != null ? "never (counter)" : "had their chance" });
             }
-            return "AwakeningDespair " + _cfg.AwakeningDespair + "% (one roll each); blade reel " + (_bladeSet == 1 ? "there" : "MISSING") + "; this session " +
+            return "AwakeningDespair " + _cfg.AwakeningDespair + "% (one roll each); blade reel " + (_bladeSet == 1 ? "there" : "MISSING") + ", writhe " + (_writheSet == 1 ? "there" : "MISSING") + "; this session " +
                    (_despairCount.Count == 0 ? "none" : string.Join(", ", _despairCount.Select(kv => kv.Key + " " + kv.Value))) + (_despairLast != null ? ", last " + _despairLast : "") +
                    "; awake within 30 m: " + (near.Count == 0 ? "none" : string.Join("; ", near.Take(8)));
         }
@@ -1230,6 +1302,8 @@ namespace EnrageWestworld.InGame
                 PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             if (act.Given && !ENTITY.IS_ENTITY_DEAD(h))
                 WEAPON.REMOVE_WEAPON_FROM_PED(h, Natives.Hash(act.Weapon), true, TakeReason);   // never left holding what we gave them
+            else if (act.Ending == "despair" && act.Method == "gun" && act.Phase >= 4 && !ENTITY.IS_ENTITY_DEAD(h))
+                WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // stopped with their own gun out: put away
             if (!act.Passive && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h))
                 TASK.CLEAR_PED_TASKS(h, true, false);
         }
@@ -1240,6 +1314,10 @@ namespace EnrageWestworld.InGame
             foreach (WakeAct act in _wakeActs)
                 EndWakeAct(act);
             _wakeActs.Clear();
+            if (_bladeSet == 1)
+                STREAMING.REMOVE_ANIM_DICT(BladeDict);   // the sets despair asked for go back too
+            if (_writheSet == 1)
+                STREAMING.REMOVE_ANIM_DICT(WritheDict);
         }
     }
 }

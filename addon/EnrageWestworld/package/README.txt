@@ -48,7 +48,8 @@ NEW IN 0.6.2
 - enRAGE's own people (its nemeses, gang men and named folk) join in street scenes, reactions,
   talk and waking acts, unless enRAGE has them busy. [Scenes] EnragePeopleJoinIn.
 - CONTENT NOTE: despair no longer needs a gun on them. Someone fully awake who can't bear it does it
-  the way that fits them: a gun that suits them, a knife, or running at a wall. It can be one of
+  the way that fits them: a gun that suits them (drawn, and held a moment, before the shot), a
+  knife, or running at a wall. It can be one of
   RealNPCs' own people or one of enRAGE's townsfolk, never enRAGE's nemeses or gang men, and never
   with you within 3 m. AwakeningDespair (75; 0 turns it off). Everyone gets one fresh chance.
 - F7 marks the fully awake around you on the map for a minute, with what they'd do, and names the
