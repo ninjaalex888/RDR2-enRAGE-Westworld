@@ -75,6 +75,27 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// Whether this person saw (or heard) the event of this kind at this game minute (within two minutes), or was in it.
+        public static bool Witnessed(List<Happening> all, string kind, long at, string id)
+        {
+            if (all == null || id == null)
+                return false;
+            for (int i = all.Count - 1; i >= 0; i--)
+            {
+                Happening e = all[i];
+                if (e.At < at - 2)
+                    break;
+                if (e.At > at + 2 || e.Kind != kind)
+                    continue;
+                if (e.DoerId == id || e.TargetId == id)
+                    return true;
+                foreach (EventWitness w in e.Witnesses)
+                    if (w.Id == id)
+                        return true;
+            }
+            return false;
+        }
+
         /// Keeps an event: the newest last, the oldest dropped past the cap. The event kept.
         public static Happening Note(List<Happening> all, Happening e)
         {

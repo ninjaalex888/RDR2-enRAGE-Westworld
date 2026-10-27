@@ -20,8 +20,17 @@ namespace EnrageWestworld.Core
             { "pickpocket", new[] { "Hand in {b}'s coat, they say. In broad day.", "You robbed {b}. Everybody knows it." } },
             { "scorn", new[] { "{b} asked you for a nickel and you treated them like a dog.", "Heard how you sent {b} off. Proud of that?" } },
             { "passby", new[] { "{b} was lying in the street and you stepped round them.", "You walked past {b} like a dropped hat." } },
-            { "faced", new[] { "Made a show of {b} in the street, did you?", "You shamed {b} in front of the whole street." } },
         };
+        // not "faced": that tie is someone standing up to a bully, no wrong for the bully's friend to take up
+
+        /// Game minutes before a friend who didn't see it has heard of a wrong (the knowing-takes-time rule the death
+        /// memories keep); one who saw it knows at once.
+        public const int WordTakes = 120;
+
+        public static bool KnowsOf(long ageMinutes, bool sawIt)
+        {
+            return sawIt || ageMinutes >= WordTakes;
+        }
 
         public static bool Wrong(string tieKind)
         {
@@ -39,7 +48,7 @@ namespace EnrageWestworld.Core
             string a = Scenes.N(c, 0, seed), b = Scenes.N(c, 1, seed);
             string[] said;
             if (!Wrongs.TryGetValue(wrong, out said))
-                said = Wrongs["faced"];
+                said = Wrongs["rough"];
             string opener = Voice.Pick(seed + "go", said).Replace("{b}", victim);
             Scene s = new Scene { Kind = "argue", Summary = "someone had it out with a man over what he did to their friend" };
             s.Add(0, b + ". A word.", "angry", "face")

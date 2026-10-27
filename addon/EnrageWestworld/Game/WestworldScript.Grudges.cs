@@ -73,6 +73,8 @@ namespace EnrageWestworld.InGame
                     string cid = w.OtherId(victim);
                     if (!byId.TryGetValue(cid, out c) || c == a || TieWarmth(cid, a.Who) > 0 || (!test && _engine.Grudged(cid, "tie|" + t.Doer + "|" + t.At)))
                         continue;   // not a friend of the one who did it too, and not over this same wrong again
+                    if (!test && !Grudges.KnowsOf(g - t.At, WorldEvents.Witnessed(_store.WorldLog, "scene:" + t.Kind, t.At, cid)))
+                        continue;   // word hasn't reached them yet, and they didn't see it
                     float apart = c.Ped.Position.DistanceTo(a.Ped.Position), fromYou = Math.Min(c.Ped.Position.DistanceTo(me.Position), a.Ped.Position.DistanceTo(me.Position));
                     if (apart > (test ? 12f : 8f) || fromYou >= best || (!NodInView(me, c.Ped) && !NodInView(me, a.Ped)))
                         continue;
