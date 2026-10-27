@@ -234,30 +234,53 @@ namespace EnrageWestworld.Core
         /// someone else in sight, the weather if they're out in it, the place they're in.
         public static string NowThought(Person p, string seed, List<string> told, Context day)
         {
+            string what;
+            return NowThought(p, seed, told, day, out what);
+        }
+
+        /// The same, with what it was about: seen, nearby, mood, weather or place (null with no thought).
+        public static string NowThought(Person p, string seed, List<string> told, Context day, out string what)
+        {
+            what = null;
             if (day == null)
                 return null;
             var options = new List<Func<string>>();
+            var names = new List<string>();
             Witnessed s = day.JustSaw;
             bool saw = s != null && s.Kind != null && BySeen.ContainsKey(s.Kind) && s.AId != p.Id && s.BId != p.Id && s.AName != null && s.BName != null;
             if (saw)
+            {
                 options.Add(() => Pick(BySeen[s.Kind], p, seed, told).Replace("{a}", Person.FirstOf(s.AName)).Replace("{b}", Person.FirstOf(s.BName)));
+                names.Add("seen");
+            }
             List<Nearby> others = day.Nearby != null ? day.Nearby.Where(n => n.Id != p.Id && !string.IsNullOrEmpty(n.Name)).ToList() : null;
             if (others != null && others.Count > 0)
             {
                 Nearby n = others[Voice.Hash(seed + "nb") % others.Count];
                 options.Add(() => Pick(Regard(p, n), p, seed + "nb2", told).Replace("{name}", n.Name));
+                names.Add("nearby");
             }
             string mood = MoodOf(p, day, seed);
             if (mood != null)
+            {
                 options.Add(() => Pick(mood == "sore" ? Sore : Glad, p, seed + "mood", told));
+                names.Add("mood");
+            }
             if (!day.Indoors && day.Weather != null && ByWeather.ContainsKey(day.Weather))
+            {
                 options.Add(() => Pick(ByWeather[day.Weather], p, seed, told));
+                names.Add("weather");
+            }
             if (day.Indoors && day.Place != null && ByPlace.ContainsKey(day.Place))
+            {
                 options.Add(() => Pick(ByPlace[day.Place], p, seed, told));
+                names.Add("place");
+            }
             if (options.Count == 0)
                 return null;
             // something seen just now comes first two times in three; otherwise any of what's there
             int i = saw && Voice.Chance(seed + "loud", 66) ? 0 : Voice.Hash(seed + "now") % options.Count;
+            what = names[i];
             return options[i]();
         }
 

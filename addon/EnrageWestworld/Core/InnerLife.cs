@@ -263,24 +263,48 @@ namespace EnrageWestworld.Core
         /// brings the worry they're living through and the town's news (may be null: then only the timeless pools).
         public static string Thought(Person p, int hour, string seed, List<string> told, PlayerLook look = null, Context day = null)
         {
+            string source;
+            return Thought(p, hour, seed, told, out source, look, day);
+        }
+
+        /// The same, with where it came from (for the log and the tests): again, look, tie, linked, worry, towntie,
+        /// towntalk, day, era, now:<what> (InnerLife.Now.cs) or filler:<pool>.
+        public static string Thought(Person p, int hour, string seed, List<string> told, out string source, PlayerLook look = null, Context day = null)
+        {
             // a regular who has met him before knows him again
             if (look != null && look.Near && look.Seen >= 2 && Voice.Hash(seed + "again") % 100 < 22)
+            {
+                source = "again";
                 return Pick(Again, p, seed, told);
+            }
             // the stranger close by is worth a thought of its own
             if (look != null && look.Near && Voice.Hash(seed + "look") % 100 < 28)
+            {
+                source = "look";
                 return Pick(look.Armed && Voice.Chance(seed + "la", 55) ? SeenArmed : look.Mounted && Voice.Chance(seed + "lm", 55) ? SeenMounted : Seen, p, seed, told);
+            }
             int roll = Voice.Hash(seed + "ch") % 100;
             // their own life first: the worry they're going through, what happened in town, the day and the year
             string own = null;
+            source = null;
             if (roll < 24)
             {
                 // someone they had words with (or a sweetheart) lately shares this slot with the worry
                 if (day != null && day.Ties != null && day.Ties.Count > 0 && Voice.Chance(seed + "tb", 45))
+                {
                     own = Ties.Thought(day.Ties[0], p.Id, seed, day.IsDead(day.Ties[0].OtherId(p.Id)));
+                    source = "tie";
+                }
                 else if (day != null && day.Linked != null && day.Linked.Count > 0 && Voice.Chance(seed + "lb", 40))
+                {
                     own = Links.OtherThought(day.Linked[Voice.Hash(seed + "lw") % day.Linked.Count], day.GameDay, seed);   // the other end of someone's worry
+                    source = "linked";
+                }
                 else
+                {
                     own = day != null && day.GameDay >= 0 ? WorryThought(p, day.GameDay, seed, told) : null;
+                    source = "worry";
+                }
             }
             else if (roll < 34)
             {
@@ -289,47 +313,114 @@ namespace EnrageWestworld.Core
                 {
                     SceneTie tt = day.TownTies[Voice.Hash(seed + "twp") % Math.Min(3, day.TownTies.Count)];
                     own = Ties.TownThought(tt, p.Home, seed, day.IsDead(tt.A), day.IsDead(tt.B));
+                    source = "towntie";
                 }
                 else
+                {
                     own = deeds ? TownTalk(p, day.TownDeeds, seed, told) : null;
+                    source = "towntalk";
+                }
             }
             else if (roll < 44)
             {
-                string[] when = ForDay(hour, Weekday, seed);
-                own = when != null ? Pick(when, p, seed, told) : null;
+                own = DayLine(p, hour, seed, told);
+                source = "day";
             }
             else if (roll < 49)
-                own = Pick(ClockYear >= 1900 ? Era1907 : Era1899, p, seed, told);
+            {
+                own = EraLine(p, seed, told);
+                source = "era";
+            }
             else if (roll < 58)
-                own = NowThought(p, seed, told, day);   // what's going on around them right now (InnerLife.Now.cs)
+            {
+                string what;
+                own = NowThought(p, seed, told, day, out what);   // what's going on around them right now (InnerLife.Now.cs)
+                source = "now:" + what;
+            }
             if (own != null)
                 return own;
             if (roll < 58)
                 roll = 58 + roll * 42 / 58;   // nothing of their own for this roll: one of the timeless frames instead
-            string[] pool;
+            string pool;
+            string line = Filler(p, hour, seed, told, roll, out pool);
+            source = "filler:" + pool;
+            return line;
+        }
+
+        /// The day of the week, the meal they're missing or the small hours, or null.
+        public static string DayLine(Person p, int hour, string seed, List<string> told)
+        {
+            string[] when = ForDay(hour, Weekday, seed);
+            return when != null ? Pick(when, p, seed, told) : null;
+        }
+
+        /// The year they're living in (1899, or 1907 in the epilogue).
+        public static string EraLine(Person p, string seed, List<string> told)
+        {
+            return Pick(ClockYear >= 1900 ? Era1907 : Era1899, p, seed, told);
+        }
+
+        /// One of the timeless frames, by a roll from 58 to 99: trade, hour, body, mirror, bias, age, mask, pleasure,
+        /// temper, town or faith (`pool` says which).
+        public static string Filler(Person p, int hour, string seed, List<string> told, int roll, out string pool)
+        {
+            string[] lines;
             if (roll < 68)
-                pool = ByTrade[TradeGroup(p.Trade)];
+            {
+                lines = ByTrade[TradeGroup(p.Trade)];
+                pool = "trade";
+            }
             else if (roll < 73)
-                pool = ForHour(hour);
+            {
+                lines = ForHour(hour);
+                pool = "hour";
+            }
             else if (roll < 79)
-                pool = Body;
+            {
+                lines = Body;
+                pool = "body";
+            }
             else if (roll < 83)
-                pool = Mirror;
+            {
+                lines = Mirror;
+                pool = "mirror";
+            }
             else if (roll < 86)
-                pool = Bias;
+            {
+                lines = Bias;
+                pool = "bias";
+            }
             else if (roll < 88)
-                pool = Age;
+            {
+                lines = Age;
+                pool = "age";
+            }
             else if (roll < 91)
-                pool = Mask;
+            {
+                lines = Mask;
+                pool = "mask";
+            }
             else if (roll < 94)
-                pool = Pleasure;
+            {
+                lines = Pleasure;
+                pool = "pleasure";
+            }
             else if (roll < 97 && p.Personality != null && ByTemper.ContainsKey(p.Personality))
-                pool = ByTemper[p.Personality];
+            {
+                lines = ByTemper[p.Personality];
+                pool = "temper";
+            }
             else if (roll < 99 && p.Home != null && ByTown.ContainsKey(p.Home))
-                pool = ByTown[p.Home];
+            {
+                lines = ByTown[p.Home];
+                pool = "town";
+            }
             else
-                pool = ByFaith.ContainsKey(p.Devotion ?? "") ? ByFaith[p.Devotion] : ByFaith["Other"];
-            return Pick(pool, p, seed, told);
+            {
+                lines = ByFaith.ContainsKey(p.Devotion ?? "") ? ByFaith[p.Devotion] : ByFaith["Other"];
+                pool = "faith";
+            }
+            return Pick(lines, p, seed, told);
         }
 
         private static string Pick(string[] pool, Person p, string seed, List<string> told)

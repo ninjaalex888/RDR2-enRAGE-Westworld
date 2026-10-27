@@ -222,8 +222,10 @@ namespace EnrageWestworld.Core
                 }
                 return fill(raw);
             }
+            // every line of this pool said lately: only this pool starts over (the list also holds InnerLife's lines)
             if (st != null)
-                st.Musings.Clear();
+                foreach (string raw in pool)
+                    st.Musings.Remove("m" + Voice.Hash(raw));
             return fill(pool[start]);
         }
 
