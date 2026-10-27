@@ -2,6 +2,7 @@
 
 ## Unreleased (overnight 2026-10-27)
 
+- More to think after tonight's kindnesses: a round bought, a debt paid in the street, a friend's sympathy, good news shared and an apology each have more lines, and lines of their own for the days after (before, those borrowed courting words).
 - Ride past a lost traveller (or run him off) and now and then he never arrives: a day or so later the town talks of a stranger on foot who went missing on the road. Not yet seen in game.
 - The bell at three (West World): at three in the morning in a town with a church, the people who have begun to wake stop and look toward the church at a bell only they hear, each thinking of it by how far they've come; anyone beside them who isn't waking wonders what they're staring at. You hear nothing. On the Testing page: "The bell at three". Log `BELL`; F7 `TEST bell:`. Not yet seen in game.
 - A robbery on the road: about one traveller in five is being held up by two of the region's outlaws when you come on him, hands up, with two guns on him. They warn you to keep going. Step in (a shot, a gun on one of them, or walking right up) and they fight you (self-defence); drive them off and he thanks you. Leave it and they take his money and go, and he tells you so. Either way the nearest town hears of it a few hours later. The Testing page's traveller row now takes turns: lost, snakebit, robbed. Log `TRAVELLER held up by 2 road agents`, `TRAVELLER: you stepped in`. Not yet seen in game.

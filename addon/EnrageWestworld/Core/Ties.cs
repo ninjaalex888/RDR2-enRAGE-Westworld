@@ -691,12 +691,12 @@ namespace EnrageWestworld.Core
             "{other}'s voice was steady. Mine still isn't."
         };
         private static readonly string[] FacedDid = { "Told {other} to his face. About time somebody did.", "{other} looked at me like murder. Let him." };
-        private static readonly string[] RoundDid = { "{other} drank my health tonight. Worth every cent.", "Stood {other} a drink. Felt like a rich man, for once." };
-        private static readonly string[] RoundDone = { "{other} stood me a drink. I'll remember that.", "Drank to {other}'s health. Meant it, too." };
-        private static readonly string[] SettledDid = { "Paid {other} every cent, out in the street where folks could see.", "{other} said it out loud: square. I'll sleep tonight.", "Owe {other} nothing now. Strange, how light a body feels." };
-        private static readonly string[] SettledDone = { "{other} paid me back. Every cent. I'd have bet the other way.", "Counted {other}'s money twice. All there.", "Didn't think I'd see that money again. {other} surprised me." };
-        private static readonly string[] TownSettled = { "{a} paid {b} back in the street, every cent, with folks watching.", "Heard {a} squared up with {b} in front of half the town.", "{a} paid what was owed. {b} said so out loud. Good for {a}." };
-        private static readonly string[] TownRound = { "{a} stood the whole saloon a round. Folks'll be friends with {a} till Sunday.", "{a} bought for the house, {b} says. Wish I'd been there." };
+        private static readonly string[] RoundDid = { "{other} drank my health tonight. Worth every cent.", "Stood {other} a drink. Felt like a rich man, for once.", "Stood the saloon a round. {other} thanked me twice." };
+        private static readonly string[] RoundDone = { "{other} stood me a drink. I'll remember that.", "Drank to {other}'s health. Meant it, too.", "{other} bought me a drink. And everyone else." };
+        private static readonly string[] SettledDid = { "Paid {other} every cent, out in the street where folks could see.", "{other} said it out loud: square. I'll sleep tonight.", "Owe {other} nothing now. Strange, how light a body feels.", "Square with {other}. Folks saw it done.", "{other} counted it twice. Let them. It's all there." };
+        private static readonly string[] SettledDone = { "{other} paid me back. Every cent. I'd have bet the other way.", "Counted {other}'s money twice. All there.", "Didn't think I'd see that money again. {other} surprised me.", "{other} owes me nothing now. Strange, after all that.", "Took {other}'s coins in the street. Felt near sorry." };
+        private static readonly string[] TownSettled = { "{a} paid {b} back in the street, every cent, with folks watching.", "Heard {a} squared up with {b} in front of half the town.", "{a} paid what was owed. {b} said so out loud. Good for {a}.", "{a} squared up with {b} where the whole street could watch.", "Money changed hands between {a} and {b} today. Square, they say." };
+        private static readonly string[] TownRound = { "{a} stood the whole saloon a round. Folks'll be friends with {a} till Sunday.", "{a} bought for the house, {b} says. Wish I'd been there.", "{a} bought the house a drink last night. {b} hasn't stopped saying so." };
         private static readonly string[] FacedDone = { "{other} put their nose in my business. I won't forget it.", "{other}, playing the hero. In front of half the street." };
 
         private static readonly string[] CharityDid =
