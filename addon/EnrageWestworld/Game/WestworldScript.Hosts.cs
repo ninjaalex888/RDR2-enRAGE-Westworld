@@ -185,9 +185,22 @@ namespace EnrageWestworld.InGame
                 return "you're in the water";
             if (!Spawner.SafeToSpawn())
                 return "the screen is going dark or loading";
-            if (EncounterLive)
+            if (_crying != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || HermitWithYou())
                 return EncounterWhat;
             return null;
+        }
+
+        /// A hermit only stands in a stalker's way while he's taken up with you (watching you come, warning, talking,
+        /// running) or you're at his fire. Sat by it out of sight he isn't (Lex, 2026-10-27: in Valentine the ] key waited
+        /// on Jacob Redmond's camp, 145 m off, the whole time: a camp counts as "out" within 150 m).
+        private bool HermitWithYou()
+        {
+            HermitOut o = _hermit;
+            if (o == null || o.Phase == "spawn")
+                return false;
+            if (o.Phase != "camp")
+                return true;
+            return o.Ped != null && o.Ped.Exists() && o.Ped.Position.DistanceTo(Game.Player.Character.Position) < 40f;
         }
 
         private void StalkerTick(int now)
