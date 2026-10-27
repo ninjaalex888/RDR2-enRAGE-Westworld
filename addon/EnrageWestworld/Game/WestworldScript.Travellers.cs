@@ -30,6 +30,7 @@ namespace EnrageWestworld.InGame
             public readonly List<Ped> Agents = new List<Ped>();   // the two road agents
             public readonly List<uint> AgentModels = new List<uint>();
             public int AimSince, RobAt, NextLine, Lines;
+            public string GoWhat;   // what the log says when he walks on, after his word to you
         }
 
         private TravellerRun _traveller;
@@ -85,14 +86,14 @@ namespace EnrageWestworld.InGame
                 TravellerSpawn(t, me, now);
                 return;
             }
-            if (t.Man == null || !t.Man.Exists() || t.Man.IsDead || PED.IS_PED_IN_COMBAT(t.Man.Handle, 0))
+            if (t.Man == null || !t.Man.Exists() || t.Man.IsDead || (!t.Robbed && PED.IS_PED_IN_COMBAT(t.Man.Handle, 0)))
             {
                 EndTraveller(t.Man != null && t.Man.Exists() && t.Man.IsDead ? "he died" : "he was gone");
                 return;
             }
             int h = t.Man.Handle;
             float d = t.Man.Position.DistanceTo(me.Position);
-            if (t.Robbed && (t.Phase == "robbing" || t.Phase == "fight"))
+            if (t.Robbed && (t.Phase == "robbing" || t.Phase == "fight" || t.Phase == "pausing"))
             {
                 RobberyStep(t, me, d, now);
                 return;
@@ -188,29 +189,50 @@ namespace EnrageWestworld.InGame
         {
             int vh = t.Man.Handle;
             List<Ped> men = t.Agents.Where(m => m != null && m.Exists() && !m.IsDead).ToList();
-            foreach (Ped m in men)
-                _cameAtYouSeen[m.Handle] = now;
+            if (t.Phase != "pausing")
+                foreach (Ped m in men)
+                    _cameAtYouSeen[m.Handle] = now;
+            if (t.Phase == "pausing")
+            {
+                if (now >= t.RobAt)
+                    RobberyGo(t, now, t.GoWhat);   // he's had his word with you: now he walks on
+                return;
+            }
             if (t.Phase == "fight")
             {
-                // he's saved once none of them stands near him, or three minutes on whatever became of them
-                if (men.All(m => m.Position.DistanceTo(t.Man.Position) > 70f) || now - t.PhaseAt > 180000)
+                // he's saved once they're all down, or the living have run (far from him and from you); three minutes of
+                // it and he slips away with nothing said
+                if (men.All(m => m.Position.DistanceTo(t.Man.Position) > 70f && m.Position.DistanceTo(me.Position) > 70f))
                 {
                     TASK.CLEAR_PED_TASKS(vh, false, false);
-                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(vh, me.Handle, 3000, 0f, 0f, 0f);
-                    Feed.Say("A traveller", Travellers.RobSaved(t.Seed), Speech.When(vh, "thanks", me.Handle), vh, toYou: true);
                     t.Saved = true;
                     _robSaved++;
-                    RobberyGo(t, now, "you drove them off; he thanks you and goes on toward " + t.Town);
+                    if (d < 40f)
+                    {
+                        TASK.TASK_TURN_PED_TO_FACE_ENTITY(vh, me.Handle, 3000, 0f, 0f, 0f);
+                        Feed.Say("A traveller", Travellers.RobSaved(t.Seed), Speech.When(vh, "thanks", me.Handle), vh, toYou: true);
+                        RobberyPause(t, now, "you drove them off; he thanks you and goes on toward " + t.Town);
+                    }
+                    else
+                        RobberyGo(t, now, "you drove them off; he goes on toward " + t.Town);
                 }
+                else if (now - t.PhaseAt > 180000)
+                    EndTraveller("the fight went on; he slipped away");
                 return;
             }
             // you step in: a shot at them, a gun on one of them a moment, or right up to them
-            ulong slot = 0;   // out-parameters take 8 bytes
+            ulong slot = 0, slot2 = 0;   // out-parameters take 8 bytes
             int aimed = PLAYER.GET_ENTITY_PLAYER_IS_FREE_AIMING_AT(Game.Player.Handle, (int*)&slot) ? (int)slot : 0;
+            if (aimed == 0 && PLAYER.GET_PLAYER_TARGET_ENTITY(Game.Player.Handle, (int*)&slot2))
+                aimed = (int)slot2;   // lock-on aim counts as well
             bool aiming = aimed != 0 && men.Any(m => m.Handle == aimed);
             t.AimSince = aiming ? (t.AimSince == 0 ? now : t.AimSince) : 0;
-            if (men.Count < t.Agents.Count || men.Any(m => ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(m.Handle, me.Handle, true, false)) ||
-                (aiming && now - t.AimSince > 1200) || men.Any(m => m.Position.DistanceTo(me.Position) < 6f))
+            // one of them killed by you (not by a passer-by or a lawman), one hurt by you, a gun on one a moment, or you
+            // right up to them slowed down: riding on past, as they told you to, isn't stepping in
+            bool killedOne = t.Agents.Any(a => a != null && a.Exists() && a.IsDead && PED.GET_PED_SOURCE_OF_DEATH(a.Handle) == me.Handle);
+            bool upTo = ENTITY.GET_ENTITY_SPEED(me.Handle) < 2f && men.Any(m => m.Position.DistanceTo(me.Position) < 4f);
+            if (killedOne || men.Any(m => ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(m.Handle, me.Handle, true, false)) ||
+                (aiming && now - t.AimSince > 1200) || upTo)
             {
                 foreach (Ped m in men)
                 {
@@ -271,15 +293,27 @@ namespace EnrageWestworld.InGame
                     TASK.CLEAR_PED_TASKS(m.Handle, false, false);
                     Vector3 away = m.Position + (m.Position - me.Position).Normalized * 150f;
                     TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(m.Handle, away.X, away.Y, away.Z, 2f, -1, 1f, 0, 0f);
+                    PED.SET_PED_KEEP_TASK(m.Handle, false);
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(m.Handle, false);   // free to answer if they're shot at as they go
                 }
                 TASK.CLEAR_PED_TASKS(vh, false, false);
                 if (d < 30f)
                 {
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(vh, me.Handle, 3000, 0f, 0f, 0f);
                     Feed.Say("A traveller", Travellers.RobbedAfter(t.Seed), Speech.When(vh, "mild", me.Handle), vh, toYou: true);
+                    RobberyPause(t, now, "they took his money and went; he tells you, and goes on toward " + t.Town);
                 }
-                RobberyGo(t, now, "they took his money and went; he goes on toward " + t.Town);
+                else
+                    RobberyGo(t, now, "they took his money and went; he goes on toward " + t.Town);
             }
+        }
+
+        /// He has his word with you to your face first, then walks on (RobberyStep's "pausing").
+        private void RobberyPause(TravellerRun t, int now, string what)
+        {
+            t.Phase = "pausing";
+            t.RobAt = now + 3500;
+            t.GoWhat = what;
         }
 
         /// He walks on toward the town (as the one shown the way does).
@@ -313,11 +347,12 @@ namespace EnrageWestworld.InGame
                 t.Tries++;
                 return;
             }
-            if (t.Bitten)
+            if (t.Bitten || t.Robbed)
             {
-                // by the road, not in it: a few metres to one side (across the way you face, roughly across the road)
+                // by the road, not in it: to one side (across the way you face, roughly across the road); a hold-up well
+                // off it, so riding on past as they tell you keeps your distance
                 double hd = ENTITY.GET_ENTITY_HEADING(me.Handle) * Math.PI / 180.0;
-                float k = Voice.Hash(t.Seed) % 2 == 0 ? 3.5f : -3.5f;
+                float k = (Voice.Hash(t.Seed) % 2 == 0 ? 1f : -1f) * (t.Robbed ? 9f : 3.5f);
                 Vector3 side;
                 if (Natives.StandSpot(at + new Vector3((float)Math.Cos(hd) * k, (float)Math.Sin(hd) * k, 0f), at.Z, out side))
                     at = side;
@@ -341,8 +376,9 @@ namespace EnrageWestworld.InGame
             t.Man = m;
             if (t.Robbed && !RobberySpawn(t, at, now))
             {
-                _encounterPeds.Add(h);
-                EndTraveller("the road agents couldn't be put there");
+                Spawner.Release(m, true);   // the road agents couldn't be put there: try again elsewhere
+                t.Man = null;
+                t.Tries++;
                 return;
             }
             if (!t.Test)
@@ -481,7 +517,7 @@ namespace EnrageWestworld.InGame
             if (t == null)
                 return;
             bool alive = t.Man != null && t.Man.Exists() && !t.Man.IsDead;
-            if (t.Robbed && !t.Test && alive && t.Noticed && t.Phase != "spawn")
+            if (t.Robbed && !t.Test && alive && (t.Phase == "going" || t.Phase == "pausing"))
                 _engine.RobberyTold(t.Town, Travellers.RobNews(t.Town, t.Saved, t.Seed), _store.LastGameMin);   // the town hears, if he lived to tell it
             foreach (Ped rm in t.Agents)
             {
@@ -491,7 +527,16 @@ namespace EnrageWestworld.InGame
                 bool rAlive = rm.Exists() && !rm.IsDead;
                 bool rSeen = rAlive && ENTITY.IS_ENTITY_ON_SCREEN(rm.Handle);
                 bool known = rAlive && _bridge != null && _bridge.Looked(rm.Handle);
-                Spawner.Release(rm, rAlive && !known && (!rSeen || rm.Position.DistanceTo(Game.Player.Character.Position) > 120f));
+                bool delete = rAlive && !known && (!rSeen || rm.Position.DistanceTo(Game.Player.Character.Position) > 120f);
+                if (delete)
+                    _cameAtYouSeen.Remove(rm.Handle);   // a handle the game may give someone else
+                else if (rAlive)
+                {
+                    TASK.CLEAR_PED_TASKS(rm.Handle, false, false);   // left in the world: not still aiming at him
+                    PED.SET_PED_KEEP_TASK(rm.Handle, false);
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(rm.Handle, false);
+                }
+                Spawner.Release(rm, delete);
             }
             if (t.Bitten && !t.Test && alive && (t.Helped || t.Left))
             {
@@ -505,8 +550,16 @@ namespace EnrageWestworld.InGame
             {
                 if (t.Phase != "spawn")
                     Safe("world events", () => RecordEvent(t.Bitten ? "encounter:snakebite" : t.Robbed ? "encounter:robbery" : "encounter:traveller", null,
-                                                           t.Bitten ? "a snakebit man on the road" : t.Robbed ? "a traveller held up by road agents" : "a traveller asking the way", "player", "you", t.Man.Position, t.Man.Handle, t.Man.Handle, 0, why));
+                                                           t.Bitten ? "a snakebit man on the road" : t.Robbed ? "road agents" : "a traveller asking the way",
+                                                           t.Robbed ? null : "player", t.Robbed ? "a traveller" : "you", t.Man.Position, t.Man.Handle, t.Man.Handle, 0, why));
                 bool seen = ENTITY.IS_ENTITY_ON_SCREEN(t.Man.Handle) && t.Man.Position.DistanceTo(Game.Player.Character.Position) < 120f;
+                if (!t.Man.IsDead && seen)
+                {
+                    if (t.Robbed && (t.Phase == "robbing" || t.Phase == "fight"))
+                        TASK.CLEAR_PED_TASKS(t.Man.Handle, false, false);   // hands down: it's over
+                    PED.SET_PED_KEEP_TASK(t.Man.Handle, false);
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t.Man.Handle, false);
+                }
                 Spawner.Release(t.Man, !t.Man.IsDead && !seen);   // the living go where nobody sees; the dead stay
             }
             if (t.Phase != "spawn")

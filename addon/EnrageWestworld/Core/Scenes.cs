@@ -273,7 +273,7 @@ namespace EnrageWestworld.Core
                 // thrown out (Tier 4): in a saloon, half the time it's the cheat who goes, told to by the man he cheated
                 s.Add(0, Voice.Pick(seed + "o1", "Out. And leave the pot you never won.", "Get out of this saloon. Now. Before the rest of the table hears of it.",
                                     "Walk out that door, " + b + ", or be carried."), "angry")
-                 .Add(1, Voice.Pick(seed + "o2", "...Keep it. Crooked table anyhow.", "Fine. I know when I'm not wanted.", "This town's got no sense of humour."), "mild", "walkaway");
+                 .Add(1, Voice.Pick(seed + "o2", "...Keep it. Crooked table anyhow.", "Fine. I know when I'm not wanted.", "This town's got no sense of humor."), "mild", "walkaway");
                 s.Summary = "a card cheat was shown the door";
             }
             else

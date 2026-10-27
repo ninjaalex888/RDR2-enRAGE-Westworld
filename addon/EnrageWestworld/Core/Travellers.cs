@@ -160,7 +160,7 @@ namespace EnrageWestworld.Core
         /// To the player, after they've gone with his money.
         public static string RobbedAfter(string seed)
         {
-            return Voice.Pick(seed + "ra", "They took every cent. Every last cent.", "Two of them. Took my money and my watch. You saw.", "Well. I'm walking to town with empty pockets.");
+            return Voice.Pick(seed + "ra", "They took every cent. Every last cent.", "Took my money and my watch. You saw it.", "Well. I'm walking to town with empty pockets.");
         }
 
         /// To the player, once he's driven them off.
@@ -172,8 +172,8 @@ namespace EnrageWestworld.Core
         /// The town's word, some hours on.
         public static string RobNews(string town, bool saved, string seed)
         {
-            return saved ? Voice.Pick(seed + "rn", "Word is a stranger drove off two road agents who had a man at gunpoint near " + town + ".", "Road agents tried a man outside " + town + ". Somebody came along and made them sorry.")
-                         : Voice.Pick(seed + "rn", "Two road agents held up a man on foot outside " + town + " and took all he had.", "Robbery on the " + town + " road in broad day. They took a poor man's wages.");
+            return saved ? Voice.Pick(seed + "rn", "Word is a stranger drove off the road agents who had a man at gunpoint near " + town + ".", "Road agents tried a man outside " + town + ". Somebody came along and made them sorry.")
+                         : Voice.Pick(seed + "rn", "Road agents held up a man on foot outside " + town + " and took all he had.", "Robbery on the " + town + " road in broad day. They took a poor man's wages.");
         }
 
         public static IEnumerable<string> Lines()
