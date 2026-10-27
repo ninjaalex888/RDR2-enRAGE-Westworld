@@ -616,7 +616,11 @@ namespace EnrageWestworld.InGame
         {
             public List<int> Handles = new List<int>();
             public HashSet<int> Dead = new HashSet<int>();
+            public Vector3 Body;       // a killing nobody saw: where the body lies, watched a while for someone coming upon it
+            public int Victim, WatchUntil;
         }
+
+        private const int BodyWatchMs = 120000;   // how long someone coming upon the body can still catch him by it
 
         private readonly Dictionary<string, DeedEyes> _deedEyes = new Dictionary<string, DeedEyes>();
         private int _nextDeedEyes;
@@ -624,8 +628,15 @@ namespace EnrageWestworld.InGame
 
         private void NoteDeedEyes(Deed d, Vector3 pos, int except)
         {
-            if (d == null || d.TalkAt <= 0 || d.Witnesses <= 0)
+            if (d == null || d.TalkAt <= 0)
                 return;
+            if (d.Witnesses <= 0)
+            {
+                // nobody saw it: for two minutes, whoever comes upon the body while he's still by it and in their sight
+                // saw him there (2026-10-26: Lex killed a man out of sight, and someone walked up to look 5-10 s later)
+                _deedEyes[d.Id] = new DeedEyes { Body = pos, Victim = except, WatchUntil = Game.GameTime + BodyWatchMs };
+                return;
+            }
             DeedEyes e = new DeedEyes();
             int me = Game.Player.Character.Handle;
             foreach (Ped p in World.GetAllPeds())
@@ -655,12 +666,21 @@ namespace EnrageWestworld.InGame
             foreach (KeyValuePair<string, DeedEyes> kv in _deedEyes.ToList())
             {
                 Deed d = _store.Deeds.LastOrDefault(x => x.Id == kv.Key);
+                DeedEyes e = kv.Value;
+                if (d != null && d.TalkAt > 0 && e.WatchUntil > 0)
+                {
+                    if (Game.GameTime > e.WatchUntil || !d.Unseen)
+                        e.WatchUntil = 0;   // nobody came while he was there: it waits to be found as it was
+                    else if (CameUponBody(d, e))
+                        continue;           // now someone saw him by it: their life is watched instead
+                    else
+                        continue;
+                }
                 if (d == null || d.TalkAt <= 0 || d.Unseen)
                 {
                     _deedEyes.Remove(kv.Key);   // talk has started, or it's waiting for the body to be found
                     continue;
                 }
-                DeedEyes e = kv.Value;
                 foreach (int h in e.Handles)
                     if (!e.Dead.Contains(h) && ENTITY.DOES_ENTITY_EXIST(h) && ENTITY.IS_ENTITY_DEAD(h))
                         e.Dead.Add(h);
@@ -672,6 +692,30 @@ namespace EnrageWestworld.InGame
                         Log.Write("DEED " + d.Kind + " " + Deeds.Place(d) + ": everyone who saw it is dead now");
                 }
             }
+        }
+
+        /// Someone within 20 m of a body nobody saw fall, with him within 30 m of it and in their sight: they saw him there.
+        /// The deed is seen after all (talk an hour on, if they live), and their life is watched as any witness's.
+        private bool CameUponBody(Deed d, DeedEyes e)
+        {
+            Ped me = Game.Player.Character;
+            if (me.Position.DistanceTo(e.Body) > 30f)
+                return false;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                int h = p.Handle;
+                if (h == me.Handle || h == e.Victim || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h) || p.Position.DistanceTo(e.Body) > 20f ||
+                    !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, me.Handle, 17))
+                    continue;
+                d.Unseen = false;
+                d.Witnesses = 1;
+                d.TalkAt = Knowing.TalkDue(Bridge.Now(), true, d.Id);
+                e.WatchUntil = 0;
+                e.Handles.Add(h);
+                Log.Write("DEED " + d.Kind + " " + Deeds.Place(d) + ": " + TalkName(p) + " came upon the body and saw you by it (" + (int)p.Position.DistanceTo(e.Body) + " m from it); talk in an hour if they live");
+                return true;
+            }
+            return false;
         }
 
         private static int CountPeopleNear(Vector3 pos, int except, float radius)
