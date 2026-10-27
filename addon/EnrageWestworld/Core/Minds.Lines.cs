@@ -197,6 +197,12 @@ namespace EnrageWestworld.Core
             { "faced|did:doer|fresh", new[] { "Looked {who} in the eye and told it plain.", "{who}'s the kind that needs telling. So I told." } },
             { "faced|did:done|fresh", new[] { "{who}, sticking a nose in where it's not wanted.", "Who asked {who}? Nobody asked." } },
             { "faced|did:done|chewing", new[] { "{who} made a fool of me in the street. That's owed.", "Every time I see {who} I hear it again." } },
+            // a round bought: the one buying (doer), the one stood a drink (done), and those who saw it
+            { "round|did:doer|fresh", new[] { "Bought the house a round. Purse lighter. Heart too.", "{who} drank my health. Felt good to be thanked." } },
+            { "round|did:doer|chewing", new[] { "Spent too free last night. Don't regret it. Much." } },
+            { "round|did:done|fresh", new[] { "{who} stood us all a drink. Good sort.", "Whiskey on {who}. Still warm in the chest." } },
+            { "round|did:done|chewing", new[] { "Owe {who} a drink now. Fair is fair." } },
+            { "round|saw|fresh", new[] { "{a} bought a round. Bet {a} regrets it come morning.", "Saw {a} stand the house a drink. Must be flush." } },
             { "helpup|did|fresh", new[] { "{you} gave me a hand up when nobody else would.", "Knee aches. But {you} stopped. I'll remember it." } },
             { "helpup|did|chewing", new[] { "Owe {you} for that. Somehow.", "Told everybody how {you} helped me up. Half didn't believe it." } },
             { "helpup|did|letting", new[] { "{you}. A kind hand, once. I keep it." } },

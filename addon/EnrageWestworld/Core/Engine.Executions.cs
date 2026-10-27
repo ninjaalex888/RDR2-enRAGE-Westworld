@@ -70,6 +70,16 @@ namespace EnrageWestworld.Core
             Log("KIND " + p.Name + ": you gave them a hand up" + (nobodyElse ? " (nobody else stopped)" : ""));
         }
 
+        /// Someone stood the player a drink with the rest of the room, and he took it: a little fonder of him.
+        public void StoodYouADrink(Person p)
+        {
+            if (p == null || !CanRemember(p.Id))
+                return;
+            PersonState st = Store.Get(p);
+            st.Sightings = Math.Max(st.Sightings, 1);
+            st.Affection = Romance.Clamp(st.Affection + 3, -100, 100);
+        }
+
         /// Shot: his kin hear of it, and once he's found, the town (a notice for the corner, 6 to 18 game hours on).
         public void Executed(Resident r, Executions.Plan plan, string town, long now)
         {

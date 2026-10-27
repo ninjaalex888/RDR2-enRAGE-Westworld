@@ -228,6 +228,14 @@ namespace EnrageWestworld.InGame
                         skipped = "the rarity and the rests (Pacing \"fall\")";
                         return FallScene(Game.Player.Character, now, true, out fallWhy) ? null : fallWhy;
                     }
+                case "round":
+                    {
+                        if (_director.Busy)
+                            return "a scene is going on already";
+                        string roundWhy;
+                        skipped = "the hour, who has cause, the rarity and the rests (Pacing \"round\")";
+                        return RoundScene(Game.Player.Character, now, true, out roundWhy) ? null : roundWhy;
+                    }
                 case "sight":
                     return SightFire(now, out skipped);
                 case "nod":

@@ -189,7 +189,7 @@ namespace EnrageWestworld.InGame
                 return "off ([Scenes] Kindnesses)";
             return "on; falls this session: " + (_fallCount.Count == 0 ? "none yet" : string.Join(", ", _fallCount.Select(kv => kv.Key + " " + kv.Value))) + "; you helped " + _handUps +
                    (_fallLast != null ? "; last: " + _fallLast : "") + (_fallWatch != null ? "; one going on" : _fallWhyNot != null ? "; now: " + _fallWhyNot : "") +
-                   "; standing up to a bully: " + StandUpStatus();
+                   "; standing up to a bully: " + StandUpStatus() + "; rounds: " + RoundStatus();
         }
     }
 }
