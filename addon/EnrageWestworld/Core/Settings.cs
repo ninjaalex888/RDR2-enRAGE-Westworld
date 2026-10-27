@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 59;
+        public const int CurrentVersion = 60;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -29,6 +29,7 @@ namespace EnrageWestworld.Core
         public bool FlirtPrompt = true;
         public bool NpcFlirting = true;
         public bool Trysts = true;
+        public bool CasualHookupsDecides = true;
         public int WillingSingle = 70;
         public int WillingTaken = 20;
         public bool NpcRomance = true;
@@ -485,6 +486,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Romance = " + B(Romance) + "   ; people flirt with you, and you can flirt back (FlirtKey)");
             b.AppendLine("NpcFlirting = " + B(NpcFlirting) + "   ; people near you make eyes at each other in street scenes and court, each answering by what they make of the other, as with you");
             b.AppendLine("Trysts = " + B(Trysts) + "   ; when a woman says yes to your flirting, flirt with her again within two minutes to go somewhere quieter: the screen goes dark, an hour passes, nothing is shown");
+            b.AppendLine("CasualHookupsDecides = " + B(CasualHookupsDecides) + "   ; with the CasualHookups mod installed: its Flirt works only on a woman who has said yes to your flirting here, and RealNPCs leaves the night to it instead of fading to black (false: the two mods stay apart)");
             b.AppendLine("WillingSingle = " + WillingSingle + "   ; percent chance a single woman takes to your flirting, before what she thinks of you tips it (the saloon's women always do)");
             b.AppendLine("WillingTaken = " + WillingTaken + "   ; the same for a woman who's married or spoken for");
             b.AppendLine("FlirtPrompt = " + B(FlirtPrompt) + "   ; Flirt in the game's lock-on menu, with Greet and Antagonize, on its H key (D-pad down on a pad), as well as FlirtKey");

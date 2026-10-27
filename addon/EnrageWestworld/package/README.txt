@@ -504,6 +504,7 @@ REQUIREMENTS
 - Script Hook RDR2 and Script Hook RDR2 .NET (V2), the same ones enRAGE needs
 - enRAGE 0.9.5.3 installed and working. If a later enRAGE changes something, the parts that need it
   turn off and the log says which.
+- Optional: CasualHookups, for an on-screen night together (see INSTALL, step 4).
 
 
 INSTALL
@@ -514,6 +515,16 @@ INSTALL
    carries over, and your ini is updated with the new options (your values are kept).
 2. Start the game and load your Story Mode save.
 3. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
+4. Optional: CasualHookups, a separate mod by its own author
+   (https://www.nexusmods.com/reddeadredemption2/mods/7608), plays an on-screen night together
+   instead of RealNPCs' fade to black. Install it as its page says (CasualHookups.asi and
+   CasualHookups.ini in the game folder). Its Flirt then works only on a woman who has said yes
+   to your flirting here ([Romance] CasualHookupsDecides). The first time RealNPCs starts with it,
+   it changes CasualHookups.ini once: its Flirt key moves from G (enRAGE's own lock-on prompts
+   use G) to B, her clothes come back afterwards (enRAGE knows its people by their clothes), and
+   it always gives in, since she has already said yes. The original file is kept as
+   RealNPCs\backup\CasualHookups.ini.before-realnpcs. Restart the game once after that: it may
+   only read its settings when the game starts. Its settings are on the panel's Romance page.
 
 To uninstall, delete RealNPCs.dll. You can also delete the RealNPCs folder in
 Documents if you don't want to keep what people remembered.
@@ -550,6 +561,8 @@ Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\
     arthur.json, john.json  what people know and feel about you, and the world's state,
                             kept separately for each character
     diaries\                one text file per diary, e.g. "arthur - Elihu Starling.txt"
+    backup\                 NemesisMod.ini and CasualHookups.ini as they were before RealNPCs
+                            changed them
 
 If you load an older save, the add-on notices that game time went backwards and forgets anything
 that hadn't happened yet.
@@ -608,13 +621,15 @@ in the file. The new ones:
 [Romance]   NpcFlirting (true): people near you make eyes at each other and court, each answering by
             what they make of the other; their thoughts on the ticker show it as it happens
             FlirtPrompt (true): Flirt in the game's lock-on menu, with Greet and Antagonize, on H
+            (D-pad down on a pad)
             WillingSingle (70), WillingTaken (20): percent chance a single, or a married or
             spoken-for, woman takes to your flirting before what she thinks of you tips it (the
             saloon's women always do); Trysts (true): when she says yes, flirt again within two
             minutes to go somewhere quieter (the screen goes dark, an hour passes, nothing shown)
+            CasualHookupsDecides (true): with CasualHookups installed, its Flirt works only on a
+            woman who has said yes to you, and RealNPCs doesn't fade to black itself
 [Mind]      ShareWithEnrage (true): RealNPCs keeps its own record of who has died; when one of
             enRAGE's townsfolk dies and enRAGE didn't see it, RealNPCs marks them dead there too
-            (D-pad down on a pad)
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left
@@ -656,6 +671,8 @@ CREDITS
 enRAGE is by its author on Nexus Mods (link above). This add-on reads what enRAGE already tracks
 and adds to it, through enRAGE's own functions wherever enRAGE has them. It contains no enRAGE
 code or content.
+CasualHookups is by its author on Nexus Mods (link above). RealNPCs works with it when it's
+installed and contains none of its code or files.
 
 
 LICENSE

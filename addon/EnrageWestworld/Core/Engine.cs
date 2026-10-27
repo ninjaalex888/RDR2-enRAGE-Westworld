@@ -1143,6 +1143,7 @@ namespace EnrageWestworld.Core
 					personState.Flirts++;
 					flirtResult.Liked = true;
 					flirtResult.Reply = Romance.Welcome(p, Math.Max(personState.Heart, 0), you, text, why);
+					flirtResult.Heart = Math.Max(personState.Heart, 0);
 					Feel(p, personState, 8 + num / 10, now, "flirted");
 				}
 				else if (answer == "maybe")
@@ -1375,6 +1376,7 @@ namespace EnrageWestworld.Core
 				personState.Flirts++;
 				flirtResult.Liked = true;
 				flirtResult.Reply = Romance.Welcome(p, Math.Max(0, personState.Heart), you, text, why);
+				flirtResult.Heart = Math.Max(0, personState.Heart);
 				personState.Affection = Romance.Clamp(personState.Affection + 8 + num / 10, -100, 100);
 				Effect(new EnrageEffect
 				{
@@ -1424,6 +1426,7 @@ namespace EnrageWestworld.Core
 				personState.Flirts++;
 				flirtResult.Liked = true;
 				flirtResult.Reply = Romance.Welcome(p, Math.Max(0, personState.Heart), you, text, why);
+				flirtResult.Heart = Math.Max(0, personState.Heart);
 				personState.Affection = Romance.Clamp(personState.Affection + 8, -100, 100);
 			}
 			else if (answer == "maybe")

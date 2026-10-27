@@ -24,6 +24,8 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 
 **Life in the street.** People near you meet for reasons you can follow: a quarrel picks up again, sweethearts court, someone tries their luck with a person who caught their eye (and is answered by what that person makes of them; you see it in their thoughts on the ticker), a debt is called in, someone having a bad week snaps at whoever speaks to them. Bystanders turn to look and may take a side, and what happened is remembered: for days the two think about each other by name, and the town gossips about it. Strangers near you also catch cheats and propose. They square off in standoffs, sing old songs drunk, tell tall tales (some about you), read the paper aloud, haggle over horses, fall for a snake-oil pitch and pick pockets. You can step in: take a side, break up a fight (the town hears you're a peacemaker), or egg it on. Hold a gun on a stranger and they beg; lower it and word gets around that you showed mercy. Weddings happen at the church, and mourners speak at enRAGE's funerals.
 
+**Flirting, and a night together.** Flirt with someone (F2, or Flirt in the game's lock-on menu) and they answer from what they think of you and who they are: their nature, faith, troubles and mood, against your money and your name in town. The saloon's women always go along, a single woman likely, a married one less so. When a woman says yes, flirt again to go somewhere quieter: the screen goes dark and an hour passes. With [CasualHookups](https://www.nexusmods.com/reddeadredemption2/mods/7608) installed, its own scene plays instead, and only with a woman who has said yes to you (see Install).
+
 **Quiet when you stop.** Stand still for a few seconds, or watch through the cinematic camera, and enRAGE's tension stops building and no nemesis, gang or faction is sent after you. It uses enRAGE's own calm period, the one it uses after a fast travel, and picks up again soon after you move. Funerals and other planned events still go ahead.
 
 **Feelings you can see.** Bars under the people near you show their fear of you, how much they like you and their anger at you. A small "Sore at you" panel in the top right lists the strangers whose grudge against you is building, with a mark where they'd become a nemesis. Either can be turned off.
@@ -40,6 +42,7 @@ An unofficial add-on for **[enRAGE](https://www.nexusmods.com/reddeadredemption2
 2. Download **[RealNPCs-0.6.2.zip](https://github.com/ninjaalex888/RealNPCs/releases/latest/download/RealNPCs-0.6.2.zip)** from the [latest release](https://github.com/ninjaalex888/RealNPCs/releases/latest) (it's also in the [release](release) folder). It holds `RealNPCs.dll` and a README.txt that explains every feature and setting.
 3. Copy `RealNPCs.dll` into your game's `scripts` folder, next to enRAGE's `NemesisMod.dll`. To update, just replace the file: what people remember carries over, and your settings are kept. **Coming from enRAGE Westworld** (the old name): delete `EnrageWestworld.dll` from the scripts folder. RealNPCs won't run next to it, and copies your saves, diaries and settings over from the old folder the first time it starts.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
+5. Optional: [CasualHookups](https://www.nexusmods.com/reddeadredemption2/mods/7608), a separate mod by its own author, plays an on-screen night together instead of RealNPCs' fade to black. Install it as its page says (`CasualHookups.asi` and `CasualHookups.ini` in the game folder). With it installed, its Flirt works only on a woman who has said yes to your flirting in RealNPCs (`CasualHookupsDecides`, on). The first time RealNPCs starts with it, it changes `CasualHookups.ini` once: its Flirt key moves from G (enRAGE's own lock-on prompts use G) to B, her clothes come back afterwards (enRAGE knows its people by their clothes), and it always gives in, since she has already said yes. The original file is kept as `RealNPCs\backup\CasualHookups.ini.before-realnpcs`. Restart the game once after that: CasualHookups may only read its settings when the game starts. Its settings are on the panel's Romance page. To keep the two mods apart, set `CasualHookupsDecides = false` and put the original file back.
 
 To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder in `Documents\Rockstar Games\Red Dead Redemption 2\` if you don't want to keep what people remembered.
 
@@ -61,9 +64,9 @@ Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) o
 
 Everything is kept in `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\`:
 
-- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Ctrl+F7 or Alt+F) edits it too, along with enRAGE's `NemesisMod.ini`.
+- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Ctrl+F7 or Alt+F) edits it too, along with enRAGE's `NemesisMod.ini`, and CasualHookups' settings when that mod is installed.
 - `RealNPCs.log` records what happened. Please attach it to bug reports.
-- `backup\` holds a copy of `NemesisMod.ini` from before the panel first changed it in each session.
+- `backup\` holds a copy of `NemesisMod.ini` (and `CasualHookups.ini`) from before the panel first changed it in each session, and CasualHookups' original settings from before RealNPCs first set them.
 - `arthur.json` and `john.json` hold what people know and feel about you. `diaries\` holds the diaries you've found, as text files.
 
 The full guide to every feature and option is the [readme that comes with the mod](addon/EnrageWestworld/package/README.txt).
@@ -125,6 +128,7 @@ The detailed plan, with the ideas, designs and build steps behind each item, is 
 ## Credits
 
 - enRAGE is by its author on [Nexus Mods](https://www.nexusmods.com/reddeadredemption2/mods/10967). This add-on reads what enRAGE already tracks and adds to it, through enRAGE's own functions wherever enRAGE has them. It contains no enRAGE code or content.
+- CasualHookups is by its author on [Nexus Mods](https://www.nexusmods.com/reddeadredemption2/mods/7608). RealNPCs works with it when it's installed and contains none of its code or files.
 - Script Hook RDR2 is by Alexander Blade. Script Hook RDR2 .NET V2 is by its authors.
 - All the lines are original, except the songs (cowboy ballads and hymns) and a few quotations (Shakespeare, Poe, Dickinson, Thoreau and others), which are in the public domain.
 

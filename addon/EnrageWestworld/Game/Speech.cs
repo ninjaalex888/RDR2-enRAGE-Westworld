@@ -325,6 +325,26 @@ namespace EnrageWestworld.InGame
         /// Whether the last voice When played really started (Feed: no subtitle without a voice).
         public static bool LastPlayed;
 
+        /// The line (and take, if one was chosen) the last WhenFirst played, else null.
+        public static string LastLine;
+
+        /// When, by line name in the order given: the first line this voice has plays (PlayFirst), so lines the decoded
+        /// bank list doesn't know (FLATTER_RESPONSE, PERV_RESPONSE) are tried too. For the flirting (Core/FlirtVoices.cs).
+        public static System.Func<string> WhenFirst(int ped, string[] lines, int listener = 0)
+        {
+            if (ped == 0 || lines == null || lines.Length == 0)
+                return null;
+            return () =>
+            {
+                string line = null, words = null;
+                int take = 0;
+                bool played = !Busy(ped) && PlayFirst(ped, lines, listener, out line, out take, out words);
+                LastPlayed = played;
+                LastLine = played ? line + (take > 0 ? " take " + take : "") : null;
+                return words;
+            };
+        }
+
         /// When, for a set given as it is (in the order to try) rather than by tag.
         public static System.Func<string> WhenSet(int ped, string[] set, int listener = 0)
         {

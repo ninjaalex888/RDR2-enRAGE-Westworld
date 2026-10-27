@@ -26,6 +26,8 @@ namespace EnrageWestworld.InGame
             public IniEntry E;        // null for a section heading or an action
             public string Heading;
             public bool Theirs;       // a line of NemesisMod.ini, not of RealNPCs.ini
+            public bool Hookups;      // a line of CasualHookups.ini (another mod's, in the game folder)
+            public string Label, Help;   // our own words for another mod's setting
             public string Action, ActionLabel, ActionAsk;   // a row that does something on Enter, after a second Enter
         }
 
@@ -64,7 +66,7 @@ namespace EnrageWestworld.InGame
         // a setting that only matters while another is on
         private static readonly Dictionary<string, string> Needs = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            { "FlirtPrompt", "Romance" }, { "Trysts", "Romance" }, { "WillingSingle", "Romance" }, { "WillingTaken", "Romance" }, { "NpcFlirting", "Drama" }, { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
+            { "FlirtPrompt", "Romance" }, { "Trysts", "Romance" }, { "CasualHookupsDecides", "Trysts" }, { "WillingSingle", "Romance" }, { "WillingTaken", "Romance" }, { "NpcFlirting", "Drama" }, { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
             { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
             { "CryingWomanChance", "CryingWoman" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
@@ -94,7 +96,7 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { "WestWorld", "West World (master switch)" }, { "Stalkers", "Stalkers (master switch)" }, { "Ticker", "Ticker (on or off)" },
-            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "Subtitles for what's said to you" }, { "FlirtPrompt", "Flirt in the lock-on menu (H)" }, { "NpcFlirting", "People flirt and court each other" }, { "TerritoryNews", "enRAGE's territory changes as updates" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "CrudeTalk", "Crude remarks (saloons, sweethearts)" }, { "RoughHandling", "Faces into the bar (rough handling)" }, { "Reactions", "People react to what's done and said to them" }, { "EnragePeopleJoinIn", "enRAGE's own people join in" }, { "NpcThieves", "Pickpockets among townsfolk" }, { "DrunkChallenges", "Drunks who call men out" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtsOverHeads", "Thoughts above their heads" }, { "ThoughtsOverHeadScale", "Size of thoughts above heads" }, { "ShareWithEnrage", "Tell enRAGE of deaths it missed" }, { "Trysts", "A night together (off screen)" }, { "WillingSingle", "Single women willing (percent)" }, { "WillingTaken", "Married women willing (percent)" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
+            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "Subtitles for what's said to you" }, { "FlirtPrompt", "Flirt in the lock-on menu (H)" }, { "NpcFlirting", "People flirt and court each other" }, { "TerritoryNews", "enRAGE's territory changes as updates" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "CrudeTalk", "Crude remarks (saloons, sweethearts)" }, { "RoughHandling", "Faces into the bar (rough handling)" }, { "Reactions", "People react to what's done and said to them" }, { "EnragePeopleJoinIn", "enRAGE's own people join in" }, { "NpcThieves", "Pickpockets among townsfolk" }, { "DrunkChallenges", "Drunks who call men out" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtsOverHeads", "Thoughts above their heads" }, { "ThoughtsOverHeadScale", "Size of thoughts above heads" }, { "ShareWithEnrage", "Tell enRAGE of deaths it missed" }, { "Trysts", "A night together (off screen)" }, { "CasualHookupsDecides", "CasualHookups only for women who said yes" }, { "WillingSingle", "Single women willing (percent)" }, { "WillingTaken", "Married women willing (percent)" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMin", "He does odd things at least (metres)" }, { "StalkerActMax", "... and at most (metres)" },
             { "StalkerKey", "Make a stalker now" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
@@ -121,9 +123,31 @@ namespace EnrageWestworld.InGame
         private readonly Func<string, string> _runAction;   // an action row's work, by its id; returns what to say
         private Row _confirm;                               // an action row waiting for its second Enter
         private readonly List<Page> _pages = new List<Page>();
-        private IniDoc _ours, _theirs;
+        private IniDoc _ours, _theirs, _hookups;
         private string _theirsPath;
-        private bool _backedUp;
+        private bool _backedUp, _hookupsBackedUp;
+
+        /// CasualHookups.ini when CasualHookups.asi is installed (set before Show), else null.
+        public string HookupsIniPath;
+
+        // CasualHookups' own settings (another mod), on the Romance page in our own words; its three chances add up to 100
+        private const string HookupsG = "INPUT_INTERACT_OPTION1", HookupsB = "INPUT_INTERACT_HORSE_BRUSH";
+        private static readonly string[] HookupsChances = { "notInterested", "givesInImmediately", "needsSecondFlirt" };
+        private static readonly string[][] HookupsRows =
+        {
+            new[] { "PromptKey", "Its Flirt key", "The key for its Flirt in the lock-on menu: B, or G as it comes. enRAGE's lock-on prompts use G too, so with G both answer it, and RealNPCs can't hold it for women who haven't said yes." },
+            new[] { "notInterested", "She turns you down (percent)", "Its own chance that she refuses outright. With RealNPCs deciding, 0: she has already said yes to you." },
+            new[] { "givesInImmediately", "She says yes at once (percent)", "Its own chance that it starts at the first try. The three chances add up to 100, and the panel keeps them that way." },
+            new[] { "needsSecondFlirt", "She wants asking twice (percent)", "Its own chance that she needs a second try first." },
+            new[] { "startingPosition", "Position it starts in (1-3)", "Which of its three positions it opens with, numbered as in its own ini." },
+            new[] { "enableVocalizations", "Her voice during it", "Her sounds during the scene." },
+            new[] { "femaleStaysNaked", "She stays undressed after", "Off: her clothes come back when it's over." },
+            new[] { "invincibleWoman", "She can't be hurt after", "Off: she can be harmed once it's over." },
+            new[] { "agedTextures", "Older women look their age", "Undressed, older or sickly women look it." },
+            new[] { "playerStaysNaked", "You stay undressed after", "On: you dress again at your clothes, with its Restore Outfit." },
+            new[] { "playerStaysClothed", "You never undress", "For trouble with missing arms or legs after." },
+            new[] { "skipPlayerRelaxing", "Skip your rest after", "On: straight back to the game when it's over. She still rests, and can still be talked to." },
+        };
         private int _page, _row, _scroll;
         private string _note = string.Empty;
         private Row _capture;
@@ -202,6 +226,19 @@ namespace EnrageWestworld.InGame
                     mind.Rows.Add(new Row { Heading = "Testing" });
                     mind.Rows.Add(new Row { Action = "wipe-memories", ActionLabel = "Wipe every NPC's memory",
                                             ActionAsk = "Wipe everything RealNPCs remembers of the people in this world (who they are, what they know and feel about you, their ties, their deaths)? enRAGE's own memory stays. A copy of the save is kept. Press Enter again to wipe; any other key keeps it all." });
+                }
+                // CasualHookups' settings with ours on romance, when it's installed
+                _hookups = !string.IsNullOrEmpty(HookupsIniPath) && File.Exists(HookupsIniPath) ? IniDoc.Read(HookupsIniPath, false) : null;
+                Page romance = _pages.FirstOrDefault(p => p.Title == OurTitles["Romance"]);
+                if (_hookups != null && _hookups.Error == null && romance != null)
+                {
+                    List<Row> rows = HookupsRows.Select(d => new { d, e = _hookups.FindKey(d[0]) }).Where(x => x.e != null)
+                        .Select(x => new Row { E = x.e, Hookups = true, Label = x.d[1], Help = x.d[2] }).ToList();
+                    if (rows.Count > 0)
+                    {
+                        romance.Rows.Add(new Row { Heading = "CasualHookups (another mod)" });
+                        romance.Rows.AddRange(rows);
+                    }
                 }
             }
             _theirs = !string.IsNullOrEmpty(_theirsPath) && File.Exists(_theirsPath) ? IniDoc.Read(_theirsPath, false) : null;
@@ -453,6 +490,13 @@ namespace EnrageWestworld.InGame
                 _note = off;
                 return;
             }
+            if (r.Hookups)
+            {
+                string step = HookupsNext(e, dir, big);
+                if (step != null)
+                    Stage(r, step);
+                return;
+            }
             bool key = (!r.Theirs && OurKeys.Contains(e.Key)) || (r.Theirs && _bridge != null && _bridge.EnrageRebinds(e.Section, e.Key));
             if (key)
             {
@@ -483,13 +527,13 @@ namespace EnrageWestworld.InGame
         {
             if (_pendingRow != null && _pendingRow.E != r.E)
                 Flush();
-            IniDoc doc = r.Theirs ? _theirs : _ours;
+            IniDoc doc = DocOf(r);
             if (doc == null || !doc.Set(r.E, value))
                 return;
             _pendingRow = r;
             _pendingValue = value;
             _pendingAt = Environment.TickCount;
-            _note = Label(r.E.Key) + " = " + value;
+            _note = Name(r) + " = " + Shown(r, value);
         }
 
         /// Writes the value waiting to be written, if any.
@@ -511,8 +555,18 @@ namespace EnrageWestworld.InGame
                 Flush();
         }
 
+        private IniDoc DocOf(Row r)
+        {
+            return r.Hookups ? _hookups : r.Theirs ? _theirs : _ours;
+        }
+
         private void Write(Row r, string value)
         {
+            if (r.Hookups)
+            {
+                WriteHookups(r, value);
+                return;
+            }
             IniEntry e = r.E;
             IniDoc doc = r.Theirs ? _theirs : _ours;
             if (doc == null || e == null)
@@ -561,6 +615,114 @@ namespace EnrageWestworld.InGame
             Log.Write("SETTINGS RealNPCs [" + e.Section + "] " + e.Key + " = " + (kept ?? value));
         }
 
+        /// A line of CasualHookups.ini: the three chances kept at 100 between them, a copy of the file first.
+        private void WriteHookups(Row r, string value)
+        {
+            IniEntry e = r.E;
+            if (_hookups == null || e == null)
+                return;
+            if (!BackUpHookups())
+            {
+                Reload();
+                return;
+            }
+            if (!_hookups.Set(e, value))
+            {
+                _note = "Couldn't change " + Name(r) + ".";
+                return;
+            }
+            string also = BalanceChances(e.Key);
+            string err = _hookups.Save();
+            if (err != null)
+            {
+                _note = "Couldn't save CasualHookups.ini: " + err;
+                Reload();
+                return;
+            }
+            _note = Name(r) + " = " + Shown(r, value) + also + ". CasualHookups may only read it when the game starts.";
+            Log.Write("SETTINGS CasualHookups [" + e.Section + "] " + e.Key + " = " + value + also);
+            Reload();
+        }
+
+        /// Its next value: B or G for its key, 1-3 for the position, 0-100 for a chance, true or false for the rest.
+        private static string HookupsNext(IniEntry e, int dir, bool big)
+        {
+            string v = (e.Value ?? string.Empty).Trim();
+            if (e.Key.Equals("PromptKey", StringComparison.OrdinalIgnoreCase))
+                return v.Equals(HookupsB, StringComparison.OrdinalIgnoreCase) ? HookupsG : HookupsB;
+            int n;
+            if (e.Key.Equals("startingPosition", StringComparison.OrdinalIgnoreCase))
+                return ((((int.TryParse(v, NumberStyles.Integer, CultureInfo.InvariantCulture, out n) ? n : 1) - 1 + dir) % 3 + 3) % 3 + 1).ToString(CultureInfo.InvariantCulture);
+            string next = IniDoc.Step(v, dir, big);
+            if (next != null && HookupsChances.Contains(e.Key, StringComparer.OrdinalIgnoreCase) && int.TryParse(next, NumberStyles.Integer, CultureInfo.InvariantCulture, out n))
+                next = Math.Max(0, Math.Min(100, n)).ToString(CultureInfo.InvariantCulture);
+            return next;
+        }
+
+        /// Its ini says the three chances add up to 100: the changed one stays, and "yes at once" takes up the difference
+        /// ("asking twice" when it was "yes at once" that changed), then the third if that isn't enough. Returns what else
+        /// it changed, for the note.
+        private string BalanceChances(string changed)
+        {
+            int i = Array.FindIndex(HookupsChances, k => k.Equals(changed, StringComparison.OrdinalIgnoreCase));
+            if (i < 0)
+                return "";
+            IniEntry[] e = HookupsChances.Select(k => _hookups.FindKey(k)).ToArray();
+            if (e.Any(x => x == null))
+                return "";
+            int[] v = e.Select(x => { int n; return int.TryParse(x.Value.Trim(), NumberStyles.Integer, CultureInfo.InvariantCulture, out n) ? Math.Max(0, Math.Min(100, n)) : 0; }).ToArray();
+            int a = i == 1 ? 2 : 1, b = 3 - i - a, rest = 100 - v[i];   // a "yes at once" takes up what the others give, first
+            int na = rest - v[b], nb = v[b];
+            if (na < 0)
+            {
+                na = 0;
+                nb = rest;
+            }
+            string also = "";
+            foreach (int j in new[] { a, b })
+            {
+                string want = (j == a ? na : nb).ToString(CultureInfo.InvariantCulture);
+                if (e[j].Value.Trim() != want && _hookups.Set(e[j], want))
+                    also += ", " + HookupsRows.First(d => d[0] == HookupsChances[j])[1].Replace(" (percent)", "") + " " + want;
+            }
+            return also.Length > 0 ? " (so" + also.Substring(1) + ")" : "";
+        }
+
+        /// One copy of CasualHookups.ini per session, before the first change.
+        private bool BackUpHookups()
+        {
+            if (_hookupsBackedUp)
+                return true;
+            try
+            {
+                Directory.CreateDirectory(_backupDir);
+                string to = Path.Combine(_backupDir, "CasualHookups " + DateTime.Now.ToString("yyyy-MM-dd HH.mm.ss", CultureInfo.InvariantCulture) + ".ini");
+                File.Copy(HookupsIniPath, to, false);
+                _hookupsBackedUp = true;
+                Log.Write("SETTINGS backed up CasualHookups.ini to " + to);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _note = "Couldn't back up CasualHookups.ini first, so nothing was changed: " + ex.Message;
+                return false;
+            }
+        }
+
+        /// A row's name on the panel: ours from Labels, another mod's in our own words.
+        private static string Name(Row r)
+        {
+            return r.Label ?? Label(r.E.Key);
+        }
+
+        /// A value as shown: CasualHookups' key by the key it is.
+        private static string Shown(Row r, string value)
+        {
+            if (r.Hookups && r.E.Key.Equals("PromptKey", StringComparison.OrdinalIgnoreCase))
+                return value.Trim().Equals(HookupsB, StringComparison.OrdinalIgnoreCase) ? "B" : value.Trim().Equals(HookupsG, StringComparison.OrdinalIgnoreCase) ? "G" : value;
+            return value;
+        }
+
         /// One copy of NemesisMod.ini per session, before the first change.
         private bool BackUp()
         {
@@ -587,7 +749,7 @@ namespace EnrageWestworld.InGame
         /// Why this setting can't be changed right now (its switch is off), or null.
         private string OffBecause(Row r)
         {
-            if (r == null || r.E == null || r.Theirs || _ours == null)
+            if (r == null || r.E == null || r.Theirs || r.Hookups || _ours == null)
                 return null;
             string parent = Parent(r.E.Section, r.E.Key);
             int guard = 0;
@@ -769,8 +931,8 @@ namespace EnrageWestworld.InGame
                     Draw.Rect(left - 0.006f, y - 0.002f, 0.003f, rowH, 222, 182, 96, 255);
                 }
                 int lr = off ? 105 : sel ? 255 : 226, lg = off ? 98 : sel ? 246 : 216, lb = off ? 90 : sel ? 230 : 196;
-                Draw.Text(Draw.Fit(Label(e.Key), RowScale, W * 0.58f), left + 0.006f, y, RowScale, lr, lg, lb);
-                string v = _capture == r ? "press a key..." : e.Value.Length == 0 ? "(empty)" : e.Value;
+                Draw.Text(Draw.Fit(Name(r), RowScale, W * 0.58f), left + 0.006f, y, RowScale, lr, lg, lb);
+                string v = _capture == r ? "press a key..." : e.Value.Length == 0 ? "(empty)" : Shown(r, e.Value);
                 v = Draw.Fit(v, RowScale, W * 0.3f);
                 int vr, vg, vb;
                 if (off) { vr = 105; vg = 98; vb = 90; }
@@ -793,8 +955,8 @@ namespace EnrageWestworld.InGame
             Draw.Rect(left - 0.006f, helpY - 0.006f, W - 0.032f, 0.0015f, 120, 98, 66, 200);
             Row chosen = page.Rows[Selectable(page, _row)];
             string offWhy = OffBecause(chosen);
-            string section = chosen.Theirs ? "enRAGE [" + chosen.E.Section + "]. " : string.Empty;
-            string help = section + (offWhy != null ? offWhy + " " : string.Empty) + (string.IsNullOrEmpty(chosen.E.Help) ? "No description." : chosen.E.Help);
+            string section = chosen.Theirs ? "enRAGE [" + chosen.E.Section + "]. " : chosen.Hookups ? "CasualHookups, another mod; it may only read this when the game starts. " : string.Empty;
+            string help = section + (offWhy != null ? offWhy + " " : string.Empty) + (chosen.Help ?? (string.IsNullOrEmpty(chosen.E.Help) ? "No description." : chosen.E.Help));
             float helpH = Draw.LineHeight(SmallScale) * 1.08f;
             foreach (string line in Draw.Wrap(help, SmallScale, W - 0.05f).Take(3))
             {

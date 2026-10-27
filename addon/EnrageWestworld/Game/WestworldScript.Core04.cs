@@ -728,6 +728,7 @@ namespace EnrageWestworld.InGame
             LedgerStep(now);   // deaths are noted whether or not the player has control (not in story missions)
             TrystWatchdog(now);   // never left dark (outside the trysts' own guard)
             TrystStep(now);       // runs with the player's controls off while it's dark
+            HookupsStep(now);     // CasualHookups' scene may take the controls too (WestworldScript.Hookups.cs)
             if (!PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;
             QuietStep(now);

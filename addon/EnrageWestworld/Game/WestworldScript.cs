@@ -216,6 +216,7 @@ namespace EnrageWestworld.InGame
 		{
 			if (!InWorld())
 			{
+				TrystInTheDark();
 				return;
 			}
 			int gameTime = Game.GameTime;
@@ -1033,6 +1034,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST records: " + RecordsStatus());
 			Log.Write("TEST romance: " + RomanceStatus());
 			Log.Write("TEST trysts: " + TrystStatus());
+			Log.Write("TEST casual hookups: " + HookupsStatus());
 			Log.Write("TEST thoughts: " + OverHeadStatus());
 			Log.Write("TEST despair: " + DespairStatus());
 			Log.Write("TEST disbelief: " + _disbeliefSaid + " this session" + (_disbeliefLast != null ? ", last " + _disbeliefLast : "") + " (GENERIC_SHOCKED_DISBELIEF, else a shocked line)");
@@ -1211,8 +1213,9 @@ namespace EnrageWestworld.InGame
 				bool drawn = Romance.DrawnTo("ped" + num, flag, otherIsWoman: false, _cfg.SameSexRomance);
 				string seed = num + "|" + Game.GameTime / 20000;
 				string reply = Romance.StrangerReply(flag, drawn, seed);
-				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed), Speech.When(character.Handle, "flatter", num), ahead: true);
-				Feed.Say(flag ? "A woman" : "A man", reply, Speech.For(num, reply, character.Handle, fallback: drawn ? "flatter" : "no"), toYou: true, ahead: true);
+				string said = flag ? "A woman" : "A man";
+				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed), FlirtVoice(_engine.Player.FirstName, Speech.WhenFirst(character.Handle, FlirtVoices.You(flag, seed), num)), ahead: true);
+				Feed.Say(said, reply, FlirtVoice(said, Speech.WhenFirst(num, FlirtVoices.Reply(new Person { Woman = flag }, drawn ? "yes" : "no", drawn ? null : "notdrawn", 0, seed), character.Handle)), toYou: true, ahead: true);
 				_flirtSaidUntil = Game.GameTime + 7000;
 				LookAt(num, character.Handle);
 				NoteFlirt(ped, Director.Kind(ped, flag));
@@ -1226,13 +1229,18 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			int me = Game.Player.Character.Handle;
+			// several of the game's lines for each answer and reason, in an order that changes by person and every ten
+			// game minutes (Core/FlirtVoices.cs); the first her voice has plays
+			string seed = (r.Who != null ? r.Who.Id : ped.ToString()) + "|" + Bridge.Now() / 10;
+			bool toWoman = r.Who != null ? r.Who.Woman : !PED.IS_PED_MALE(ped);
 			// the player asked for this: it goes ahead of what's waiting; Arthur's own line gets no subtitle, the reply does
-			Feed.Say(_engine.Player.FirstName, r.YouSay, Speech.When(me, "flatter", ped), ahead: true);
+			Feed.Say(_engine.Player.FirstName, r.YouSay, FlirtVoice(_engine.Player.FirstName, Speech.WhenFirst(me, FlirtVoices.You(toWoman, seed), ped)), ahead: true);
 			if (r.Reply != null)
 			{
-				// a voice that fits the answer when the words alone don't give one ("Hm. We'll see." had none, so it went unheard)
-				Feed.Say(name, r.Reply, Speech.For(ped, r.Reply, me, hate, fallback: r.Answer == "yes" ? "flatter" : r.Answer == "maybe" ? "respond" : r.Why == "fear" || r.Why == "frightened" ? "scared" : "no"),
-				         toYou: true, ahead: true);
+				Func<string> voice = r.Answer != null ? Speech.WhenFirst(ped, FlirtVoices.Reply(r.Who, r.Answer, r.Why, r.Heart, seed), me)
+					// the old rule had no answer: a voice that fits the words
+					: Speech.For(ped, r.Reply, me, hate, fallback: "respond");
+				Feed.Say(name, r.Reply, FlirtVoice(name, voice), toYou: true, ahead: true);
 			}
 			_flirtSaidUntil = Game.GameTime + 7000;
 			TrystOffered(r, name, ped);
@@ -1240,6 +1248,21 @@ namespace EnrageWestworld.InGame
 			{
 				Feed.Mutter(jealou.Key.Name, jealou.Key.Woman, jealou.Value);
 			}
+		}
+
+		/// A flirting voice that says in the log which line played (FLIRT voice:), to learn which lines Arthur's voice and
+		/// the women's really have; Feed tries a line said to you again if it didn't start, and each try is logged.
+		private static Func<string> FlirtVoice(string who, Func<string> voice)
+		{
+			if (voice == null)
+				return null;
+			return () =>
+			{
+				Speech.LastLine = null;
+				string words = voice();
+				Log.Write("FLIRT voice: " + who + ": " + (Speech.LastPlayed ? Speech.LastLine ?? "a line" : "none of its lines played"));
+				return words;
+			};
 		}
 
 		private static Ped NearestFacing(Ped me, float range)

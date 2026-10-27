@@ -17,6 +17,7 @@ namespace EnrageWestworld.InGame
             public int Handle, Until;
             public string Name, Kind;
             public Person Who;
+            public bool Hookups;   // the night is CasualHookups' (WestworldScript.Hookups.cs): no fade of ours
         }
 
         private sealed class TrystRun
@@ -37,12 +38,15 @@ namespace EnrageWestworld.InGame
         {
             if (r == null || !r.Tryst || r.Who == null || !_cfg.Trysts)
                 return;
-            _trystOffer = new TrystOffer { Handle = ped, Name = name, Kind = r.TrystKind, Who = r.Who, Until = Game.GameTime + Trysts.OfferMs };
-            Log.Write("TRYST offered: " + name + " (" + r.TrystKind + ", chance " + r.Chance + "%): flirt again within " + Trysts.OfferMs / 1000 + " s");
+            bool hookups = HookupsLinked && !HookupsWont(ped);   // a kind CasualHookups turns down: the night is ours
+            _trystOffer = new TrystOffer { Handle = ped, Name = name, Kind = r.TrystKind, Who = r.Who, Hookups = hookups, Until = Game.GameTime + (hookups ? HookupWillingMs : Trysts.OfferMs) };
+            Log.Write("TRYST offered: " + name + " (" + r.TrystKind + ", chance " + r.Chance + "%): " +
+                      (hookups ? "willing for CasualHookups' Flirt (" + HookupsKeyText + ") for " + HookupWillingMs / 1000 + " s" : "flirt again within " + Trysts.OfferMs / 1000 + " s"));
             if (_trystHints < 3)
             {
                 _trystHints++;
-                Feed.Notice("RealNPCs", name + " is willing: flirt with her again within two minutes to go somewhere quieter.");
+                Feed.Notice("RealNPCs", hookups ? name + " is willing: CasualHookups' Flirt (" + HookupsKeyText + ") with her in the next five minutes."
+                                                : name + " is willing: flirt with her again within two minutes to go somewhere quieter.");
             }
         }
 
@@ -62,13 +66,47 @@ namespace EnrageWestworld.InGame
             }
             string seed = o.Who.Id + "|" + Bridge.Now() / 60;
             string ask = Trysts.Ask(seed), yes = Trysts.Yes(o.Kind, seed);
-            Feed.Say(_engine.Player.FirstName, ask, Speech.When(me.Handle, "flatter", her.Handle), ahead: true);
-            Feed.Say(o.Name, yes, Speech.When(her.Handle, "flatter", me.Handle), toYou: true, ahead: true);
+            Feed.Say(_engine.Player.FirstName, ask, FlirtVoice(_engine.Player.FirstName, Speech.WhenFirst(me.Handle, FlirtVoices.You(true, seed), her.Handle)), ahead: true);
+            Feed.Say(o.Name, yes, FlirtVoice(o.Name, Speech.WhenFirst(her.Handle, FlirtVoices.Night(o.Kind, seed), me.Handle)), toYou: true, ahead: true);
             _flirtSaidUntil = Game.GameTime + 7000;
+            if (o.Hookups)
+            {
+                // the night is CasualHookups': the words only, and she stays willing a while longer
+                o.Until = Math.Max(o.Until, Game.GameTime + HookupWillingMs);
+                Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + "): " + ask + " -> " + yes + "; CasualHookups' Flirt (" + HookupsKeyText + ") next");
+                return true;
+            }
             _tryst = new TrystRun { Offer = o, Phase = 0, At = Game.GameTime + 4500 };
             _trystOffer = null;
             Log.Write("TRYST asked: " + o.Name + " (" + o.Kind + "): " + ask + " -> " + yes);
             return true;
+        }
+
+        /// She said yes and CasualHookups started nothing: she says yes again, in her voice, and the night is RealNPCs' own,
+        /// so her words and what happens agree (2026-10-26, Lex). If now won't do, a second flirt still asks her.
+        private void TrystFallback(TrystOffer o, string why)
+        {
+            if (o == null || _tryst != null)
+                return;
+            Ped me = Game.Player.Character;
+            bool there = ENTITY.DOES_ENTITY_EXIST(o.Handle) && !ENTITY.IS_ENTITY_DEAD(o.Handle) && new Ped(o.Handle).Position.DistanceTo(me.Position) <= 8f;
+            string cant = !there ? "she's gone or too far off" : MISC.GET_MISSION_FLAG() ? "a story mission" : PED.IS_PED_IN_COMBAT(me.Handle, 0) ? "there's fighting going on" :
+                          PED.IS_PED_ON_MOUNT(me.Handle) ? "you're on horseback" : PED.IS_PED_IN_COMBAT(o.Handle, 0) || PED.IS_PED_FLEEING(o.Handle) ? "she's frightened off" : null;
+            o.Hookups = false;
+            if (cant != null)
+            {
+                o.Until = Game.GameTime + Trysts.OfferMs;
+                _trystOffer = there ? o : null;
+                Log.Write("TRYST " + o.Name + ": " + why + ", and RealNPCs' own night can't be now (" + cant + ")" + (there ? "; flirt with her again to ask" : ""));
+                return;
+            }
+            string seed = o.Who.Id + "|" + Bridge.Now() / 60;
+            string yes = Trysts.Yes(o.Kind, seed);
+            Feed.Say(o.Name, yes, FlirtVoice(o.Name, Speech.WhenFirst(o.Handle, FlirtVoices.Night(o.Kind, seed), me.Handle)), toYou: true, ahead: true);
+            _flirtSaidUntil = Game.GameTime + 7000;
+            _trystOffer = null;
+            _tryst = new TrystRun { Offer = o, Phase = 0, At = Game.GameTime + 4500 };
+            Log.Write("TRYST " + o.Name + " (" + o.Kind + "): " + why + ", so RealNPCs' own night: " + yes);
         }
 
         private void TrystStep(int now)
@@ -130,6 +168,19 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// InWorld() is false while the screen is faded out, so the tryst's dark is stepped from here, or it never ends
+        /// (2026-10-26: Lex was left on a black screen with the controls off; the step and its watchdog both sat behind
+        /// that gate, in Tick04).
+        private void TrystInTheDark()
+        {
+            if (_engine == null || (_tryst == null && _trystDarkSince == 0) || Game.IsLoading || Game.IsPaused)
+                return;
+            int now = Game.GameTime;
+            _now = now;
+            TrystWatchdog(now);
+            TrystStep(now);
+        }
+
         /// Outside the feature's guard, every tick: if the screen has been dark for a tryst longer than it ever should,
         /// bring it back and give the player his controls, whatever went wrong.
         private void TrystWatchdog(int now)
@@ -153,6 +204,7 @@ namespace EnrageWestworld.InGame
         private void TrystAbort()
         {
             _trystOffer = null;
+            _hookRun = null;
             if (_tryst == null && _trystDarkSince == 0)
                 return;
             try
