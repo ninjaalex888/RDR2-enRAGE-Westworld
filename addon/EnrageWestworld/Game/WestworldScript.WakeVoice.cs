@@ -24,7 +24,7 @@ namespace EnrageWestworld.InGame
             public int Handle, Stage, Listener, LineIdx, Played, Tries, Take, NextAt, Started, BusySince;
             public WakeVoiceMoment M;
             public string Name, Seed, Line;
-            public bool InAct, Speaking, Down;
+            public bool InAct, Speaking, Down, SawBusy;   // SawBusy: the speech was seen playing (a line counts as said once it starts and stops)
             public readonly List<string> Said = new List<string>();
         }
 
@@ -38,8 +38,8 @@ namespace EnrageWestworld.InGame
         private sealed class WakeVoiceProbe
         {
             public int Handle, Idx, Tries, NextAt, BusySince, Played;
-            public string Name;
-            public bool Speaking;
+            public string Name, How;
+            public bool Speaking, SawBusy;
             public List<string> Lines;
             public readonly List<string> Down = new List<string>();
         }
@@ -269,8 +269,15 @@ namespace EnrageWestworld.InGame
             }
             if (r.Speaking)
             {
-                if (Speech.Busy(h) && now - r.BusySince < 8000)
+                bool busy = Speech.Busy(h);
+                if (busy)
+                    r.SawBusy = true;
+                if (busy && now - r.BusySince < 8000)
                     return;
+                if (!r.SawBusy && now - r.BusySince < 1000)
+                    return;   // the game said yes but the speech takes a few frames to start: not over before it began
+                if (!r.SawBusy && r.Said.Count > 0)
+                    r.Said[r.Said.Count - 1] += " (accepted, no speech started)";
                 r.Speaking = false;
                 r.NextAt = now + (r.M.Dump ? 250 + _rng.Next(350) : r.M.Repeat > 1 ? 900 + _rng.Next(600) : 0);
             }
@@ -304,6 +311,7 @@ namespace EnrageWestworld.InGame
                 }
                 r.Tries = 0;
                 r.Speaking = true;
+                r.SawBusy = false;
                 r.BusySince = now;
                 return;
             }
@@ -396,8 +404,24 @@ namespace EnrageWestworld.InGame
             }
             if (q.Speaking)
             {
-                if (Speech.Busy(h) && now - q.BusySince < 8000)
+                bool busy = Speech.Busy(h);
+                if (busy)
+                    q.SawBusy = true;
+                if (busy && now - q.BusySince < 8000)
                     return;
+                if (!q.SawBusy && now - q.BusySince < 1000)
+                    return;
+                string said = q.Lines[q.Idx - 1];
+                if (q.SawBusy)
+                {
+                    q.Played++;
+                    Log.Write("WAKE voice probe: " + said + " played (" + q.How + ")");
+                }
+                else
+                {
+                    q.Down.Add(said + " (accepted, silent)");
+                    Log.Write("WAKE voice probe: " + said + " accepted (" + q.How + ") but no speech started");
+                }
                 q.Speaking = false;
                 q.NextAt = now + 1500;
             }
@@ -419,11 +443,11 @@ namespace EnrageWestworld.InGame
                 how = "the game's take";
             if (how != null)
             {
-                q.Played++;
-                Log.Write("WAKE voice probe: " + line + " played (" + how + (q.Tries > 0 ? ", on try " + (q.Tries + 1) : "") + ")");
+                q.How = how + (q.Tries > 0 ? ", on try " + (q.Tries + 1) : "");
                 q.Idx++;
                 q.Tries = 0;
                 q.Speaking = true;
+                q.SawBusy = false;
                 q.BusySince = now;
                 return;
             }
