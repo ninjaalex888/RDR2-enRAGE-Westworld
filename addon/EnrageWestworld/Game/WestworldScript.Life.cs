@@ -82,6 +82,8 @@ namespace EnrageWestworld.InGame
             string fallWhy;
             if (_interiorType == 0 && PreacherScene(me, now, false, out fallWhy))
                 return;   // a Sunday afternoon's street preacher (WestworldScript.Preacher.cs)
+            if (_interiorType == 0 && LostChildScene(me, now, false, out fallWhy))
+                return;   // a mother asking around for her child (WestworldScript.LostChild.cs)
             if (_interiorType == 0 && FallScene(me, now, false, out fallWhy))
                 return;   // someone took a fall (WestworldScript.Kindness.cs)
             if (saloon && RoundScene(me, now, false, out fallWhy))
