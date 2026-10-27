@@ -250,6 +250,26 @@ namespace EnrageWestworld.Core
                 File.Move(tmp, path);
         }
 
+        /// A save in two halves (0.6.3, the stutter): the store turned into JSON, on the thread that changes it...
+        public void WriteTo(Stream stream)
+        {
+            Trim();
+            Serializer().WriteObject(stream, this);
+        }
+
+        /// ...and the bytes put in place, which touches nothing of the store, so it can run on another thread. The same
+        /// file as Save: a .tmp first, then swapped in, so a crash part way never leaves half a save.
+        public static void WriteFile(string path, byte[] bytes, int count)
+        {
+            string tmp = path + ".tmp";
+            using (FileStream stream = File.Create(tmp))
+                stream.Write(bytes, 0, count);
+            if (File.Exists(path))
+                File.Replace(tmp, path, null);
+            else
+                File.Move(tmp, path);
+        }
+
         /// Keeps the file from growing without end.
         private void Trim()
         {

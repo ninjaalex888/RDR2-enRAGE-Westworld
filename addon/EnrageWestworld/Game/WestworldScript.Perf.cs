@@ -33,6 +33,7 @@ namespace EnrageWestworld.InGame
         private readonly PerfSlot _perfTotal = new PerfSlot { Name = "total" };
         private readonly PerfSlot _perfOther = new PerfSlot { Name = "step (other)" };
         private int _perfWindowAt, _perfOverSince = -1, _perfOverLogged = -60000, _perfPeakLogged = -60000, _perfFrames;
+        private bool _perfUnseen;   // this frame nobody could see (paused, faded out, loading: Step's !InWorld): no peak warning for it, since the saves wait for these
 
         private PerfSlot PerfSlotOf(string feature)
         {
@@ -71,6 +72,8 @@ namespace EnrageWestworld.InGame
         /// Once a frame, from OnTick with the whole Step's time: the averages, the peaks, and the warnings.
         private void PerfFrame(long stepTicks)
         {
+            bool unseen = _perfUnseen;
+            _perfUnseen = false;
             if (_cfg != null && !_cfg.PerfMeter)
                 return;
             _perfDepth = 0;   // a feature that threw past its finally can't leave the depth wrong for good
@@ -118,7 +121,7 @@ namespace EnrageWestworld.InGame
             }
             else
                 _perfOverSince = -1;
-            if (totalMs > BudgetPeakMs && now - _perfPeakLogged >= 60000)
+            if (totalMs > BudgetPeakMs && !unseen && now - _perfPeakLogged >= 60000)
             {
                 _perfPeakLogged = now;
                 Log.Write("PERF: peak: one frame took " + totalMs.ToString("0.00") + " ms (budget " + BudgetPeakMs.ToString("0.0") + " ms)" +

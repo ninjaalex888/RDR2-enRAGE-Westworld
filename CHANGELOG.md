@@ -13,6 +13,7 @@ Built on 2026-10-26, the night after (Lex's overnight brief, 2026-10-27) and the
 - Flirt in the lock-on menu no longer shows on men while same-sex romance is off (`[Romance] SameSexRomance`): none of them could say yes. Seen by Lex in game, 2026-10-27.
 - The frame-time meter no longer reports loading the save as a slow frame (it settles for two seconds after the save loads), and its slow-frame line names the part that really cost the most (it named the last feature to run).
 - The save file is about 40% smaller (Lex's went from 1,613 KB to 916 KB): empty, zero and false values are no longer written. Nothing is lost: the file reads back the same, and an older RealNPCs reads the new file as it read the old one. Saving takes a fifth less time.
+- No more stutter once a minute. Lex's log showed one frame of 15-24 ms about once a minute: RealNPCs saving its memory of people. A save now waits for a moment when nobody can see a slow frame (the game paused, the screen faded out, a load), and saves during play only after three minutes with no such moment. Even then the file is written on another thread, so the frame pays only for turning the memory into text (about 7 ms offline, from 22). The first save's one-off cost (about 50 ms) is paid while the save loads. F7 `TEST save:` says when the last save happened and what it cost; the log's `SAVE written:` line shows the first of each kind. The frame-time meter no longer warns about slow frames nobody could see.
 
 ### Built overnight (2026-10-27)
 

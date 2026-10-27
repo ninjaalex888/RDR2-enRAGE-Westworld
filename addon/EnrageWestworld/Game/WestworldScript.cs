@@ -67,8 +67,6 @@ namespace EnrageWestworld.InGame
 
 		private int _nextLife;
 
-		private int _nextSave;
-
 		private int _nextNotice;
 
 		private int _nextLifeNotice;
@@ -222,6 +220,8 @@ namespace EnrageWestworld.InGame
 			if (!InWorld())
 			{
 				TrystInTheDark();
+				SaveStep(QuietWhy());   // nobody can see a slow frame now: the time to save (WestworldScript.Saving.cs)
+				_perfUnseen = true;
 				return;
 			}
 			int gameTime = Game.GameTime;
@@ -296,11 +296,7 @@ namespace EnrageWestworld.InGame
 			{
 				Notices(gameTime);
 			}
-			if (gameTime >= _nextSave)
-			{
-				_nextSave = gameTime + 60000;
-				Save();
-			}
+			SaveStep(null);   // in play: only after three minutes with no quiet moment (WestworldScript.Saving.cs)
 		}
 
 		private static bool InWorld()
@@ -386,8 +382,10 @@ namespace EnrageWestworld.InGame
 		{
 			bool flag = IsJohn();
 			_player = (flag ? "john" : "arthur");
+			SaveSettle();   // a save still being written in the background finishes first (WestworldScript.Saving.cs)
 			_store = Store.Load(StorePath, Log.Write);
 			_store.Player = _player;
+			SaveWarm();     // the first save's one-off cost, paid inside the load's long frame
 			_perfFrames = 0;   // loading the save is a long frame by nature (400 ms at Ready, 2026-10-27): the meter settles again from here
 			PassingAbort();
 			WanderLaterClear();
@@ -449,22 +447,6 @@ namespace EnrageWestworld.InGame
 			catch (Exception ex)
 			{
 				return "Renamed to RealNPCs, but the old enRAGE-Westworld folder couldn't be copied: " + ex.Message;
-			}
-		}
-
-		private void Save()
-		{
-			if (_store == null || _player == null)
-			{
-				return;
-			}
-			try
-			{
-				_store.Save(StorePath);
-			}
-			catch (Exception ex)
-			{
-				Log.Write("Couldn't save " + StorePath + ": " + ex.Message);
 			}
 		}
 
@@ -1047,6 +1029,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST worries: " + WorriesStatus());
 			Log.Write("TEST mind: " + MindsStatus());
 			Log.Write("TEST perf: " + PerfStatus());
+			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST testing: " + TestingStatus());
 			Log.Write("TEST show minds: " + ShowMindsStatus());
 			Log.Write("TEST wake stages: " + WakeTagsStatus());
