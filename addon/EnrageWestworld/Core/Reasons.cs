@@ -304,12 +304,12 @@ namespace EnrageWestworld.Core
             int stage;
             bool good;
             if (!InnerLife.WorryNow(x.P, gameDay, out kind, out stage, out good) || stage < 1 || stage > 2 ||
-                (kind != "debt" && kind != "savings" && kind != "bank" && kind != "drink"))
+                (kind != "debt" && kind != "savings" && kind != "bank" && kind != "drink" && kind != "cards"))
                 return null;
             bool honest = x.Temper == "Loyal" || x.Temper == "Coward" || x.P.Has("honest") || x.P.Facet("Honesty") >= 60;
             if (!honest || Voice.Hash(x.Id + gameDay + "beg") % 100 >= 35)
                 return null;
-            return kind == "drink" ? "has drunk the rent" : "has come to the end of the money";
+            return kind == "drink" ? "has drunk the rent" : kind == "cards" ? "has gambled the rent away" : "has come to the end of the money";
         }
 
         /// Why this person would pick a pocket today, or null: by nature (greedy, a drifter, dishonest), or driven
@@ -323,7 +323,7 @@ namespace EnrageWestworld.Core
             int stage;
             bool good;
             bool money = x.P != null && InnerLife.WorryNow(x.P, gameDay, out kind, out stage, out good) && stage >= 1 && stage <= 2 &&
-                         (kind == "debt" || kind == "savings" || kind == "bank" || kind == "drink");
+                         (kind == "debt" || kind == "savings" || kind == "bank" || kind == "drink" || kind == "cards");
             bool nature = x.Temper == "Greedy" || x.Temper == "Drifter" || (x.P != null && x.P.Facet("Honesty") < 30);
             if (!money && !nature)
                 return null;

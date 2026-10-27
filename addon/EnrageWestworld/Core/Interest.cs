@@ -182,7 +182,7 @@ namespace EnrageWestworld.Core
             }
             switch (a.Worry)
             {
-                case "debt": case "savings": case "bank": Add(t, flush ? "money" : "troubled", flush ? 1 : -1); break;   // money on their mind
+                case "debt": case "savings": case "bank": case "cards": Add(t, flush ? "money" : "troubled", flush ? 1 : -1); break;   // money on their mind
                 case "feud": Add(t, "troubled", -1); break;
                 case "secret": case "law": Add(t, "wary", -1); break;   // keeping their head down
                 case "letter": Add(t, "elsewhere", -1); break;           // waiting on someone far off

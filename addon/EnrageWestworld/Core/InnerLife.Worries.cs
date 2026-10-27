@@ -242,6 +242,30 @@ namespace EnrageWestworld.Core
             },
             new WorryKind
             {
+                // the gambler and the rent (Tier 4): lost at the table, the room's rent due to his landlady
+                Key = "cards", GoodChance = 40, Fits = (p, g, age) => !p.Woman && (g == "card" || g == "rough" || (g == "working" && (p.Personality == "Greedy" || p.Personality == "Drifter"))),
+                Begin = new[] {
+                    "Lost eleven dollars at the table last night. Rent's due Friday. Mrs. {who} counts the days.",
+                    "Two pair. Two pair, and he turned over three nines. Can still see them.",
+                    "Rent money's in my boot. Card game's in the back room. Only one of them is sense." },
+                Worse = new[] {
+                    "Lost again. One hand to win it back, I said. Seven hands.",
+                    "Mrs. {who} knocked twice this morning. Kept still as a stone. She knew.",
+                    "Sold my good boots for a stake. Feet know it." },
+                Crisis = new[] {
+                    "Rent's three days late. Mrs. {who} has a nephew. Big lad. Bigger every day.",
+                    "Last dollar on the table tonight. Win, and I sleep indoors." },
+                Good = new[] {
+                    "Drew to an inside straight. Paid Mrs. {who} in silver and she smiled. Once.",
+                    "Quit the table while I was ahead. First time in my life. Rent's paid." },
+                Bad = new[] {
+                    "Mrs. {who} put my things out in the street. Hat on top, like a joke.",
+                    "My room's let to a drummer from Ohio. I'm sleeping at the livery." },
+                AfterGood = new[] { "Deck of cards on the bar. Didn't touch it. Didn't." },
+                AfterBad = new[] { "Livery loft's not so bad. Horses don't cheat at cards." }
+            },
+            new WorryKind
+            {
                 Key = "savings", GoodChance = 50, Fits = (p, g, age) => g == "working" || g == "girl" || g == "town" || g == "plain" || g == "card" || g == "trapper" || g == "farm",
                 Begin = new[] {
                     "Saving for a ticket to {place}. Coffee can under the bed. Two dollars and change.",
@@ -394,6 +418,7 @@ namespace EnrageWestworld.Core
                     break;
                 case "courting": who = Residents.FirstName(!p.Woman, p.Id + "|be" + arc); break;
                 case "savings": place = SavingFor[Voice.Hash(p.Id + "|sf" + arc) % SavingFor.Length]; break;
+                case "cards": who = Residents.Surname(p.Id + "|ll" + arc); break;   // his landlady
                 case "letter":
                     string rel = Kin[Voice.Hash(p.Id + "|kin") % Kin.Length];
                     if (rel == "Mother")
