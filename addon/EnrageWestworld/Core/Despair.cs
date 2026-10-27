@@ -2,8 +2,8 @@
 // gun if they carry one or are the kind who keeps one; else poison (Lex, 2026-10-27: "Poison, yes"; laudanum and arsenic
 // were the common way in 1899 for those without a gun, women most of all); else by running at a wall when there's one to
 // run at; else with a knife. Decided by who they are (their trade, sex and age, hashed with their id), so the same person
-// would do it the same way; only the wall depends on where they're standing. The gun is acted out with one of the two
-// arcs the game has for it (Jamie's from the story, a hideout leader's; Lex liked both), the poison as a drink taken and
+// would do it the same way; only the wall depends on where they're standing. The gun is acted out with Jamie's arc from
+// the story (a hideout leader's was the other half until Lex saw it twice, 2026-10-27), the poison as a drink taken and
 // a death, or a slow poisoning; which one is the person's too.
 namespace EnrageWestworld.Core
 {
@@ -23,11 +23,11 @@ namespace EnrageWestworld.Core
             return wallNear && Voice.Chance(seed + "dw", 60) ? "wall" : "knife";
         }
 
-        /// Which of the game's two gun arcs: "jamie" (the despair, the gun to the head, the shaking, the shot) or
-        /// "leader" (a hideout leader's: the wait, the gun up, the shot). Half and half, by the person.
+        /// The gun's arc: "jamie" (the despair, the gun to the head, the shaking, the shot). A hideout leader's arc was the
+        /// other half until Lex saw it (2026-10-27): he lay down, got up and lay down again, the gun not in his hand.
         public static string GunArc(Person p, string seed)
         {
-            return Voice.Chance(seed + "arc", 50) ? "jamie" : "leader";
+            return "jamie";
         }
 
         /// Which poisoning: "drink" (a long pull from the bottle, and down) or "slow" (sick, then burning, then gone).

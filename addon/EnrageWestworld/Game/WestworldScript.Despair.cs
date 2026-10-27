@@ -1,7 +1,9 @@
 // Despair acted out with the game's own clips (0.6.3; Lex, 2026-10-27, after the Testing page's animation rows: both gun
 // arcs, "Poison, yes"). The sets are the story's and the world's own, all in Story Mode (WAKE anim sets), tried on a man
-// and a woman in game: Jamie's arc (his despair, the gun to his head, the shaking, the shot) and a hideout
-// leader's (the wait, the gun up, the shot); the poisoning as a long drink and the fall, or slowly (sick, burning, gone).
+// and a woman in game: Jamie's arc (his despair, the gun to his head, the shaking, the shot); the poisoning as a long
+// drink and the fall, or slowly (sick, burning, gone). A hideout leader's arc was tried and taken out (Lex, 2026-10-27,
+// twice: he lay down, got up and lay down again before the shot, and the gun wasn't really in his hand; its set animates
+// a prop pistol of its own, script_hideout@shady_belle@leader *_pistol, which a held gun can't follow).
 // Before every way, the last words are said sobbing (a man's sobbing from a roadside accident, which a woman plays as
 // well). The gun is forced into the hand just before (clearing orders puts it away, and someone with no holster loses
 // it), the shot fired from the gun hand into the head at a point of the last clip (logged, to be tuned), and a clip that
@@ -27,7 +29,7 @@ namespace EnrageWestworld.InGame
             public float ShotAt = -1f;   // the shot at this point of the clip (0-1), the gun arcs' last clip
         }
 
-        private const string JamieDict = "script_story@mry1@ig@ig6_jamie_attempts_suicide", LeaderDict = "script_hideout@shady_belle@leader";
+        private const string JamieDict = "script_story@mry1@ig@ig6_jamie_attempts_suicide";
         private const string DrinkDict = "script_re@moonshine_camp@return_taste@trans", SickDict = "script_re@poisoned@victim";
         private const string SobDict = "script_re@rally@cross_accident", SobClip = "sobbing_idle_a_leader";
 
@@ -40,27 +42,20 @@ namespace EnrageWestworld.InGame
         /// frame, the first despair of a session never sobbed.
         private void DespairPreload()
         {
-            foreach (string d in new[] { SobDict, JamieDict, LeaderDict, DrinkDict, SickDict })
+            foreach (string d in new[] { SobDict, JamieDict, DrinkDict, SickDict })
                 STREAMING.REQUEST_ANIM_DICT(d);
         }
 
         /// The clips for a way, in order (null: the way has none, the wall and the knife).
         private static DespairClip[] DespairSequence(string method, string variant, string seed)
         {
-            if (method == "gun" && variant == "jamie")
+            if (method == "gun")
                 return new[]
                 {
                     DC(JamieDict, "ig6_i_dont_want_to_live_ig_jamie", 5500),
                     DC(JamieDict, "ig6_gun_to_head_ig_jamie", 3900),
                     DC(JamieDict, Voice.Chance(seed + "loop", 50) ? "ig6_jamie_loop_ig_jamie" : "ig6_jamie_loop3_ig_jamie", 5600),
                     DC(JamieDict, "ig6_jamie_shoots_himself_ig_jamie", 3000, 2, 0.30f)
-                };
-            if (method == "gun")
-                return new[]
-                {
-                    DC(LeaderDict, "base", 4900),
-                    DC(LeaderDict, "action", 7000),
-                    DC(LeaderDict, "suicide_shoot", 2600, 2, 0.35f)
                 };
             if (method == "poison" && variant == "drink")
                 return new[] { DC(DrinkDict, "trans_to_drink_male_a", 8700), DC(DrinkDict, "die_male_a", 13000, 2) };
@@ -272,7 +267,7 @@ namespace EnrageWestworld.InGame
 
         // ---- the Testing page: despair now, each way in turn --------------------------------------------------------
 
-        private static readonly string[] DespairTestWays = { "gun:jamie", "gun:leader", "poison:drink", "poison:slow", "knife", "wall" };
+        private static readonly string[] DespairTestWays = { "gun:jamie", "poison:drink", "poison:slow", "knife", "wall" };
         private int _despairTestTurn;
 
         /// The nearest free person RealNPCs knows (a resident or one of enRAGE's townsfolk; never a record, a story
