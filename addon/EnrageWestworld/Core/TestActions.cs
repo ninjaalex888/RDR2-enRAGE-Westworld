@@ -35,6 +35,7 @@ namespace EnrageWestworld.Core
             new Entry("crying", "Encounters", "The crying woman", "CryingWomanKey", field: true),
             new Entry("execution", "Encounters", "An execution on the road", "ExecutionKey", "[", needs: "a town with regulars", field: true),
             new Entry("hermit", "Encounters", "A hermit's camp", "HermitKey", needs: "outside a town; the camp stays", field: true),
+            new Entry("traveller", "Encounters", "A traveller asking the way", "TestTravellerKey", needs: "out of the towns; best on a road"),
             new Entry("visitor", "Encounters", "The night visitor", "TestVisitorKey", needs: "in a town, out of doors, no lawman within 60 m"),
             new Entry("gathering", "Encounters", "A gathering of the awake", "GatheringKey", field: true),
             new Entry("stalker", "Encounters", "A stalker now", "StalkerKey", "]", needs: "outdoors", field: true),

@@ -1069,6 +1069,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST grudges: " + GrudgesStatus());
 			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST visitor: " + VisitorStatus());
+			Log.Write("TEST traveller: " + TravellerStatus());
 			Log.Write("TEST trouble: " + TroubleStatus());
 			Log.Write("TEST now: " + NowStatus());
 			Log.Write("TEST records: " + RecordsStatus());
@@ -1378,6 +1379,10 @@ namespace EnrageWestworld.InGame
 					if (ENTITY.DOES_ENTITY_EXIST(key) && !ENTITY.IS_ENTITY_DEAD(key) && SceneIntrusion(key, friendly: false))
 					{
 						continue;
+					}
+					if (TravellerGreeted(key, false))
+					{
+						continue;   // antagonizing the traveller asking the way: he backs off
 					}
 					if (_cfg.Romance && ENTITY.DOES_ENTITY_EXIST(key) && !ENTITY.IS_ENTITY_DEAD(key))
 					{

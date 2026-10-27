@@ -920,6 +920,8 @@ namespace EnrageWestworld.InGame
         /// The player greeted someone special: the stalker, or kin met on the street.
         private bool GreetedSpecial(int handle)
         {
+            if (TravellerGreeted(handle, true))
+                return true;   // the traveller asking the way: a greeting is an answer (WestworldScript.Travellers.cs)
             if (_stalker != null && _stalker.Handle == handle)
             {
                 StalkerSay(_stalker.Label, _stalker.Revenant != null ? Hosts.RevenantAloud(_stalker.Revenant, _engine.Player, _stalker.Revenant.Id + "g")
