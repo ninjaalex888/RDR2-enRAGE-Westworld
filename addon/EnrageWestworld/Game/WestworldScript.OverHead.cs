@@ -64,7 +64,7 @@ namespace EnrageWestworld.InGame
             if (_overHeadParts.Count == 0)
                 return false;
             float lineH = Draw.LineHeight(scale), padX = 0.006f, padY = 0.003f, w = _overHeadWidth;
-            float top = y - lineH * _overHeadParts.Count;   // the box sits on the point and grows upward
+            float top = y - lineH * _overHeadParts.Count - WakeTagLift(h);   // the box sits on the point (over a wake stage tag) and grows upward
             int age = Math.Max(0, now - line.ShownAt);
             int a = line.ShownAt > now ? 255 : Math.Min(255, 60 + age * 255 / 400);
             Draw.Rect(x - w / 2f - padX, top - padY, w + padX * 2f, lineH * _overHeadParts.Count + padY * 2f, 12, 10, 8, 150 * a / 255);

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 75;
+        public const int CurrentVersion = 76;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -204,6 +204,7 @@ namespace EnrageWestworld.Core
         // already (StalkerKey, WakeKey, ExecutionKey...) stay fields; the rest are kept here by their ini name.
         public bool TestKeys = true;
         public bool ShowMinds;
+        public bool ShowWakeStages;   // [Testing] a tag over each person who has begun to wake (2026-10-27)
         public Dictionary<string, string> TestKeyMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// The key text a Testing action is set to: its field, its line in [Testing], or its default.
@@ -716,6 +717,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("[Testing]");
             b.AppendLine("TestKeys = " + B(TestKeys) + "   ; master switch for the keys below (the settings panel's Testing page fires them with it off too)");
             b.AppendLine("ShowMinds = " + B(ShowMinds) + "   ; a small card over named people within 15 m: temper, mood, worry, ties and what is on their mind");
+            b.AppendLine("ShowWakeStages = " + B(ShowWakeStages) + "   ; a tag over each person within 25 m who has begun to wake: stirring, questioning, unravelling or awake, and what holds them back (riding, a counter, had their chance)");
             foreach (TestActions.Entry e in TestActions.All)
                 b.AppendLine(e.KeySetting + " = " + TestKeyOf(e) + "   ; " + e.Label + (e.Needs != null ? " (" + e.Needs + ")" : string.Empty) + "; None: no key");
             return b.ToString();

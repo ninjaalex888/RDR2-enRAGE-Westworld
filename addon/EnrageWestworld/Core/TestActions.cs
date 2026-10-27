@@ -97,6 +97,7 @@ namespace EnrageWestworld.Core
             new Entry("scene:x:courting", "Street scenes", "A courting worry, face to face", "TestCourtingKey", needs: "a named man and woman within 16 m"),
             // ---- tools ---------------------------------------------------------------------------------------------
             new Entry("showminds", "Tools", "Show minds (a card over people near you)", "TestShowMindsKey"),
+            new Entry("wakestages", "Tools", "Show wake stages (a tag over the waking)", "TestWakeStagesKey"),
             new Entry("replay", "Tools", "Fire the last test again", "TestReplayKey"),
         };
 

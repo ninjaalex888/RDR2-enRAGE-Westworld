@@ -330,6 +330,10 @@ namespace EnrageWestworld.InGame
                     if (!_cfg.WestWorld)
                         return "West World is off";
                     return TestDisbelief(now);
+                case "wakestages":
+                    _cfg.ShowWakeStages = !_cfg.ShowWakeStages;   // for this session (the panel's row writes it to the ini)
+                    said = "Wake stages " + (_cfg.ShowWakeStages ? "on: a tag over each person near you who has begun to wake." : "off.") + (_cfg.WestWorld ? "" : " West World is off, so nobody wakes.");
+                    return null;
                 case "showminds":
                     _cfg.ShowMinds = !_cfg.ShowMinds;   // for this session (the panel's Show minds row writes it to the ini)
                     said = "Show minds " + (_cfg.ShowMinds ? "on: a card over the people near you." : "off.");

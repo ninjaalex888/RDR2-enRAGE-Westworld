@@ -1049,6 +1049,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST perf: " + PerfStatus());
 			Log.Write("TEST testing: " + TestingStatus());
 			Log.Write("TEST show minds: " + ShowMindsStatus());
+			Log.Write("TEST wake stages: " + WakeTagsStatus());
 			Log.Write("TEST events: " + EventsStatus());
 			Log.Write("TEST pacing: " + (_store != null ? Pacing.Status(_store.Pace, _store.LastGameMin) : "not loaded"));
 			Log.Write("TEST near: " + NearStatus());

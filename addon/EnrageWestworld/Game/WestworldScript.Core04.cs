@@ -368,6 +368,7 @@ namespace EnrageWestworld.InGame
             Safe("ticker", _aFrame);
             FeelingsStep(now);
             ShowMindsStep(now);   // the Testing page's cards over people (WestworldScript.ShowMinds.cs)
+            WakeTagsStep(now);    // and its wake stages over heads (WestworldScript.WakeTags.cs)
             NewsStep(now);
             SubtitleDraw(now);
         }
