@@ -46,7 +46,7 @@ namespace EnrageWestworld.InGame
             public string Variant;          // despair: the gun arc (jamie, leader) or the poisoning (drink, slow)
             public DespairClip[] Seq;       // despair: its clips (WestworldScript.Despair.cs), null for the wall and the knife
             public int ClipIdx, ClipAt, ShotHealth, ShotCheckAt;   // the shot: their health just before it, and when to look at what it did
-            public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed;   // Borrowed: taken over for despair's last steps (handed back in EndWakeAct)
+            public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed, Sobbed;   // Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
             public Person P;
             public PersonState St;
             public Resident Res;
@@ -855,6 +855,15 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             if (act.Phase == 3)
             {
+                if (!act.Sobbed && now < act.PhaseUntil - 1500 && STREAMING.HAS_ANIM_DICT_LOADED(SobDict))
+                {
+                    // the set wasn't in yet when despair began (the Testing row has no awake act before it to ask for it early,
+                    // so Theodora Ridley, the first of the session, never sobbed): the sobbing as soon as it is
+                    act.Sobbed = true;
+                    TASK.TASK_PLAY_ANIM(h, SobDict, SobClip, 4f, -4f, -1, 0, 0f, false, 0, false, "", false);
+                    act.PhaseUntil = Math.Max(act.PhaseUntil, now + 3000);
+                    Log.Write("WAKE despair: " + act.Name + " sobbing, once its set was in");
+                }
                 if (now < act.PhaseUntil)
                     return;
                 string cant = MayDirectWhyNot(new Ped(h)) ?? (act.Rec != null ? RecordFreeWhyNot(new Ped(h), act.Rec) : null);

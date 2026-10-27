@@ -100,6 +100,7 @@ namespace EnrageWestworld.InGame
             STREAMING.REQUEST_ANIM_DICT(SobDict);
             TASK.CLEAR_PED_TASKS(h, true, false);
             bool sob = STREAMING.HAS_ANIM_DICT_LOADED(SobDict);
+            act.Sobbed = sob;   // else the last words' steps start it once the set is in (StepDespair)
             if (sob)
                 TASK.TASK_PLAY_ANIM(h, SobDict, SobClip, 4f, -4f, -1, 0, 0f, false, 0, false, "", false);   // the last words, sobbing
             else
