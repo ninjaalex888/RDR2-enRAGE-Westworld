@@ -51,7 +51,7 @@ namespace EnrageWestworld.InGame
             public int ClipIdx, ClipAt;
             public float ShotPoint;         // despair: the shot's point in its clip (0-1): the clip's own event when it names one, else the set point
             public string ShotEvent;        // despair: that event's name, or null
-            public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed, Sobbed;   // Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
+            public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed, Sobbed, LeaveOrders;   // LeaveOrders: let be for enRAGE's sake, so its orders stay; Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
             public Person P;
             public PersonState St;
             public Resident Res;
@@ -876,6 +876,7 @@ namespace EnrageWestworld.InGame
                 {
                     Log.Write("WAKE despair: " + act.Name + " is let be at the last moment (" + cant + ")");
                     act.Until = now;   // the act ends at the next look ("finished"); their one chance is spent
+                    act.LeaveOrders = true;   // whoever has them now (enRAGE, a scene) keeps the orders they've just been given
                     return;
                 }
                 act.Phase = 4;
@@ -1016,7 +1017,10 @@ namespace EnrageWestworld.InGame
                 head = pos + new Vector3(0f, 0f, 0.62f);
             Vector3 hand = PED.GET_PED_BONE_COORDS(h, RightHandBone, 0f, 0f, 0f);
             Vector3 from = hand.DistanceTo(pos) < 2f ? hand : head + new Vector3((float)-Math.Sin(heading) * 0.35f, (float)Math.Cos(heading) * 0.35f, 0f);
-            bool triggered = GunTrigger(h, head, act.Arm);   // the gun's own trigger, for the sound: a bullet made in the air is silent (Lex's gunshot row, WestworldScript.Gunshot.cs)
+            // the gun's own trigger, for the sound (a bullet made in the air is silent: Lex's gunshot row, WestworldScript.Gunshot.cs),
+            // aimed at the ground by their feet: if its round is real it would carry on past the head into whoever stood there
+            Vector3 ground = pos + new Vector3((float)Math.Cos(heading) * 0.6f, (float)Math.Sin(heading) * 0.6f, -0.95f);
+            bool triggered = GunTrigger(h, ground, act.Arm);
             MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, act.Arm, h, true, false, 1000f, false);   // the bullet's mark, in case it ever does strike
             ENTITY.SET_ENTITY_HEALTH(h, 0, h);   // dead at the shot: the fall comes with the sound
             Log.Write("WAKE despair: " + act.Name + " dead at the shot" + (triggered ? ", the trigger pulled" : ", no gun in hand to fire, so no shot heard"));
@@ -1290,9 +1294,16 @@ namespace EnrageWestworld.InGame
             {
                 if (act.Ending != "despair" || act.Phase < 4)
                     return "died";
+                if (PED.GET_PED_SOURCE_OF_DEATH(act.Handle) == Game.Player.Character.Handle)
+                    return "died";   // the player shot or struck them down mid-act: his doing, not theirs (the people ledger books it by its own scan)
                 if (PED.IS_PED_INCAPACITATED(act.Handle))
                     ENTITY.SET_ENTITY_HEALTH(act.Handle, 0, act.Handle);   // the act's own end: only out cold would let them up again
                 return "ended";
+            }
+            if (act.Phase >= 4 && act.Ending == "despair" && (PED.IS_PED_HOGTIED(act.Handle) || PED.IS_PED_LASSOED(act.Handle)))
+            {
+                Spawner.LeaveTasks(act.Handle);   // handed back as they are: clearing their orders would free them from the rope
+                return "you caught them before they could";
             }
             if (act.Phase >= 4 && act.Ending == "despair") return now >= act.Until ? "it didn't happen" : null;   // the last moments play out, to a deadline
             if (now >= act.Until) return act.Kind == "awake" && act.Phase == 0 ? "never reached you" : "finished";
@@ -1394,8 +1405,13 @@ namespace EnrageWestworld.InGame
                 // wandering if alive; never deleted). Release clears our hold even when they're gone, so the handle isn't
                 // left ours for whoever the game gives it to next.
                 act.Borrowed = false;
-                if (act.Given && ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h))
+                bool living = ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h);
+                if (act.Given && living)
                     WEAPON.REMOVE_WEAPON_FROM_PED(h, Natives.Hash(act.Weapon), true, TakeReason);
+                else if (living && act.Ending == "despair" && act.Method == "gun")
+                    WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // stopped with their own gun out: put away
+                if (living && act.Ending == "despair")
+                    WEAPON.SET_PED_DROPS_WEAPONS_WHEN_DEAD(h, true);   // as the game had it before despair turned it off
                 Spawner.Release(new Ped(h), false);
                 return;
             }
@@ -1407,7 +1423,7 @@ namespace EnrageWestworld.InGame
                 WEAPON.REMOVE_WEAPON_FROM_PED(h, Natives.Hash(act.Weapon), true, TakeReason);   // never left holding what we gave them
             else if (act.Ending == "despair" && act.Method == "gun" && act.Phase >= 4 && !ENTITY.IS_ENTITY_DEAD(h))
                 WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // stopped with their own gun out: put away
-            if (!act.Passive && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h))
+            if (!act.Passive && !act.LeaveOrders && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h))
                 TASK.CLEAR_PED_TASKS(h, true, false);
         }
 
