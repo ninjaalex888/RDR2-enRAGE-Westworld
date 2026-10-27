@@ -28,6 +28,8 @@ namespace EnrageWestworld.Core
         public string Mood;       // their day: "sore", "glad" or null (InnerLife.MoodOf)
         public string Grief;      // the first name of a friend whose death they've had word of in the last three days, else null
         public long GriefAt;      // the game minute that word reached them
+        public string GriefId;    // the dead friend's id (null when unknown)
+        public Func<string, bool> HeardOf;   // whether word of this death (by the dead one's id) has reached them; null: not asked
         public bool Known;        // known lately for a face in the bar or a hand in a coat
     }
 
@@ -117,7 +119,9 @@ namespace EnrageWestworld.Core
                 if (tie.Warmth > 0 && (a.Grief != null || b.Grief != null))
                 {
                     Someone grieving = a.Grief != null ? a : b, friend = grieving == a ? b : a;
-                    if (tie.At < grieving.GriefAt)
+                    // the friend must have had the word too: nobody offers sympathy for a death they haven't heard of
+                    bool friendKnows = grieving.GriefId == null || friend.HeardOf == null || friend.HeardOf(grieving.GriefId);
+                    if (tie.At < grieving.GriefAt && friendKnows)
                         return new Reason { Kind = "condole", Strength = 62, BFirst = grieving == b, Why = friend.Name + " offers " + grieving.Name + " sympathy for " + grieving.Grief };
                 }
                 // a friend (or sweetheart) of someone who has just been roughed up or robbed goes to them: a small kindness

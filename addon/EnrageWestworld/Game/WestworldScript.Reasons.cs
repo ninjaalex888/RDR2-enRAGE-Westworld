@@ -106,8 +106,12 @@ namespace EnrageWestworld.InGame
             s.Known = _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
             s.Mood = s.P != null ? _engine.MoodToday(s.P, s.P.Home ?? _placeTown) : null;
             long griefAt;
-            s.Grief = _engine.GriefFor(s.Id, 3 * 1440, out griefAt);
+            string griefId;
+            s.Grief = _engine.GriefFor(s.Id, 3 * 1440, out griefAt, out griefId);
             s.GriefAt = griefAt;
+            s.GriefId = griefId;
+            string sid = s.Id;
+            s.HeardOf = dead => _engine.HeardOfDeath(sid, dead);   // a friend offers sympathy only for a death they've heard of (Reasons.Between)
             return s;
         }
 

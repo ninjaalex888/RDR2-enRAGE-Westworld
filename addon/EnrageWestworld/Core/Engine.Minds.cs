@@ -86,7 +86,28 @@ namespace EnrageWestworld.Core
         /// The same, with the game minute the word reached them.
         public string GriefFor(string id, long minutes, out long at)
         {
+            string deadId;
+            return GriefFor(id, minutes, out at, out deadId);
+        }
+
+        /// Whether word of this death has reached this person (a death memory of them come due, heard or seen).
+        public bool HeardOfDeath(string id, string deadId)
+        {
+            PersonState st = id != null && deadId != null ? Store.Find(id) : null;
+            if (st == null || st.Mind == null)
+                return false;
+            long now = Store.LastGameMin;
+            foreach (MindMemory m in st.Mind)
+                if (m.Kind == "death" && m.Who != null && m.Who.Contains(deadId) && Math.Max(m.At, m.DueAt) <= now)
+                    return true;
+            return false;
+        }
+
+        /// The same, with the dead one's id.
+        public string GriefFor(string id, long minutes, out long at, out string deadId)
+        {
             at = 0;
+            deadId = null;
             PersonState st = id != null ? Store.Find(id) : null;
             if (st == null || st.Mind == null)
                 return null;
@@ -94,7 +115,10 @@ namespace EnrageWestworld.Core
             MindMemory m = st.Mind.Where(x => x.Kind == "death" && x.Sub == "friend" && Math.Max(x.At, x.DueAt) <= now && now - Math.Max(x.At, x.DueAt) < minutes)
                                   .OrderByDescending(x => Math.Max(x.At, x.DueAt)).FirstOrDefault();
             if (m != null)
+            {
                 at = Math.Max(m.At, m.DueAt);
+                deadId = m.Who != null && m.Who.Count > 0 ? m.Who[0] : null;
+            }
             return m != null ? m.NameAt(0) : null;
         }
 
