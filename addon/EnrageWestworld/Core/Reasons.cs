@@ -78,8 +78,10 @@ namespace EnrageWestworld.Core
             {
                 // sweethearts at odds since they last met: the cooler head comes to make it up, with a small gift, where
                 // the street can see it (Scenes.Mend)
-                if (Ties.Cooled(tie) && (mixed || where.SameSex) && Voice.Hash(a.Id + b.Id + tie.Count + "mend") % 100 < Scenes.MendChance)
+                if (Ties.Cooled(tie) && (mixed || where.SameSex) && where.Courting)
                 {
+                    if (Voice.Hash(PairKey(a, b) + tie.Count + "mend") % 100 >= Scenes.MendChance)
+                        return null;   // at odds, and neither ready to say sorry yet: they keep apart for now
                     bool bBrings = Hot(a) && !Hot(b);
                     return new Reason { Kind = "mend", Strength = 64, BFirst = bBrings,
                                         Why = (bBrings ? b.Name : a.Name) + " comes to make it up with " + (bBrings ? a.Name : b.Name) + ", with a small gift" };
@@ -118,7 +120,7 @@ namespace EnrageWestworld.Core
                     bool ask = tie.Warmth >= 2 && tie.Stage >= 2 && !where.Night;
                     // now and then sweethearts have words: a hot head, or a sore day, in one of them (Scenes.Tiff)
                     bool aCross = Hot(a) || a.Mood == "sore", bCross = Hot(b) || b.Mood == "sore";
-                    if (!ask && Scenes.TiffNow(aCross || bCross, tie.Stage, a.Id + b.Id + tie.Count))
+                    if (!ask && where.Courting && Scenes.TiffNow(aCross || bCross, tie.Stage, PairKey(a, b) + tie.Count))
                         return new Reason { Kind = "tiff", Strength = 60, BFirst = !aCross,
                                             Why = "sweethearts, and " + (aCross ? a.Name : b.Name) + " has a grievance" };
                     return new Reason { Kind = ask ? "propose" : tie.Stage == 0 ? "flirt" : "x:sweet", Strength = 60 + 10 * tie.Warmth,
@@ -135,6 +137,12 @@ namespace EnrageWestworld.Core
                 return ba;
             }
             return ab;
+        }
+
+        /// The two ids in a fixed order, so a roll between them is the same whichever comes first in a scan.
+        private static string PairKey(Someone a, Someone b)
+        {
+            return string.CompareOrdinal(a.Id, b.Id) < 0 ? a.Id + "|" + b.Id : b.Id + "|" + a.Id;
         }
 
         /// A reason that comes from one person's own life (x), with the other (y) as whoever is there.

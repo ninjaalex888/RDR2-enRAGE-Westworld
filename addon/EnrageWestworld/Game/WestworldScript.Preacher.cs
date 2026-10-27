@@ -44,15 +44,17 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             List<Candidate> people = ReasonCandidates(me, now, test);
+            string ignored;
             Candidate preacher = people.Where(c => c.Who.P != null && (test || Scenes.WouldPreach(c.Who.P.Devotion, c.Who.Id + "|" + g / 1440)) && NodInView(me, c.Ped) &&
-                                                   !PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle))
+                                                   !PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) &&
+                                                   (test || Pacing.WhyNot(_store.Pace, "preacher", null, c.Who.Id, g, 0, false, out ignored) == null))
                                        .OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).FirstOrDefault();
             if (preacher == null)
             {
                 why = _preacherWhyNot = "nobody devout out in the street";
                 return false;
             }
-            Candidate b = people.Where(c => c != preacher && c.Who.Id != preacher.Who.Id && c.Ped.Position.DistanceTo(preacher.Ped.Position) < 8f)
+            Candidate b = people.Where(c => c != preacher && c.Who.Id != preacher.Who.Id && c.Ped.Position.DistanceTo(preacher.Ped.Position) < 8f && TieWarmth(c.Who.Id, preacher.Who) >= 0)
                                 .OrderBy(c => c.Ped.Position.DistanceTo(preacher.Ped.Position)).FirstOrDefault();
             if (b == null)
             {
@@ -69,7 +71,7 @@ namespace EnrageWestworld.InGame
                 why = _preacherWhyNot = "the Director wouldn't take the scene";
                 return false;
             }
-            Pacing.Note(_store.Pace, "preacher", _placeTown, null, g);
+            Pacing.Note(_store.Pace, "preacher", _placeTown, preacher.Who.Id, g);
             _preachers++;
             _preacherLast = preacher.Who.Name + " preached; " + b.Who.Name + " (" + faith + ") answered" + (test ? " (a test)" : "");
             Log.Write("PREACHER " + preacher.Who.Name + " preaches in " + _placeTown + "; " + b.Who.Name + " answers (" + faith + ")" + (test ? ", a test" + (skipped0 != null ? " (skipped: " + skipped0 + ")" : "") : ""));
@@ -88,6 +90,8 @@ namespace EnrageWestworld.InGame
                         continue;
                     string seed = old[i].Who.Id + "|" + old[j].Who.Id + "|" + now;
                     SceneCast cast = BuildCast(old[i].Ped, old[j].Ped, null, _placeKind == "saloon", me, now, seed);
+                    if (cast.Off.Contains("smalltalk"))
+                        return "its own setting is off ([Scenes] SmallTalk)";
                     Scene s = Scenes.OldDays(cast, seed);
                     StartScene(s, new List<Ped> { old[i].Ped, old[j].Ped }, cast, seed, now, true);
                     if (!_director.Busy)

@@ -79,11 +79,11 @@ namespace EnrageWestworld.Core
             s.Add(0, Voice.Pick(seed + "mg", c.BWoman ? GiftsForHer : GiftsForHim), "flatter", "face")
              .Add(1, Voice.Pick(seed + "m1", "Oh. It's you, " + a + ".", "I didn't think you'd come, " + a + ".", "You've a cheek, " + a + ", showing your face to me.", "What's that, " + a + "?"), "mild")
              .Add(0, Voice.Pick(seed + "m2", "I was wrong, " + b + ". I've thought of nothing else since.", "I said things I didn't mean, " + b + ". I'm sorry for them.",
-                                 "I'm sorry, " + b + ". There. In front of the whole street.", "I'm no hand at this, " + b + ". But I'm sorry."), "sorry");
+                                 "I'm sorry, " + b + ". There. I said it where folks can hear.", "I'm no hand at this, " + b + ". But I'm sorry."), "sorry");
             if (taken)
                 s.Add(1, Voice.Pick(seed + "m3", "...You fool. Come here.", "All right, " + a + ". All right.", "It's lovely. And so are you, when you've the sense to say sorry.",
                                     "Well. I suppose I'll keep it. And you, " + a + "."), "cheer")
-                 .Add(0, Voice.Pick(seed + "m4", "I'll mind my tongue from now on.", "Sunday, then? I'll be on time.", "I'll not be such a fool again. Not soon, anyhow."), "flatter");
+                 .Add(0, Voice.Pick(seed + "m4", "I'll mind my tongue from now on.", "Walk out with me Sunday? Say you will.", "I'll not be such a fool again. Not soon, anyhow."), "flatter");
             else
                 s.Add(1, Voice.Pick(seed + "m3", "Keep it. It isn't a present I wanted.", "You can't buy your way back, " + a + ".", "Not here. Not now. Maybe not ever."), "storm", "walkaway")
                  .Add(0, Voice.Pick(seed + "m4", "...Well. I tried.", "...I'll leave it at your door, then."), "mild");

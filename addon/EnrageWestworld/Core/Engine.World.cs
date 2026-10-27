@@ -601,6 +601,7 @@ namespace EnrageWestworld.Core
         {
             if (w == null || w.Done)
                 return;
+            w.Ruined = true;
             FinishWedding(w, null, now, false);
             if (!byYou)
                 return;

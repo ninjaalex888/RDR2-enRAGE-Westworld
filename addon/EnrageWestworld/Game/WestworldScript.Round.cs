@@ -31,6 +31,12 @@ namespace EnrageWestworld.InGame
         private int _nextRound, _rounds, _roundsYou;
         private string _roundLast, _roundWhyNot;
 
+        /// Bad blood with either of the newlyweds: no toast from them.
+        private bool AgainstCouple(string id, Wedding w)
+        {
+            return _store.Ties.Any(t => t.Has(id) && t.Warmth < 0 && (t.Has(w.AId) || (w.BId != null && t.Has(w.BId))));
+        }
+
         /// Someone in the saloon stands the house a drink. True if a scene started.
         private bool RoundScene(Ped me, int now, bool test, out string why)
         {
@@ -61,7 +67,7 @@ namespace EnrageWestworld.InGame
             Candidate buyer = null;
             string roundWhy = null;
             int rank = 9;
-            Wedding wed = _store.Weddings.FirstOrDefault(w => w != null && w.Done && w.Town == _placeTown && g - w.At >= 0 && g - w.At < 720
+            Wedding wed = _store.Weddings.FirstOrDefault(w => w != null && w.Done && !w.Ruined && w.Town == _placeTown && g - w.At >= 0 && g / 1440 == w.At / 1440
                 && _store.Affairs.Any(a => a.AId == w.AId && a.BName == w.BName && a.Active && a.Stage >= 5));   // held, not called off
             string couple = wed != null ? Person.FirstOf(wed.AName) + " and " + Person.FirstOf(wed.BName) : null;   // wed in this town today: a toast
             foreach (Candidate c in people)
@@ -72,7 +78,7 @@ namespace EnrageWestworld.InGame
                 int ws;
                 bool good;
                 bool news = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && good;
-                string w = couple != null && c.Who.Temper != "Greedy" && c.Who.Id != wed.AId && c.Who.Id != wed.BId ? "wedding" :   // not the newlyweds themselves
+                string w = couple != null && c.Who.Temper != "Greedy" && c.Who.Id != wed.AId && c.Who.Id != wed.BId && !AgainstCouple(c.Who.Id, wed) ? "wedding" :   // not the newlyweds themselves
                             Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper) ?? (test ? "glad" : null);
                 int r = Array.IndexOf(Scenes.RoundWhys, w);
                 if (w == null || r >= rank || !people.Any(o => o != c && o.Ped.Position.DistanceTo(c.Ped.Position) < RoundBar && TieWarmth(o.Who.Id, c.Who) >= 0))
@@ -86,8 +92,15 @@ namespace EnrageWestworld.InGame
                 why = _roundWhyNot = "nobody here with cause to stand the house a drink";
                 return false;
             }
-            Candidate b = people.Where(o => o != buyer && o.Who.Id != buyer.Who.Id && o.Ped.Position.DistanceTo(buyer.Ped.Position) < RoundBar && TieWarmth(o.Who.Id, buyer.Who) >= 0)
-                                .OrderByDescending(o => TieWarmth(o.Who.Id, buyer.Who) > 0 ? 1 : 0).ThenBy(o => o.Ped.Position.DistanceTo(buyer.Ped.Position)).First();
+            bool toast = roundWhy == "wedding";
+            Candidate b = people.Where(o => o != buyer && o.Who.Id != buyer.Who.Id && o.Ped.Position.DistanceTo(buyer.Ped.Position) < RoundBar && TieWarmth(o.Who.Id, buyer.Who) >= 0 &&
+                                            (!toast || (o.Who.Id != wed.AId && o.Who.Id != wed.BId && !AgainstCouple(o.Who.Id, wed))))
+                                .OrderByDescending(o => TieWarmth(o.Who.Id, buyer.Who) > 0 ? 1 : 0).ThenBy(o => o.Ped.Position.DistanceTo(buyer.Ped.Position)).FirstOrDefault();
+            if (b == null)
+            {
+                why = _roundWhyNot = "nobody by " + buyer.Who.Name + " to drink to it";
+                return false;
+            }
             string skipped;
             string pace = Pacing.WhyNot(_store.Pace, "round", _placeTown, buyer.Who.Id, g, 0, test, out skipped);
             skipped = skipped ?? skipped0;

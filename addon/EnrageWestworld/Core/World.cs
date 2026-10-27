@@ -130,6 +130,7 @@ namespace EnrageWestworld.Core
         [DataMember] public bool Announced;
         [DataMember] public bool Done;
         [DataMember] public bool Attended;
+        [DataMember] public bool Ruined;      // broken up (RuinWedding): they marry quietly later, and nobody toasts it
     }
 
     [DataContract]

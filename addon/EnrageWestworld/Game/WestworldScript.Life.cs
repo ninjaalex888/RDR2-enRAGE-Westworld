@@ -151,7 +151,7 @@ namespace EnrageWestworld.InGame
                     s = Scenes.Jealous(cast, seed);
                 }
             }
-            if (s == null && !cast.AWoman && !cast.BWoman && Director.OldModel(a) && Director.OldModel(b) && Voice.Chance(seed + "|olddays", 45))
+            if (s == null && !cast.AWoman && !cast.BWoman && Director.OldModel(a) && Director.OldModel(b) && !cast.Off.Contains("smalltalk") && Voice.Chance(seed + "|olddays", 45))
             {
                 s = Scenes.OldDays(cast, seed);   // two old men: the old days (Core/Scenes.OldDays.cs)
                 _oldDays++;

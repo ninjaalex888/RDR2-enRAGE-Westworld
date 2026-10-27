@@ -33,8 +33,8 @@ namespace EnrageWestworld.Core
                      .Add(1, "Ten? It was six, and it was better coffee.", "mild")
                      .Add(0, "It was ten, " + b + ". My pa paid it. I carried it home.", "mild")
                      .Add(1, "Your pa paid ten because he never could haggle, " + a + ".", "mock")
-                     .Add(0, "Don't you speak on my pa.", "angry")
-                     .Add(1, "Speak on him? I liked your pa. Couldn't haggle, is all.", "mild")
+                     .Add(0, "Don't you speak ill of my pa.", "angry")
+                     .Add(1, "Speak ill of him? I liked your pa. Couldn't haggle, is all.", "mild")
                      .Add(0, "...He couldn't, could he.", "mild")
                      .Add(1, "Paid double for a mule once. Mule was blind.", "cheer");
                     break;

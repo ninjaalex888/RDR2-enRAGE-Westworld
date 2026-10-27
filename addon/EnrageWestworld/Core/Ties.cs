@@ -88,10 +88,11 @@ namespace EnrageWestworld.Core
             return t != null && (Romantic(t.Kind) || (t.Courted && t.Kind == "makeup"));
         }
 
-        /// Sweethearts at odds: courting once, and their last meeting words or a cold shoulder, not yet past mending.
+        /// Sweethearts at odds: courting once, and their last meeting cross words, not yet past mending. (A gift turned
+        /// down, or a courtship refused, is a brushoff: that ends it.)
         public static bool Cooled(SceneTie t)
         {
-            return t != null && t.Courted && t.Warmth >= -1 && (t.Kind == "argue" || t.Kind == "brushoff" || t.Kind == "snap" || t.Kind == "envy");
+            return t != null && t.Courted && t.Warmth >= -1 && (t.Kind == "argue" || t.Kind == "snap" || t.Kind == "envy");
         }
 
         /// Notes a scene between two people: the tie between them, made or carried on. Null if the scene leaves none.
@@ -122,14 +123,16 @@ namespace EnrageWestworld.Core
                 all.Add(t);
             }
             bool keepRomance = Sweethearts(t) && !Romantic(kind) && effect.Value > 0;   // a kindness between sweethearts: still sweethearts
+            // small talk, the paper, a nod between sweethearts (or sweethearts at odds) leaves what's between them standing
+            bool keepKind = keepRomance || ((Sweethearts(t) || Cooled(t)) && effect.Value == 0 && kind != "brushoff");
             if (Romantic(kind) || Romantic(t.Kind))
                 t.Courted = true;
-            if (t.Count > 0 && !keepRomance)
+            if (t.Count > 0 && !keepKind)
                 t.Stage++;   // they meet again: their story moves on (Reasons)
             t.AName = t.A == aId ? aName : bName;
             t.BName = t.A == aId ? bName : aName;
             t.Town = town ?? t.Town;
-            if (!keepRomance)
+            if (!keepKind)
                 t.Kind = kind;
             if (doer != null || kind != "avoid")
                 t.Doer = doer;   // keeping clear of him doesn't change who did what to whom
