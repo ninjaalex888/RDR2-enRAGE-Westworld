@@ -168,7 +168,7 @@ An Insert reload crashed the game once (0.6.1, 15:32): our shutdown finished ("S
 
 ## A card cheat thrown out (overnight 2026-10-27, Tier 4)
 
-- `Scenes.Cheat`: in a saloon (`SceneCast.Saloon`) without a fight, 50% by the seed: A tells B to go and B walks out (`walkaway` on B; summary "shown the door"), else the old ending (B sends A off). Offline: ticktest `CheatTest`. Not built: the boardwalk afterwards (the cheat outside), which needs a scene that follows him out of the door.
+- `Scenes.Cheat`: in a saloon (`SceneCast.Saloon`) without a fight, 50% by the seed: A tells B to go and B walks out (`walkaway` on B; summary "shown the door"), else the old ending (B sends A off). The boardwalk after: the scene's last beat (B's, no line) is `cb:thrownout`; `SceneAction` takes the cheat from `Director.CastAt(1)` and 9 s on (`ThrownOutStep`, from the top of `DramaTick`, within 20 s, only if he's in your view and in no other scene) pushes `Scenes.CheatOutside` over his head; log `CHEAT <name> outside, shown the door`; F7 `TEST card cheats:`. Offline: ticktest `CheatTest`.
 
 ## The Sabbath (overnight 2026-10-27, Tier 4)
 

@@ -273,7 +273,8 @@ namespace EnrageWestworld.Core
                 // thrown out (Tier 4): in a saloon, half the time it's the cheat who goes, told to by the man he cheated
                 s.Add(0, Voice.Pick(seed + "o1", "Out. And leave the pot you never won.", "Get out of this saloon. Now. Before the rest of the table hears of it.",
                                     "Walk out that door, " + b + ", or be carried."), "angry")
-                 .Add(1, Voice.Pick(seed + "o2", "...Keep it. Crooked table anyhow.", "Fine. I know when I'm not wanted.", "This town's got no sense of humor."), "mild", "walkaway");
+                 .Add(1, Voice.Pick(seed + "o2", "...Keep it. Crooked table anyhow.", "Fine. I know when I'm not wanted.", "This town's got no sense of humor."), "mild", "walkaway")
+                 .Add(1, null, null, "cb:thrownout");   // the boardwalk after: his thought once he's outside (WestworldScript.Life.cs)
                 s.Summary = "a card cheat was shown the door";
             }
             else
@@ -281,6 +282,13 @@ namespace EnrageWestworld.Core
                 s.Add(1, "...Take your money and get out of my sight.", "mild").Add(0, "Gladly.", null, "walkaway");
             }
             return s;
+        }
+
+        /// The cheat on the boardwalk after he's been shown the door.
+        public static string CheatOutside(string seed)
+        {
+            return Voice.Pick(seed + "|out", "Crimped the corners too deep. Amateur's work.", "Two aces of spades. Should've counted the deck.",
+                              "One more saloon I can't go back to. Getting to be a short list.", "Cold out here. Colder with empty pockets.");
         }
 
         public static Scene Debt(SceneCast c, string seed)

@@ -35,6 +35,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             FallWanderStep(now);
             WanderLaterStep(now);
+            ThrownOutStep(now);   // the card cheat on the boardwalk
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
             if (_director.Busy)
             {
@@ -580,11 +581,42 @@ namespace EnrageWestworld.InGame
                 RoundGoesAround();   // WestworldScript.Round.cs
                 return;
             }
+            if (what == "thrownout")
+            {
+                // the card cheat shown the door: his thought once he's outside, a few seconds on
+                Ped cheat = _director.CastAt(1);
+                if (cheat != null && cheat.Exists())
+                {
+                    _thrownOut = cheat;
+                    _thrownOutName = FullNameOf(cheat);
+                    _thrownOutAt = Game.GameTime + 9000;
+                }
+                return;
+            }
             if (what == "reveal" && _sceneJob != null)
             {
                 _bridge.RevealPlanAs(_sceneJob.Raw, null, "loose talk in a saloon" + (_placeTown != null ? " in " + _placeTown : ""));
                 Log.Write("JOB overheard: " + _sceneJob.Title);
                 _sceneJob = null;
+            }
+        }
+
+        private Ped _thrownOut;
+        private string _thrownOutName;
+        private int _thrownOutAt, _thrownOuts;
+
+        /// The cheat shown the door thinks of it once he's out (in your view, not taken by anything else), once.
+        private void ThrownOutStep(int now)
+        {
+            if (_thrownOut == null || now < _thrownOutAt)
+                return;
+            Ped p = _thrownOut;
+            _thrownOut = null;
+            if (now - _thrownOutAt < 20000 && p.Exists() && !p.IsDead && !_director.Involves(p.Handle) && NodInView(Game.Player.Character, p))
+            {
+                _ticker.Push((_thrownOutName != null ? Person.FirstOf(_thrownOutName) : "The card cheat") + ", thinking", Scenes.CheatOutside(p.Handle + "|" + now / 60000), "near", p.Handle);
+                _thrownOuts++;
+                Log.Write("CHEAT " + (_thrownOutName ?? "the card cheat") + " outside, shown the door");
             }
         }
 
