@@ -220,6 +220,8 @@ namespace EnrageWestworld.InGame
                     return null;
                 case "letter":
                     return TestLetter(out said);
+                case "sight":
+                    return SightFire(now, out skipped);
                 case "nod":
                     return NodFire(now, out skipped);
                 case "musing":

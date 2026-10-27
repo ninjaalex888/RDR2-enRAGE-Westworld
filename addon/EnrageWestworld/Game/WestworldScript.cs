@@ -1058,6 +1058,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST rough: " + RoughStatus());
 			Log.Write("TEST reactions: " + ReactionsStatus());
 			Log.Write("TEST passing: " + PassingStatus());
+			Log.Write("TEST sights: " + SightsStatus());
 			Log.Write("TEST trouble: " + TroubleStatus());
 			Log.Write("TEST now: " + NowStatus());
 			Log.Write("TEST records: " + RecordsStatus());

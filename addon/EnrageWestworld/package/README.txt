@@ -631,6 +631,8 @@ in the file. The new ones:
             nature, and a man whose face goes into the bar reels
             Acknowledge (true): people who know each other nod, tip a hat, wave or say hello as they
             pass; enemies give a hard look, sweethearts a long one; each thinks something of it
+            SightReactions (true): people near you notice when you look bloodied, drunk, filthy or
+            soaked, and react by their nature
             RoughHandling (true): a man with a grudge (or a hothead with drink in him) smashes another's
             face into the nearest table, bar or wall; NpcThieves (true): pickpockets among the
             townsfolk, and begging; DrunkChallenges (true): a drunk calls a man out at night
