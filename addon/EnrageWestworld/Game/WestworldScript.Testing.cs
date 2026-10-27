@@ -220,6 +220,8 @@ namespace EnrageWestworld.InGame
                     return null;
                 case "letter":
                     return TestLetter(out said);
+                case "nod":
+                    return NodFire(now, out skipped);
                 case "musing":
                     if (!_cfg.HostsQuestionReality)
                         return "HostsQuestionReality is off";

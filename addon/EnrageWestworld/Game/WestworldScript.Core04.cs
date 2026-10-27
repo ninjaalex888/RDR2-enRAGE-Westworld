@@ -701,6 +701,7 @@ namespace EnrageWestworld.InGame
             EndEncounters("a mission started");
             WakeActsAbort();
             TrystAbort();
+            PassingAbort();
             if (_rough != null)
                 RoughEnd(_rough, "stopped: a mission started", now);
             _glitch = null;
@@ -770,6 +771,7 @@ namespace EnrageWestworld.InGame
             Safe("wakeacts", _aWakeActs);
             Safe("scenes", _aDrama);
             Safe("court thoughts", _aCourtThoughts);
+            PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
             Safe("ceremonies", _aCeremony);
             Safe("kin", _aCast);
             Safe("pickups", _aPickups);

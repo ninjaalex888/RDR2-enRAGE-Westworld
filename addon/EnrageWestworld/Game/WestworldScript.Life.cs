@@ -322,7 +322,14 @@ namespace EnrageWestworld.InGame
 
         private bool LastingId(Ped p, out string id, out string name)
         {
-            id = name = null;
+            string temper;
+            return LastingId(p, out id, out name, out temper);
+        }
+
+        /// ...and their temperament, for those who need it (acknowledgement in passing).
+        private bool LastingId(Ped p, out string id, out string name, out string temper)
+        {
+            id = name = temper = null;
             if (p == null || !p.Exists())
                 return false;
             NemesisRecord rec = _bridge.RecordAt(p.Handle);
@@ -331,6 +338,7 @@ namespace EnrageWestworld.InGame
                 Person rp = PersonOf(rec);   // enRAGE's people are met again by their record
                 id = rp.Id;
                 name = rp.Name;
+                temper = rp.Personality;
                 return true;
             }
             Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
@@ -339,6 +347,7 @@ namespace EnrageWestworld.InGame
                 Folk f = Snapshot.Of(ac);
                 id = f.Key;
                 name = f.Name;
+                temper = f.Temper;
                 return true;
             }
             ResBind b;
@@ -346,6 +355,7 @@ namespace EnrageWestworld.InGame
             {
                 id = b.R.Id;
                 name = b.R.Name;
+                temper = b.R.Personality;
                 return true;
             }
             return false;
