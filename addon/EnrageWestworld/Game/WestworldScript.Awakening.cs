@@ -317,7 +317,8 @@ namespace EnrageWestworld.InGame
             if (res != null)
                 _engine.KeepResident(res, Bridge.Now());
             string line = Awakening.Aloud(p, st, _engine.Player, p.Id + "|wake|" + Environment.TickCount) ?? Awakening.Thought(p, st, _engine.Player, p.Id + "|wake");
-            WakeNote(who + " is " + Awakening.StageName(stage) + " (stage " + stage + " of 4).");
+            WakeNote(who + " is " + Awakening.StageName(stage) + " (stage " + stage + " of 4)." +
+                     (PED.IS_PED_ON_MOUNT(handle) || PED.IS_PED_IN_ANY_VEHICLE(handle, false) ? " Riding, so they only look at you until they're on foot." : ""));
             WakeDemo(handle, p, st, res, me, now);
             if (line != null && stage < Awakening.Unravelling)   // the later stages speak in their own act
                 Feed.Say(p.Name, line, Speech.For(handle, line, me.Handle, p.Hate, p.Fear, p.Friendly, "chat"), toYou: true);

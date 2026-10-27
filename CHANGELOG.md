@@ -2,6 +2,7 @@
 
 ## Unreleased (overnight 2026-10-27)
 
+- Thoughts above heads never fall back to the bar at the bottom any more (Lex saw them there again): a thought whose thinker is out of view is passed over after a moment and the next one comes, and a scene speaker's own line, shown when the recording's words are known, goes over their head too. The bar keeps the news. The wake key says when the one woken is riding (they only look at you until they're on foot).
 - The wake key (Y) wakes the person you're locked on to, whoever they are; before, it did so only for enRAGE's records and otherwise woke whoever was nearest. Someone who can't be woken (a child, one of the story's own) is named with the reason.
 - F7 marks enRAGE's records within 100 m on the map for a minute, each labelled free or why not, and names the nearest free one (for testing a record's despair or a record as the stalker). Log `RECORDS marked`.
 - Flirt in the lock-on menu no longer shows on men while same-sex romance is off (`[Romance] SameSexRomance`): none of them could say yes. Seen by Lex in game, 2026-10-27.

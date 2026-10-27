@@ -63,7 +63,7 @@ namespace EnrageWestworld.InGame
 		public static Action<string, string> Fallback;
 
 		/// Where a line goes when the speaker's real recorded words replace it on screen (the ticker).
-		public static Action<string, string> Thinking;
+		public static Action<string, string, int> Thinking;   // speaker, the written line, their ped (0 if unknown)
 
 		private static object _dropGroup;
 
@@ -230,7 +230,7 @@ namespace EnrageWestworld.InGame
 							{
 								ms = Duration(words);
 								_dropGroup = line.Group;
-								Thinking?.Invoke(line.Speaker, line.Full);
+								Thinking?.Invoke(line.Speaker, line.Full, line.Ped);
 							}
 						}
 						catch (Exception ex)

@@ -107,7 +107,7 @@ namespace EnrageWestworld.InGame
             _iniStamp = EnrageWestworld.Core.Settings.Stamp(_iniPath);
             ApplySettings();
             LoadVoices();
-            Feed.Thinking = (who, text) => _ticker.Push(who + ", thinking", text, "near");
+            Feed.Thinking = (who, text, ped) => _ticker.Push(who + ", thinking", text, "near", ped);
             Log.Write("0.4 features: ticker " + (_cfg.Ticker ? "on" : "off") + ", news to " + _cfg.NewsRoute + ", reader key " + _readerKey +
                       ", reveries " + (_cfg.Reveries ? _cfg.ReturnChance + "%" : "off") + ", stalkers " + (_cfg.Stalkers ? _cfg.StalkerChance + "% every " + _cfg.StalkerEveryMinutes + " min" : "off") + ".");
             Log.Write("West World " + (_cfg.WestWorld ? "on (awakening " + _cfg.AwakeningShare + "%, breakdown " + _cfg.AwakeningBreakdown + "%, despair " + _cfg.AwakeningDespair + "%)" : "off") +
@@ -406,13 +406,19 @@ namespace EnrageWestworld.InGame
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));
             }
             TickerLine line = _tickerLine;
-            // a thought of someone in view goes over their head (WestworldScript.OverHead.cs), under its own guard;
-            // anything else, or if that can't be drawn, on the bar
+            // a thought goes over its thinker's head (WestworldScript.OverHead.cs), under its own guard, and with
+            // ThoughtsOverHeads on never on the bar (Lex, 2026-10-27): one whose thinker is off screen waits, and after
+            // a moment the ticker moves on; anything else (the news, the summary) on the bar
             _overHeadDrawn = false;
             if (_aOverHead == null)
                 _aOverHead = () => _overHeadDrawn = ThoughtOverHead(_tickerLine, _now);
             Safe("thoughts over heads", _aOverHead);
-            if (!_overHeadDrawn)
+            if (!_overHeadDrawn && OverHeadOnly(line, now))
+            {
+                _ticker.Skip();
+                _nextTickerUpdate = 0;
+            }
+            else if (!_overHeadDrawn && !IsOverHeadKind(line))
             {
                 Ticker.Render(line, _cfg, now);
                 if (_cfg.ThoughtMarker)

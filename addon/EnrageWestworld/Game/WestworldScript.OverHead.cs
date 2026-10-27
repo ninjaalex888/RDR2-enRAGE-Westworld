@@ -1,8 +1,9 @@
 // Thoughts above the head (0.6.2, [Ticker] ThoughtsOverHeads; Lex: "move the subtitles to above the NPCs head in a
 // smaller font to show their thoughts easily"): the ticker's thought of someone in view is drawn over that person, small,
 // in a dark box, instead of on the bar at the bottom. The ticker still decides whose turn it is and for how long;
-// anything that isn't one person's thought (news, the summary, a scene speaker's line), or a thinker who has gone off
-// screen, stays on the bar.
+// anything that isn't one person's thought (news, the summary) stays on the bar. Since 2026-10-27 (Lex: thoughts had
+// come back to the bar) a thought is never drawn on the bar while this is on: one whose thinker is off screen or
+// unknown waits, and after OverHeadWaitMs the ticker moves on to the next.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,11 +19,13 @@ namespace EnrageWestworld.InGame
         private const float ThoughtAboveHead = 0.62f;   // metres above the head bone: over our bars and enRAGE's name card
         private const float ThoughtWidth = 0.20f;       // share of the screen width one line may take
         private const int ThoughtLines = 4;
+        private const int OverHeadWaitMs = 1500;        // a thought whose thinker is out of view waits this long, then the ticker moves on
 
         private TickerLine _overHeadLaid, _overHeadCounted;
         private List<string> _overHeadParts = new List<string>();
         private float _overHeadScale, _overHeadWidth;
-        private int _overHeadShown, _overHeadOnBar;
+        private int _overHeadShown, _overHeadUnseen, _overHeadUnseenSince = -1;
+        private TickerLine _overHeadWaiting;
         private string _overHeadLast;
         private bool _overHeadDrawn;
         private Action _aOverHead;
@@ -68,11 +71,39 @@ namespace EnrageWestworld.InGame
             Draw.Rect(x - w / 2f - padX, top - padY, w + padX * 2f, 0.0015f, 222, 182, 96, 200 * a / 255);   // the gold edge the bar has
             for (int i = 0; i < _overHeadParts.Count; i++)
                 Draw.Text(_overHeadParts[i], x - Draw.Width(_overHeadParts[i], scale) / 2f, top + i * lineH, scale, 244, 238, 222, a);
+            _overHeadWaiting = null;   // in view again: a later wait starts afresh
             CountOverHead(line, true);
             return true;
         }
 
-        /// Each line counted once, over a head or on the bar, for F7; the first over a head is logged.
+        /// A thought, while ThoughtsOverHeads is on: it goes over a head or nowhere, never on the bar.
+        private bool IsOverHeadKind(TickerLine line)
+        {
+            return _cfg.ThoughtsOverHeads && line != null && line.Kind == "near";
+        }
+
+        /// A thought that couldn't go over its thinker's head this frame: true once it has waited OverHeadWaitMs, and the
+        /// ticker should move on to the next.
+        private bool OverHeadOnly(TickerLine line, int now)
+        {
+            if (!IsOverHeadKind(line))
+            {
+                _overHeadWaiting = null;
+                return false;
+            }
+            if (line != _overHeadWaiting)
+            {
+                _overHeadWaiting = line;
+                _overHeadUnseenSince = now;
+                return false;
+            }
+            if (now - _overHeadUnseenSince < OverHeadWaitMs)
+                return false;
+            _overHeadWaiting = null;
+            return true;
+        }
+
+        /// Each line counted once, over a head or not shown (the thinker out of view), for F7; the first over a head is logged.
         private void CountOverHead(TickerLine line, bool overHead)
         {
             if (line == _overHeadCounted)
@@ -80,7 +111,7 @@ namespace EnrageWestworld.InGame
             _overHeadCounted = line;
             if (!overHead)
             {
-                _overHeadOnBar++;
+                _overHeadUnseen++;
                 return;
             }
             _overHeadShown++;
@@ -95,7 +126,7 @@ namespace EnrageWestworld.InGame
             if (!_cfg.ThoughtsOverHeads)
                 return "off ([Ticker] ThoughtsOverHeads): on the bar; people within " + (int)_cfg.TickerNearbyMetres + " m";
             return "over heads (size " + _cfg.ThoughtsOverHeadScale.ToString("0.00") + "), people within " + (int)_cfg.TickerNearbyMetres + " m; this session " + _overHeadShown +
-                   " over a head, " + _overHeadOnBar + " on the bar (the thinker off screen)" + (_overHeadLast != null ? "; last over " + _overHeadLast : "");
+                   " over a head, " + _overHeadUnseen + " passed over (the thinker out of view; never on the bar)" + (_overHeadLast != null ? "; last over " + _overHeadLast : "");
         }
     }
 }
