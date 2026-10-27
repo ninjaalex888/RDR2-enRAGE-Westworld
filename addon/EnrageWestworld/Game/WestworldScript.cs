@@ -501,7 +501,10 @@ namespace EnrageWestworld.InGame
 				LoadStore();
 				Log.Write("Player character changed: now " + PlayerName() + ".");
 			}
+			int od;   // its parts on the frame-time meter (the whole took 15.7 ms every 5 s, 2026-10-27)
+			long ot = StepBegin(out od);
 			List<NemesisRecord> list = _bridge.Roster();
+			StepEnd("observe: enRAGE's roster (step)", ot, od);
 			long num = Bridge.Now();
 			if (list == null || num <= 0)
 			{
@@ -518,6 +521,7 @@ namespace EnrageWestworld.InGame
 			}
 			_recById = dictionary;
 			List<Person> list2 = new List<Person>(list.Count);
+			ot = StepBegin(out od);
 			foreach (NemesisRecord value in dictionary.Values)
 			{
 				try
@@ -533,12 +537,17 @@ namespace EnrageWestworld.InGame
 					_snapshotFailed = true;
 				}
 			}
+			StepEnd("observe: a snapshot of each (step)", ot, od);
 			Vector3 position = Game.Player.Character.Position;
 			_engine.PlayerX = position.X;
 			_engine.PlayerY = position.Y;
 			_engine.PlayerZ = position.Z;
+			ot = StepBegin(out od);
 			_engine.Observe(list2, num);
+			StepEnd("observe: the engine (step)", ot, od);
+			ot = StepBegin(out od);
 			WriteDiaries();
+			StepEnd("observe: diaries (step)", ot, od);
 		}
 
 		private Person PersonOf(NemesisRecord r)
