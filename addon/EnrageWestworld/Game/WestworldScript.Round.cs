@@ -50,6 +50,13 @@ namespace EnrageWestworld.InGame
                 return false;
             _nextRound = now + RoundLookMs;
             long g = _store.LastGameMin;
+            string skipped0;
+            string pre = Pacing.WhyNot(_store.Pace, "round", _placeTown, null, g, _rng.Next(100), test, out skipped0);   // the rarity first: no scan for nothing
+            if (pre != null)
+            {
+                why = _roundWhyNot = "rests: " + pre;
+                return false;
+            }
             List<Candidate> people = ReasonCandidates(me, now, test).Where(c => c.Ped.Position.DistanceTo(me.Position) < 15f).ToList();
             Candidate buyer = null;
             string roundWhy = null;
@@ -78,7 +85,8 @@ namespace EnrageWestworld.InGame
             Candidate b = people.Where(o => o != buyer && o.Who.Id != buyer.Who.Id && o.Ped.Position.DistanceTo(buyer.Ped.Position) < RoundBar)
                                 .OrderByDescending(o => TieWarmth(o.Who.Id, buyer.Who) > 0 ? 1 : 0).ThenBy(o => o.Ped.Position.DistanceTo(buyer.Ped.Position)).First();
             string skipped;
-            string pace = Pacing.WhyNot(_store.Pace, "round", _placeTown, buyer.Who.Id, g, _rng.Next(100), test, out skipped);
+            string pace = Pacing.WhyNot(_store.Pace, "round", _placeTown, buyer.Who.Id, g, 0, test, out skipped);
+            skipped = skipped ?? skipped0;
             if (pace != null)
             {
                 why = _roundWhyNot = "rests: " + pace;

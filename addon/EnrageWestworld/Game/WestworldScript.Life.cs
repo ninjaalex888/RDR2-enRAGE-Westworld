@@ -33,6 +33,7 @@ namespace EnrageWestworld.InGame
         private void DramaTick(int now)
         {
             Ped me = Game.Player.Character;
+            FallWanderStep(now);
             if (_director.Busy)
             {
                 FallWatchStep(me, now);   // the player may give the fallen a hand up first (WestworldScript.Kindness.cs)
@@ -293,7 +294,7 @@ namespace EnrageWestworld.InGame
                 var p = new Pending { S = s, People = new List<Ped>(people), Names = names };
                 // a face in the bar, a drunk on the floor, a purse gone: noted only once it happens (a walk-over that
                 // never arrives leaves nothing); any other scene counts as soon as it starts, broken up or not
-                _pendingNote = !test && (s.Kind == "rough" || s.Kind == "drunk" || s.Kind == "lift" || s.Kind == "help" || s.Kind == "passby") ? p : null;
+                _pendingNote = !test && (s.Kind == "rough" || s.Kind == "drunk" || s.Kind == "lift" || s.Kind == "help" || s.Kind == "passby" || s.NoteAtCue) ? p : null;
                 if (_pendingNote == null && !test)
                     NoteHappened(p, s.Kind);   // a test leaves no tie between them
                 NoteInScene(people, s.Kind, now);

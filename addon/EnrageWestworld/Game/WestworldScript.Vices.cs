@@ -49,6 +49,13 @@ namespace EnrageWestworld.InGame
                 return false;
             _nextDrink = now + DrinkLookMs;
             long g = _store.LastGameMin;
+            string skipped0;
+            string pre = Pacing.WhyNot(_store.Pace, "drink", _placeTown, null, g, _rng.Next(100), test, out skipped0);   // the rarity first: no scan for nothing
+            if (pre != null)
+            {
+                why = _drinkWhyNot = "rests: " + pre;
+                return false;
+            }
             List<Candidate> people = ReasonCandidates(me, now, test).Where(c => c.Ped.Position.DistanceTo(me.Position) < 15f).ToList();
             Candidate drinker = null;
             string drinkWhy = null;
@@ -73,7 +80,8 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             string skipped;
-            string pace = Pacing.WhyNot(_store.Pace, "drink", _placeTown, drinker.Who.Id, g, _rng.Next(100), test, out skipped);
+            string pace = Pacing.WhyNot(_store.Pace, "drink", _placeTown, drinker.Who.Id, g, 0, test, out skipped);
+            skipped = skipped ?? skipped0;
             if (pace != null)
             {
                 why = _drinkWhyNot = "rests: " + pace;

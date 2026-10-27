@@ -17,6 +17,7 @@ namespace EnrageWestworld.Core
         public string Act;       // face, approach, shove, fight, endfight, walkaway, flee, kneel, stand, mourn, aim, holster,
                                  // drunk, flask, smoke, run, faceplayer, lookplayer, whittle, stoic, cb:<callback>
         public int Ms;           // extra pause after the beat
+        public int To = -1;      // who it's said to or done at (-1: the other of A and B, or A for C)
 
         public Beat(int who, string line, string voice = null, string act = null, int ms = 0)
         {
@@ -34,6 +35,7 @@ namespace EnrageWestworld.Core
         public int Cast = 2;
         public bool Fight;
         public string Summary;   // for gossip afterwards: "two men came to blows"
+        public bool NoteAtCue;   // its tie and memories wait for the scene's own cue (a cb: act), not its start
         public readonly List<Beat> Beats = new List<Beat>();
 
         public Scene Add(int who, string line, string voice = null, string act = null, int ms = 0)

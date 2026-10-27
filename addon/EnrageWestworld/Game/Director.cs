@@ -216,9 +216,12 @@ namespace EnrageWestworld.InGame
                 if (l.MadeDrunk)
                     AUDIO.SET_PED_IS_DRUNK(a0.Handle, false);
             }
-            // someone still sitting where they fell gets up as the scene ends, whatever ended it
+            // someone still sitting where they fell gets up as the scene ends, whatever ended it, and goes on their way
             if (l.Sat >= 0 && l.Sat < l.Cast.Length && l.Cast[l.Sat] != null && l.Cast[l.Sat].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[l.Sat].Handle))
                 TASK.CLEAR_PED_TASKS(l.Cast[l.Sat].Handle, true, false);
+            if ((l.Scene.Kind == "help" || l.Scene.Kind == "passby") && l.Cast.Length > 1 && l.Cast[1] != null && l.Cast[1].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[1].Handle) &&
+                !PED.IS_PED_USING_ANY_SCENARIO(l.Cast[1].Handle))
+                TASK.TASK_WANDER_STANDARD(l.Cast[1].Handle, 10f, 10);
             for (int i = 0; i < l.Cast.Length; i++)
             {
                 Ped p = l.Cast[i];
@@ -390,7 +393,7 @@ namespace EnrageWestworld.InGame
             }
             Beat b = l.Scene.Beats[l.Index++];
             int who = Math.Min(b.Who, l.Cast.Length - 1);
-            int other = who == 0 ? 1 : 0;
+            int other = b.To >= 0 && b.To < l.Cast.Length && b.To != who ? b.To : who == 0 ? 1 : 0;   // said to the other, or to whom the beat names
             Ped me = l.Cast[who], them = l.Cast[other];
             int wait = 900;
             if (b.Act != null)
@@ -557,9 +560,15 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_CROUCH_INSPECT"), 9000, true, 0u, -1f, false);
                     return 1800;
                 case "fall":
-                    // a trip: down on the ground for a moment (the old sit down hard instead: their scene leaves this out)
-                    PED.SET_PED_TO_RAGDOLL(h, 1100, 1700, 0, false, false, "");
+                    // a trip: down on the ground for a moment (the old sit down hard instead: their scene leaves this out);
+                    // short, so they're done tumbling when they sit up
+                    PED.SET_PED_TO_RAGDOLL(h, 900, 1300, 0, false, false, "");
                     return 2300;
+                case "faceone":
+                    // only this one turns to the one the beat names (the rest carry on: one walking off stays walking)
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, t, 3000, 0f, 0f, 0f);
+                    TASK.TASK_LOOK_AT_ENTITY(h, t, 6000, 0, 51, 0);
+                    return 900;
                 case "sitdown":
                     // stays down, sitting where they fell, until they get up or someone helps them
                     if (!PED.IS_PED_RAGDOLL(h))

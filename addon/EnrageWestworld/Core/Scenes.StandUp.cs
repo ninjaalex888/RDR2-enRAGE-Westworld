@@ -32,34 +32,43 @@ namespace EnrageWestworld.Core
             return Voice.Chance(seed + "|backs", p);
         }
 
-        /// Puts the one who steps in into a rough or a brawl, just before the blow: their word, and the bully's answer.
-        /// backsOff: the bully goes, B thanks them, and the rest of the scene is dropped (it was words in the end:
-        /// kind "argue"). Else the bully waves them off and the scene goes on as it was. False if there's no blow to
-        /// stand between.
-        public static bool StandUp(Scene s, SceneCast c, string seed, bool backsOff)
+        /// Puts the one who steps in into a rough or a brawl, just before the blow: their word, and the answer. In a rough
+        /// A is the bully and B the one picked on; a brawl can be begun by either, so there they break it up between the
+        /// two. far: C walks over first. backsOff: the bully goes (in a brawl, A gives it up), B thanks C to C's face, and
+        /// the rest of the scene is dropped (it was words in the end: kind "argue", noted when C speaks up). Else the
+        /// bully waves them off and the scene goes on as it was. False if there's no blow to stand between.
+        public static bool StandUp(Scene s, SceneCast c, string seed, bool backsOff, bool far = false)
         {
             int at = s.Beats.FindIndex(x => x.Act == "slam" || x.Act == "fight");
             if (at < 0)
                 return false;
+            bool rough = s.Kind == "rough";
             string a = N(c, 0, seed), b = N(c, 1, seed), cn = N(c, 2, seed);
-            var add = new List<Beat>
-            {
-                new Beat(2, null, null, "cb:stoodup"),
-                new Beat(2, Voice.Pick(seed + "su", "That's enough, " + a + ". Leave " + b + " be.", a + "! Let go of " + b + ". Now.", "Not here, " + a + ". Not while I'm standing here.",
-                                       "Touch " + b + " again and you'll answer to me."), "intervene", "face")
-            };
+            var add = new List<Beat>();
+            if (far)
+                add.Add(new Beat(2, null, null, "approach"));
+            add.Add(new Beat(2, null, null, "cb:stoodup"));
+            add.Add(new Beat(2, rough ? Voice.Pick(seed + "su", "That's enough, " + a + ". Leave " + b + " be.", a + "! Leave " + b + " alone.", "Not here, " + a + ". Not while I'm standing here.",
+                                                   "Leave off " + b + ", or deal with me.")
+                                      : Voice.Pick(seed + "sx", "That's enough! The both of you!", "Not here, " + a + ". Not today. " + b + ", you too.", "Put your hands down, the pair of you."),
+                             "intervene", "face"));
             if (backsOff)
             {
-                add.Add(new Beat(0, Voice.Pick(seed + "sb", "...Fine. " + b + " ain't worth it.", "This ain't over, " + b + ".", "Keep your nose out, " + cn + ". ...Fine."), "storm", "walkaway"));
-                add.Add(new Beat(1, Voice.Pick(seed + "st", "Thank you, " + cn + ". I owe you.", cn + ". Thank God.", "Obliged, " + cn + ". He'd have done it."), "thanks"));
+                add.Add(new Beat(0, rough ? Voice.Pick(seed + "sb", "...Fine. " + b + " ain't worth it.", "This ain't over, " + b + ".", "Keep your nose out, " + cn + ". ...Fine.")
+                                          : Voice.Pick(seed + "sy", "...Fine. Not worth the skinned knuckles.", "Another time, " + b + ".", "You're lucky " + cn + " came by."), "storm", "walkaway"));
+                add.Add(new Beat(1, null, null, "faceone") { To = 2 });
+                add.Add(new Beat(1, rough ? Voice.Pick(seed + "st", "Thank you, " + cn + ". I owe you.", cn + ". Thank God.", "Obliged, " + cn + ". He'd have done it.")
+                                          : Voice.Pick(seed + "sz", "Obliged, " + cn + ". He had it coming, but obliged.", "Thank you, " + cn + ". I'd have lost my temper."), "thanks") { To = 2 });
                 s.Beats.RemoveRange(at, s.Beats.Count - at);
                 s.Beats.AddRange(add);
                 s.Kind = "argue";   // it never came to blows
-                s.Summary = "someone stepped in and the bully backed off";
+                s.NoteAtCue = true; // noted when they speak up (a walk-over that never arrives leaves nothing)
+                s.Summary = rough ? "someone stepped in and the bully backed off" : "someone broke up a fight before it started";
             }
             else
             {
-                add.Add(new Beat(0, Voice.Pick(seed + "si", "Keep walking, " + cn + ".", "Ain't your quarrel, " + cn + ". Never was.", "Mind your own, " + cn + ", or you're next."), "angry", "face"));
+                add.Add(new Beat(0, rough ? Voice.Pick(seed + "si", "Keep walking, " + cn + ".", "Ain't your quarrel, " + cn + ". Never was.", "Mind your own, " + cn + ", or you're next.")
+                                          : Voice.Pick(seed + "sw", "Step aside, " + cn + ".", "This is ours to settle, " + cn + "."), "angry", "face"));
                 s.Beats.InsertRange(at, add);
                 s.Summary += "; someone tried to step in";
             }

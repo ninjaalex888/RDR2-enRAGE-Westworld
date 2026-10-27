@@ -20,7 +20,7 @@ namespace EnrageWestworld.InGame
         {
             public Ped C, A, B;
             public string CName, AName, BName;
-            public bool Backs, Test;
+            public bool Backs, Test, Rough;
         }
 
         private StandUpNote _standUp;
@@ -59,8 +59,8 @@ namespace EnrageWestworld.InGame
             {
                 int toB = TieWarmth(c.Who.Id, b), toA = TieWarmth(c.Who.Id, a);
                 bool would = test ? c.Who.Temper != "Coward" && toB >= 0 && toA <= 0 : Scenes.StandsUp(toB, toA, c.Who.Temper, c.Who.Woman, seed + "|" + c.Who.Id);
-                if (!would || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(c.Ped.Handle, people[1].Handle, 17))
-                    continue;
+                if (!would || PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(c.Ped.Handle, people[1].Handle, 17))
+                    continue;   // not someone sat at a table or leaning on the bar: they'd have to get up first
                 by = c;
                 break;
             }
@@ -77,10 +77,12 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             bool backs = Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
+            bool rough = s.Kind == "rough";
+            bool far = by.Ped.Position.DistanceTo(people[0].Position) > 3.5f;
             cast.Names[2] = Person.FirstOf(by.Who.Name);
             cast.Tempers[2] = by.Who.Temper;
             cast.CWoman = by.Who.Woman;
-            if (!Scenes.StandUp(s, cast, seed, backs))
+            if (!Scenes.StandUp(s, cast, seed, backs, far))
             {
                 cast.Names[2] = null;
                 cast.Tempers[2] = null;
@@ -89,7 +91,7 @@ namespace EnrageWestworld.InGame
             }
             people.Add(by.Ped);
             Pacing.Note(_store.Pace, "standup", _placeTown, by.Who.Id, g);
-            _standUp = new StandUpNote { C = by.Ped, A = people[0], B = people[1], CName = by.Who.Name, AName = a.Name, BName = b.Name, Backs = backs, Test = test };
+            _standUp = new StandUpNote { C = by.Ped, A = people[0], B = people[1], CName = by.Who.Name, AName = a.Name, BName = b.Name, Backs = backs, Test = test, Rough = rough };
             _standUpLast = by.Who.Name + " for " + b.Name + " against " + a.Name + ": " + (backs ? "he backed off" : "he went on") + (test ? " (a test)" : "");
             Log.Write("KIND stood up: " + by.Who.Name + " steps in for " + b.Name + " against " + a.Name + " -> " + (backs ? "backs off" : "tells them to keep out") + " (" +
                       (TieWarmth(by.Who.Id, b) > 0 ? "a friend of " + Person.FirstOf(b.Name) : "a " + (by.Who.Temper ?? "plain") + " " + (by.Who.Woman ? "woman" : "man")) + ", " + s.Kind + ")" +
@@ -107,9 +109,27 @@ namespace EnrageWestworld.InGame
                 return;
             _standUps++;
             if (n.Backs)
+            {
                 _standUpBacked++;
-            if (n.Test)
-                return;
+                // it came to words: the two who squared up are noted now (not at the start: a walk-over that never got
+                // there leaves nothing), and sit the fight's rest out, so "this ain't over" isn't two minutes later
+                Pending p = _pendingNote;
+                if (p != null && p.S.NoteAtCue)
+                {
+                    _pendingNote = null;
+                    if (!n.Test)
+                        NoteHappened(p, "argue");
+                }
+                int at = _now;
+                foreach (Ped x in new[] { n.A, n.B })
+                    if (x != null)
+                    {
+                        _sceneAtHandle[x.Handle] = at;
+                        _restMsOf[x.Handle] = FoughtRestMs;
+                    }
+            }
+            if (n.Test || !n.Rough)
+                return;   // a test notes nothing; breaking up a brawl takes nobody's side
             string cId, cName, aId, aName, bId, bName;
             bool c = LastingId(n.C, out cId, out cName), a = LastingId(n.A, out aId, out aName), b = LastingId(n.B, out bId, out bName);
             long g = Bridge.Now();

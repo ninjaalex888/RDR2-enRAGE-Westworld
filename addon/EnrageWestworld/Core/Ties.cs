@@ -107,12 +107,14 @@ namespace EnrageWestworld.Core
                 t = new SceneTie { A = aId, B = bId };
                 all.Add(t);
             }
-            else
+            bool keepRomance = Romantic(t.Kind) && !Romantic(kind) && effect.Value > 0;   // a kindness between sweethearts: still sweethearts
+            if (t.Count > 0 && !keepRomance)
                 t.Stage++;   // they meet again: their story moves on (Reasons)
             t.AName = t.A == aId ? aName : bName;
             t.BName = t.A == aId ? bName : aName;
             t.Town = town ?? t.Town;
-            t.Kind = kind;
+            if (!keepRomance)
+                t.Kind = kind;
             if (doer != null || kind != "avoid")
                 t.Doer = doer;   // keeping clear of him doesn't change who did what to whom
             t.Warmth = Math.Max(-3, Math.Min(3, t.Warmth + effect.Value));

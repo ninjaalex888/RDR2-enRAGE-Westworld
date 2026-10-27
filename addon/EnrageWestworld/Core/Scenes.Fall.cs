@@ -40,7 +40,7 @@ namespace EnrageWestworld.Core
             if (!old)
                 s.Add(1, null, null, "fall");
             s.Add(1, old ? Voice.Pick(seed + "fo", "Easy, old bones. Easy.", "Down I go. Like a sack of meal.", "Oh, my hip. Oh, my hip.")
-                         : Voice.Pick(seed + "fy", "Ow! Blasted boards.", "Oh! My ankle.", "Of all the clumsy...", "Ow. That's my knee, that is.", "Whoa, whoa... oof."), "scared", "sitdown");
+                         : Voice.Pick(seed + "fy", "Ow! Blast it.", "Oh! My ankle.", "Of all the clumsy...", "Ow. That's my knee, that is.", "Whoa, whoa... oof."), "scared", "sitdown");
             switch (answer)
             {
                 case "help":
@@ -51,7 +51,7 @@ namespace EnrageWestworld.Core
                      .Add(0, null, null, "stand")
                      .Add(1, null, null, "getup")
                      .Add(1, Voice.Pick(seed + "ht", "Thank you kindly, " + a + ".", "Obliged to you, " + a + ". Truly.", "Bless you, " + a + "."), "thanks")
-                     .Add(0, Voice.Pick(seed + "hw", "Mind the boards, now.", "Take it slow the rest of the way.", "Get that looked at."), "mild", "walkaway");
+                     .Add(0, Voice.Pick(seed + "hw", "Mind your feet, now.", "Take it slow the rest of the way.", "Get that looked at."), "mild", "walkaway");
                     break;
                 case "gruff":
                     s.Add(0, Voice.Pick(seed + "gm", "Up you get, " + b + ". Come on.", "On your feet, " + b + ". You're in the way."), "mild", "meet")
