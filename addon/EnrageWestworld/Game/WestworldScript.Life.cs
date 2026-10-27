@@ -80,6 +80,8 @@ namespace EnrageWestworld.InGame
             if (_interiorType != 0 && !saloon)
                 return;
             string fallWhy;
+            if (_interiorType == 0 && PreacherScene(me, now, false, out fallWhy))
+                return;   // a Sunday afternoon's street preacher (WestworldScript.Preacher.cs)
             if (_interiorType == 0 && FallScene(me, now, false, out fallWhy))
                 return;   // someone took a fall (WestworldScript.Kindness.cs)
             if (saloon && RoundScene(me, now, false, out fallWhy))
@@ -146,6 +148,12 @@ namespace EnrageWestworld.InGame
                     cast.Names = SceneNames(man, woman, c);   // in the new order
                     s = Scenes.Jealous(cast, seed);
                 }
+            }
+            if (s == null && !cast.AWoman && !cast.BWoman && Director.OldModel(a) && Director.OldModel(b) && Voice.Chance(seed + "|olddays", 45))
+            {
+                s = Scenes.OldDays(cast, seed);   // two old men: the old days (Core/Scenes.OldDays.cs)
+                _oldDays++;
+                Log.Write("OLD DAYS " + (cast.Names[0] ?? "an old man") + " & " + (cast.Names[1] ?? "another") + ": " + s.Beats[0].Line);
             }
             if (s == null)
             {

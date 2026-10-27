@@ -232,6 +232,21 @@ namespace EnrageWestworld.InGame
                         skipped = "the rarity and the rests (Pacing \"fall\")";
                         return FallScene(Game.Player.Character, now, true, out fallWhy) ? null : fallWhy;
                     }
+                case "preacher":
+                    {
+                        if (_director.Busy)
+                            return "a scene is going on already";
+                        string pw;
+                        skipped = "the day and hour, the rarity and the rests (Pacing \"preacher\")";
+                        return PreacherScene(Game.Player.Character, now, true, out pw) ? null : pw;
+                    }
+                case "olddays":
+                    {
+                        if (_director.Busy)
+                            return "a scene is going on already";
+                        skipped = "the chance meeting's wait and roll";
+                        return OldDaysFire(now);
+                    }
                 case "callout":
                     {
                         if (_director.Busy)

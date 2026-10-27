@@ -646,6 +646,8 @@ in the file. The new ones:
             you killed may tell you so to your face (never violent)
             (Standoffs also brings the noon callout: two men with bad blood face off in the street about
             noon until one backs down; nobody fires)
+            (Drama also brings two old men arguing about the old days, and on a Sunday afternoon a
+            street preacher, answered by each listener's own faith)
             RoughHandling (true): a man with a grudge (or a hothead with drink in him) smashes another's
             face into the nearest table, bar or wall; NpcThieves (true): pickpockets among the
             townsfolk, and begging; DrunkChallenges (true): a drunk calls a man out at night

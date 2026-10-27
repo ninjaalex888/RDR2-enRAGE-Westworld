@@ -51,6 +51,8 @@ namespace EnrageWestworld.Core
             new Entry("glitch", "People", "A stranger glitches", "TestGlitchKey", needs: "someone 3-16 m off"),
             new Entry("disbelief", "People", "Disbelief, voiced, over someone's head", "TestDisbeliefKey", needs: "a named person within 15 m"),
             new Entry("fall", "People", "Someone takes a fall (and is helped up, or not)", "TestFallKey", needs: "two named people outdoors, one of them within 14 m and in view"),
+            new Entry("preacher", "People", "A street preacher (Sunday afternoons)", "TestPreacherKey", needs: "a town street, a devout named person and another within 8 m"),
+            new Entry("olddays", "People", "Two old men argue about the old days", "TestOldDaysKey", needs: "two named old men within 10 m"),
             new Entry("callout", "People", "A man calls another out at noon", "TestCalloutKey", needs: "a town street, two named men with bad blood 2-14 m apart"),
             new Entry("grudge", "People", "A friend takes up a wrong", "TestGrudgeKey", needs: "a friend of someone wronged in the last 3 days, near the one who did it"),
             new Entry("grudge:you", "People", "Someone grieving one you killed", "TestGrudgeYouKey", needs: "in town, someone within 20 m whose friend you killed this week"),

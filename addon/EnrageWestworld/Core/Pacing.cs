@@ -64,6 +64,7 @@ namespace EnrageWestworld.Core
             { "drink", new Rule("drink", false, 55, 60, 300, 1440) },              // a saloon: one drinker in five hours or so
             { "grudge", new Rule("grudge", false, 30, 180, 0, 1440) },             // per pair a day
             { "callout", new Rule("callout", false, 40, 1440, 1440, 2880) },       // a noon callout: once a day at most
+            { "preacher", new Rule("preacher", false, 35, 360, 1440, 2880) },      // a Sunday's street preacher: once a town a day
             // big: encounters; rare, budgeted, with quiet between
             { "visitor", new Rule("visitor", true, 18, 2880, 2880, 0) },
             { "traveller", new Rule("traveller", false, 20, 900, 0, 0) },          // a man asking the way is no big moment
