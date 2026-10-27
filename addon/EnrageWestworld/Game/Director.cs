@@ -56,6 +56,7 @@ namespace EnrageWestworld.InGame
             public bool Woman;
         }
 
+        internal static readonly uint Crouch = Natives.Hash("WORLD_HUMAN_CROUCH_INSPECT");   // the crouch over something on the ground (also the night visitor's)
         private Live _live;
         private int _player;
         private Action<string, string, bool, bool, int> _say;
@@ -557,7 +558,7 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_SMART_FLEE_PED(h, t, 40f, -1, 0, 2f, 0);
                     return 600;
                 case "kneel":
-                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_CROUCH_INSPECT"), 9000, true, 0u, -1f, false);
+                    TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Crouch, 9000, true, 0u, -1f, false);
                     return 1800;
                 case "fall":
                     // a trip: down on the ground for a moment (the old sit down hard instead: their scene leaves this out);

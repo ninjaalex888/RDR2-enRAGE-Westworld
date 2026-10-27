@@ -70,6 +70,15 @@ namespace EnrageWestworld.Core
             Log("KIND " + p.Name + ": you gave them a hand up" + (nobodyElse ? " (nobody else stopped)" : ""));
         }
 
+        /// The night visitor was out in this town: next morning (07:00-09:00) the town speaks of a body nobody can account
+        /// for (a corner notice, no names).
+        public void VisitorSeen(string town, long now)
+        {
+            long morning = (now / 1440 + (now % 1440 >= 7 * 60 ? 1 : 0)) * 1440 + 7 * 60 + Voice.Hash(town + now) % 120;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = Visitor.Morning(town, town + now), DueAt = morning });
+            Log("VISITOR the town will talk of it in the morning (" + (morning - now) + " game min)");
+        }
+
         /// Someone stood the player a drink with the rest of the room, and he took it: a little fonder of him.
         public void StoodYouADrink(Person p)
         {

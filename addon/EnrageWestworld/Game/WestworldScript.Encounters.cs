@@ -47,7 +47,7 @@ namespace EnrageWestworld.InGame
             Safe("encounters", _aEncounters);
         }
 
-        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null; } }
+        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null; } }
 
         /// What's going on, for the log and the stalker key.
         private string EncounterWhat
@@ -56,6 +56,8 @@ namespace EnrageWestworld.InGame
             {
                 if (_crying != null)
                     return "the crying woman is out";
+                if (_visitor != null)
+                    return "a figure is abroad in the dark";
                 if (_exec != null)
                     return "a man is held at gunpoint nearby";
                 if (_hermit != null)
@@ -76,6 +78,9 @@ namespace EnrageWestworld.InGame
                 GatherStep(now);
             if (_exec != null)
                 ExecutionStep(now);
+            if (_visitor != null)
+                VisitorStep(now);
+            VisitorBodyStep();   // a body left behind goes once nobody can see (WestworldScript.Visitor.cs)
             HermitStep(now);   // a hermit at his camp, when you come near one
             if ((_execRequested || _encounterRequested != null) && !EncounterLive)
             {
@@ -147,6 +152,20 @@ namespace EnrageWestworld.InGame
                     return;
                 }
             }
+            if (_cfg.NightVisitor)
+            {
+                string skippedV;
+                string not = VisitorNotNow() ?? Pacing.WhyNot(_store.Pace, "visitor", _placeTown, null, _store.LastGameMin, 0, false, out skippedV);
+                if (not != null)
+                    notNow.Add("the night visitor: " + not);
+                else if (EncounterRoll("the night visitor", _cfg.NightVisitorChance))
+                {
+                    _encounterWait = null;
+                    StartVisitor(now);
+                    Pacing.Note(_store.Pace, "visitor", _placeTown, null, _store.LastGameMin);
+                    return;
+                }
+            }
             if (_cfg.Gatherings)
             {
                 string not = GatherNotNow();
@@ -171,6 +190,7 @@ namespace EnrageWestworld.InGame
                 : kind == "execution" ? (_cfg.Executions ? null : "Executions are off ([Encounters] Executions).")
                 : kind == "crying" ? (_cfg.CryingWoman ? null : "The crying woman is off ([Encounters] CryingWoman).")
                 : kind == "hermit" ? (_cfg.Hermits ? null : "Hermits are off ([Encounters] Hermits; they need West World on too).")
+                : kind == "visitor" ? (_cfg.NightVisitor ? null : "The night visitor is off ([Encounters] NightVisitor).")
                 : _cfg.Gatherings ? null : "Gatherings are off ([Encounters] Gatherings; they need West World on too).";
             if (off != null)
                 return off;
@@ -190,6 +210,8 @@ namespace EnrageWestworld.InGame
                     return "A woman will be crying somewhere near you, out of sight. Listen for her.";
                 case "hermit":
                     return "A hermit's camp will be made near you, out of sight. Go looking for it.";
+                case "visitor":
+                    return "Something will be out in the dark near you, in town. Go looking, and don't look away.";
                 default:
                     return "The awake will gather somewhere near you, out of sight.";
             }
@@ -197,6 +219,8 @@ namespace EnrageWestworld.InGame
 
         private string KeyOf(string kind)
         {
+            if (kind == "visitor")
+                return "its Testing page row";
             KeySpec k = kind == "execution" ? _execKey : kind == "crying" ? _cryingKey : kind == "hermit" ? _hermitKey : _gatherKey;
             return k.ToString();
         }
@@ -211,6 +235,16 @@ namespace EnrageWestworld.InGame
                     break;
                 case "crying":
                     StartCrying(now, true);
+                    break;
+                case "visitor":
+                    string notV = VisitorNotNow(true);
+                    if (notV != null)
+                    {
+                        Log.Write("ENCOUNTER test, visitor: not now: " + notV);
+                        Hint("Not now: " + notV + ".", 5000);
+                    }
+                    else
+                        StartVisitor(now, true);
                     break;
                 case "hermit":
                     string not = HermitNotNow(true);
@@ -609,6 +643,13 @@ namespace EnrageWestworld.InGame
                 EndGathering(why);
             if (_exec != null)
                 EndExecution(why);
+            if (_visitor != null)
+                EndVisitor(why);
+            if (_visitorBody != null)
+            {
+                Spawner.Release(_visitorBody, true);   // a mission or shutdown: the body goes with it
+                _visitorBody = null;
+            }
         }
 
         /// One line for the F7 dump.
