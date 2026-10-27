@@ -435,7 +435,7 @@ namespace EnrageWestworld.InGame
             // a moment the ticker moves on; anything else (the news, the summary) on the bar
             _overHeadDrawn = false;
             if (_aOverHead == null)
-                _aOverHead = () => _overHeadDrawn = ThoughtOverHead(_tickerLine, _now);
+                _aOverHead = () => _overHeadDrawn = DespairOverHead(_now) || ThoughtOverHead(_tickerLine, _now);   // despair's words first, while they last (WestworldScript.Despair.cs)
             Safe("thoughts over heads", _aOverHead);
             if (!_overHeadDrawn && OverHeadOnly(line, now))
             {

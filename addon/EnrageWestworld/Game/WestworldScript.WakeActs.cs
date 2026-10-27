@@ -45,6 +45,9 @@ namespace EnrageWestworld.InGame
             public Vector3 WallAt, WallDir;
             public string Variant;          // despair: the gun arc (jamie, leader) or the poisoning (drink, slow)
             public DespairClip[] Seq;       // despair: its clips (WestworldScript.Despair.cs), null for the wall and the knife
+            public DespairBeat[] Beats;     // despair: what they say and think, and when (Core/DespairWords.cs)
+            public int BeatIdx;
+            public string Who;              // despair: the living one they're closest to (a first name), or null
             public int ClipIdx, ClipAt, ShotHealth, ShotCheckAt;   // the shot: their health just before it, and when to look at what it did
             public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed, Sobbed, Triggered;   // Triggered: the shot fired by the gun's own trigger (heard)   // Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
             public Person P;
@@ -987,12 +990,14 @@ namespace EnrageWestworld.InGame
                 double hd = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
                 Vector3 ground = pos + new Vector3((float)-Math.Sin(hd) * 0.9f, (float)Math.Cos(hd) * 0.9f, -0.95f);
                 TASK.TASK_AIM_GUN_AT_COORD(h, ground.X, ground.Y, ground.Z, 4000, false, false);
+                DespairBeatsStep(act, now);   // the calm (the way before, or a gun arc's clips that fell back to it)
                 act.Sub = 1;
                 act.PhaseUntil = now + 1100;   // a look at how the aim is going, then the hold
                 return;
             }
             WEAPON.SET_CURRENT_PED_WEAPON(h, w, true, 0, false, false);
             TASK.TASK_STAND_STILL(h, 3000);
+            DespairBeatsStep(act, now);   // the calm, as the knife comes out
             act.RunFrom = now;   // the knife may wait a moment for its set
             act.PhaseUntil = now + 1400;
         }
@@ -1059,6 +1064,7 @@ namespace EnrageWestworld.InGame
         private void DespairRunStart(WakeAct act, int now)
         {
             int h = act.Handle;
+            DespairBeatsStep(act, now);   // the calm, as the run begins
             if (Flat(new Ped(h).Position, act.WallAt) > 4.5f)
             {
                 Vector3 to = act.WallAt - act.WallDir * 3.2f;
@@ -1246,6 +1252,7 @@ namespace EnrageWestworld.InGame
             }
             return "AwakeningDespair " + _cfg.AwakeningDespair + "% (one roll each); blade reel " + (_bladeSet == 1 ? "there" : "MISSING") + ", writhe " + (_writheSet == 1 ? "there" : "MISSING") + "; this session " +
                    (_despairCount.Count == 0 ? "none" : string.Join(", ", _despairCount.Select(kv => kv.Key + " " + kv.Value))) + (_despairLast != null ? ", last " + _despairLast : "") +
+                   "; their words this session " + _despairSaid.Count + (_despairLastLine != null ? " (the last: " + _despairLastLine + ")" : "") +
                    "; awake within 30 m: " + (near.Count == 0 ? "none" : string.Join("; ", near.Take(8)));
         }
 
@@ -1314,14 +1321,10 @@ namespace EnrageWestworld.InGame
         /// when the recording's own words aren't known.
         private void DespairLastWords(WakeAct act, Ped me)
         {
-            string line = WakeBeats.Aloud("last", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|last");
             int start = (int)((uint)Voice.Hash(act.P.Id + "|lastwords") % (uint)Speech.LastWords.Length);
             string[] order = Speech.LastWords.Skip(start).Concat(Speech.LastWords.Take(start)).ToArray();
-            if (string.IsNullOrEmpty(line))
-                Speech.SayAny(act.Handle, order, me.Handle);
-            else
-                Feed.SayFirst(act.Name, line, Speech.WhenSet(act.Handle, order, me.Handle), act.Handle);
-            Log.Write("WAKE despair: " + act.Name + "'s last words, voiced from " + order[0] + " first" + (line != null ? ": " + line : ""));
+            Log.Write("WAKE despair: " + act.Name + "'s last words, voiced from " + order[0] + " first" + (act.Who != null ? "; closest to " + act.Who : ""));
+            DespairSay(act, "last", Game.GameTime, order);
         }
 
         /// Someone fully awake at what can't be: the game's own disbelief line in their voice (a voice without it gets a

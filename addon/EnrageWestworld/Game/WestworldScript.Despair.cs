@@ -80,6 +80,9 @@ namespace EnrageWestworld.InGame
             act.Variant = forced != null && forced.Contains(":") ? forced.Split(':')[1]
                 : method == "gun" ? Despair.GunArc(act.P, act.P.Id) : method == "poison" ? Despair.PoisonWay(act.P, act.P.Id) : null;
             act.Seq = DespairSequence(method, act.Variant, act.P.Id);
+            act.Beats = DespairWords.Plan(method, act.Seq != null ? act.Variant : null);   // what they say and think through it, and when
+            act.BeatIdx = 0;
+            act.Who = _engine.Dearest(act.P.Id);
             act.Rec = _bridge.RecordAt(h);   // one of enRAGE's people: booked in its record when it's over
             act.WallAt = wall;
             act.WallDir = dir;
@@ -161,6 +164,7 @@ namespace EnrageWestworld.InGame
         {
             int h = act.Handle;
             DespairClip c = act.Seq[act.ClipIdx];
+            DespairBeatsStep(act, now);   // a beat due in this clip (Core/DespairWords.cs)
             if (!act.ClipOn)
             {
                 if (!STREAMING.HAS_ANIM_DICT_LOADED(c.Dict))
@@ -255,6 +259,13 @@ namespace EnrageWestworld.InGame
             Log.Write("WAKE despair: " + act.Name + ": " + why + "; the way before instead");
             act.Seq = null;
             act.Sub = 0;
+            if (act.Beats != null && act.BeatIdx < act.Beats.Length)
+            {
+                act.Beats = new[] { new DespairBeat(-1, 0, "calm") };   // what's left of the beats gives way to the calm (the calm comes last in each)
+                act.BeatIdx = 0;
+                if (act.Method != "gun")
+                    DespairBeatsStep(act, now);   // poison goes limp now; the gun's way says it as it aims (DespairArm)
+            }
             if (act.Method == "gun")
             {
                 DespairArm(act, now);   // the aim at the ground, then the shot (DespairAimed, DespairShot)
@@ -263,6 +274,80 @@ namespace EnrageWestworld.InGame
             PED.SET_PED_TO_RAGDOLL(act.Handle, 1500, 2500, 0, false, false, "");
             act.Phase = 5;
             act.PhaseUntil = now + 1500;
+        }
+
+        // ---- what they say and think (Core/DespairWords.cs) ---------------------------------------------------------
+
+        private TickerLine _despairLine;   // despair's words over the person's head, outside the ticker's queue (its slots of 12 s are too slow for an act of 16)
+        private int _despairLineUntil;
+        private readonly HashSet<string> _despairSaid = new HashSet<string>();   // lines said this session, so nobody's last words are someone else's
+        private string _despairLastLine;
+
+        /// The latest beat now due (clip and time into it, or at once for the ways without clips), said; any earlier one
+        /// passed over (a clip that ended early), so beats never come in a rush.
+        private void DespairBeatsStep(WakeAct act, int now)
+        {
+            if (act.Beats == null)
+                return;
+            int say = -1;
+            for (int i = act.BeatIdx; i < act.Beats.Length; i++)
+            {
+                DespairBeat b = act.Beats[i];
+                bool due = b.Clip < 0 || b.Clip < act.ClipIdx || (b.Clip == act.ClipIdx && act.ClipOn && act.ClipSeen && now - act.ClipAt >= b.AtMs);
+                if (!due)
+                    break;
+                say = i;
+            }
+            if (say < 0)
+                return;
+            act.BeatIdx = say + 1;
+            DespairSay(act, act.Beats[say].Name, now);
+        }
+
+        /// One beat: the line for them (their temperament, the one they're closest to, nothing said already this session),
+        /// voiced with the game's lines for it. The plea and the last words are said to you when you're within 12 m and
+        /// they're on screen (subtitled); the plea with nobody near is the lonely one; everything else goes over their head.
+        private void DespairSay(WakeAct act, string beat, int now, string[] voiceFirst = null)
+        {
+            int h = act.Handle;
+            if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                return;
+            Ped me = Game.Player.Character;
+            bool toYou = (beat == "plea" || beat == "last") && ENTITY.IS_ENTITY_ON_SCREEN(h) && me.Position.DistanceTo(ENTITY.GET_ENTITY_COORDS(h, true, true)) <= 12f;
+            string pool = beat == "plea" && !toYou ? "alone" : beat;
+            string line = DespairWords.Line(pool, act.P.Personality, act.Who, act.P.Id + "|" + pool, s => _despairSaid.Contains(s));
+            if (line == null)
+                return;
+            _despairSaid.Add(line);
+            _despairLastLine = act.Name + " (" + pool + "): " + line;
+            string[] voice = voiceFirst ?? DespairWords.VoiceLines(pool);
+            if (toYou)
+            {
+                _despairLineUntil = 0;   // said to him: the subtitle carries it, nothing over the head as well
+                Feed.Say(act.Name, line, voice != null ? Speech.WhenSet(h, voice, me.Handle) : null, h, toYou: true, ahead: true);
+            }
+            else
+            {
+                if (voice != null)
+                    Speech.SayAny(h, voice, me.Handle);
+                _despairLine = new TickerLine { Label = act.Name + ", thinking", Text = line, Kind = "near", Handle = h };
+                _despairLineUntil = now + (beat == "last" ? 4500 : 5000);
+            }
+            Log.Write("WAKE despair: " + act.Name + " (" + pool + (toYou ? ", to you" : "") + "): " + line);
+        }
+
+        /// Despair's words, drawn over the person's head in place of the ticker's thought while they last: true when drawn
+        /// (from the frame's over-head drawing, Core04).
+        private bool DespairOverHead(int now)
+        {
+            if (_despairLine == null)
+                return false;
+            if (now >= _despairLineUntil)
+            {
+                _despairLine = null;
+                return false;
+            }
+            return ThoughtOverHead(_despairLine, now);
         }
 
         // ---- the Testing page: despair now, each way in turn --------------------------------------------------------

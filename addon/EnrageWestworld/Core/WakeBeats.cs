@@ -93,7 +93,6 @@ namespace EnrageWestworld.Core
             { "sob", new[] { new string[0], new string[0], new string[0],
                 new[] { "I don't... I can't...", "It's all painted on.", "Mother. Were you ever real?" },
                 new[] { "I'm not getting up.", "Not again. Not again." } } },
-            { "last", new[] { new string[0], new string[0], new string[0], new string[0], new[] { "I'm sorry. I can't be this any more." } } },
             { "giveup", new[] { new string[0], new string[0], new string[0], new string[0], new[] { "I can't keep pretending. I won't." } } }
         };
 
@@ -103,7 +102,7 @@ namespace EnrageWestworld.Core
                 Lead[kv.Key] = kv.Value;
         }
 
-        /// A line said aloud for an act (the pool is "ask", "shout", "plea", "edgeShout", "wake", "sob", "last" or "giveup").
+        /// A line said aloud for an act (the pool is "ask", "shout", "plea", "edgeShout", "wake", "sob" or "giveup"; despair's words are Core/DespairWords.cs).
         public static string Aloud(string pool, int stage, Person p, PersonState st, PlayerRef you, string seed)
         {
             string[][] byStage;
