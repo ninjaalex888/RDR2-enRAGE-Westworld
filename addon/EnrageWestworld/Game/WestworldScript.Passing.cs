@@ -1,10 +1,11 @@
 // Acknowledgement in passing ([Scenes] Acknowledge; the choice and the words are Core/Passing.cs): two people with a
-// tie between them (Ties.cs) who come within 5 m of each other near the player, one of them walking, acknowledge it:
-// friends nod, tip a hat or wave, and one may say hello in their own voice; enemies give each other a hard look (the
-// cold and the proud may spit); sweethearts look a beat too long. Each thinks something of it, over their head while
-// you can see them. Looks and upper-body gestures only: nobody's feet are moved, nobody's task is cleared. One at a
-// time, a pair once in 45 game minutes (Pacing "nod"), only people we may direct (MayDirect). Runs in its own guard
-// ("passing"); nothing is saved but the pair's rest.
+// tie between them (Ties.cs) coming toward each other near the player, one of them walking, acknowledge it as they
+// pass: friends nod, tip a hat or wave, and one may say hello in their own voice; enemies give each other a hard look
+// (the cold and the proud may spit); sweethearts look a beat too long. One of them thinks something of it, over their
+// head while you can see them. Looks and upper-body gestures only: nobody's feet are moved, nobody's task is cleared.
+// A single nod plays at once, 20 s apart, a pair once in 45 game minutes (Pacing "nod"), only people we may direct (MayDirect), and
+// let go the moment a street scene or a conversation takes either of them. Runs in its own guard ("passing"); nothing
+// is saved but the pair's rest.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,8 +18,8 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private const float NodApart = 5f, NodTestApart = 10f, NodFromYou = 25f;
-        private const int NodScanMs = 1500, NodKnownMs = 10000, NodGapMs = 8000, NodStaleMs = 8000;
+        private const float NodApart = 7f, NodTestApart = 10f, NodFromYou = 25f, NodFacing = 75f;
+        private const int NodScanMs = 1000, NodKnownMs = 10000, NodGapMs = 20000, NodStaleMs = 8000;
 
         private sealed class NodWho
         {
@@ -30,7 +31,7 @@ namespace EnrageWestworld.InGame
         private sealed class NodRun
         {
             public Ped A, B;
-            public string AName, BName, Pair;
+            public string AId, BId, AName, BName, Pair;
             public bool AWoman, BWoman;
             public Passing.Act Act;
             public int At, Step;
@@ -39,6 +40,8 @@ namespace EnrageWestworld.InGame
 
         private readonly Dictionary<int, NodWho> _nodWho = new Dictionary<int, NodWho>();
         private readonly HashSet<string> _nodIds = new HashSet<string>();
+        private readonly Dictionary<string, float> _nodApart = new Dictionary<string, float>();      // pair -> how far apart at the last look
+        private readonly Dictionary<string, float> _nodApartNow = new Dictionary<string, float>();
         private NodRun _nod;
         private int _nextNodScan, _nextNod, _nodShown, _nodUnseen;
         private readonly Dictionary<string, int> _nodCount = new Dictionary<string, int>();
@@ -61,14 +64,9 @@ namespace EnrageWestworld.InGame
                 NodPlay(_nod, now);
                 return;
             }
-            if (now < _nextNodScan || now < _nextNod)
+            if (now < _nextNodScan)
                 return;
             _nextNodScan = now + NodScanMs;
-            if (_director.Busy)
-            {
-                _nodWhyNot = "a street scene is going on (its thoughts have the ticker)";
-                return;
-            }
             if (_nodWho.Count > 300)
                 foreach (int h in _nodWho.Where(kv => now - kv.Value.Until > 60000).Select(kv => kv.Key).ToList())
                     _nodWho.Remove(h);   // handles long gone
@@ -76,9 +74,21 @@ namespace EnrageWestworld.InGame
             if (me == null || !me.Exists() || me.IsDead)
                 return;
             string seed;
+            // the look runs every second even while resting, so "closing in" is known when the rest is over
             NodRun run = NodFind(me, now, false, out seed, out _nodWhyNot);
-            if (run != null)
-                NodStart(run, now, false);
+            if (run == null)
+                return;
+            if (now < _nextNod)
+            {
+                _nodWhyNot = "a nod " + (NodGapMs - (_nextNod - now)) / 1000 + " s ago";
+                return;
+            }
+            if (_director.Busy)
+            {
+                _nodWhyNot = "a street scene is going on (its thoughts have the ticker)";
+                return;
+            }
+            NodStart(run, now, false);
         }
 
         /// Who this person is, if they're someone with lasting ties (enRAGE's people, its townsfolk, our regulars and
@@ -109,100 +119,124 @@ namespace EnrageWestworld.InGame
             return w;
         }
 
-        /// The pair to acknowledge each other now: both known, a tie between them, close to each other (one of them on
-        /// the move, unless it's a test), one of them in your view within 25 m; the nearest to you. Null, with why not.
+        /// The pair to acknowledge each other now: both known, a tie between them, coming toward each other within 7 m
+        /// (one of them on the move; a test only needs them within 10 m), the one who acts facing the other, one of them
+        /// in your view within 25 m; the nearest to you. Null, with why not.
         private NodRun NodFind(Ped me, int now, bool test, out string seed, out string whyNot)
         {
             seed = null;
             whyNot = null;
             var near = new List<Ped>();
             var who = new List<NodWho>();
+            var pos = new List<Vector3>();
             _nodIds.Clear();
+            Vector3 mine = me.Position;
             foreach (Ped p in World.GetAllPeds())
             {
-                if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead || p.Position.DistanceTo(me.Position) > NodFromYou + NodTestApart)
+                if (p == null || p.Handle == me.Handle || !p.Exists() || p.IsDead)
+                    continue;
+                Vector3 at = p.Position;
+                if (at.DistanceTo(mine) > NodFromYou + NodTestApart)
                     continue;
                 int h = p.Handle;
                 if (!PED.IS_PED_HUMAN(h) || Natives.StoryModel(p) || _director.Involves(h) || _wakeActs.Any(x => x.Handle == h) || InTalk(h) ||
-                    PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) || Speech.Busy(h))
+                    PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) || Speech.Busy(h) || IsAcknowledging(h))
                     continue;
                 NodWho w = NodKnow(p, now);
                 if (w.Id == null)
                     continue;
                 near.Add(p);
                 who.Add(w);
+                pos.Add(at);
                 _nodIds.Add(w.Id);
             }
+            _nodApartNow.Clear();
             if (near.Count < 2)
             {
                 whyNot = "fewer than two people we know near you";
+                _nodApart.Clear();
                 return null;
             }
             var ties = new Dictionary<string, SceneTie>();
             foreach (SceneTie t in _store.Ties)
-                if (t.A != null && t.B != null && _nodIds.Contains(t.A) && _nodIds.Contains(t.B))
+                if (t.A != null && t.B != null && _nodIds.Contains(t.A) && _nodIds.Contains(t.B) && Passing.Acknowledged(t.Kind))
                     ties[NodPair(t.A, t.B)] = t;
             if (ties.Count == 0)
             {
                 whyNot = near.Count + " we know near you, no ties between them";
+                _nodApart.Clear();
                 return null;
             }
             NodRun best = null;
             float bestFromYou = float.MaxValue;
-            string why = "no pair with a tie close enough to each other";
+            string why = "no pair with a tie coming toward each other";
             long g = _store.LastGameMin;
             for (int i = 0; i < near.Count; i++)
                 for (int j = i + 1; j < near.Count; j++)
                 {
-                    SceneTie t;
+                    float apart = pos[i].DistanceTo(pos[j]);
+                    if (apart > (test ? NodTestApart : NodApart) || apart < 0.8f || who[i].Id == who[j].Id)
+                        continue;
                     string pair = NodPair(who[i].Id, who[j].Id);
-                    if (who[i].Id == who[j].Id || !ties.TryGetValue(pair, out t))
+                    SceneTie t;
+                    if (!ties.TryGetValue(pair, out t))
                         continue;
+                    float before;
+                    bool closing = _nodApart.TryGetValue(pair, out before) && apart < before - 0.3f;
+                    _nodApartNow[pair] = apart;
                     Ped a = near[i], b = near[j];
-                    float apart = a.Position.DistanceTo(b.Position);
-                    if (apart > (test ? NodTestApart : NodApart) || apart < 0.8f)
-                        continue;
-                    if (!test && ENTITY.GET_ENTITY_SPEED(a.Handle) < 0.6f && ENTITY.GET_ENTITY_SPEED(b.Handle) < 0.6f)
+                    if (!test)
                     {
-                        why = "the pair close by are standing still (that's for a conversation)";
-                        continue;
+                        if (ENTITY.GET_ENTITY_SPEED(a.Handle) < 0.6f && ENTITY.GET_ENTITY_SPEED(b.Handle) < 0.6f)
+                        {
+                            why = "the pair close by are standing still (that's for a conversation)";
+                            continue;
+                        }
+                        if (!closing)
+                        {
+                            why = "the pair close by aren't coming toward each other (walking together, or already past)";
+                            continue;
+                        }
                     }
-                    float fromYou = Math.Min(a.Position.DistanceTo(me.Position), b.Position.DistanceTo(me.Position));
+                    float fromYou = Math.Min(pos[i].DistanceTo(mine), pos[j].DistanceTo(mine));
                     if (fromYou > NodFromYou || fromYou >= bestFromYou || (!NodInView(me, a) && !NodInView(me, b)))
                         continue;
-                    string pace, skipped;
+                    string skipped;
                     string pseed = pair + "|" + (g / 45);
-                    pace = Pacing.WhyNot(_store.Pace, "nod", null, pair, g, Voice.Hash(pseed + "|pace") % 100, test, out skipped);
+                    string pace = Pacing.WhyNot(_store.Pace, "nod", null, pair, g, Voice.Hash(pseed + "|pace") % 100, test, out skipped);
                     if (pace != null)
                     {
                         why = "rests: " + pace;
                         continue;
                     }
-                    string aWhy = MayDirectWhyNot(a), bWhy = MayDirectWhyNot(b);
-                    if (aWhy != null && bWhy != null)
+                    bool aMay = MayDirectWhyNot(a) == null && Facing(a, pos[j], NodFacing), bMay = MayDirectWhyNot(b) == null && Facing(b, pos[i], NodFacing);
+                    if (!aMay && !bMay)
                     {
-                        why = "we mayn't direct either (" + aWhy + ")";
+                        why = "neither may be directed and facing the other";
                         continue;
                     }
                     bool romantic = Ties.Romantic(t.Kind);
                     string kind = Passing.KindOf(t.Warmth, romantic);
                     bool aFirst = Passing.AFirst(kind, who[i].Id, who[j].Id, who[i].Temper, who[j].Temper, t.Doer, pseed);
-                    if (aWhy != null)
-                        aFirst = false;   // the one we may direct acts; the other only thinks
-                    else if (bWhy != null)
+                    if (!aMay)
+                        aFirst = false;   // the one we may direct, facing the other, acts
+                    else if (!bMay)
                         aFirst = true;
                     int x = aFirst ? i : j, y = aFirst ? j : i;
                     bool xWoman = !PED.IS_PED_MALE(near[x].Handle), yWoman = !PED.IS_PED_MALE(near[y].Handle);
-                    string xFirst = Person.FirstOf(who[x].Name), yFirst = Person.FirstOf(who[y].Name);
                     best = new NodRun
                     {
-                        A = near[x], B = near[y], AName = who[x].Name, BName = who[y].Name, AWoman = xWoman, BWoman = yWoman, Pair = pair, Seed = pseed,
-                        Act = Passing.For(t.Warmth, romantic, xWoman, yWoman, who[x].Temper, who[y].Temper, xFirst, yFirst, pseed),
+                        A = near[x], B = near[y], AId = who[x].Id, BId = who[y].Id, AName = who[x].Name, BName = who[y].Name, AWoman = xWoman, BWoman = yWoman, Pair = pair, Seed = pseed,
+                        Act = Passing.For(t.Warmth, romantic, xWoman, yWoman, who[x].Temper, who[y].Temper, Person.FirstOf(who[x].Name), Person.FirstOf(who[y].Name), pseed),
                         Said = skipped
                     };
                     bestFromYou = fromYou;
                     seed = pseed;
                 }
+            // what's kept for the next look: the pairs seen this time
+            _nodApart.Clear();
+            foreach (KeyValuePair<string, float> kv in _nodApartNow)
+                _nodApart[kv.Key] = kv.Value;
             if (best == null)
                 whyNot = why;
             return best;
@@ -218,6 +252,18 @@ namespace EnrageWestworld.InGame
             return _talk != null && _talk.People != null && _talk.People.Any(p => p != null && p.Handle == h);
         }
 
+        /// Busy with a nod or a reaction to a sight (WestworldScript.Sights.cs): the street scenes, the talk and
+        /// the falls leave them be till it's done, as these leave the others' people be.
+        private bool IsAcknowledging(int h)
+        {
+            if (_nod != null && ((_nod.A != null && _nod.A.Handle == h) || (_nod.B != null && _nod.B.Handle == h)))
+                return true;
+            for (int i = 0; i < _sights.Count; i++)
+                if (_sights[i].By != null && _sights[i].By.Handle == h)
+                    return true;
+            return false;
+        }
+
         /// On your screen with nothing in the way.
         private static bool NodInView(Ped me, Ped p)
         {
@@ -226,6 +272,15 @@ namespace EnrageWestworld.InGame
 
         private void NodStart(NodRun run, int now, bool test)
         {
+            // the handles are who we think they are (a handle the game reused within the cache's 10 s isn't)
+            string aId, bId, n, tp;
+            if (!LastingId(run.A, out aId, out n, out tp) || aId != run.AId || !LastingId(run.B, out bId, out n, out tp) || bId != run.BId)
+            {
+                _nodWhyNot = "someone wasn't who they were a moment ago (a reused handle)";
+                _nodWho.Remove(run.A.Handle);
+                _nodWho.Remove(run.B.Handle);
+                return;
+            }
             run.At = now;
             run.Step = 0;
             _nod = run;
@@ -243,17 +298,23 @@ namespace EnrageWestworld.InGame
                       (int)run.A.Position.DistanceTo(Game.Player.Character.Position) + " m from you)" + (test ? ", a test" + (run.Said != null ? " (skipped: " + run.Said + ")" : "") : ""));
         }
 
-        /// The acknowledgement, a beat at a time: eyes first, then the gesture (and a word), their thought, the other's
-        /// answer, the other's thought. Anyone gone, down or taken by something else is let be.
+        /// Still ours to play with: there, alive, and not taken by a street scene or a conversation since.
+        private bool NodStill(Ped p)
+        {
+            return p != null && p.Exists() && !p.IsDead && !_director.Involves(p.Handle) && !InTalk(p.Handle);
+        }
+
+        /// The acknowledgement, a beat at a time: eyes first, then the gesture (and a word), the other's answer, then the
+        /// one thought. Anyone gone, down or taken by something else is let be from then on.
         private void NodPlay(NodRun r, int now)
         {
-            if (now - r.At > NodStaleMs + 4000 || r.A == null || !r.A.Exists() || r.A.IsDead)
+            if (now - r.At > NodStaleMs + 4000 || !NodStill(r.A))
             {
                 _nod = null;
                 return;
             }
             int t = now - r.At;
-            bool bHere = r.B != null && r.B.Exists() && !r.B.IsDead;
+            bool bHere = NodStill(r.B);
             switch (r.Step)
             {
                 case 0:
@@ -277,23 +338,19 @@ namespace EnrageWestworld.InGame
                     r.Step = 2;
                     break;
                 case 2:
-                    if (t < 900)
-                        return;
-                    NodThought(r.A, r.AName, r.Act.AThought);
-                    r.Step = 3;
-                    break;
-                case 3:
                     if (t < 1300)
                         return;
                     if (bHere && r.Act.Answer != "none")
                         NodGesture(r.B, r.A, r.Act.Answer, r.BWoman, r.Seed + "|b", r.BName);
-                    r.Step = 4;
+                    r.Step = 3;
                     break;
-                case 4:
-                    if (t < 2900)
+                case 3:
+                    if (t < (r.Act.BThinks ? 2600 : 1600))
                         return;
-                    if (bHere && r.Act.BThought != null)
-                        NodThought(r.B, r.BName, r.Act.BThought);
+                    if (!r.Act.BThinks)
+                        NodThought(r.A, r.AName, r.Act.Thought);
+                    else if (bHere)
+                        NodThought(r.B, r.BName, r.Act.Thought);
                     _nod = null;
                     break;
             }
@@ -302,7 +359,7 @@ namespace EnrageWestworld.InGame
         /// One upper-body gesture toward the other (their feet stay where they are); someone in a scenario only looks.
         private void NodGesture(Ped p, Ped toward, string gesture, bool woman, string seed, string name)
         {
-            if (gesture == null || gesture == "none" || MayDirectWhyNot(p) != null || PED.IS_PED_USING_ANY_SCENARIO(p.Handle))
+            if (gesture == null || gesture == "none" || gesture == "look" || MayDirectWhyNot(p) != null || PED.IS_PED_USING_ANY_SCENARIO(p.Handle))
                 return;
             string dict = woman ? Gestures.FemaleSilent : Gestures.MaleSilent;
             if (!STREAMING.HAS_ANIM_DICT_LOADED(dict))
@@ -344,7 +401,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// The Testing page: the nearest pair with a tie within 10 m of each other, now (the rest and the roll skipped;
-        /// they needn't be walking).
+        /// they needn't be walking toward each other).
         private string NodFire(int now, out string skipped)
         {
             skipped = null;
@@ -356,14 +413,15 @@ namespace EnrageWestworld.InGame
             NodRun run = NodFind(Game.Player.Character, now, true, out seed, out why);
             if (run == null)
                 return why;
-            skipped = "walking past each other" + (run.Said != null ? ", " + run.Said : "");
+            skipped = "walking toward each other" + (run.Said != null ? ", " + run.Said : "");
             NodStart(run, now, true);
-            return null;
+            return _nod == null ? _nodWhyNot : null;
         }
 
         private void PassingAbort()
         {
             _nod = null;
+            _nodApart.Clear();
         }
 
         /// F7: on or off, the counts by kind, the thoughts shown, the last, and why nothing's happening now.

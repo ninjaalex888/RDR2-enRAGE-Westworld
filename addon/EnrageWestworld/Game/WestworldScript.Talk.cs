@@ -324,6 +324,8 @@ namespace EnrageWestworld.InGame
                 return "speaking";
             if (_wakeActs.Any(w => w.Handle == h))
                 return "in a waking act";
+            if (IsAcknowledging(h))
+                return "greeting someone, or reacting to a sight";
             if (_bridge != null && _bridge.EnrageFighter(h))
                 return "one of enRAGE's fighters";
             return null;

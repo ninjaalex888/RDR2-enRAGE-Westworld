@@ -1,8 +1,9 @@
 // Acknowledgement in passing (roadmap 17a; overnight 2026-10-27, Tier 2.1): two people with a tie who pass each other
-// acknowledge it the way people do. Friends: a nod or a hat tip, often a word. Enemies: a hard look and nothing said
-// (the cold and the proud may spit). Sweethearts: a look that stays a beat too long. People who only know each other:
-// a nod. Each thinks something of it, in their own temper. The game side does the looking, the gesture and the voice;
-// this says what. All lines are original to this add-on.
+// acknowledge it the way people do. Friends: a nod, a hat tip or a wave, often a word. Enemies: a hard look and nothing
+// said (the cold, the proud and the hotheaded may spit), and the other looks back. Sweethearts: a look that stays a
+// beat too long. People who only know each other: a nod. One of the two thinks something of it, in their own temper and
+// true to what they did: the one who greeted, the one greeted back, the one stared at. The game side does the looking,
+// the gesture and the voice; this says what. All lines are original to this add-on.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,10 +16,11 @@ namespace EnrageWestworld.Core
         {
             public string Kind;       // warm, sweet, hostile, known
             public string Gesture;    // hattip, nod, wave, sweet, spit, none (a look only)
-            public string Answer;     // the other's gesture back: nod, wave, sweet, none
+            public string Answer;     // the other's gesture back: nod, wave, sweet, look (hostile: a look back), none
             public bool Speaks;       // the first says a greeting in their own voice
             public int LookMs;        // how long the first one's eyes stay on the other
-            public string AThought, BThought;
+            public bool BThinks;      // the thought is the other's (else the first one's)
+            public string Thought;
         }
 
         public static readonly string[] Kinds = { "warm", "sweet", "hostile", "known" };
@@ -26,6 +28,13 @@ namespace EnrageWestworld.Core
         public static string KindOf(int warmth, bool romantic)
         {
             return romantic && warmth > 0 ? "sweet" : warmth > 0 ? "warm" : warmth < 0 ? "hostile" : "known";
+        }
+
+        /// A tie two people would acknowledge in passing: not one where only one of them knows (a lifted purse: the mark
+        /// never knew who).
+        public static bool Acknowledged(string tieKind)
+        {
+            return tieKind != "lift";
         }
 
         /// What passes between them: by the tie (its warmth and kind), their sexes and tempers, and a seed.
@@ -50,7 +59,7 @@ namespace EnrageWestworld.Core
                     break;
                 case "hostile":
                     a.Gesture = Spitter(aTemper) && r < 30 ? "spit" : "none";
-                    a.Answer = "none";
+                    a.Answer = "look";   // the other feels it and looks back
                     a.Speaks = false;
                     a.LookMs = 2200;
                     break;
@@ -61,9 +70,10 @@ namespace EnrageWestworld.Core
                     a.LookMs = 1200;
                     break;
             }
-            a.AThought = Thought(kind, aTemper, bName, seed + "|a");
-            if (Voice.Hash(seed + "|bt") % 100 < 55)
-                a.BThought = a.Gesture == "spit" ? Spat(aName, seed + "|b") : Thought(kind, bTemper, aName, seed + "|b");
+            // one thought, the first one's or the other's (never the other's when they didn't answer: they never noticed)
+            a.BThinks = a.Answer != "none" && Voice.Hash(seed + "|bt") % 100 < 45;
+            a.Thought = a.BThinks ? Thought(kind, a.Gesture == "spit" ? "spat" : kind == "hostile" ? "stared" : "answered", a.Gesture, bTemper, aName, seed + "|b")
+                                  : Thought(kind, "did", a.Gesture, aTemper, bName, seed + "|a");
             return a;
         }
 
@@ -88,32 +98,21 @@ namespace EnrageWestworld.Core
             return Voice.Hash(seed + "|first") % 2 == 0;
         }
 
-        /// One line for someone who just passed {b}, by what's between them and their temper.
-        public static string Thought(string kind, string temper, string other, string seed)
-        {
-            string[] pool = PoolFor(kind, temper);
-            return Fill(pool[Voice.Hash(seed) % pool.Length], other);
-        }
-
-        /// The one spat at, as they go on.
-        public static string Spat(string other, string seed)
-        {
-            string[] pool = Pools["hostile:spat"];
-            return Fill(pool[Voice.Hash(seed) % pool.Length], other);
-        }
-
-        private static string Fill(string line, string other)
-        {
-            return line.Replace("{b}", string.IsNullOrEmpty(other) ? "that one" : other);
-        }
-
-        private static string[] PoolFor(string kind, string temper)
+        /// One line for someone who just passed {b}: by what's between them, their part (did: greeted, stared, spat;
+        /// answered: greeted back; stared: was stared at; spat: was spat at), the gesture (a hat tip is thought of as a
+        /// hat tip) and their temper.
+        public static string Thought(string kind, string role, string gesture, string temper, string other, string seed)
         {
             string g = Minds.TemperGroup(temper);
-            string[] pool;
-            if (Pools.TryGetValue(kind + "|" + g, out pool) || Pools.TryGetValue(kind, out pool))
-                return pool;
-            return Pools["known"];
+            var pool = new List<string>();
+            string[] p;
+            if (Pools.TryGetValue(kind + "|" + role + "|" + g, out p) || Pools.TryGetValue(kind + "|" + role, out p))
+                pool.AddRange(p);
+            if (gesture != null && Pools.TryGetValue(kind + "|" + role + "|" + gesture, out p))
+                pool.AddRange(p);
+            if (pool.Count == 0)
+                pool.AddRange(Pools["known|did"]);
+            return pool[Voice.Hash(seed) % pool.Count].Replace("{b}", string.IsNullOrEmpty(other) ? "that one" : other);
         }
 
         /// The gesture's clip in the standing silent set for that sex (ai_gestures@gen_male|gen_female@standing@silent,
@@ -139,7 +138,7 @@ namespace EnrageWestworld.Core
                     set = woman ? new[] { "silent_negative_spit_f_001" } : new[] { "silent_neutral_spit_f_001" };
                     break;
                 default:
-                    return null;
+                    return null;   // "none" and "look": the eyes only
             }
             string side = left ? "_l_" : "_r_";
             if (set.Any(c => c.Contains("_l_")) && set.Any(c => c.Contains("_r_")))
@@ -164,25 +163,33 @@ namespace EnrageWestworld.Core
             return new[] { familiar, "HOWS_IT_GOING" };
         }
 
+        // keys: kind|role[|temper group or gesture]; a gesture's lines join the role's own
         internal static readonly Dictionary<string, string[]> Pools = new Dictionary<string, string[]>
         {
-            { "warm", new[] {
-                "There's {b}. Always a kind word, that one.", "Tipped my hat to {b}. Felt neighbourly.", "{b} nodded first. I'll take that.",
-                "Good to see {b} about.", "{b} looks well. That's something.", "A wave from {b}. Small thing. It matters.",
-                "{b}. One friendly face on this street, anyhow.", "Must ask after {b}'s people, next time we stop." } },
-            { "warm|cold", new[] { "{b}. Worth staying friendly with.", "Nod to {b}. Costs nothing.", "{b} likes me. Might be useful, one day." } },
-            { "warm|bold", new[] { "{b}. Good sort. Knows where they stand with me.", "Need a few on my side, in this town. {b}'s one.", "{b} would stand by me in a fight. I'd hope." } },
-            { "warm|fearful", new[] { "{b} smiled at me. One less thing to fret about.", "Glad {b} doesn't hold anything against me.", "{b} nodded. I nodded. Nothing went wrong." } },
-            { "sweet", new[] {
-                "{b}. Don't stare. Too late.", "Heart jumped when {b} looked over.", "{b} saw me. Smiled, I think. I think so.",
-                "Walk on. Walk on. Don't look back at {b}.", "If {b} had stopped, what would I have said?", "Smell of {b}'s soap on the air. Or I imagined it.",
-                "{b} looked away first. That means something. Doesn't it?" } },
-            { "hostile|bold", new[] { "{b}. Look me in the eye, then.", "Go on, {b}. Say something.", "{b} looked away first. Good.", "Walk past me like that again, {b}." } },
-            { "hostile|fearful", new[] { "Don't look at {b}. Eyes on the boards.", "{b}'s still sore. Can feel it from here.", "Crossed the street for {b} again.", "Heart going. Just {b}, walking past." } },
-            { "hostile|cold", new[] { "{b}. I keep the account.", "Not worth a nod, {b}.", "{b} can stew.", "Saw {b}. {b} saw me. That's all it needs." } },
-            { "hostile", new[] { "{b} gave me that look again.", "Still sour, {b} and me.", "There goes {b}, nose in the air.", "Didn't nod to {b}. Wasn't going to." } },
-            { "hostile:spat", new[] { "{b} spat as I went by. I'll remember it.", "Spat on the boards, did {b}? Fine.", "{b}'s spit, an inch from my boot." } },
-            { "known", new[] { "{b}. Know the face, at least.", "Nod to {b}. That's all we are, nods.", "Seen {b} about. Never said much.", "{b}. Same as ever." } },
+            { "warm|did", new[] { "There's {b}. Always a kind word, that one.", "Good to see {b} about.", "{b} looks well. That's something.",
+                                  "{b}. One friendly face on this street, anyhow.", "Must ask after {b}'s people, next time we stop." } },
+            { "warm|did|hattip", new[] { "Tipped my hat to {b}. Felt neighbourly." } },
+            { "warm|did|wave", new[] { "Waved to {b}. Small thing. It matters." } },
+            { "warm|did|cold", new[] { "{b}. Worth staying friendly with.", "A good day to {b}. Costs nothing.", "{b} likes me. Might be useful, one day." } },
+            { "warm|did|bold", new[] { "{b}. Good sort. Knows where they stand with me.", "Need a few on my side, in this town. {b}'s one.", "{b} would stand by me in a fight. I'd hope." } },
+            { "warm|did|fearful", new[] { "Glad {b} doesn't hold anything against me.", "{b}'s friendly. One less thing to fret about." } },
+            { "warm|answered", new[] { "{b} greeted me first. I'll take that.", "A good day from {b}. Good.", "{b} always has a greeting for me." } },
+            { "warm|answered|fearful", new[] { "{b} spoke to me. Nothing went wrong. Good.", "{b} was friendly. Breathe out." } },
+            { "sweet|did", new[] { "{b}. Don't stare. Too late.", "Heart jumped when {b} looked over.", "Walk on. Walk on. Don't look back at {b}.",
+                                   "If {b} had stopped, what would I have said?", "Smell of {b}'s soap on the air. Or I imagined it." } },
+            { "sweet|answered", new[] { "{b} saw me. Smiled, I think. I think so.", "{b} looked at me. Right at me.", "{b} looked a long while. That means something. Doesn't it?" } },
+            { "hostile|did", new[] { "Still sour, {b} and me.", "Didn't nod to {b}. Wasn't going to." } },
+            { "hostile|did|bold", new[] { "{b}. Look me in the eye, then.", "Go on, {b}. Say something.", "Walk past me like that again, {b}." } },
+            { "hostile|did|fearful", new[] { "Couldn't help staring at {b}. Fool thing to do.", "{b}'s still sore. Can feel it from here." } },
+            { "hostile|did|cold", new[] { "{b}. I keep the account.", "Not worth a nod, {b}.", "{b} can stew." } },
+            { "hostile|did|spit", new[] { "Spat at {b}'s feet. Felt good, too." } },
+            { "hostile|stared", new[] { "{b} gave me that look again.", "There goes {b}, nose in the air." } },
+            { "hostile|stared|bold", new[] { "{b} stared. Let 'em stare.", "{b} wants trouble. {b} can have it." } },
+            { "hostile|stared|fearful", new[] { "Don't look at {b}. Eyes on the boards.", "Heart going. Just {b}, walking past." } },
+            { "hostile|stared|cold", new[] { "Saw {b}. {b} saw me. That's all it needs.", "{b}'s glaring. Nothing new." } },
+            { "hostile|spat", new[] { "{b} spat as I went by. I'll remember it.", "Spat on the boards, did {b}? Fine.", "{b}'s spit, an inch from my boot." } },
+            { "known|did", new[] { "{b}. Know the face, at least.", "Nod to {b}. That's all we are, nods.", "Seen {b} about. Never said much.", "{b}. Same as ever." } },
+            { "known|answered", new[] { "{b} nodded back. That's about all we ever do.", "{b}. Polite, at least." } },
         };
 
         public static IEnumerable<string> AllLines()

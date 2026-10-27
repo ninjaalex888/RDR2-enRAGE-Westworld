@@ -388,6 +388,9 @@ namespace EnrageWestworld.InGame
 			_player = (flag ? "john" : "arthur");
 			_store = Store.Load(StorePath, Log.Write);
 			_store.Player = _player;
+			PassingAbort();
+			SightsReset("a save loaded");
+			_fallWatch = null;
 			try
 			{
 				// the save's size at load, and what grows in it (each capped)

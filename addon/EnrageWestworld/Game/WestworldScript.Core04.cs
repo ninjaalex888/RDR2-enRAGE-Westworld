@@ -159,6 +159,8 @@ namespace EnrageWestworld.InGame
 
         private void Shutdown04()
         {
+            PassingAbort();
+            SightsReset("shutdown");
             try
             {
                 FlirtPromptEnd();

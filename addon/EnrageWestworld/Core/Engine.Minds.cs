@@ -75,6 +75,16 @@ namespace EnrageWestworld.Core
             return c != null ? c.Text : null;
         }
 
+        /// This person remembers seeing the player do violence in the last `days` game days (a killing, an assault).
+        public bool SawYouViolent(string id, int days)
+        {
+            PersonState st = id != null ? Store.Find(id) : null;
+            if (st == null || st.Mind == null)
+                return false;
+            long now = Store.LastGameMin;
+            return st.Mind.Any(m => m.Kind == "deed:violence" && Minds.AboutYou(m) && now - m.At >= 0 && now - m.At < days * 1440L);
+        }
+
         /// One of enRAGE's records on the ticker (Minds and RecordMinds on): our memories of what they lived through,
         /// weighed with enRAGE's own record of them: what they feel about the player (its memories of him, raised by
         /// hate and fear), the deeds of his they know, what they've heard, a debt, their goal, a first sight of him, their

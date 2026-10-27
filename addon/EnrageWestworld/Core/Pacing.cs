@@ -57,7 +57,7 @@ namespace EnrageWestworld.Core
         {
             // small: everyday moments; frequent, but never the same people again soon
             { "nod", new Rule("nod", false, 60, 0, 0, 45) },                       // per pair
-            { "sight", new Rule("sight", false, 50, 2, 0, 1440) },                 // per person and state
+            { "sight", new Rule("sight", false, 40, 30, 0, 90) },                  // "who" is the state: an hour and a half before the same again
             { "fall", new Rule("fall", false, 6, 150, 600, 1440) },
             { "standup", new Rule("standup", false, 45, 60, 0, 720) },
             { "round", new Rule("round", false, 25, 240, 1440, 1440) },            // per saloon a night

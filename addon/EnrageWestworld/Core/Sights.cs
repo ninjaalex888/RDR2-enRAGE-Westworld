@@ -1,8 +1,10 @@
 // Reactions to a sight (roadmap 17d; overnight 2026-10-27, Tier 2.2): people notice how someone looks. The player
 // bloodied (hurt lately and not washed since), filthy, drunk or soaked; another man walking off bloodied from a street
-// fight. What they make of it comes from their temper: the timid are afraid, the hard size him up, the cold look past
-// him, the plain are concerned or amused. The feeling picks the look, the gesture, whether a word is said in their
-// own recorded voice (only where the feeling agrees with it), and the thought. All lines are original to this add-on.
+// fight. What they make of it comes first from what they already think of the player (afraid of him, against him,
+// fond of him) and then from their temper: the timid are afraid, the hard size him up, the cold look past him, the
+// plain are concerned or amused. The feeling picks the look, the gesture, whether a word is said to him in their own
+// recorded voice (only where the feeling agrees with it; a worded line is said to him, so it gets a subtitle), and the
+// thought. All lines are original to this add-on.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,13 +20,21 @@ namespace EnrageWestworld.Core
             public string State, Feeling;
             public string Gesture;    // surprised, headshake, spit, dismiss, none
             public string[] Voice;    // line names to try, or null (the feeling has no words for it)
+            public string Spoken;     // what's said to him with a worded line (the subtitle when the recording's words aren't known); null: wordless
             public int LookMs;
             public string Thought;
         }
 
-        /// What someone makes of the sight, by their temper (Minds.TemperGroup) and a seed for the plain.
-        public static string Feeling(string state, string temper, string seed)
+        /// What someone makes of the sight: what they already think of him first (regard: afraid, hostile, fond, or
+        /// null), then their temper (Minds.TemperGroup), and a seed for the plain.
+        public static string Feeling(string state, string temper, string regard, string seed)
         {
+            if (regard == "afraid")
+                return "afraid";   // whatever state he's in, they've seen what he does
+            if (regard == "hostile")
+                return state == "bloodied" || state == "drunk" ? "cold" : "disgust";
+            if (regard == "fond")
+                return state == "filthy" ? "pity" : state == "drunk" ? "amused" : "concerned";
             string g = Minds.TemperGroup(temper);
             bool coin = Voice.Hash(seed + "|feel") % 2 == 0;
             switch (state)
@@ -40,22 +50,28 @@ namespace EnrageWestworld.Core
             }
         }
 
-        /// The whole reaction to the player.
-        public static Look For(string state, string temper, string seed)
+        /// A stranger nobody knows the nature of still has one: mostly plain, some timid, some hard, some cold.
+        public static string StrangerTemper(string seed)
         {
-            string feel = Feeling(state, temper, seed);
+            int r = Voice.Hash(seed + "|temper") % 100;
+            return r < 50 ? null : r < 65 ? "Coward" : r < 73 ? "Hothead" : r < 81 ? "Proud" : r < 89 ? "Cold" : r < 94 ? "Greedy" : "Loyal";
+        }
+
+        /// The whole reaction to the player.
+        public static Look For(string state, string temper, string regard, string seed)
+        {
+            string feel = Feeling(state, temper, regard, seed);
             var l = new Look { State = state, Feeling = feel };
             int r = Voice.Hash(seed + "|g") % 100;
             switch (feel)
             {
                 case "afraid":
-                    l.Gesture = "surprised";
-                    l.LookMs = 1200;   // a glance, then eyes down
+                    l.Gesture = "none";
+                    l.LookMs = 800;    // a glance, then eyes down
                     break;
                 case "sizing":
                     l.Gesture = "none";
-                    l.LookMs = 3000;
-                    l.Voice = r < 50 ? new[] { "GREET_BLOODY" } : null;
+                    l.LookMs = 3000;   // a long, level look; nothing said
                     break;
                 case "cold":
                     l.Gesture = r < 40 ? "dismiss" : "none";
@@ -64,12 +80,16 @@ namespace EnrageWestworld.Core
                 case "concerned":
                     l.Gesture = "surprised";
                     l.LookMs = 2500;
-                    l.Voice = state == "bloodied" && r < 60 ? new[] { "GREET_BLOODY" } : null;
+                    if (state == "bloodied" && r < 60)
+                    {
+                        l.Voice = new[] { "GREET_BLOODY" };
+                        l.Spoken = Voice.Pick(seed + "|sp", "You're bleeding, mister.", "You're hurt. You know that?", "Somebody ought to see to that.");
+                    }
                     break;
                 case "disgust":
                     l.Gesture = Passing.Spitter(temper) && r < 30 ? "spit" : "headshake";
                     l.LookMs = 2000;
-                    l.Voice = r < 50 ? new[] { "VOCAL_FX_DISAPPROVE" } : null;
+                    l.Voice = r < 50 ? new[] { "VOCAL_FX_DISAPPROVE" } : null;   // wordless
                     break;
                 case "pity":
                     l.Gesture = "headshake";
@@ -78,7 +98,13 @@ namespace EnrageWestworld.Core
                 default:   // amused
                     l.Gesture = "dismiss";
                     l.LookMs = 2200;
-                    l.Voice = r < 55 ? (state == "filthy" ? new[] { "GREET_MUDDY", "PLAYER_LOOKING_WEIRD" } : new[] { "PLAYER_LOOKING_WEIRD" }) : null;
+                    if (r < 55)
+                    {
+                        l.Voice = state == "filthy" ? new[] { "GREET_MUDDY", "PLAYER_LOOKING_WEIRD" } : new[] { "PLAYER_LOOKING_WEIRD" };
+                        l.Spoken = state == "filthy" ? Voice.Pick(seed + "|sp", "Took a roll in the mud, did you?", "Half the trail on you, mister.")
+                                 : state == "drunk" ? Voice.Pick(seed + "|sp", "Had a few, have we?", "Steady on your feet there, friend.")
+                                 : Voice.Pick(seed + "|sp", "Swim in your clothes, did you?", "Dripping on the boards, mister.");
+                    }
                     break;
             }
             l.Thought = Line(state + "|" + feel, null, seed);
@@ -88,10 +114,10 @@ namespace EnrageWestworld.Core
         /// An onlooker's reaction to another man bloodied from a street fight, by name where they know it.
         public static Look ForOther(string temper, string who, string seed)
         {
-            string feel = Feeling("bloodied", temper, seed);
+            string feel = Feeling("bloodied", temper, null, seed);
             return new Look
             {
-                State = "bloodied", Feeling = feel, LookMs = feel == "afraid" ? 1200 : 2400, Gesture = feel == "afraid" || feel == "concerned" ? "surprised" : feel == "cold" ? "dismiss" : "none",
+                State = "bloodied", Feeling = feel, LookMs = feel == "afraid" ? 900 : 2400, Gesture = feel == "concerned" ? "surprised" : feel == "cold" ? "dismiss" : "none",
                 Thought = Line("other|" + feel, who, seed)
             };
         }
@@ -136,6 +162,17 @@ namespace EnrageWestworld.Core
             return bloodied ? "bloodied" : drunk ? "drunk" : filthy ? "filthy" : soaked ? "soaked" : null;
         }
 
+        /// Whether a state is worth remarking here: a man drunk in a saloon is nothing to look at, and trail dirt is
+        /// ordinary in a frontier town (only the city and the smart towns mind it, unless he's caked in it).
+        public static bool Remarkable(string state, string placeKind, string town, float dirt)
+        {
+            if (state == "drunk")
+                return placeKind != "saloon";
+            if (state == "filthy")
+                return dirt >= 0.9f || town == "Saint Denis" || town == "Blackwater";
+            return true;
+        }
+
         internal static readonly Dictionary<string, string[]> Pools = new Dictionary<string, string[]>
         {
             { "bloodied|afraid", new[] { "Blood on his shirt. Don't look. Don't look.", "Whose blood is that? Not his, I'd wager.", "Walk faster. He's been in something.",
@@ -146,6 +183,7 @@ namespace EnrageWestworld.Core
                                        "Another one who settles things with his fists." } },
             { "bloodied|concerned", new[] { "He's bleeding. Ought to see the doctor.", "That cut wants stitching. Someone should tell him.", "Blood at his collar. Hope he's all right.",
                                             "Poor devil's been hurt. Walking like it's nothing.", "Somebody's been at him. Wish I had a clean rag." } },
+            { "filthy|afraid", new[] { "Mud on him, and that look. Keep walking.", "Don't stare at the state of him. Not him." } },
             { "filthy|disgust", new[] { "Mud to the knees. Like something dragged from a ditch.", "Smell reached me before he did.", "Filth on him. In town, among decent folk.",
                                         "Hasn't seen a basin in a week, that one.", "Tracking muck all down the boards." } },
             { "filthy|amused", new[] { "Looks like he wrestled a hog. And lost.", "Half the county on his boots.", "Ha. Fell off his horse into a wallow, I'd say.",
@@ -156,9 +194,12 @@ namespace EnrageWestworld.Core
                                       "A drunk man is a dangerous man. Ma always said so." } },
             { "drunk|disgust", new[] { "Stinking of drink. Can barely stand.", "Drunk as a lord, and no lord.", "The bottle's got him. Shameful.",
                                        "Reeling about like that. Has he no people?" } },
+            { "drunk|cold", new[] { "Drunk again. Some men never learn.", "Let him stagger. Not my business." } },
             { "drunk|amused", new[] { "Ha. He's had a few.", "Walking like the street's a ship's deck.", "Somebody's been generous at the bar.", "Steady there, friend. Steady." } },
+            { "soaked|afraid", new[] { "Dripping wet, and still that look about him.", "Wet through. Don't ask him why. Don't ask." } },
             { "soaked|amused", new[] { "Wet through. Fell in the river, did he?", "Dripping like a drowned cat.", "Took a swim in his clothes. Ha.",
                                        "Water squelching in his boots. Can hear it from here." } },
+            { "soaked|disgust", new[] { "Dripping all over the boards. No manners.", "Wet as a dog and twice as welcome." } },
             { "soaked|concerned", new[] { "Soaked to the skin. He'll catch his death.", "Wet through. Somebody get that man by a stove.", "Dripping. Went in the river after something, must have.",
                                           "He'll take a chill like that." } },
             { "other|afraid", new[] { "{who}'s bleeding. I saw how it started.", "Blood on {who}'s face. Don't stare.", "{who} took a beating. Could've been anyone.", "Keep walking. {who}'s still angry." } },
@@ -167,9 +208,14 @@ namespace EnrageWestworld.Core
             { "other|concerned", new[] { "{who}'s hurt. Somebody fetch the doctor.", "Poor {who}. That eye'll swell shut.", "{who}'s bleeding. Should I say something?", "Hope {who} gets home all right." } },
         };
 
+        /// Every line, the spoken ones too, for the tests and the overlap checks.
         public static IEnumerable<string> AllLines()
         {
-            return Pools.Values.SelectMany(x => x);
+            return Pools.Values.SelectMany(x => x).Concat(new[]
+            {
+                "You're bleeding, mister.", "You're hurt. You know that?", "Somebody ought to see to that.", "Took a roll in the mud, did you?", "Half the trail on you, mister.",
+                "Had a few, have we?", "Steady on your feet there, friend.", "Swim in your clothes, did you?", "Dripping on the boards, mister."
+            });
         }
     }
 }

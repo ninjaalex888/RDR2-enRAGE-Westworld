@@ -66,6 +66,10 @@ namespace EnrageWestworld.InGame
             EndEncounters("memories wiped");
             WakeActsAbort();
             TrystAbort();
+            PassingAbort();
+            SightsReset("memories wiped");
+            _sightSeen.Clear();
+            _sightTown.Clear();
             if (_rough != null)
                 RoughEnd(_rough, "stopped: memories wiped", _now);
             ClearRegularBlips();
