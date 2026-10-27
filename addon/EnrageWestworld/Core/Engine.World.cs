@@ -586,7 +586,7 @@ namespace EnrageWestworld.Core
             {
                 foreach (string id in new[] { w.AId, w.BId }.Where(x => x != null))
                 {
-                    WRemember(id, "Joy", 60, "you came to the wedding");
+                    WRemember(id, "Joy", 60, Voice.Pick(id + "|wed", "you came to the wedding", "you stood with us at the wedding", "you were there for the wedding"));
                     PersonState st = Store.Find(id);
                     if (st != null)
                         st.Affection = Math.Min(100, st.Affection + 10);
@@ -606,7 +606,7 @@ namespace EnrageWestworld.Core
                 return;
             foreach (string id in new[] { w.AId, w.BId }.Where(x => x != null))
             {
-                WRemember(id, "Anger", 75, "you broke up the wedding");
+                WRemember(id, "Anger", 75, Voice.Pick(id + "|wedx", "you broke up the wedding", "you ruined the wedding", "you spoiled the wedding day"));
                 PersonState st = Store.Find(id);
                 if (st != null)
                     st.Affection = Math.Max(0, st.Affection - 30);
@@ -855,7 +855,8 @@ namespace EnrageWestworld.Core
                     text = text.Replace(" his ", " her ");
                 Push(new Toast { Kind = "life", Title = "Prisoner transfer", PersonId = t.PersonId, Weight = 40, Text = text });
                 if (p != null && p.IsAlive)
-                    WThought(p.Id, "Joyful", t.Outcome == "escaped" ? "escaping the prison wagon" : "walking free", 2, 48);
+                    WThought(p.Id, "Joyful", t.Outcome == "escaped" ? Voice.Pick(p.Id + "|esc", "escaping the prison wagon", "getting off the prison wagon", "slipping the law's wagon")
+                                                                      : Voice.Pick(p.Id + "|free", "walking free", "being let go", "the open road again"), 2, 48);
             }
             foreach (Person p in _byId.Values.Where(x => x.IsAlive && x.TopThought != null && x.TopThought.Mood == "Jailed"))
             {
@@ -885,8 +886,8 @@ namespace EnrageWestworld.Core
                     : d.How == "forgiven" ? lender.Name + " tore up " + owes.Name + "'s IOU for " + d.Amount + " dollars. Said friendship's worth more."
                     : owes.Name + " finally paid " + lender.Name + " the " + d.Amount + " dollars for " + d.Why + ".";
                 Push(new Toast { Kind = "life", Title = "Debts", PersonId = lender.Id, Weight = 25, Text = text });
-                WThought(lender.Id, d.How == "beaten" ? "Proud" : "Steady", "settling " + owes.FirstName + "'s debt", 1, 24);
-                WThought(owes.Id, d.How == "beaten" ? "Hurting" : d.How == "forgiven" ? "Joyful" : "Steady", d.How == "beaten" ? "the beating over money" : "a debt paid", 1, 24);
+                WThought(lender.Id, d.How == "beaten" ? "Proud" : "Steady", Voice.Pick(lender.Id + "|" + owes.Id, "settling " + owes.FirstName + "'s debt", "getting " + owes.FirstName + "'s money back", "squaring things with " + owes.FirstName), 1, 24);
+                WThought(owes.Id, d.How == "beaten" ? "Hurting" : d.How == "forgiven" ? "Joyful" : "Steady", d.How == "beaten" ? Voice.Pick(owes.Id + "|beat", "the beating over money", "the beating over what was owed", "being beaten over a debt") : Voice.Pick(owes.Id + "|paid", "a debt paid", "a debt cleared", "owing nothing now"), 1, 24);
             }
             if (_rng.Next(100) >= 30 || Store.Debts.Count(x => !x.Settled) >= 4)
                 return;

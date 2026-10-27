@@ -23,8 +23,8 @@ namespace EnrageWestworld.InGame
         public static readonly string[] Familiar = { "GREET_GENERAL_FAMILIAR", "HOWS_IT_GOING", "GREET_GENERAL_STRANGER" };
         public static readonly string[] Again = { "GREET_AGAIN" };   // "your memory fading? you already said hello": for the Awakening, not plain greetings
         public static readonly string[] Angry = { "GENERIC_ANGRY_SHOUT", "GENERIC_INSULT_HIGH_NEUTRAL", "WHATS_YOUR_PROBLEM", "GENERIC_ANGRY_REACTION", "GENERIC_CURSE_HIGH", "INSULT_RESPONSE", "GENERIC_INSULT_MED_NEUTRAL" };
-        public static readonly string[] Mild = { "GENERIC_CURSE_MED", "DISMISSIVE_REACT", "CUT_THAT_OUT", "INSULT_RESPONSE", "GENERIC_INSULT_MED_NEUTRAL" };
-        public static readonly string[] Scared = { "GENERIC_FRIGHTENED_HIGH", "SCARED_HELP", "GENERIC_FRIGHTENED_MED", "PANIC_HELP", "GENERIC_SHOCKED_HIGH" };
+        public static readonly string[] Mild = { "GENERIC_CURSE_MED", "DISMISSIVE_REACT", "CUT_THAT_OUT", "INSULT_RESPONSE", "GENERIC_INSULT_MED_NEUTRAL", "STOP_THAT" };
+        public static readonly string[] Scared = { "GENERIC_FRIGHTENED_HIGH", "SCARED_HELP", "GENERIC_FRIGHTENED_MED", "PANIC_HELP", "GENERIC_SHOCKED_HIGH", "GET_AWAY_FROM_ME", "DONT_HURT_ME" };
         public static readonly string[] Yes = { "GENERIC_YES", "GENERIC_AGREE", "RESPONSE_GENERIC" };
         public static readonly string[] No = { "GENERIC_NO", "DISMISSIVE_REACT", "GENERIC_DISMISS" };
         public static readonly string[] Thanks = { "GENERIC_THANKS", "GENERIC_THANKS_SHOUTED" };

@@ -1247,7 +1247,7 @@ namespace EnrageWestworld.Core
 					{
 						personState2.JealousOf = p.Name;
 						Feel(item, personState2, -20, now, "jealous of " + p.Name);
-						Thought(item.Id, "Bitter", "watching him sweet-talk " + p.FirstName, -2, 48);
+						Thought(item.Id, "Bitter", Voice.Pick(item.Id + "|" + p.Id, "watching him sweet-talk " + p.FirstName, "seeing him charm " + p.FirstName, "him and " + p.FirstName), -2, 48);
 						HateChange(item.Id, 3);
 						flirtResult.Jealous.Add(new KeyValuePair<Person, string>(item, Voice.Pick(item.Id + now, "I saw that.", "Really? Right in front of me?", "Don't you dare look at me.")));
 					}
@@ -1261,7 +1261,7 @@ namespace EnrageWestworld.Core
 				if (person != null)
 				{
 					HateChange(person.Id, 5);
-					Thought(person.Id, "Bitter", "a stranger sweet-talking " + p.FirstName, -2, 48);
+					Thought(person.Id, "Bitter", Voice.Pick(person.Id + "|" + p.Id, "a stranger sweet-talking " + p.FirstName, "a stranger charming " + p.FirstName), -2, 48);
 					flirtResult.Jealous.Add(new KeyValuePair<Person, string>(person, "That's my " + (p.Woman ? "girl" : "fella") + " you're sweet-talking, mister."));
 				}
 			}
@@ -1352,7 +1352,7 @@ namespace EnrageWestworld.Core
 				History(p.Id, "SWEET ON " + PlayerCalled(st).ToUpperInvariant());
 				break;
 			case 3:
-				Remember(p.Id, "Joy", 50, "fell for you", "you");
+				Remember(p.Id, "Joy", 50, Voice.Pick(p.Id + "|fell", "fell for you", "lost my heart to you", "fell for you, hard"), "you");
 				if (p.IsOutlaw && IntelFor != null)
 				{
 					st.Mark("intel:due");
@@ -1808,7 +1808,7 @@ namespace EnrageWestworld.Core
 			switch (a.Stage)
 			{
 			case 2:
-				Thought(a.AId, "Joyful", "courting " + text, 2, 48);
+				Thought(a.AId, "Joyful", Voice.Pick(a.AId + "|court", "courting " + text, "walking out with " + text), 2, 48);
 				if (pb != null)
 				{
 					Thought(pb.Id, "Joyful", text2 + "'s attentions", 1, 24);
@@ -1825,10 +1825,10 @@ namespace EnrageWestworld.Core
 				Announce(a, Romance.News(a, a.Stage, null), now, pa, pb);
 				break;
 			case 4:
-				Thought(a.AId, "Joyful", "the wedding", 3, 72);
+				Thought(a.AId, "Joyful", Voice.Pick(a.AId + "|wedding", "the wedding", "the wedding day", "the wedding to come"), 3, 72);
 				if (pb != null)
 				{
-					Thought(pb.Id, "Joyful", "the wedding", 3, 72);
+					Thought(pb.Id, "Joyful", Voice.Pick(pb.Id + "|wedding", "the wedding", "the wedding day", "the wedding to come"), 3, 72);
 				}
 				History(a.AId, "ENGAGED to " + a.BName);
 				if (pb != null)
@@ -1909,7 +1909,7 @@ namespace EnrageWestworld.Core
 				Thought(a.AId, (person != null && person.Personality == "Proud") ? "Humiliated" : "Bitter", Person.FirstOf(a.BName) + " turning " + (a.AWoman ? "her" : "him") + " down", -2, 48);
 				break;
 			case "quarrel":
-				Thought(a.AId, "Bitter", "the falling out with " + Person.FirstOf(a.BName), -2, 48);
+				Thought(a.AId, "Bitter", Voice.Pick(a.AId + "|fall", "the falling out with ", "the quarrel with ", "the break with ") + Person.FirstOf(a.BName), -2, 48);
 				if (person2 != null)
 				{
 					Thought(person2.Id, "Bitter", "the falling out with " + Person.FirstOf(a.AName), -2, 48);
