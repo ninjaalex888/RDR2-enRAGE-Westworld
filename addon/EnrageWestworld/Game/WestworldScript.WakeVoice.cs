@@ -24,7 +24,7 @@ namespace EnrageWestworld.InGame
             public int Handle, Stage, Listener, LineIdx, Played, Tries, Take, NextAt, Started, BusySince;
             public WakeVoiceMoment M;
             public string Name, Seed, Line;
-            public bool InAct, Speaking, Down, SawBusy;   // SawBusy: the speech was seen playing (a line counts as said once it starts and stops)
+            public bool InAct, Speaking, Down, SawBusy, Second;   // Second: the stand-in for a moment their voice had nothing for   // SawBusy: the speech was seen playing (a line counts as said once it starts and stops)
             public readonly List<string> Said = new List<string>();
         }
 
@@ -359,6 +359,20 @@ namespace EnrageWestworld.InGame
                 Log.Write(line);
             else
                 Log.Detail(line);
+            // nothing said: their voice hasn't the lines (a saloon girl's has no plain hello, 2026-10-27), so another moment of
+            // their stage, once, rather than a turn gone by in silence
+            if (why == null && r.Played == 0 && !r.Second && ENTITY.DOES_ENTITY_EXIST(r.Handle) && !ENTITY.IS_ENTITY_DEAD(r.Handle))
+            {
+                Ped p = new Ped(r.Handle), me = Game.Player.Character;
+                int stage = r.InAct ? Math.Max(Awakening.Awake, r.Stage) : r.Stage;
+                WakeVoiceMoment m = WakeVoice.Choose(stage, WakeVoiceContextFor(p, me, p.Position.DistanceTo(me.Position), ENTITY.GET_ENTITY_SPEED(me.Handle) > 0.8f, now),
+                                                     r.Seed + "|2", r.M.Id);
+                if (m != null)
+                {
+                    WakeVoiceBegin(p, r.Name, null, r.Stage, m, r.Seed + "|2", r.InAct, now);
+                    _wv.Second = true;
+                }
+            }
         }
 
         /// The awake act's plea lines (StepAwake, phase 1) as waking voice moments: true when one has begun, false to fall
