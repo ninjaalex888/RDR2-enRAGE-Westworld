@@ -83,13 +83,13 @@ namespace EnrageWestworld.Core
                     return "blows";
                 case "argue": case "cheat": case "debt": case "standoff": case "snap": case "envy":
                     return "quarrel";
-                case "brushoff": case "scorn": case "avoid":
+                case "brushoff": case "scorn": case "avoid": case "passby":
                     return "slight";
                 case "pickpocket": case "lift":
                     return "theft";
                 case "drunk":
                     return "drunk";
-                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "makeup":
+                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "makeup": case "help":
                     return "warmth";
                 case "smalltalk": case "gossip": case "haggle": case "hosts":
                     return "talk";
@@ -140,7 +140,8 @@ namespace EnrageWestworld.Core
         /// Whether one of the two did it to the other (the first in the scene did it), rather than both together.
         public static bool OneSided(string kind)
         {
-            return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" || kind == "avoid";
+            return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" || kind == "avoid" ||
+                   kind == "help" || kind == "passby";
         }
 
         /// How much it stays with someone, by group and by how they knew it.
@@ -172,7 +173,7 @@ namespace EnrageWestworld.Core
             if (how == "saw")
                 return Math.Sign(e);
             if (role == "done")
-                return Math.Max(-3, Math.Min(3, e < 0 ? e - 1 : e + (sub == "charity" ? 1 : 0)));
+                return Math.Max(-3, Math.Min(3, e < 0 ? e - 1 : e + (sub == "charity" || sub == "help" ? 1 : 0)));
             if (role == "doer")
                 return e < 0 ? -1 : e;   // a bully or a thief doesn't feel it the way the other did
             return Math.Max(-3, Math.Min(3, e));

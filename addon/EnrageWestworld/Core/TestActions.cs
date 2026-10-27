@@ -48,6 +48,7 @@ namespace EnrageWestworld.Core
             new Entry("musing", "People", "A stranger says something strange", "TestMusingKey", needs: "someone 3-14 m off"),
             new Entry("glitch", "People", "A stranger glitches", "TestGlitchKey", needs: "someone 3-16 m off"),
             new Entry("disbelief", "People", "Disbelief, voiced, over someone's head", "TestDisbeliefKey", needs: "a named person within 15 m"),
+            new Entry("fall", "People", "Someone takes a fall (and is helped up, or not)", "TestFallKey", needs: "two named people outdoors, one of them within 14 m and in view"),
             new Entry("sight", "People", "Someone reacts to how you look", "TestSightKey", needs: "someone within 10 m who can see you; looking ordinary, bloodied, drunk, filthy and soaked in turn"),
             new Entry("nod", "People", "Two who know each other acknowledge it", "TestNodKey", needs: "two people with a tie within 10 m of each other"),
             // ---- street scenes: the nearest named pair that fits plays it now (no tie or memory is noted for a test) --

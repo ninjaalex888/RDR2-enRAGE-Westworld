@@ -35,9 +35,12 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             if (_director.Busy)
             {
-                _director.Tick(me, SceneSay);
+                FallWatchStep(me, now);   // the player may give the fallen a hand up first (WestworldScript.Kindness.cs)
+                if (_director.Busy)
+                    _director.Tick(me, SceneSay);
                 return;
             }
+            _fallWatch = null;
             if (_director.Custom == null)
                 _director.Custom = SceneAction;
             if (_director.Slam == null)
@@ -75,6 +78,9 @@ namespace EnrageWestworld.InGame
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;
+            string fallWhy;
+            if (_interiorType == 0 && FallScene(me, now, false, out fallWhy))
+                return;   // someone took a fall (WestworldScript.Kindness.cs)
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < 22f &&
@@ -281,7 +287,7 @@ namespace EnrageWestworld.InGame
                 var p = new Pending { S = s, People = new List<Ped>(people), Names = names };
                 // a face in the bar, a drunk on the floor, a purse gone: noted only once it happens (a walk-over that
                 // never arrives leaves nothing); any other scene counts as soon as it starts, broken up or not
-                _pendingNote = !test && (s.Kind == "rough" || s.Kind == "drunk" || s.Kind == "lift") ? p : null;
+                _pendingNote = !test && (s.Kind == "rough" || s.Kind == "drunk" || s.Kind == "lift" || s.Kind == "help" || s.Kind == "passby") ? p : null;
                 if (_pendingNote == null && !test)
                     NoteHappened(p, s.Kind);   // a test leaves no tie between them
                 NoteInScene(people, s.Kind, now);

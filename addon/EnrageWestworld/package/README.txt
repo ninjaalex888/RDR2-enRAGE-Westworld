@@ -633,6 +633,8 @@ in the file. The new ones:
             pass; enemies give a hard look, sweethearts a long one; each thinks something of it
             SightReactions (true): people near you notice when you look bloodied, drunk, filthy or
             soaked, and react by their nature
+            Kindnesses (true): someone who trips in the street is helped up, or left lying, by the one
+            who saw it; walk up while they're down and you help them yourself
             RoughHandling (true): a man with a grudge (or a hothead with drink in him) smashes another's
             face into the nearest table, bar or wall; NpcThieves (true): pickpockets among the
             townsfolk, and begging; DrunkChallenges (true): a drunk calls a man out at night

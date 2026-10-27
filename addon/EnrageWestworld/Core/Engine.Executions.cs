@@ -51,6 +51,25 @@ namespace EnrageWestworld.Core
             Log("EXECUTION " + p.Name + ": saved by you (" + plan.Reason + ", " + plan.Boss + ")");
         }
 
+        /// The player gave someone a hand up after a fall: fonder of him, and they remember it (a kindness done to them).
+        /// Only for those who can remember (a lasting id); the game side keeps an unsaved resident first.
+        public void HelpedUp(Person p, bool nobodyElse, long now)
+        {
+            if (p == null || !CanRemember(p.Id))
+                return;
+            PersonState st = Store.Get(p);
+            st.Talks++;
+            st.Sightings = Math.Max(st.Sightings, 1);
+            st.Affection = Romance.Clamp(st.Affection + (nobodyElse ? 10 : 6), -100, 100);
+            if (Cfg.Minds)
+                Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "deed:kindness", Sub = "helpup", How = "did", Who = new List<string> { "player" }, Town = CurrentTown, At = Store.LastGameMin,
+                    Feel = 2, Strength = nobodyElse ? 60 : 50, Key = "helpup:" + Store.LastGameMin / 1440
+                }, Store.LastGameMin);
+            Log("KIND " + p.Name + ": you gave them a hand up" + (nobodyElse ? " (nobody else stopped)" : ""));
+        }
+
         /// Shot: his kin hear of it, and once he's found, the town (a notice for the corner, 6 to 18 game hours on).
         public void Executed(Resident r, Executions.Plan plan, string town, long now)
         {

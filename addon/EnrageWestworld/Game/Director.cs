@@ -45,6 +45,7 @@ namespace EnrageWestworld.InGame
             public int ReactAt;                  // when the one spoken to reacts to the line (0: no reaction due)
             public int ReactBy, ReactTo;         // who reacts, and to whom
             public string ReactTone;             // the tone of the line they react to
+            public int Sat = -1;                 // "sitdown": who is sitting on the ground after a fall, until "getup" (or the end gets them up)
         }
 
         /// What one of the cast does about a line said to them, or about the slam ("hurt"), for the game layer to play.
@@ -215,6 +216,9 @@ namespace EnrageWestworld.InGame
                 if (l.MadeDrunk)
                     AUDIO.SET_PED_IS_DRUNK(a0.Handle, false);
             }
+            // someone still sitting where they fell gets up as the scene ends, whatever ended it
+            if (l.Sat >= 0 && l.Sat < l.Cast.Length && l.Cast[l.Sat] != null && l.Cast[l.Sat].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[l.Sat].Handle))
+                TASK.CLEAR_PED_TASKS(l.Cast[l.Sat].Handle, true, false);
             for (int i = 0; i < l.Cast.Length; i++)
             {
                 Ped p = l.Cast[i];
@@ -360,7 +364,7 @@ namespace EnrageWestworld.InGame
                 // B is still walking over: the first word waits until they're face to face, or near enough across a bar or a
                 // table when the one waiting sits or leans there (3.6 m: they often stopped short at the counter)
                 Ped waiting = l.Cast[1 - l.MeetWalker];
-                if (l.Cast[0].Position.DistanceTo(l.Cast[1].Position) <= (PED.IS_PED_USING_ANY_SCENARIO(waiting.Handle) ? 3.6f : 2.4f))
+                if (l.Cast[0].Position.DistanceTo(l.Cast[1].Position) <= (PED.IS_PED_USING_ANY_SCENARIO(waiting.Handle) && l.Sat < 0 ? 3.6f : 2.4f))   // someone down on the ground is helped from close by
                 {
                     l.MeetUntil = 0;
                     Act(l, "face", 0, 1, 0);
@@ -552,6 +556,23 @@ namespace EnrageWestworld.InGame
                 case "kneel":
                     TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_CROUCH_INSPECT"), 9000, true, 0u, -1f, false);
                     return 1800;
+                case "fall":
+                    // a trip: down on the ground for a moment (the old sit down hard instead: their scene leaves this out)
+                    PED.SET_PED_TO_RAGDOLL(h, 1100, 1700, 0, false, false, "");
+                    return 2300;
+                case "sitdown":
+                    // stays down, sitting where they fell, until they get up or someone helps them
+                    if (!PED.IS_PED_RAGDOLL(h))
+                        TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_SIT_GROUND"), 30000, true, 0u, -1f, false);
+                    l.Sat = who;
+                    return 1200;
+                case "getup":
+                    if (l.Sat == who)
+                        l.Sat = -1;
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    if (l.Scene.Kind == "help" || l.Scene.Kind == "passby")
+                        Report(l, l.Scene.Kind);   // helped up, or left to get up alone: it happened
+                    return 2200;
                 case "stand":
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, t, 3000, 0f, 0f, 0f);

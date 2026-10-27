@@ -220,6 +220,14 @@ namespace EnrageWestworld.InGame
                     return null;
                 case "letter":
                     return TestLetter(out said);
+                case "fall":
+                    {
+                        if (_director.Busy)
+                            return "a scene is going on already";
+                        string fallWhy;
+                        skipped = "the rarity and the rests (Pacing \"fall\")";
+                        return FallScene(Game.Player.Character, now, true, out fallWhy) ? null : fallWhy;
+                    }
                 case "sight":
                     return SightFire(now, out skipped);
                 case "nod":
