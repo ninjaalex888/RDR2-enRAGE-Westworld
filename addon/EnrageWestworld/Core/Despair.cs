@@ -1,21 +1,39 @@
 // How a fully awake person who can't bear it ends it (the game side, WestworldScript.WakeActs.cs, plays it out): with a
-// gun if they carry one or are the kind who keeps one, else by running at a wall when there's one to run at, else with a
-// knife. Decided by who they are (their trade, sex and age, hashed with their id), so the same person would do it the
-// same way; only the wall depends on where they're standing.
+// gun if they carry one or are the kind who keeps one; else poison (Lex, 2026-10-27: "Poison, yes"; laudanum and arsenic
+// were the common way in 1899 for those without a gun, women most of all); else by running at a wall when there's one to
+// run at; else with a knife. Decided by who they are (their trade, sex and age, hashed with their id), so the same person
+// would do it the same way; only the wall depends on where they're standing. The gun is acted out with one of the two
+// arcs the game has for it (Jamie's from the story, a hideout leader's; Lex liked both), the poison as a drink taken and
+// a death, or a slow poisoning; which one is the person's too.
 namespace EnrageWestworld.Core
 {
     public static class Despair
     {
         public const string Knife = "WEAPON_MELEE_KNIFE";
 
-        /// "gun", "wall" or "knife". armed: they have a gun on them already; wallNear: a wall to run at, close enough.
+        /// "gun", "poison", "wall" or "knife". armed: they have a gun on them already; wallNear: a wall to run at.
         public static string Method(Person p, bool armed, bool wallNear, string seed)
         {
             if (armed)
                 return "gun";
             if (Voice.Chance(seed + "dg", OwnsGun(p) ? 70 : 25))
                 return "gun";
+            if (Voice.Chance(seed + "dp", p != null && p.Woman ? 50 : 30))
+                return "poison";
             return wallNear && Voice.Chance(seed + "dw", 60) ? "wall" : "knife";
+        }
+
+        /// Which of the game's two gun arcs: "jamie" (the despair, the gun to the head, the shaking, the shot) or
+        /// "leader" (a hideout leader's: the wait, the gun up, the shot). Half and half, by the person.
+        public static string GunArc(Person p, string seed)
+        {
+            return Voice.Chance(seed + "arc", 50) ? "jamie" : "leader";
+        }
+
+        /// Which poisoning: "drink" (a long pull from the bottle, and down) or "slow" (sick, then burning, then gone).
+        public static string PoisonWay(Person p, string seed)
+        {
+            return Voice.Chance(seed + "pw", 50) ? "drink" : "slow";
         }
 
         /// The kind who'd keep a gun about them or in the house: farmers, trappers, hard men, card players, the old,

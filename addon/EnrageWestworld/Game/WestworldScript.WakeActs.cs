@@ -43,6 +43,10 @@ namespace EnrageWestworld.InGame
             public int Sub, RunFrom;
             public float TopSpeed;
             public Vector3 WallAt, WallDir;
+            public string Variant;          // despair: the gun arc (jamie, leader) or the poisoning (drink, slow)
+            public DespairClip[] Seq;       // despair: its clips (WestworldScript.Despair.cs), null for the wall and the knife
+            public int ClipIdx, ClipAt;
+            public bool ClipOn, ClipSeen, ShotDone;
             public Person P;
             public PersonState St;
             public Resident Res;
@@ -729,36 +733,10 @@ namespace EnrageWestworld.InGame
                     act.NextThought = now + 3500;
                     break;
                 case "despair":
-                {
-                    // how: a gun if they carry one or are the kind to keep one, else a wall to run at, else a knife
-                    // (Core/Despair.cs); nothing is put in their hand until the last moment (StepDespair)
-                    Ped ped = new Ped(h);
-                    bool armed = WEAPON.IS_PED_ARMED(h, 4);
-                    Vector3 wall, dir;
-                    bool hasWall = DespairWall(ped, me, out wall, out dir);
-                    act.Method = Despair.Method(act.P, armed, hasWall, act.P.Id);
-                    act.Rec = _bridge.RecordAt(h);   // one of enRAGE's people: booked in its record when it's over
-                    act.WallAt = wall;
-                    act.WallDir = dir;
-                    act.Weapon = act.Method == "gun" ? (armed ? null : Despair.Gun(act.P)) : act.Method == "knife" ? Despair.Knife : null;
-                    DespairSets();
-                    if (act.Method == "knife" && _bladeSet == 1)
-                        STREAMING.REQUEST_ANIM_DICT(BladeDict);   // asked for now: it played once in two when asked at the last step
-                    if (act.Method == "knife" && _writheSet == 1)
-                        STREAMING.REQUEST_ANIM_DICT(WritheDict);
-                    TASK.CLEAR_PED_TASKS(h, true, false);
-                    TASK.TASK_STAND_STILL(h, 4500);
-                    // the last words said looking down at their own hands (Lex's P29)
-                    double hd = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
-                    Vector3 hands = ped.Position + new Vector3((float)-Math.Sin(hd) * 0.45f, (float)Math.Cos(hd) * 0.45f, -0.35f);
-                    TASK.TASK_LOOK_AT_COORD(h, hands.X, hands.Y, hands.Z, 4000, 0, 51, 0);
-                    act.Until = now + 30000;
-                    DespairLastWords(act, me);
-                    act.PhaseUntil = now + 3400;
-                    Log.Write("WAKE despair: " + act.Name + " can't bear it: " + DespairHow(act) + (hasWall ? " (a wall " + Flat(wall, ped.Position).ToString("0.0") + " m off)" : " (no wall to run at)") +
-                              (armed ? ", armed" : ""));
+                    // how (a gun, poison, a wall, a knife: Core/Despair.cs), the game's own clips for it, and the last
+                    // words said sobbing (WestworldScript.Despair.cs)
+                    BeginDespair(act, me, now);
                     break;
-                }
             }
         }
 
@@ -890,6 +868,8 @@ namespace EnrageWestworld.InGame
                 _selfHarmed.Add(h);   // theirs alone: never booked as the player's doing
                 if (act.Method == "wall")
                     DespairRunStart(act, now);
+                else if (act.Seq != null)
+                    DespairSeqStart(act, now);   // the gun arcs and the poisoning, with the game's clips
                 else
                     DespairArm(act, now);
                 return;
@@ -900,7 +880,9 @@ namespace EnrageWestworld.InGame
                     DespairRun(act, now);
                 else if (now >= act.PhaseUntil)
                 {
-                    if (act.Method == "knife")
+                    if (act.Sub >= 10 && act.Seq != null)
+                        DespairSeq(act, now);
+                    else if (act.Method == "knife")
                         DespairKnife(act, now);
                     else if (act.Sub == 1)
                         DespairAimed(act, now);
@@ -1139,13 +1121,18 @@ namespace EnrageWestworld.InGame
 
         private static string DespairHow(WakeAct act)
         {
-            return act.Method == "wall" ? "running at a wall" : act.Method == "knife" ? "a knife" : "a gun, " + (act.Weapon == null ? "their own" : Despair.Words(act.Weapon));
+            if (act.Method == "poison")
+                return act.Variant == "drink" ? "poison, drunk down" : "poison, slowly";
+            return act.Method == "wall" ? "running at a wall" : act.Method == "knife" ? "a knife" : "a gun, " + (act.Weapon == null ? "their own" : Despair.Words(act.Weapon)) +
+                   (act.Variant != null ? " (" + act.Variant + "'s way)" : "");
         }
 
         /// The same in a record's history, in his or her own words ("with a gun of his own").
         private static string DespairHistory(WakeAct act)
         {
             string their = act.P != null && act.P.Woman ? "her" : "his";
+            if (act.Method == "poison")
+                return "by poison";
             return act.Method == "wall" ? "running headlong at a wall" : act.Method == "knife" ? "with a knife" : "with " + (act.Weapon == null ? "a gun of " + their + " own" : Despair.Words(act.Weapon));
         }
 

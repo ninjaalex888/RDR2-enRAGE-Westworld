@@ -326,6 +326,8 @@ namespace EnrageWestworld.InGame
                         return "nobody 3-16 m off to glitch";
                     skipped = "the 7-15 minutes between glitches";
                     return null;
+                case "despairnow":
+                    return DespairNow(now);   // the nearest free person RealNPCs knows, straight to despair, each way in turn (WestworldScript.Despair.cs)
                 case "despairanims":
                     return AnimTestStart("despair", now);   // each candidate clip, numbered, on the nearest free person (WestworldScript.AnimTest.cs)
                 case "stageanims":
