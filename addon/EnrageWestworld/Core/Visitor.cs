@@ -24,13 +24,15 @@ namespace EnrageWestworld.Core
             return Voice.Pick(seed + "vm",
                 "Somebody saw a body behind the buildings last night. By sunup there was nothing there. Not even blood.",
                 "Talk in " + t + " of a dead man in the dark and somebody bent over him. Gone by morning, both of them.",
-                "A body in the alley, they say, and a pale thing crouched over it. Sheriff went to look. Found nothing.");
+                "A body in the alley, they say, and a pale thing crouched over it. Sheriff went to look. Found nothing.",
+                "The night clerk swears he saw it from the window. Hasn't slept since, and won't say more.",
+                "Dogs in " + t + " howled half the night. This morning a patch of ground by the livery is swept clean.");
         }
 
         /// What someone out late thinks as they run from it.
         public static string Fled(string seed)
         {
-            return Voice.Pick(seed + "vf", "Somebody's over that body. Not somebody. Something.", "Don't look back. Lord, don't look back.", "Its face. White as a plate.");
+            return Voice.Pick(seed + "vf", "Somebody's over that body. Not somebody. Something.", "Don't look back. Lord, don't look back.", "Its face. White as a plate.", "It looked up at me. It knew me. How did it know me?");
         }
 
         public static IEnumerable<string> Lines()

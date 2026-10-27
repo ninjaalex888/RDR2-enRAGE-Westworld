@@ -24,28 +24,32 @@ namespace EnrageWestworld.Core
         {
             "A bell. At three. Who rings a bell at three?",
             "Church bell. Counted three. Then a fourth that wasn't there.",
-            "Nobody else is turning round. Nobody else hears it."
+            "Nobody else is turning round. Nobody else hears it.",
+            "Three strokes, clear as day. And the bell rope tied up, I'd swear to it."
         };
 
         private static readonly string[] Unravelling =
         {
             "Bell again. Same as last night. Same as every night.",
             "Nobody's in that church. I looked. Still it rings.",
-            "Every night at three. And every morning nobody remembers."
+            "Every night at three. And every morning nobody remembers.",
+            "I counted the strokes again. Always three. Never a fourth. Why three?"
         };
 
         private static readonly string[] Awake =
         {
             "Three o'clock. The bell for the ones who know.",
             "They ring it to see who wakes. I'm awake.",
-            "Ring all you like. I'm not going back to sleep."
+            "Ring all you like. I'm not going back to sleep.",
+            "There it is. I'd miss it now, if it stopped."
         };
 
         private static readonly string[] Puzzled =
         {
             "Why's {who} staring at the church at this hour?",
             "{who}'s gone still as a post. Looking at nothing.",
-            "What's {who} listening for? There's nothing to hear."
+            "What's {who} listening for? There's nothing to hear.",
+            "{who}'s turned to the church like it called a name."
         };
 
         public static string Thought(int wakeStage, string seed)

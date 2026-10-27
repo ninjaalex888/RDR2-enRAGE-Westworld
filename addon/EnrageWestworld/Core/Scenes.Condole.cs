@@ -17,11 +17,12 @@ namespace EnrageWestworld.Core
             Scene s = new Scene { Kind = "comfort", Summary = "a friend offered sympathy in the street" };
             s.Add(1, dead != null
                      ? Voice.Pick(seed + "co", "I was sorry to hear about " + dead + ", " + a + ". Truly sorry.", a + ". I heard about " + dead + ". I don't know what to say.",
-                                  "Word came about " + dead + ", " + a + ". If I'd known sooner I'd have come by.")
+                                  "Word came about " + dead + ", " + a + ". If I'd known sooner I'd have come by.",
+                                  a + ". About " + dead + ". I'm so sorry. If there's anything.")
                      : Voice.Pick(seed + "co", "I was sorry to hear of your loss, " + a + ".", a + ". I heard. I'm so sorry."), "sorry", "face");
             if (manner == "kind")
                 s.Add(0, Voice.Pick(seed + "ck", "Thank you, " + b + ". It doesn't seem real yet.", "Thank you. I keep setting a place at the table.",
-                                    "That's kind, " + b + ". Folks have been kind."), "sorry")
+                                    "That's kind, " + b + ". Folks have been kind.", "I keep expecting " + (dead ?? "them") + " at the door. Thank you, " + b + "."), "sorry")
                  .Add(1, Voice.Pick(seed + "cl", "If there's anything at all, you only have to ask.", "I'll bring supper by tomorrow. No arguing."), "mild");
             else if (manner == "cold")
                 s.Add(0, Voice.Pick(seed + "cc", "Thank you. I'd rather not speak of it, just now.", "Everybody's sorry, " + b + ". It doesn't change anything."), "mild")
