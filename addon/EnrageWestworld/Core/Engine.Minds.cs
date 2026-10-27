@@ -128,13 +128,25 @@ namespace EnrageWestworld.Core
         }
 
         private bool _thinkFailed;
+        private long _thinkClock = -1;   // the latest game minute thought at: earlier means an older save was loaded
+
+        /// An older save was loaded (or the clock stepped back): what was thought after it hasn't happened either.
+        internal void ForgetThinking()
+        {
+            _thought.Clear();
+            _today.Clear();
+            _worryWear.Clear();
+        }
 
         private Minds.Choice ThinkImpl(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra)
         {
+            long now = Store.LastGameMin;
+            if (now < _thinkClock - 5)
+                ForgetThinking();
+            _thinkClock = now;
             KeyValuePair<string, Minds.Choice> was;
             if (_thought.TryGetValue(p.Id, out was) && was.Key == seed)
                 return was.Value;
-            long now = Store.LastGameMin;
             InnerLife.Context day = ThoughtDay(p.Home, p.Id);
             List<Minds.Candidate> all = Candidates(p, st, hour, seed, look, day, now);
             if (extra != null)
@@ -239,7 +251,8 @@ namespace EnrageWestworld.Core
                 {
                     case "seen":
                         InnerLife.Witnessed s = day.JustSaw;
-                        if (st != null && st.Mind.Any(m => m.How == "saw" && m.Who != null && m.Who.Contains(s.AId) && m.Who.Contains(s.BId) && Math.Abs(m.At - s.At) <= 60))
+                        if (st != null && s.AId != null && s.BId != null &&
+                            st.Mind.Any(m => m.How == "saw" && m.Who != null && m.Who.Contains(s.AId) && m.Who.Contains(s.BId) && Math.Abs(m.At - s.At) <= 60))
                             continue;
                         pull = 45 - Math.Max(0, now - s.At) / 2.0;
                         break;

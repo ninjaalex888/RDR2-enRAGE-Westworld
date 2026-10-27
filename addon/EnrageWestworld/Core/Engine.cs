@@ -75,6 +75,7 @@ namespace EnrageWestworld.Core
 			if (Store.LastGameMin > 0 && now < Store.LastGameMin - 120)
 			{
 				int num = Store.Rewind(now);
+				ForgetThinking();   // what the minds thought after the cut hasn't happened either (Engine.Minds.cs)
 				Log("Game time went back (" + Store.WasAt + " -> " + now + "): an older save was loaded. Rolled back " + num + " things that hadn't happened yet.");
 			}
 			Store.LastGameMin = now;
