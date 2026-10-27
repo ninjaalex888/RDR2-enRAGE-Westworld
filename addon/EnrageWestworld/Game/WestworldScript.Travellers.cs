@@ -155,6 +155,8 @@ namespace EnrageWestworld.InGame
             WEAPON.REMOVE_ALL_PED_WEAPONS(h, true, true);
             TASK.TASK_STAND_STILL(h, 240000);
             t.Man = m;
+            if (!t.Test)
+                Pacing.Note(_store.Pace, "traveller", null, null, _store.LastGameMin);
             t.Phase = "waiting";
             t.PhaseAt = now;
             _encounterPeds.Add(h);

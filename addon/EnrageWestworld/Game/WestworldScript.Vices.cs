@@ -19,6 +19,7 @@ namespace EnrageWestworld.InGame
     {
         private const int DrinkLookMs = 30000;
         private readonly Dictionary<string, long> _drinkers = new Dictionary<string, long>();   // id -> game minute they're sober again
+        private readonly Dictionary<int, long> _drunkVoices = new Dictionary<int, long>();      // handle -> when their voice sobers (SET_PED_IS_DRUNK back off)
         private int _nextDrink, _drinks, _drinkComforts, _drinkVoiceAt, _drinkVoice;
         private string _drinkLast, _drinkWhyNot;
         private Action _aDrinkVoice;
@@ -101,6 +102,7 @@ namespace EnrageWestworld.InGame
                 stance = true;
             }
             AUDIO.SET_PED_IS_DRUNK(h, true);
+            _drunkVoices[h] = sober;
             _drinkVoice = h;
             _drinkVoiceAt = now + 20000 + _rng.Next(20000);
             string seed = drinker.Who.Id + "|drink|" + g / 1440;
@@ -128,6 +130,20 @@ namespace EnrageWestworld.InGame
             return true;
         }
 
+        /// The drunk voices whose night is over (or everyone's, `all`): sober again.
+        private void SoberVoices(bool all)
+        {
+            if (_drunkVoices.Count == 0)
+                return;
+            long g = _store != null ? _store.LastGameMin : long.MaxValue;
+            foreach (int h in _drunkVoices.Where(kv => all || g >= kv.Value || g < kv.Value - 1440).Select(kv => kv.Key).ToList())
+            {
+                if (ENTITY.DOES_ENTITY_EXIST(h))
+                    AUDIO.SET_PED_IS_DRUNK(h, false);
+                _drunkVoices.Remove(h);
+            }
+        }
+
         /// A while after they start, the drink in their voice: once.
         private void DrinkVoiceStep(int now)
         {
@@ -141,6 +157,7 @@ namespace EnrageWestworld.InGame
 
         private void VicesReset()
         {
+            SoberVoices(true);
             _drinkers.Clear();
             _drinkVoice = 0;
         }

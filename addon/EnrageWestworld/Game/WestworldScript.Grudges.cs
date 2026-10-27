@@ -23,7 +23,7 @@ namespace EnrageWestworld.InGame
         private sealed class GrudgeWalk
         {
             public Ped Ped;
-            public string Name, Line, Voice;
+            public string Name, Line, Voice, Id, DeadId;
             public int Until, SaidAt;
         }
 
@@ -71,8 +71,8 @@ namespace EnrageWestworld.InGame
                         continue;
                     Candidate c;
                     string cid = w.OtherId(victim);
-                    if (!byId.TryGetValue(cid, out c) || c == a || TieWarmth(cid, a.Who) > 0)
-                        continue;   // not a friend of the one who did it too
+                    if (!byId.TryGetValue(cid, out c) || c == a || TieWarmth(cid, a.Who) > 0 || (!test && _engine.Grudged(cid, "tie|" + t.Doer + "|" + t.At)))
+                        continue;   // not a friend of the one who did it too, and not over this same wrong again
                     float apart = c.Ped.Position.DistanceTo(a.Ped.Position), fromYou = Math.Min(c.Ped.Position.DistanceTo(me.Position), a.Ped.Position.DistanceTo(me.Position));
                     if (apart > (test ? 12f : 8f) || fromYou >= best || (!NodInView(me, c.Ped) && !NodInView(me, a.Ped)))
                         continue;
@@ -111,6 +111,8 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             Pacing.Note(_store.Pace, "grudge", _placeTown, pair, g);
+            if (!test)
+                _engine.MarkGrudged(friend.Who.Id, "tie|" + wrong.Doer + "|" + wrong.At);   // had it out over this once
             _grudges++;
             string outcome = s.Kind == "brawl" ? "comes to blows" : s.Kind == "brushoff" ? "walks off" : s.Kind == "apology" ? "says sorry" : "words";
             _grudgeLast = friend.Who.Name + " at " + doer.Who.Name + " for " + victimName + ": " + outcome + (test ? " (a test)" : "");
@@ -153,8 +155,6 @@ namespace EnrageWestworld.InGame
                     return false;
                 }
                 Pacing.Note(_store.Pace, "grudge", _placeTown, c.Who.Id, g);
-                if (!test)
-                    _engine.MarkGrudged(c.Who.Id, deadId);   // once for this death
                 string seed = c.Who.Id + "|" + deadId;
                 int h = c.Ped.Handle;
                 _grudgesYou++;
@@ -162,13 +162,16 @@ namespace EnrageWestworld.InGame
                 {
                     TASK.TASK_GO_TO_ENTITY(h, me.Handle, GrudgeWalkMs, 2.0f, 1.4f, 0f, 0);
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, GrudgeWalkMs, 0, 51, 0);
-                    _grudgeWalk = new GrudgeWalk { Ped = c.Ped, Name = c.Who.Name, Line = Grudges.ToYourFace(c.Who.Temper, dead, seed), Voice = c.Who.Temper == "Hothead" ? "threat" : "angry", Until = now + GrudgeWalkMs };
+                    _grudgeWalk = new GrudgeWalk { Ped = c.Ped, Name = c.Who.Name, Line = Grudges.ToYourFace(c.Who.Temper, dead, seed), Voice = c.Who.Temper == "Hothead" ? "threat" : "angry", Until = now + GrudgeWalkMs,
+                                                   Id = test ? null : c.Who.Id, DeadId = deadId };
                     _grudgeLast = c.Who.Name + " came up to you about " + dead + (test ? " (a test)" : "");
                     Log.Write("GRUDGE " + c.Who.Name + " at you for " + dead + ": walks up to you (" + c.Who.Temper + ", " + (int)c.Ped.Position.DistanceTo(me.Position) + " m)" + (test ? ", a test" : ""));
                 }
                 else
                 {
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 3500, 0, 51, 0);
+                    if (!test)
+                        _engine.MarkGrudged(c.Who.Id, deadId);   // once for this death
                     string thought = Grudges.Stare(c.Who.Temper, dead, seed);
                     _ticker.Push(c.Who.Name + ", thinking", thought, "near", h);
                     _grudgeLast = c.Who.Name + " stared at you over " + dead + (test ? " (a test)" : "");
@@ -199,6 +202,8 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 4000, 0f, 0f, 0f);
                     Feed.Say(w.Name, w.Line, Speech.When(h, w.Voice, me.Handle), h, toYou: true);
                     w.SaidAt = now;
+                    if (w.Id != null)
+                        _engine.MarkGrudged(w.Id, w.DeadId);   // said to your face: once for this death
                     Log.Write("GRUDGE " + w.Name + " to your face: " + w.Line);
                 }
                 else if (now > w.Until)

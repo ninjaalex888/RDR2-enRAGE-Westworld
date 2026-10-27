@@ -71,7 +71,7 @@ namespace EnrageWestworld.InGame
                 bool news = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && good;
                 string w = Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper) ?? (test ? "glad" : null);
                 int r = Array.IndexOf(Scenes.RoundWhys, w);
-                if (w == null || r >= rank || !people.Any(o => o != c && o.Ped.Position.DistanceTo(c.Ped.Position) < RoundBar))
+                if (w == null || r >= rank || !people.Any(o => o != c && o.Ped.Position.DistanceTo(c.Ped.Position) < RoundBar && TieWarmth(o.Who.Id, c.Who) >= 0))
                     continue;
                 buyer = c;
                 roundWhy = w;
@@ -82,7 +82,7 @@ namespace EnrageWestworld.InGame
                 why = _roundWhyNot = "nobody here with cause to stand the house a drink";
                 return false;
             }
-            Candidate b = people.Where(o => o != buyer && o.Who.Id != buyer.Who.Id && o.Ped.Position.DistanceTo(buyer.Ped.Position) < RoundBar)
+            Candidate b = people.Where(o => o != buyer && o.Who.Id != buyer.Who.Id && o.Ped.Position.DistanceTo(buyer.Ped.Position) < RoundBar && TieWarmth(o.Who.Id, buyer.Who) >= 0)
                                 .OrderByDescending(o => TieWarmth(o.Who.Id, buyer.Who) > 0 ? 1 : 0).ThenBy(o => o.Ped.Position.DistanceTo(buyer.Ped.Position)).First();
             string skipped;
             string pace = Pacing.WhyNot(_store.Pace, "round", _placeTown, buyer.Who.Id, g, 0, test, out skipped);
@@ -131,8 +131,12 @@ namespace EnrageWestworld.InGame
                 if (cheered >= 4)
                     break;
                 int h = p.Handle;
-                if (!PED.IS_PED_HUMAN(h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) || _director.Involves(h) || IsAcknowledging(h) || MayDirectWhyNot(p) != null || Speech.Busy(h))
+                if (!PED.IS_PED_HUMAN(h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) || NotFree(h) || MayDirectWhyNot(p) != null || Speech.Busy(h))
                     continue;
+                string pid, pname;
+                bool plasting = LastingId(p, out pid, out pname);
+                if (plasting && n.Who != null && TieWarmth(pid, n.Who) < 0)
+                    continue;   // no cheer from someone with a grudge against him (and no tie written over theirs)
                 TASK.TASK_LOOK_AT_ENTITY(h, n.Buyer.Handle, 4000, 0, 51, 0);
                 bool woman = !PED.IS_PED_MALE(h);
                 string dict = woman ? Gestures.FemaleSpeaker : Gestures.MaleSpeaker;
@@ -144,10 +148,9 @@ namespace EnrageWestworld.InGame
                 if (cheered < 2)
                     Speech.SayTag(h, "cheer", n.Buyer.Handle);   // two voices are a cheer; four are a din
                 cheered++;
-                string id, name;
-                if (!n.Test && lasting && LastingId(p, out id, out name))
+                if (!n.Test && lasting && plasting)
                 {
-                    SceneTie t = Ties.Note(_store.Ties, bId, bName, id, name, _placeTown, "round", g);
+                    SceneTie t = Ties.Note(_store.Ties, bId, bName, pid, pname, _placeTown, "round", g);
                     if (t != null)
                         Log.Detail("TIE " + t.AName + " & " + t.BName + ": round");
                 }

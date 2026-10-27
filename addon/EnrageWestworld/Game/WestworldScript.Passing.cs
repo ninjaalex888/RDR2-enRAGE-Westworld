@@ -259,8 +259,16 @@ namespace EnrageWestworld.InGame
 
         /// Busy with a nod or a reaction to a sight (WestworldScript.Sights.cs): the street scenes, the talk and
         /// the falls leave them be till it's done, as these leave the others' people be.
+        /// Taken by something else of ours already: a street scene, a waking act, a conversation, a nod, a sight, a walk-up.
+        private bool NotFree(int h)
+        {
+            return _director.Involves(h) || IsAcknowledging(h) || InTalk(h) || _wakeActs.Any(x => x.Handle == h);
+        }
+
         private bool IsAcknowledging(int h)
         {
+            if (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h)
+                return true;
             if (_nod != null && ((_nod.A != null && _nod.A.Handle == h) || (_nod.B != null && _nod.B.Handle == h)))
                 return true;
             for (int i = 0; i < _sights.Count; i++)

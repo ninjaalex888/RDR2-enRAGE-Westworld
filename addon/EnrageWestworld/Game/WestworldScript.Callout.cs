@@ -85,7 +85,7 @@ namespace EnrageWestworld.InGame
             Vector3 mid = (caller.Ped.Position + called.Ped.Position) * 0.5f;
             Ped crowd = World.GetAllPeds().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && p.Handle != caller.Ped.Handle && p.Handle != called.Ped.Handle &&
                                                      p.Position.DistanceTo(mid) < 14f && Natives.Bystander(p, me.Handle, IsRecord(p.Handle)) && !Spawner.IsOurs(p.Handle) &&
-                                                     MayDirectWhyNot(p) == null && !_director.Involves(p.Handle) && !IsAcknowledging(p.Handle))
+                                                     MayDirectWhyNot(p) == null && !NotFree(p.Handle))
                                           .OrderBy(p => p.Position.DistanceTo(mid)).FirstOrDefault();
             SceneCast cast = BuildCast(caller.Ped, called.Ped, crowd, false, me, now, seed);
             if (cast.Off.Contains("standoff"))

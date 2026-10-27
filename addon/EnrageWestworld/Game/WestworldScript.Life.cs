@@ -73,8 +73,8 @@ namespace EnrageWestworld.InGame
             }
             if (_nextDrama < 0)
                 _nextDrama = now + 45000;
-            if (!_cfg.Drama || now < _nextDrama || Feed.Busy || _stalker != null || _wedding != null || _theft != null || _plea != null)
-                return;
+            if (!_cfg.Drama || now < _nextDrama || Feed.Busy || _stalker != null || _wedding != null || _theft != null || _plea != null || _visitor != null)
+                return;   // (and never gossip beside a figure crouched over a corpse)
             _nextDrama = now + 8000;
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)

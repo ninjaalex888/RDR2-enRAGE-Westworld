@@ -104,10 +104,23 @@ namespace EnrageWestworld.Core
                 DeathEntry d = Store.DeathOf(m.Who[0]);
                 if (d == null || d.By != "player" || st.Has("grudge:" + m.Who[0]))
                     continue;
+                // they can only hold it against him if they know it was him: they saw him do violence lately, or the
+                // town's talk of that killing has started and names nobody unseen (Knowing.cs); and they know his face
+                bool saw = st.Mind.Any(x => x.Kind == "deed:violence" && Minds.AboutYou(x) && now - x.At >= 0 && now - x.At < days * 1440L);
+                bool told = Store.Deeds.Any(x => x.VictimId == m.Who[0] && x.Known);
+                if (!(saw || told) || !(Knowing.Met(st) || saw))
+                    continue;
                 deadId = m.Who[0];
                 return m.NameAt(0);
             }
             return null;
+        }
+
+        /// Whether this person has already had it out over this (a mark; saved).
+        public bool Grudged(string id, string what)
+        {
+            PersonState st = id != null ? Store.Find(id) : null;
+            return st != null && st.Has("grudge:" + what);
         }
 
         /// They've said it to his face (or stared it): never again for that death.

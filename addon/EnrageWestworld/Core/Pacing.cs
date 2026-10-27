@@ -61,12 +61,12 @@ namespace EnrageWestworld.Core
             { "fall", new Rule("fall", false, 6, 150, 600, 1440) },
             { "standup", new Rule("standup", false, 45, 60, 0, 720) },
             { "round", new Rule("round", false, 25, 240, 1440, 1440) },            // per saloon a night
-            { "drink", new Rule("drink", false, 55, 60, 0, 1440) },
+            { "drink", new Rule("drink", false, 55, 60, 300, 1440) },              // a saloon: one drinker in five hours or so
             { "grudge", new Rule("grudge", false, 30, 180, 0, 1440) },             // per pair a day
             { "callout", new Rule("callout", false, 40, 1440, 1440, 2880) },       // a noon callout: once a day at most
             // big: encounters; rare, budgeted, with quiet between
             { "visitor", new Rule("visitor", true, 18, 2880, 2880, 0) },
-            { "traveller", new Rule("traveller", true, 20, 900, 0, 0) },
+            { "traveller", new Rule("traveller", false, 20, 900, 0, 0) },          // a man asking the way is no big moment
         };
 
         /// Why this kind can't happen here and now, or null when it may. `roll` is 0-99 (seeded by the caller). With

@@ -28,7 +28,7 @@ namespace EnrageWestworld.InGame
         }
 
         private VisitorRun _visitor;
-        private Ped _visitorBody;   // the body left behind once it's over, taken away unseen when you're far enough off
+        private readonly List<Ped> _visitorLeft = new List<Ped>();   // the body (or a figure in view) left behind once it's over, taken away unseen
         private int _visitors;
         private string _visitorLast;
 
@@ -57,8 +57,6 @@ namespace EnrageWestworld.InGame
                 StartedAt = now, PhaseAt = now, Test = test, Town = _bridge.TownOnly(Game.Player.Character.Position),
                 FigureModel = Spawner.ModelFor(null, false, _rng.Next()), BodyModel = Spawner.ModelFor(null, _rng.Next(4) == 0, _rng.Next())
             };
-            if (!test)
-                Pacing.NoteBig(_store.Pace, _store.LastGameMin);
             Log.Write("VISITOR begins in " + (_visitor.Town ?? "town") + ", game time " + Clock(Bridge.Now()) + (test ? " (a test)" : ""));
         }
 
@@ -69,6 +67,12 @@ namespace EnrageWestworld.InGame
             if (me == null || !me.Exists() || me.IsDead)
             {
                 EndVisitor("you died");
+                return;
+            }
+            string gone = VisitorGoneWhy(v, me, now);
+            if (gone != null)
+            {
+                EndVisitor(gone);
                 return;
             }
             switch (v.Phase)
@@ -108,7 +112,7 @@ namespace EnrageWestworld.InGame
                         Log.Write("VISITOR: you looked away, and it's gone");
                     }
                     if (v.Phase == "staring" && now - v.PhaseAt > 60000)
-                        EndVisitor("it stared a minute and you never looked away");
+                        EndVisitor(v.SeenSince != 0 ? "it stared a minute and you never looked away" : "it stood a minute where you couldn't see it");
                     return;
                 case "away":
                     if (now < v.PhaseAt)
@@ -122,7 +126,11 @@ namespace EnrageWestworld.InGame
                     }
                     Ped f = Spawner.Spawn(v.FigureModel, at, VisitorHeading(at, me.Position));
                     if (f == null)
+                    {
+                        if (++v.Tries > 12)
+                            EndVisitor("nowhere behind you to stand");
                         return;
+                    }
                     VisitorDress(f);
                     TASK.TASK_LOOK_AT_ENTITY(f.Handle, me.Handle, -1, 0, 51, 0);
                     TASK.TASK_STAND_STILL(f.Handle, 60000);
@@ -147,6 +155,24 @@ namespace EnrageWestworld.InGame
                         EndVisitor(v.SeenSince != 0 ? "you looked away again, and it was gone" : "it stood behind you and you never turned");
                     return;
             }
+        }
+
+        /// Why it's over whatever it was doing: you went far from where it was (a fast travel, a respawn), into another
+        /// town or indoors, the night turned (not for a test), or eight minutes in all.
+        private string VisitorGoneWhy(VisitorRun v, Ped me, int now)
+        {
+            if (now - v.StartedAt > 8 * 60000)
+                return "eight minutes passed";
+            if (v.Phase == "spawn")
+                return null;
+            if (me.Position.DistanceTo(v.At) > 90f)
+                return "you went far from it";
+            string town = _bridge.TownOnly(me.Position);
+            if (town != v.Town || _interiorType != 0)
+                return "you left the street";
+            if (!v.Test && !Visitor.Hour(CLOCK.GET_CLOCK_HOURS()))
+                return "the night turned";
+            return null;
         }
 
         /// The figure and the body, set out of sight: the body laid dead, the figure crouched over it.
@@ -187,6 +213,8 @@ namespace EnrageWestworld.InGame
             v.At = at;
             v.Phase = "crouched";
             v.PhaseAt = now;
+            if (!v.Test)
+                Pacing.Note(_store.Pace, "visitor", v.Town, null, _store.LastGameMin);   // out now: a big moment, counted once
             _encounterPeds.Add(f.Handle);
             _encounterPeds.Add(body.Handle);
             Log.Write("VISITOR crouched over a body " + (int)at.DistanceTo(me.Position) + " m off, where you can't see it");
@@ -239,7 +267,7 @@ namespace EnrageWestworld.InGame
             foreach (Ped p in World.GetAllPeds())
             {
                 if (p == null || !p.Exists() || p.IsDead || p.Handle == me.Handle || Spawner.IsOurs(p.Handle) || p.Position.DistanceTo(v.Figure.Position) > 15f ||
-                    !Natives.Bystander(p, me.Handle, IsRecord(p.Handle)) || MayDirectWhyNot(p) != null || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, v.Figure.Handle, 17))
+                    !Natives.Bystander(p, me.Handle, IsRecord(p.Handle)) || MayDirectWhyNot(p) != null || NotFree(p.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(p.Handle, v.Figure.Handle, 17))
                     continue;
                 v.Fled = true;
                 TASK.TASK_SMART_FLEE_PED(p.Handle, v.Figure.Handle, 60f, 20000, 0, 3f, 0);
@@ -258,15 +286,23 @@ namespace EnrageWestworld.InGame
             if (v == null)
                 return;
             Ped me = Game.Player.Character;
-            if (v.Figure != null)
-                Spawner.Release(v.Figure, true);   // it was never there
+            if (v.Figure != null && v.Figure.Exists())
+            {
+                if (VisitorSeen(me, v.Figure))
+                {
+                    TASK.TASK_WANDER_STANDARD(v.Figure.Handle, 10f, 10);   // in view: it walks off, and is gone once nobody sees
+                    _visitorLeft.Add(v.Figure);
+                }
+                else
+                    Spawner.Release(v.Figure, true);   // it was never there
+            }
             if (v.Body != null && v.Body.Exists())
             {
                 if (v.Phase != "spawn")
                     Safe("world events", () => RecordEvent("encounter:visitor", null, "a pale figure over a body", "player", "you", v.Body.Position, v.Body.Handle, v.Body.Handle, 0, why));
                 bool seen = ENTITY.IS_ENTITY_ON_SCREEN(v.Body.Handle) && me != null && me.Exists() && v.Body.Position.DistanceTo(me.Position) < 150f;
                 if (seen)
-                    _visitorBody = v.Body;   // taken away once you've gone and can't see
+                    _visitorLeft.Add(v.Body);   // taken away once you've gone and can't see
                 else
                     Spawner.Release(v.Body, true);
             }
@@ -286,21 +322,33 @@ namespace EnrageWestworld.InGame
         /// The body left behind goes once nobody can see it go (you 150 m off or out of sight).
         private void VisitorBodyStep()
         {
-            Ped b = _visitorBody;
-            if (b == null)
+            if (_visitorLeft.Count == 0)
                 return;
             Ped me = Game.Player.Character;
-            if (!b.Exists())
+            for (int i = _visitorLeft.Count - 1; i >= 0; i--)
             {
-                _visitorBody = null;
-                return;
+                Ped b = _visitorLeft[i];
+                if (b == null || !b.Exists())
+                {
+                    _visitorLeft.RemoveAt(i);
+                    continue;
+                }
+                if (me != null && me.Exists() && (b.Position.DistanceTo(me.Position) > 150f || !ENTITY.IS_ENTITY_ON_SCREEN(b.Handle)))
+                {
+                    Spawner.Release(b, true);
+                    _visitorLeft.RemoveAt(i);
+                    Log.Detail("VISITOR: gone, as if it never was");
+                }
             }
-            if (me != null && me.Exists() && (b.Position.DistanceTo(me.Position) > 150f || !ENTITY.IS_ENTITY_ON_SCREEN(b.Handle)))
-            {
-                Spawner.Release(b, true);
-                _visitorBody = null;
-                Log.Detail("VISITOR: the body is gone, as if it never was");
-            }
+        }
+
+        /// A mission or shutdown: everything it left goes with it.
+        private void VisitorLeftClear()
+        {
+            foreach (Ped b in _visitorLeft)
+                if (b != null && b.Exists())
+                    Spawner.Release(b, true);
+            _visitorLeft.Clear();
         }
 
         private string VisitorStatus()

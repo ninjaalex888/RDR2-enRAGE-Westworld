@@ -16,9 +16,8 @@ namespace EnrageWestworld.Core
         /// The wrongs a friend would take up, with how C names them to A's face (A did it to {b}).
         public static readonly Dictionary<string, string[]> Wrongs = new Dictionary<string, string[]>
         {
-            { "rough", new[] { "You put {b}'s face through the bar. I heard all about it.", "{b} can't chew for the teeth you loosened." } },
+            { "rough", new[] { "You smashed {b}'s face in. I heard all about it.", "{b} can't chew for the teeth you loosened." } },
             { "pickpocket", new[] { "Hand in {b}'s coat, they say. In broad day.", "You robbed {b}. Everybody knows it." } },
-            { "brawl", new[] { "You beat on {b}. Thought nobody'd mind?", "{b}'s still got your knuckles on his face." } },
             { "scorn", new[] { "{b} asked you for a nickel and you treated them like a dog.", "Heard how you sent {b} off. Proud of that?" } },
             { "passby", new[] { "{b} was lying in the street and you stepped round them.", "You walked past {b} like a dropped hat." } },
             { "faced", new[] { "Made a show of {b} in the street, did you?", "You shamed {b} in front of the whole street." } },

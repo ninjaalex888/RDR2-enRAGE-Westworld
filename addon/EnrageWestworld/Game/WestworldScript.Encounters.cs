@@ -165,8 +165,7 @@ namespace EnrageWestworld.InGame
                 else if (EncounterRoll("the night visitor", _cfg.NightVisitorChance))
                 {
                     _encounterWait = null;
-                    StartVisitor(now);
-                    Pacing.Note(_store.Pace, "visitor", _placeTown, null, _store.LastGameMin);
+                    StartVisitor(now);   // Pacing notes it once it's really out (VisitorSpawn)
                     return;
                 }
             }
@@ -179,8 +178,7 @@ namespace EnrageWestworld.InGame
                 else if (EncounterRoll("a traveller asking the way", _cfg.TravellerChance))
                 {
                     _encounterWait = null;
-                    StartTraveller(now);
-                    Pacing.Note(_store.Pace, "traveller", null, null, _store.LastGameMin);
+                    StartTraveller(now);   // Pacing notes it once he's on the road (TravellerSpawn)
                     return;
                 }
             }
@@ -678,11 +676,7 @@ namespace EnrageWestworld.InGame
                 EndVisitor(why);
             if (_traveller != null)
                 EndTraveller(why);
-            if (_visitorBody != null)
-            {
-                Spawner.Release(_visitorBody, true);   // a mission or shutdown: the body goes with it
-                _visitorBody = null;
-            }
+            VisitorLeftClear();   // a mission or shutdown: what it left goes with it
         }
 
         /// One line for the F7 dump.

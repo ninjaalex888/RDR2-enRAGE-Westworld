@@ -706,6 +706,7 @@ namespace EnrageWestworld.InGame
             PassingAbort();
             SightsAbort();
             GrudgesAbort();
+            SoberVoices(true);
             if (_rough != null)
                 RoughEnd(_rough, "stopped: a mission started", now);
             _glitch = null;
@@ -779,8 +780,8 @@ namespace EnrageWestworld.InGame
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
-            if (_drinkVoice != 0)
-                Safe("vices", _aDrinkVoice ?? (_aDrinkVoice = () => DrinkVoiceStep(_now)));   // a drinker's voice, once (WestworldScript.Vices.cs)
+            if (_drinkVoice != 0 || _drunkVoices.Count > 0)
+                Safe("vices", _aDrinkVoice ?? (_aDrinkVoice = () => { DrinkVoiceStep(_now); SoberVoices(false); }));   // a drinker's voice, and sober again at 4 (WestworldScript.Vices.cs)
             Safe("ceremonies", _aCeremony);
             Safe("kin", _aCast);
             Safe("pickups", _aPickups);
