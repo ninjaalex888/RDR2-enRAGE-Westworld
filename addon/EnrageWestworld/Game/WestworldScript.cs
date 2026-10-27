@@ -423,6 +423,7 @@ namespace EnrageWestworld.InGame
 			_player = (flag ? "john" : "arthur");
 			SaveSettle();   // a save still being written in the background finishes first (WestworldScript.Saving.cs)
 			_store = Store.Load(StorePath, Log.Write);
+			_saveRefusedTold = false;   // a store that could not be read says so once again (WestworldScript.Saving.cs)
 			_store.Player = _player;
 			SaveWarm();     // the first save's one-off cost, paid inside the load's long frame
 			if (_recordFates.Count > 0)

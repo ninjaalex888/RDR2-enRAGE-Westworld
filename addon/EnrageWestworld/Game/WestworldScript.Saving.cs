@@ -40,6 +40,11 @@ namespace EnrageWestworld.InGame
                 SaveReport();
             if (_store == null || _player == null)
                 return;
+            if (_store.ReadFailed != null)
+            {
+                SaveRefused();
+                return;
+            }
             if (quiet == null)
                 _playedSinceSave++;
             int since = Environment.TickCount - _lastSaveAt;
@@ -164,6 +169,11 @@ namespace EnrageWestworld.InGame
         {
             if (_store == null || _player == null)
                 return;
+            if (_store.ReadFailed != null)
+            {
+                SaveRefused();
+                return;
+            }
             try
             {
                 lock (_saveLock)
@@ -208,10 +218,23 @@ namespace EnrageWestworld.InGame
             _playedSinceSave = 0;
         }
 
+        private bool _saveRefusedTold;
+
+        /// The save on disk couldn't be read at load (Store.ReadFailed): nothing is written over it this session.
+        private void SaveRefused()
+        {
+            if (_saveRefusedTold)
+                return;
+            _saveRefusedTold = true;
+            Log.Write("SAVE skipped: " + _store.ReadFailed + "; nothing is saved this session, so the file on disk is left as it was");
+        }
+
         private string SaveStatus()
         {
             if (_store == null)
                 return "nothing loaded yet";
+            if (_store.ReadFailed != null)
+                return "NOT SAVING this session: " + _store.ReadFailed + "; the file on disk is left as it was";
             string last = _saveFile.Length == 0 ? "none since the load" :
                 _saveWhy + ", " + _saveKb + " KB, " + _saveMs.ToString("0.0") + " ms on the game thread, " +
                 (_saveWriting ? "still being written" : _saveWriteUs >= 0 ? (_saveWriteUs / 1000.0).ToString("0.0") + " ms writing it out in the background" : "not written");

@@ -205,36 +205,103 @@ namespace EnrageWestworld.Core
             return new DataContractJsonSerializer(typeof(Store), new DataContractJsonSerializerSettings { UseSimpleDictionaryFormat = true });
         }
 
+        /// Why the save on disk couldn't be read and mustn't be written over (in use by something else at load, or
+        /// unreadable and no copy of it could be kept), or null. While it's set the game side saves nothing this
+        /// session. Never saved itself.
+        [IgnoreDataMember] public string ReadFailed;
+
+        /// The save, read. A file in use by something else (a sync tool, a virus scanner, an editor) is tried again for
+        /// a second, then left alone: an empty store that won't be saved, never one that would be written over the real
+        /// file. An unreadable file is kept as a dated .bad copy, then the .tmp a save left behind is tried (a crash
+        /// between writing it and swapping it in), then a fresh start. No save at all: the .tmp, if one reads.
         public static Store Load(string path, Action<string> log)
+        {
+            string tmp = path + ".tmp";
+            if (!File.Exists(path))
+            {
+                Store left = TryRead(tmp);
+                if (left != null)
+                {
+                    log?.Invoke("No " + Path.GetFileName(path) + ", but the copy a save left behind reads: recovered from " + Path.GetFileName(tmp));
+                    return left;
+                }
+                return Fresh(null);
+            }
+            Exception last = null;
+            for (int attempt = 0; attempt < 5; attempt++)
+            {
+                try
+                {
+                    Store s = Read(path);
+                    if (s != null)
+                        return s;
+                    last = new SerializationException("empty");
+                    break;
+                }
+                catch (Exception ex) when (ex is IOException || ex is UnauthorizedAccessException)
+                {
+                    last = ex;
+                    System.Threading.Thread.Sleep(200);
+                }
+                catch (Exception ex)
+                {
+                    last = ex;
+                    break;
+                }
+            }
+            if (last is IOException || last is UnauthorizedAccessException)
+            {
+                log?.Invoke("Couldn't open " + path + " (" + last.Message + "): something else has it open. Nothing is saved this session, so the file is left as it is; close whatever has it and load the game again.");
+                return Fresh("the save was in use when it loaded (" + last.Message + ")");
+            }
+            string bad = path + "." + DateTime.Now.ToString("yyyyMMdd-HHmmss") + ".bad";
+            bool kept = false;
+            try
+            {
+                File.Copy(path, bad, false);
+                kept = true;
+            }
+            catch
+            {
+            }
+            Store fromTmp = TryRead(tmp);
+            if (fromTmp != null)
+            {
+                log?.Invoke("Couldn't read " + path + " (" + last.Message + "); recovered from " + Path.GetFileName(tmp) + (kept ? ", the unreadable file kept as " + Path.GetFileName(bad) : ""));
+                return fromTmp;
+            }
+            log?.Invoke("Couldn't read " + path + " (" + last.Message + ") - starting fresh" + (kept ? ", old file kept as " + Path.GetFileName(bad) : "; no copy of it could be kept, so nothing is saved this session"));
+            return Fresh(kept ? null : "the save couldn't be read or copied (" + last.Message + ")");
+        }
+
+        private static Store Read(string path)
+        {
+            using (FileStream stream = File.OpenRead(path))
+            {
+                Store s = (Store)Serializer().ReadObject(stream);
+                if (s != null)
+                    s.Fix();
+                return s;
+            }
+        }
+
+        private static Store TryRead(string path)
         {
             try
             {
-                if (File.Exists(path))
-                {
-                    using (FileStream stream = File.OpenRead(path))
-                    {
-                        Store s = (Store)Serializer().ReadObject(stream);
-                        if (s != null)
-                        {
-                            s.Fix();
-                            return s;
-                        }
-                    }
-                }
+                return File.Exists(path) ? Read(path) : null;
             }
-            catch (Exception ex)
+            catch
             {
-                log?.Invoke("Couldn't read " + path + " (" + ex.Message + ") - starting fresh, old file kept as .bad");
-                try
-                {
-                    File.Copy(path, path + ".bad", true);
-                }
-                catch
-                {
-                }
+                return null;
             }
+        }
+
+        private static Store Fresh(string readFailed)
+        {
             Store fresh = new Store();
             fresh.Fix();
+            fresh.ReadFailed = readFailed;
             return fresh;
         }
 
