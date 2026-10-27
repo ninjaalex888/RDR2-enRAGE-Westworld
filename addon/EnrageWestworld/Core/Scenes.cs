@@ -268,6 +268,14 @@ namespace EnrageWestworld.Core
                 s.Fight = true;
                 s.Add(1, null, "angry", "fight", 8000).Add(0, null, null, "endfight").Add(0, "Keep your winnings. Keep your teeth, too, while you can.", "won", "walkaway");
             }
+            else if (c.Saloon && Voice.Chance(seed + "out", 50))
+            {
+                // thrown out (Tier 4): in a saloon, half the time it's the cheat who goes, told to by the man he cheated
+                s.Add(0, Voice.Pick(seed + "o1", "Out. And leave the pot you never won.", "Get out of this saloon. Now. Before the rest of the table hears of it.",
+                                    "Walk out that door, " + b + ", or be carried."), "angry")
+                 .Add(1, Voice.Pick(seed + "o2", "...Keep it. Crooked table anyhow.", "Fine. I know when I'm not wanted.", "This town's got no sense of humour."), "mild", "walkaway");
+                s.Summary = "a card cheat was shown the door";
+            }
             else
             {
                 s.Add(1, "...Take your money and get out of my sight.", "mild").Add(0, "Gladly.", null, "walkaway");
