@@ -22,7 +22,7 @@ namespace EnrageWestworld.InGame
     {
         private sealed class Execution
         {
-            public string Phase = "spawn";   // spawn, held, fight, last, shot, saved, leaving
+            public string Phase = "spawn";   // spawn, held, fight, last, firing, shot, saved, leaving
             public Resident R, BossR;
             public Executions.Plan Plan;
             public Ped Captive;
@@ -31,11 +31,12 @@ namespace EnrageWestworld.InGame
             public Blip Mark;
             public string Town, Region;
             public int StartedAt, NoticedAt, ShootAt, NextLine, PhaseUntil, Tries, AimSince, Lines;
-            public bool Noticed, Warned, Called, Thought, Test;
+            public bool Noticed, Warned, Called, Thought, Test, LastChance;
         }
 
         private const string ExecKneel = "WORLD_HUMAN_GRAVE_MOURNING_KNEEL";
-        private const int ExecWaitMs = 40000, ExecAfterWarnMs = 25000, ExecUnseenMs = 240000;
+        // 25 s after he's seen (12 once warned): 40 s of the same threats read as a loop (Lex, 22:02)
+        private const int ExecWaitMs = 25000, ExecAfterWarnMs = 12000, ExecUnseenMs = 240000;
         private Execution _exec;
         private bool _execRequested;
         private KeySpec _execKey;
@@ -137,10 +138,10 @@ namespace EnrageWestworld.InGame
             float d = e.Captive != null && e.Captive.Exists() ? e.Captive.Position.DistanceTo(me.Position) : 999f;
             if (!captiveThere && e.Phase != "shot" && e.Phase != "leaving")
             {
-                EndExecution("he's gone from the world");   // not seen to die: nothing comes of it
+                EndExecution("he vanished before anyone saw him die");   // not seen to die: nothing comes of it
                 return;
             }
-            if (!captiveAlive && (e.Phase == "held" || e.Phase == "fight" || e.Phase == "last"))
+            if (!captiveAlive && (e.Phase == "held" || e.Phase == "fight" || e.Phase == "last"))   // ("firing": his death is the shot's)
             {
                 ExecutionCaptiveDied(e, now);
                 return;
@@ -165,6 +166,16 @@ namespace EnrageWestworld.InGame
                 case "last":
                     if (now >= e.PhaseUntil)
                         ExecutionShoot(e, men, now);
+                    break;
+                case "firing":
+                    // the gunman shoots him for real (animation, flash, sound); the old bullet only if he still stands
+                    if (e.Captive.IsDead)
+                        ExecutionDead(e, now);
+                    else if (now >= e.PhaseUntil)
+                    {
+                        ExecutionBullet(e, men);
+                        ExecutionDead(e, now);
+                    }
                     break;
                 case "shot":
                     if (now >= e.PhaseUntil)
@@ -339,11 +350,22 @@ namespace EnrageWestworld.InGame
                 else
                     Feed.Say(e.R.Name, Executions.Plead(e.Plan, seed), Speech.When(ch, "plead", men[0].Handle), ch);
             }
+            if (e.Noticed && !e.LastChance && men.Count > 0 && e.ShootAt - now <= 6000 && d < 90f)
+            {
+                // the last warning, said to him: it counts down rather than going round again
+                e.LastChance = true;
+                Ped m = men[0];
+                Feed.Say(ExecManName(e, m), Executions.LastChance(e.Plan, e.R.Id), Speech.When(m.Handle, "final", me.Handle), m.Handle, toYou: true);
+            }
             if (e.Noticed && now >= e.ShootAt)
             {
                 Feed.Say(e.R.Name, Executions.LastWords(e.R.Id), Speech.When(ch, "plead", men.Count > 0 ? men[0].Handle : me.Handle), ch);
+                // he tries to get up: out of the kneel and free to fall when he's hit
+                PED.SET_PED_KEEP_TASK(ch, false);
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(ch, false);
+                TASK.CLEAR_PED_TASKS(ch, false, false);
                 e.Phase = "last";
-                e.PhaseUntil = now + 2200;
+                e.PhaseUntil = now + 1800;
             }
         }
 
@@ -352,10 +374,30 @@ namespace EnrageWestworld.InGame
             return e.BossR != null && e.Men.Count > 0 && e.Men[0] == m ? e.BossR.Name : "A gunman";
         }
 
+        /// The gunman fires on him: a fight with him alone, so the game plays the shot.
         private void ExecutionShoot(Execution e, List<Ped> men, int now)
+        {
+            Ped shooter = men.FirstOrDefault();
+            if (shooter == null)
+            {
+                ExecutionBullet(e, men);
+                ExecutionDead(e, now);
+                return;
+            }
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(shooter.Handle, false);
+            TASK.CLEAR_PED_TASKS(shooter.Handle, false, false);
+            TASK.TASK_COMBAT_PED(shooter.Handle, e.Captive.Handle, 0, 16);
+            e.Phase = "firing";
+            e.PhaseUntil = now + 3000;
+        }
+
+        /// He still stands three seconds on: the old way, a bullet from the gunman's hand, and down.
+        private void ExecutionBullet(Execution e, List<Ped> men)
         {
             int ch = e.Captive.Handle;
             Ped shooter = men.FirstOrDefault();
+            if (ENTITY.IS_ENTITY_DEAD(ch))
+                return;
             Vector3 head = e.Captive.Position + new Vector3(0f, 0f, 0.55f);
             if (shooter != null)
             {
@@ -363,7 +405,16 @@ namespace EnrageWestworld.InGame
                 MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, Natives.Hash("WEAPON_REVOLVER_CATTLEMAN"), shooter.Handle, true, false, 1000f, false);
             }
             if (!ENTITY.IS_ENTITY_DEAD(ch))
+            {
                 ENTITY.SET_ENTITY_HEALTH(ch, 0, shooter != null ? shooter.Handle : ch);
+                PED.SET_PED_TO_RAGDOLL(ch, 3000, 3000, 0, false, false, "");
+            }
+            Log.Write("EXECUTION " + e.R.Name + ": the gunman's shot didn't take, so the old way");
+        }
+
+        private void ExecutionDead(Execution e, int now)
+        {
+            int ch = e.Captive.Handle;
             LedgerNote(ch, e.R.Id, e.R.Name, "resident", "a revolver", "another");
             _engine.Executed(e.R, e.Plan, e.Town, Bridge.Now());
             if (e.Mark != null && e.Mark.Exists())

@@ -126,6 +126,14 @@ namespace EnrageWestworld.Core
             }
         }
 
+        // the last warning to the player, a few seconds before
+        public static string LastChance(Plan p, string seed)
+        {
+            if (p.Reason == "debt")
+                return Fill(Voice.Pick(seed + "elc", "Last chance, mister. {bossword} paid for this, not you.", "I'm counting to three. Be gone by two."), p);
+            return Voice.Pick(seed + "elc", "Last chance, mister. Ride off while you still can.", "I'm counting to three. Be gone by two.", "You still here? Then you're watching.");
+        }
+
         // him to the player
         public static string CallsToYou(string seed)
         {
@@ -225,6 +233,7 @@ namespace EnrageWestworld.Core
             for (int i = 0; i < 12; i++)
             {
                 yield return CallsToYou("s" + i);
+                yield return LastChance(For(i % 2 == 0 ? "debt" : null, "Yates", null, "Valentine", "s" + i), "s" + i);
                 yield return LastWords("s" + i);
             }
         }

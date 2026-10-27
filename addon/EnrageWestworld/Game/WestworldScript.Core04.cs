@@ -229,6 +229,8 @@ namespace EnrageWestworld.InGame
                 // an execution on the road, staged near you now (the encounters' tick starts it when nothing is in the way)
                 if (!_cfg.Executions)
                     Hint("Executions are off ([Encounters] Executions).", 5000);
+                else if (_exec != null || _execRequested)
+                    Hint("There's one staged already. Finish it first.", 4000);   // a second press used to queue another after it
                 else
                 {
                     _execRequested = true;
