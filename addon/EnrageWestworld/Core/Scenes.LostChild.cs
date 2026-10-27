@@ -74,7 +74,9 @@ namespace EnrageWestworld.Core
                               who + " was found down by the creek, wet to the knees and not one bit sorry.",
                               who + " was found in the church, under a pew, eating an apple nobody paid for.",
                               who + " followed a peddler's wagon out of town. A farmer brought " + k.Him + " home.",
-                              who + " was at the depot the whole time, watching for the train.");
+                              who + " was at the depot the whole time, watching for the train.",
+                              who + " was found asleep in the church loft, with the hymn books for a pillow.",
+                              who + " turned up at the blacksmith's, working the bellows like " + k.He + "'d been hired.");
         }
 
         public static IEnumerable<Child> Samples()

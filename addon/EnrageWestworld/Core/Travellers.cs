@@ -52,18 +52,19 @@ namespace EnrageWestworld.Core
         public static string Ask(string town, string seed)
         {
             return Voice.Pick(seed + "ta", "Which way's " + town + "? Been walking since sunup and I'm turned clean around.",
-                "Is this the road to " + town + "? Every fork looks the same out here.", "You know " + town + "? Lost my horse two days back and my sense of direction with it.");
+                "Is this the road to " + town + "? Every fork looks the same out here.", "You know " + town + "? Lost my horse two days back and my sense of direction with it.",
+                "Which road for " + town + "? My feet can't take another wrong turn.");
         }
 
         /// He works it out from what the player says (we don't hear it), points and thanks him.
         public static string Thanks(string town, string seed)
         {
-            return Voice.Pick(seed + "tt", "That way? Obliged, mister. I'd have walked to the coast.", "Past the ridge, then on to " + town + ". Thank you kindly.", "Right. That way. Bless you.");
+            return Voice.Pick(seed + "tt", "That way? Obliged, mister. I'd have walked to the coast.", "Past the ridge, then on to " + town + ". Thank you kindly.", "Right. That way. Bless you.", "Obliged, mister. I'll say a word for you in " + town + ".");
         }
 
         public static string Refused(string seed)
         {
-            return Voice.Pick(seed + "tr", "...Alright. Alright, I'm going.", "No call for that. I only asked.", "Fine. I'll find it myself.");
+            return Voice.Pick(seed + "tr", "...Alright. Alright, I'm going.", "No call for that. I only asked.", "Fine. I'll find it myself.", "Easy, now. Put that away. I only asked directions.");
         }
 
         public static string Ignored(string seed)

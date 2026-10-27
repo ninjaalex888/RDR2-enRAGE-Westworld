@@ -35,7 +35,9 @@ namespace EnrageWestworld.Core
             "I'm not asking for much. A little, maybe. You'll know how much.",
             "Let them talk. You and I know how it was.",
             "Watch over the ones I can't. That's all of them, near enough.",
-            "Gravel in my knee. Good. Ought to cost something."
+            "Gravel in my knee. Good. Ought to cost something.",
+            "Rain for the corn, Lord. Not so much for the roof.",
+            "Make me better than I was on Tuesday."
         };
 
         private static readonly string[] Lapsed =
@@ -44,7 +46,8 @@ namespace EnrageWestworld.Core
             "Everybody in their Sunday best. Me in yesterday's shirt.",
             "They're all looking. Let them look.",
             "Ought to go in. Ought to do a lot of things.",
-            "Used to know every hymn. Couldn't tell you one now."
+            "Used to know every hymn. Couldn't tell you one now.",
+            "Mother would have my ear for walking past that door."
         };
 
         private static readonly string[] Godless =
