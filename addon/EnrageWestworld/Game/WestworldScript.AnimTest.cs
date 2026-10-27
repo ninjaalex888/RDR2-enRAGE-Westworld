@@ -98,7 +98,7 @@ namespace EnrageWestworld.InGame
         {
             public int Handle, Idx, Phase, NextAt, Until, Started;
             public string Name, Which, Dict, Clip;
-            public bool Woman, GunGiven, Started1, Flag0Tried;
+            public bool Woman, GunGiven, Started1, Flag0Tried, Retried;
             public AnimClip[] Clips;
             public Vector3 From;
             public readonly List<string> Results = new List<string>();
@@ -126,6 +126,12 @@ namespace EnrageWestworld.InGame
                 Handle = h, Name = who != null ? who.Name : Grammar.UpperFirst(Director.Kind(p, woman)), Woman = woman, Which = which,
                 Clips = which == "despair" ? DespairClips : StageClips, NextAt = now + 1600
             };
+            // borrowed for the run, so the game stops giving them orders of its own between clips (Lex, 2026-10-27: he went
+            // back to his day between them); someone another script already holds is borrowed lightly (their state left)
+            if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h))
+                Spawner.BorrowLight(p);
+            else
+                Spawner.Borrow(p);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             TASK.CLEAR_PED_TASKS(h, true, false);   // up from a seat or a scenario first
             TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 1500, 0f, 0f, 0f);
@@ -203,6 +209,7 @@ namespace EnrageWestworld.InGame
                     t.Started = now;
                     t.Started1 = false;
                     t.Flag0Tried = false;
+                    t.Retried = false;
                     t.Until = now + Math.Min(ms, 12000) + 400;
                     t.Phase = 2;
                     t.NextAt = now + 300;
@@ -227,9 +234,21 @@ namespace EnrageWestworld.InGame
                         t.NextAt = now + 200;
                         return;
                     }
+                    if (!t.Started1 && !t.Retried)
+                    {
+                        t.Retried = true;
+                        Log.Write("WAKE anim #" + (t.Idx + 1) + " " + t.Clip + " didn't start: " + (PED.IS_PED_USING_ANY_SCENARIO(h) ? "in a scenario, " : "") +
+                                  "the play task's status " + TASK.GET_SCRIPT_TASK_STATUS(h, Natives.Hash("SCRIPT_TASK_PLAY_ANIM"), true) + "; once more");
+                        TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, false, true);
+                        TASK.TASK_PLAY_ANIM(h, t.Dict, t.Clip, 8f, -4f, -1, c.Flags, 0f, false, 0, false, "", false);
+                        t.Started = now;
+                        t.Until = now + Math.Min(Math.Max(1000, (int)(ENTITY.GET_ANIM_DURATION(t.Dict, t.Clip) * 1000f)), 12000) + 400;
+                        t.NextAt = now + 300;
+                        return;
+                    }
                     float moved = ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(t.From);
                     float secs = ENTITY.GET_ANIM_DURATION(t.Dict, t.Clip);
-                    AnimTestResult(t, (t.Started1 ? "played" + (t.Flag0Tried ? " (over the whole body)" : "") : "didn't start") + ", " + secs.ToString("0.0") + " s long, ran " +
+                    AnimTestResult(t, (t.Started1 ? "played" + (t.Flag0Tried ? " (over the whole body)" : "") + (t.Retried ? " (on the second try)" : "") : "didn't start") + ", " + secs.ToString("0.0") + " s long, ran " +
                                       ((now - t.Started) / 1000.0).ToString("0.0") + " s, moved them " + moved.ToString("0.0") + " m" + (moved >= 1f ? " (it carries them off: drop it or play it in place)" : ""));
                     return;
                 }
@@ -243,6 +262,7 @@ namespace EnrageWestworld.InGame
             t.Results.Add(line);
             Log.Write("WAKE anim " + line);
             TASK.CLEAR_PED_TASKS(t.Handle, true, false);   // back on their feet for the next
+            TASK.TASK_STAND_STILL(t.Handle, 3000);         // and held there: no gap for their day to come back into
             STREAMING.REMOVE_ANIM_DICT(t.Dict);
             t.Idx++;
             t.Phase = 0;
@@ -264,13 +284,8 @@ namespace EnrageWestworld.InGame
                     WEAPON.REMOVE_WEAPON_FROM_PED(h, TestRevolver, true, TakeReason);
                     WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
                 }
-                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
-                if (!ENTITY.IS_ENTITY_DEAD(h))
-                {
-                    TASK.CLEAR_PED_TASKS(h, true, false);
-                    TASK.TASK_WANDER_STANDARD(h, 10f, 10);
-                }
             }
+            Spawner.Release(new Ped(h), false);   // handed back: events unblocked, orders cleared, wandering (never deleted)
             int played = t.Results.Count(r => r.Contains(": played"));
             Log.Write("WAKE anim test (" + t.Which + ") done on " + t.Name + ": " + played + " of " + t.Clips.Length + " played" + (why != null ? " (" + why + ")" : ""));
             Hint("Animations: " + played + " of " + t.Clips.Length + " played (each in the log, WAKE anim)" + (why != null ? "; " + why : "") + ".", 6000);
