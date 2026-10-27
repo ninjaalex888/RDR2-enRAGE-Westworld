@@ -167,9 +167,17 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             PadMood b = Mood.Baseline(w.Traits), m = _engine.Shadow.MoodOf(id, w.Traits, g);
             string mind = Mood.SoreOrGlad(m, b), old = _cfg.MindLive ? null : _engine.MoodToday(w.P, w.P.Home ?? _placeTown);
-            MindLog(now, "MIND " + w.Name + " (" + (w.Src.Temper ?? "plain") + "): " + f.Kind + " (" + f.Strength + ")" + (about != null ? " at " + about : "") + ", urge " + f.Urge +
+            MindLog(now, "MIND " + w.Name + " (" + (w.Src.Temper ?? "plain") + "): " + f.Kind + " (" + f.Strength + ")" + (about != null ? " at " + about : "") + ", urge " + f.Urge + ", shows " + Display.Shows(f, ae, w.Traits) + " (" + MindCanShow(f, w) + ")" +
                          " <- " + ev.Kind + " (" + ae.Role + (heardOnly ? ", only heard it" : "") + ", " + ae.Witnesses + " saw); mood " + Mood.Words(m, b) +
                          (!_cfg.MindLive && old != mind ? "; the old mood says " + (old ?? "nothing") + ", the mind's " + (mind ?? "nothing") : ""));
+        }
+
+        /// What the game is proven able to show of it (Core/Catalogue.cs), its first entry by name, or "the thought alone".
+        private static string MindCanShow(Feeling f, MindWho w)
+        {
+            foreach (Expression x in Catalogue.For(f.Kind, f.Urge, f.Strength, w.P.Woman, true))
+                return x.Channel + " " + (x.Name.Contains("/") ? x.Name.Substring(x.Name.LastIndexOf('/') + 1).Trim() : x.Name);
+            return "the thought alone";
         }
 
         /// Whether a MIND line could be written now (the 20 a minute), without writing one.
