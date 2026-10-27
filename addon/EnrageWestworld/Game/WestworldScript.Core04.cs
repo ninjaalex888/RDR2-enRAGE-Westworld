@@ -137,6 +137,7 @@ namespace EnrageWestworld.InGame
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
             _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
+            BuildTestKeys();   // the Testing page's keys ([Testing], WestworldScript.Testing.cs)
         }
 
         private void IniTick(int now)
@@ -191,7 +192,7 @@ namespace EnrageWestworld.InGame
         /// press counts once the key has been let go (T tapped through a long ticker line).
         private bool HeldKeyRepeat(KeyEventArgs e)
         {
-            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _stalkerKey.Matches(e) || _execKey.Matches(e) || _cryingKey.Matches(e) || _hermitKey.Matches(e) || _gatherKey.Matches(e) || _wakeKey.Matches(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e)))
+            if (_cfg == null || !(_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || IsTestingKey(e) || SettingsKeyHit(e) || _tickerNextKey.Matches(e)))
                 return false;
             int t = Environment.TickCount;
             bool repeat = e.KeyCode == _lastHotkey && !_hotkeyLetGo && t - _lastHotkeyAt >= 0 && t - _lastHotkeyAt < 600;
@@ -232,24 +233,10 @@ namespace EnrageWestworld.InGame
                 _readerRequested = true;
                 return true;
             }
-            if (_stalkerKey.Matches(e))
-            {
-                _stalkerRequested = true;
+            // the Testing page's keys (the stalker, waking someone, the encounters, the talk and rough tests...): each asks
+            // for its fire, which the tick does (WestworldScript.Testing.cs)
+            if (TestKeyHit(e))
                 return true;
-            }
-            // the Testing page's keys: an encounter staged near you now (the encounters' tick starts it when nothing is in the way)
-            string staged = _execKey.Matches(e) ? "execution" : _cryingKey.Matches(e) ? "crying" : _hermitKey.Matches(e) ? "hermit" : _gatherKey.Matches(e) ? "gathering" : null;
-            if (staged != null)
-            {
-                bool asked;
-                Hint(RequestEncounter(staged, "key " + KeyOf(staged), out asked), asked ? 6000 : 5000);
-                return true;
-            }
-            if (_wakeKey.Matches(e))
-            {
-                _wakeRequested = true;
-                return true;
-            }
             if (_tickerNextKey.Matches(e) && _cfg.Ticker)
             {
                 _tickerNextRequested = true;
@@ -743,6 +730,7 @@ namespace EnrageWestworld.InGame
             _now = now;
             Safe("settings reload", _aIni);
             Safe("places", _aPlaces);
+            TestingStep(now);   // a test asked for by its key or the panel (refused in a mission, with why)
             if (MISC.GET_MISSION_FLAG())
             {
                 Safe("mission pause", _aMission);

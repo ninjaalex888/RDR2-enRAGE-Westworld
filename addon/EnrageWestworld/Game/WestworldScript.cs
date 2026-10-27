@@ -980,20 +980,8 @@ namespace EnrageWestworld.InGame
 			{
 				return;
 			}
-			if (FontTestKey.Matches(e))
-			{
-				_fontTestUntil = Game.GameTime + 20000;   // Shift+F2: the subtitle line in each face (WestworldScript.Subtitles.cs)
-				Log.Write("FONT test: 1-" + FontFaces.Length + " are " + string.Join(", ", FontFaces) + "; say which matches the game's subtitles");
-			}
-			else if (TalkTestKey.Matches(e))
-			{
-				_talkTestRequested = true;   // Shift+F7: two people near you talk in their real voices (WestworldScript.Talk.cs)
-			}
-			else if (RoughTestKey.Matches(e))
-			{
-				_roughTestRequested = true;   // Shift+F9: one man near you smashes another's face on the bar (WestworldScript.Roughs.cs)
-			}
-			else if (_testKey.Matches(e))
+			// Shift+F2, Shift+F7 and Shift+F9 are the Testing page's keys now ([Testing] TestFontKey, TestTalkKey, TestRoughKey)
+			if (_testKey.Matches(e))
 			{
 				_testRequested = true;
 			}
@@ -1038,6 +1026,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST worries: " + WorriesStatus());
 			Log.Write("TEST mind: " + MindsStatus());
 			Log.Write("TEST perf: " + PerfStatus());
+			Log.Write("TEST testing: " + TestingStatus());
 			Log.Write("TEST near: " + NearStatus());
 			Log.Write("TEST regulars: " + RegularsStatus());
 			MarkRegulars();

@@ -16,7 +16,6 @@ namespace EnrageWestworld.InGame
         private bool _subNoted;
         private Action _aSubtitles, _aSubDraw;
         private int _fontTestUntil;
-        private static readonly KeySpec FontTestKey = KeySpec.Parse("Shift+F2", Keys.F2);
         private static readonly string[] FontFaces = { "$body", "$body1", "$body2", "$body3", "$body4", "$body5", "$title", "$title1", "$title2", "$journal_text", "$ledger", "$catalog1" };
 
         /// Every frame: the subtitle showing (and the font test while it runs), when the screen is ours to draw on.

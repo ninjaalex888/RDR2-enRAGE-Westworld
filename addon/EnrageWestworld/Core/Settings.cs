@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 65;
+        public const int CurrentVersion = 66;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -187,6 +187,27 @@ namespace EnrageWestworld.Core
         public string SettingsKey2 = "Alt+F";
         public bool DebugLog;
         public bool PerfMeter = true;
+
+        // [Testing] (overnight 2026-10-27): the Testing page's keys (Core/TestActions.cs). The ones that were settings
+        // already (StalkerKey, WakeKey, ExecutionKey...) stay fields; the rest are kept here by their ini name.
+        public bool TestKeys = true;
+        public bool ShowMinds;
+        public Dictionary<string, string> TestKeyMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+        /// The key text a Testing action is set to: its field, its line in [Testing], or its default.
+        public string TestKeyOf(TestActions.Entry e)
+        {
+            if (e == null)
+                return "None";
+            if (e.Field)
+            {
+                FieldInfo f = typeof(Settings).GetField(e.KeySetting, BindingFlags.IgnoreCase | BindingFlags.Instance | BindingFlags.Public);
+                string v = f != null ? f.GetValue(this) as string : null;
+                return string.IsNullOrEmpty(v) ? e.DefaultKey : v;
+            }
+            string t;
+            return TestKeyMap.TryGetValue(e.KeySetting, out t) && !string.IsNullOrEmpty(t) ? t : e.DefaultKey;
+        }
 
         /// Where notices go: "corner" (the "Around town" box), "ticker" or "gamefeed" (the game's own top-left updates).
         /// The old routes that were white text (subtitles, enRAGE's notice line) go to the box, as does the ticker when
@@ -373,7 +394,11 @@ namespace EnrageWestworld.Core
                         value = string.Empty;
                     FieldInfo f = typeof(Settings).GetField(key, BindingFlags.IgnoreCase | BindingFlags.Instance | BindingFlags.Public);
                     if (f == null)
+                    {
+                        if (TestActions.ByKey(key) != null)
+                            s.TestKeyMap[key] = value;   // one of the Testing page's keys (Core/TestActions.cs)
                         continue;
+                    }
                     try
                     {
                         if (f.FieldType == typeof(bool))
@@ -544,7 +569,6 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[Stalkers]");
             b.AppendLine("Stalkers = " + B(Stalkers) + "   ; master switch: rarely, someone follows you from a distance and hides when you look. false turns off everything in this section");
-            b.AppendLine("StalkerKey = " + StalkerKey + "   ; makes a stalker now: someone near you, or a stranger if nobody near can be (for testing too)");
             b.AppendLine("StalkerEveryMinutes = " + StalkerEveryMinutes + "   ; every this many real minutes of play, a roll for a stalker (1-120)");
             b.AppendLine("StalkerChance = " + StalkerChance + "   ; percent chance on each roll");
             b.AppendLine("StalkerNearbyMetres = " + StalkerNearbyMetres + "   ; on a hit, someone within this distance starts following you, someone with a history with you first (20-150)");
@@ -573,16 +597,12 @@ namespace EnrageWestworld.Core
             b.AppendLine("EncounterEveryMinutes = " + EncounterEveryMinutes + "   ; real minutes of play between rolls for an encounter, when the time and place are right (2-120)");
             b.AppendLine("CryingWoman = " + B(CryingWoman) + "   ; at night in the wilds, a woman sobbing in the dark. Go close and she may draw a knife, or not be alone");
             b.AppendLine("CryingWomanChance = " + CryingWomanChance + "   ; percent on each roll, between ten at night and four in the morning");
-            b.AppendLine("CryingWomanKey = " + CryingWomanKey + "   ; for testing: brings her out near you now, out of sight, at any hour (None: no key)");
             b.AppendLine("Executions = " + B(Executions) + "   ; out on the roads, two men holding one of a nearby town's people on his knees at gunpoint, for a reason from his own life. Ride on and they go through with it");
             b.AppendLine("ExecutionChance = " + ExecutionChance + "   ; percent on each roll, once a day at most, outside the towns");
-            b.AppendLine("ExecutionKey = " + ExecutionKey + "   ; stages an execution on the road near you now, out of sight, for testing (anywhere nothing else is going on)");
             b.AppendLine("Hermits = " + B(Hermits) + "   ; West World: people who woke and walked out of their towns live rough in the wilds, and keep their camps");
             b.AppendLine("HermitChance = " + HermitChance + "   ; percent on each roll that a new hermit's camp turns up near you in the wilds");
-            b.AppendLine("HermitKey = " + HermitKey + "   ; for testing: makes a hermit's camp near you now, out of sight, outside the towns (it stays, like any camp; None: no key)");
             b.AppendLine("Gatherings = " + B(Gatherings) + "   ; West World: around midnight in the wilds, the awake stand in a silent circle");
             b.AppendLine("GatheringChance = " + GatheringChance + "   ; percent on each roll, between midnight and half past three");
-            b.AppendLine("GatheringKey = " + GatheringKey + "   ; for testing: stands a gathering near you now, out of sight, at any hour (None: no key)");
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");
@@ -649,7 +669,6 @@ namespace EnrageWestworld.Core
             b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: feed (the game's own updates, top left), corner (the \"Around town\" box) or ticker");
             b.AppendLine("TerritoryNews = " + B(TerritoryNews) + "   ; enRAGE's territory changes (a gang gaining or losing its hold on a district) shown where WarNewsTo says. enRAGE also prints them itself, as white text, while its own [Menu] Messages is 3");
             b.AppendLine("FlirtKey = " + FlirtKey + "   ; look at someone (as if to greet them) and press it to flirt");
-            b.AppendLine("WakeKey = " + WakeKey + "   ; wakes the grown-up you are facing by one stage, to see what each stage does (set it to something unused, or a combination like Ctrl+Y)");
             b.AppendLine("ReaderKey = " + ReaderKey + "   ; read the diaries, letters and clippings you carry");
             b.AppendLine("ReloadIni = " + B(ReloadIni) + "   ; pick up changes to this file while the game runs");
             b.AppendLine("ReplaceEnrageSettings = " + B(ReplaceEnrageSettings) + "   ; Alt+F11 opens the larger RealNPCs settings panel (RealNPCs, West World, Stalkers and every enRAGE section) instead of enRAGE's own (enRAGE 0.9.5.3 only)");
@@ -657,12 +676,21 @@ namespace EnrageWestworld.Core
             b.AppendLine("SettingsKey2 = " + SettingsKey2 + "   ; a second key that does the same (None: no second key)");
             b.AppendLine("DebugLog = " + B(DebugLog));
             b.AppendLine("PerfMeter = " + B(PerfMeter) + "   ; times every part of RealNPCs each frame: F7 writes the costliest (TEST perf), and the log says when the add-on goes over 1 ms a frame for 10 s or one frame over 4 ms (PERF)");
+            b.AppendLine();
+            b.AppendLine("[Testing]");
+            b.AppendLine("TestKeys = " + B(TestKeys) + "   ; master switch for the keys below (the settings panel's Testing page fires them with it off too)");
+            b.AppendLine("ShowMinds = " + B(ShowMinds) + "   ; a small card over named people within 15 m: temper, mood, worry, ties and what is on their mind");
+            foreach (TestActions.Entry e in TestActions.All)
+                b.AppendLine(e.KeySetting + " = " + TestKeyOf(e) + "   ; " + e.Label + (e.Needs != null ? " (" + e.Needs + ")" : string.Empty) + "; None: no key");
             return b.ToString();
         }
 
         /// A setting's value written the way the ini writes it ("true", "0.962", "rush"), or null for an unknown key.
         public string ValueText(string key)
         {
+            TestActions.Entry te = TestActions.ByKey(key);
+            if (te != null && !te.Field)
+                return TestKeyOf(te);
             FieldInfo f = typeof(Settings).GetField(key ?? string.Empty, BindingFlags.IgnoreCase | BindingFlags.Instance | BindingFlags.Public);
             if (f == null)
                 return null;

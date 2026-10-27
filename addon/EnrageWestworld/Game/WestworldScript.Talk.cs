@@ -21,7 +21,6 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private static readonly KeySpec TalkTestKey = KeySpec.Parse("Shift+F7", Keys.F7);
         private const float TalkApart = 4f;          // two people this close stand together; further, the talk ends
         private const float TalkReach = 20f;         // the test fetches the second one from up to this far
         private const float TalkNear = 15f;          // only people this close to you talk (further off, their voices are lost)

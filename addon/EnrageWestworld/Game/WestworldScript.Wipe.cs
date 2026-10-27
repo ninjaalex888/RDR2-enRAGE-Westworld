@@ -19,6 +19,8 @@ namespace EnrageWestworld.InGame
             {
                 case "wipe-memories":
                     return WipeMemories();
+                case null:
+                    return "Nothing to do.";
                 case "stage-execution":
                 case "stage-crying":
                 case "stage-hermit":
@@ -28,6 +30,12 @@ namespace EnrageWestworld.InGame
                     string said = RequestEncounter(id.Substring("stage-".Length), "the settings panel", out asked);
                     return asked ? "Close the panel. " + said : said;
                 default:
+                    if (id.StartsWith("fire:"))
+                    {
+                        // a Testing row: the panel closes, and it fires a second later (WestworldScript.Testing.cs)
+                        AskFire(id.Substring("fire:".Length), "the settings panel", 1000);
+                        return "Fires a second after the panel closes.";
+                    }
                     return "Nothing to do for " + id + ".";
             }
         }

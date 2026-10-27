@@ -29,6 +29,7 @@ namespace EnrageWestworld.InGame
             public bool Hookups;      // a line of CasualHookups.ini (another mod's, in the game folder)
             public string Label, Help;   // our own words for another mod's setting
             public string Action, ActionLabel, ActionAsk;   // a row that does something on Enter, after a second Enter
+            public bool Fire;         // a Testing row (Core/TestActions.cs): Enter fires it at once and closes the panel; Right sets its key
         }
 
         private static bool Pickable(Row r)
@@ -91,11 +92,24 @@ namespace EnrageWestworld.InGame
         private static readonly HashSet<string> OurKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "TestKey", "FlirtKey", "WakeKey", "ReaderKey", "SettingsKey", "SettingsKey2", "TickerNextKey", "StalkerKey", "ExecutionKey", "CryingWomanKey", "HermitKey", "GatheringKey" };
 
         // the order RealNPCs' keys are listed in on the Hotkeys page
-        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "WakeKey", "TickerNextKey", "TestKey", "SettingsKey", "SettingsKey2" };
+        private static readonly string[] KeyOrder = { "ReaderKey", "FlirtKey", "TickerNextKey", "TestKey", "SettingsKey", "SettingsKey2" };
 
-        // the keys that make something happen now, on the Testing page instead (Lex, 2026-10-26); Delete leaves one without a key
-        private static readonly string[] TestingKeys = { "StalkerKey", "ExecutionKey", "CryingWomanKey", "HermitKey", "GatheringKey" };
-        private static readonly HashSet<string> Clearable = new HashSet<string>(TestingKeys.Concat(new[] { "SettingsKey2" }), StringComparer.OrdinalIgnoreCase);
+        // the keys that make something happen now are the Testing page's (Core/TestActions.cs, [Testing]); Delete leaves
+        // one of those, or the second settings key, without a key
+        private static bool IsTestKey(string key)
+        {
+            return TestActions.ByKey(key) != null;
+        }
+
+        private static bool IsOurKey(string key)
+        {
+            return OurKeys.Contains(key) || IsTestKey(key);
+        }
+
+        private static bool Clearable(string key)
+        {
+            return IsTestKey(key) || "SettingsKey2".Equals(key, StringComparison.OrdinalIgnoreCase);
+        }
 
         private static readonly Dictionary<string, string> Labels = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -209,41 +223,46 @@ namespace EnrageWestworld.InGame
                     .Concat(_ours.Sections.Where(x => x.Name.Length > 0 && !OurOrder.Contains(x.Name, StringComparer.OrdinalIgnoreCase)));
                 foreach (IniSection s in ordered)
                 {
+                    if (s.Name.Equals("Testing", StringComparison.OrdinalIgnoreCase))
+                        continue;   // the Testing page is built from its catalogue, below
                     // the keys are all on the Hotkeys page instead
-                    List<Row> rows = s.Entries.Where(e => !OurKeys.Contains(e.Key)).Select(e => new Row { E = e }).ToList();
+                    List<Row> rows = s.Entries.Where(e => !IsOurKey(e.Key)).Select(e => new Row { E = e }).ToList();
                     if (rows.Count > 0)
                         _pages.Add(new Page { Title = OurTitles.ContainsKey(s.Name) ? OurTitles[s.Name] : s.Name, Rows = rows });
                 }
                 List<IniEntry> ourKeys = KeyOrder.Select(k => _ours.FindKey(k)).Where(e => e != null)
-                    .Concat(_ours.Sections.SelectMany(s => s.Entries).Where(e => OurKeys.Contains(e.Key) && !KeyOrder.Contains(e.Key, StringComparer.OrdinalIgnoreCase) && !TestingKeys.Contains(e.Key, StringComparer.OrdinalIgnoreCase)))
+                    .Concat(_ours.Sections.SelectMany(s => s.Entries).Where(e => OurKeys.Contains(e.Key) && !KeyOrder.Contains(e.Key, StringComparer.OrdinalIgnoreCase) && !IsTestKey(e.Key)))
                     .ToList();
                 if (ourKeys.Count > 0)
                 {
                     keys.Rows.Add(new Row { Heading = "RealNPCs" });
                     keys.Rows.AddRange(ourKeys.Select(e => new Row { E = e }));
                 }
-                // Testing: keys that make something happen now (none set but the stalker's and the execution's), and the same things to do from here
-                List<IniEntry> testKeys = TestingKeys.Select(k => _ours.FindKey(k)).Where(e => e != null).ToList();
-                if (testKeys.Count > 0)
+                // Testing: one row per action in the catalogue, by group. Enter fires it now (the panel closes, it fires a
+                // second later); Right or Left sets its key, Delete leaves it without one
+                foreach (string group in TestActions.Groups)
                 {
-                    testing.Rows.Add(new Row { Heading = "Keys (Enter, then the key; Delete for none)" });
-                    testing.Rows.AddRange(testKeys.Select(e => new Row { E = e }));
+                    List<Row> rows = TestActions.All.Where(a => a.Group == group).Select(a => new { a, e = _ours.FindKey(a.KeySetting) }).Where(x => x.e != null)
+                        .Select(x => new Row { E = x.e, Fire = true, Action = "fire:" + x.a.Id, ActionLabel = x.a.Label,
+                                               Help = (x.a.Needs != null ? "Needs: " + x.a.Needs + ". " : string.Empty) + "Enter fires it now (the panel closes first). Right sets its key; Delete leaves it without one." })
+                        .ToList();
+                    if (rows.Count == 0)
+                        continue;
+                    testing.Rows.Add(new Row { Heading = group });
+                    testing.Rows.AddRange(rows);
+                }
+                IniEntry master = _ours.FindKey("TestKeys"), minds = _ours.FindKey("ShowMinds");
+                if (master != null || minds != null)
+                {
+                    testing.Rows.Add(new Row { Heading = "Switches" });
+                    if (master != null)
+                        testing.Rows.Add(new Row { E = master });
+                    if (minds != null)
+                        testing.Rows.Add(new Row { E = minds });
                 }
                 if (_runAction != null)
                 {
-                    testing.Rows.Add(new Row { Heading = "Now" });
-                    testing.Rows.Add(new Row { Action = "stage-execution", ActionLabel = "Stage an execution nearby",
-                                               Help = "A man from a nearby town held on his knees at gunpoint, out of sight near you, with a mark on the map. Enter, then Enter again.",
-                                               ActionAsk = "Put a man on his knees at gunpoint somewhere near you, out of sight, to see the scene? Press Enter again to stage it; any other key doesn't." });
-                    testing.Rows.Add(new Row { Action = "stage-crying", ActionLabel = "Bring out the crying woman",
-                                               Help = "A woman crying in the dark somewhere near you, out of sight, whatever the hour. Enter, then Enter again.",
-                                               ActionAsk = "Put a woman crying in the dark somewhere near you, out of sight, whatever the hour? Press Enter again; any other key doesn't." });
-                    testing.Rows.Add(new Row { Action = "stage-hermit", ActionLabel = "Make a hermit's camp nearby",
-                                               Help = "A camp near you, out of sight, for someone who woke and walked out of town. Never inside a town, since camps stay. Enter, then Enter again.",
-                                               ActionAsk = "Make a camp near you, out of sight, for someone who woke and walked out of town? It stays, like any camp. Press Enter again; any other key doesn't." });
-                    testing.Rows.Add(new Row { Action = "stage-gathering", ActionLabel = "Stand a gathering nearby",
-                                               Help = "The awake standing in a silent ring somewhere near you, out of sight, whatever the hour. Enter, then Enter again.",
-                                               ActionAsk = "Stand the awake in a silent ring somewhere near you, out of sight, whatever the hour? Press Enter again; any other key doesn't." });
+                    testing.Rows.Add(new Row { Heading = "Memory" });
                     testing.Rows.Add(new Row { Action = "wipe-memories", ActionLabel = "Wipe every NPC's memory",
                                                Help = "Forget everything RealNPCs keeps of the people in this world, for this character. A copy of the save is kept; enRAGE's memory stays. Enter, then Enter again.",
                                                ActionAsk = "Wipe everything RealNPCs remembers of the people in this world (who they are, what they know and feel about you, their ties, their deaths)? enRAGE's own memory stays. A copy of the save is kept. Press Enter again to wipe; any other key keeps it all." });
@@ -419,7 +438,38 @@ namespace EnrageWestworld.InGame
                 case Keys.Enter:
                     Enter(page.Rows[_row]);
                     break;
+                case Keys.Delete:
+                    if (page.Rows[_row].Fire && page.Rows[_row].E != null)
+                        Write(page.Rows[_row], "None");
+                    break;
             }
+        }
+
+        /// Whose key this already is, or null: another of RealNPCs' keys, or one of enRAGE's ([Keys] in NemesisMod.ini).
+        private string KeyOwner(string spec, IniEntry self)
+        {
+            string want = Normal(spec);
+            if (want == null)
+                return null;
+            if (_ours != null)
+                foreach (IniEntry k in _ours.Sections.SelectMany(x => x.Entries))
+                    if (k != self && IsOurKey(k.Key) && Normal(k.Value) == want)
+                        return "RealNPCs' " + Label(k.Key);
+            IniSection theirs = _theirs != null ? _theirs.Sections.FirstOrDefault(x => x.Name.Equals("Keys", StringComparison.OrdinalIgnoreCase)) : null;
+            if (theirs != null)
+                foreach (IniEntry k in theirs.Entries)
+                    if (Normal(k.Value) == want)
+                        return "enRAGE's " + Label(k.Key);
+            return null;
+        }
+
+        /// A key as KeySpec reads it ("Shift+F7"), or null for none.
+        private static string Normal(string text)
+        {
+            if (string.IsNullOrWhiteSpace(text) || text.Trim().Equals("None", StringComparison.OrdinalIgnoreCase))
+                return null;
+            KeySpec k = KeySpec.Parse(text, Keys.None);
+            return k.Key == Keys.None ? null : k.ToString();
         }
 
         private void TurnTo(int page)
@@ -432,6 +482,20 @@ namespace EnrageWestworld.InGame
 
         private void Enter(Row r)
         {
+            if (r.Fire)
+            {
+                try
+                {
+                    _note = _runAction != null ? _runAction(r.Action) : "Nothing to do.";
+                }
+                catch (Exception ex)
+                {
+                    _note = "That didn't work: " + ex.Message;
+                    return;
+                }
+                Close();   // it fires a second after the panel is gone
+                return;
+            }
             if (r.Action != null)
             {
                 if (_confirm != r)
@@ -465,11 +529,11 @@ namespace EnrageWestworld.InGame
                 _note = off;
                 return;
             }
-            if (!r.Theirs && OurKeys.Contains(e.Key))
+            if (!r.Theirs && IsOurKey(e.Key))
             {
                 _capture = r;
                 _note = "Waiting for a key: whatever you press next becomes " + Label(e.Key) + " (Ctrl, Shift or Alt with it is fine). Escape keeps " + e.Value + "." +
-                        (Clearable.Contains(e.Key) ? " Delete leaves it without a key." : string.Empty);
+                        (Clearable(e.Key) ? " Delete leaves it without a key." : string.Empty);
                 return;
             }
             if (r.Theirs && _bridge != null && _bridge.EnrageRebinds(e.Section, e.Key))
@@ -494,12 +558,19 @@ namespace EnrageWestworld.InGame
                 _note = Label(r.E.Key) + " stays " + r.E.Value + ".";
                 return;
             }
-            if (key == Keys.Delete && Clearable.Contains(r.E.Key))
+            if (key == Keys.Delete && Clearable(r.E.Key))
             {
                 Write(r, "None");   // KeySpec reads None as no key at all
                 return;
             }
             string spec = (ctrl ? "Ctrl+" : string.Empty) + (shift ? "Shift+" : string.Empty) + (alt ? "Alt+" : string.Empty) + KeySpec.Name(key);
+            // a key RealNPCs or enRAGE already uses is refused, naming whose it is
+            string owner = KeyOwner(spec, r.E);
+            if (owner != null)
+            {
+                _note = spec + " is taken: " + owner + ". " + Label(r.E.Key) + " stays " + r.E.Value + ".";
+                return;
+            }
             Write(r, spec);
             // enRAGE hears every key too: say so if this one is also one of its own
             IniSection keys = _theirs != null ? _theirs.Sections.FirstOrDefault(s => s.Name == "Keys") : null;
@@ -526,7 +597,13 @@ namespace EnrageWestworld.InGame
                     Stage(r, step);
                 return;
             }
-            bool key = (!r.Theirs && OurKeys.Contains(e.Key)) || (r.Theirs && _bridge != null && _bridge.EnrageRebinds(e.Section, e.Key));
+            if (r.Fire)
+            {
+                _capture = r;   // a Testing row: Right or Left sets its key (Enter fires it)
+                _note = "Waiting for a key: whatever you press next fires " + r.ActionLabel + " (Ctrl, Shift or Alt with it is fine). Escape keeps " + e.Value + ". Delete leaves it without a key.";
+                return;
+            }
+            bool key = (!r.Theirs && IsOurKey(e.Key)) || (r.Theirs && _bridge != null && _bridge.EnrageRebinds(e.Section, e.Key));
             if (key)
             {
                 _note = "Press Enter to set this key.";   // a key like 0 must not be stepped like a number
@@ -817,6 +894,9 @@ namespace EnrageWestworld.InGame
             string l;
             if (Labels.TryGetValue(key, out l))
                 return l;
+            TestActions.Entry te = TestActions.ByKey(key);
+            if (te != null)
+                return te.Label;
             // "StalkerAppearMin" -> "Stalker appear min"
             string spaced = Regex.Replace(key, "(?<=[a-z0-9])(?=[A-Z])|(?<=[A-Z])(?=[A-Z][a-z])", " ");
             string[] words = spaced.Split(' ');
@@ -940,7 +1020,8 @@ namespace EnrageWestworld.InGame
                         Draw.Rect(left - 0.006f, y - 0.002f, 0.003f, rowH, 222, 182, 96, 255);
                     }
                     Draw.Text(Draw.Fit(r.ActionLabel, RowScale, W * 0.58f), left + 0.006f, y, RowScale, onRow ? 255 : 226, onRow ? 246 : 216, onRow ? 230 : 196);
-                    string act = asking ? "Enter again to confirm" : "Enter";
+                    // a Testing row shows its key (Enter fires it); others ask for Enter, twice for the memory wipe
+                    string act = r.Fire ? (_capture == r ? "press a key..." : (Normal(r.E.Value) ?? "no key")) : asking ? "Enter again to confirm" : "Enter";
                     Draw.Text(act, right - 0.012f - Draw.Width(act, RowScale), y, RowScale, asking ? 236 : 200, asking ? 120 : 170, asking ? 96 : 120);
                     continue;
                 }

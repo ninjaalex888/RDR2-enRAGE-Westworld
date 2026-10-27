@@ -23,7 +23,6 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private static readonly KeySpec RoughTestKey = KeySpec.Parse("Shift+F9", Keys.F9);   // not F6: that is the game's camera
         private const string SmashDict = "mech_grapple@unarmed@_male@_ambient@_healthy@front@environment@table_smash";
         private const string WallDict = "mech_grapple@unarmed@_male@_ambient@_healthy@front@environment@wall_smash";
         private const string DrunkDict = "script_re@drunk_dueler";

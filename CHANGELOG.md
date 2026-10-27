@@ -2,6 +2,7 @@
 
 ## Unreleased (overnight 2026-10-27)
 
+- The Testing page lists everything RealNPCs can make happen on demand, in groups (encounters, people, street scenes, tools), one row each: Enter fires it (the panel closes, and it fires a second later), Right sets a key for it, Delete leaves it without one. Its keys are in a new `[Testing]` section (`TestKeys` switches them all off; settings version 66): the stalker (`]`), waking someone (`Y`), the execution (`[`) and the crying woman, hermit and gathering keys moved there with their values kept; the talk test (Shift+F7), the rough test (Shift+F9) and the font test (Shift+F2), which were fixed in the code, are settings there now, with those as their defaults. The panel refuses a key RealNPCs or enRAGE already uses, and says whose it is. Every fire logs `TEST fire <id>: started (...; skipped: ...)` or `refused: <why>`; a test skips the hour, place, chance and once-a-day rules, never the safety ones (no story missions, nobody while you have no control). F7: `TEST testing:`.
 - A frame-time meter (`[Output] PerfMeter`, on; settings version 65). Every part of RealNPCs is timed each frame, its own time only. F7 writes the ten costliest and the whole add-on's cost (`TEST perf:`). The log says when RealNPCs averages over 1 ms a frame for 10 seconds, or one frame takes over 4 ms (`PERF: over budget`, `PERF: peak`), at most once a minute each, naming what cost most.
 
 ## 0.6.3 (not released yet)

@@ -670,9 +670,11 @@ All the older options are still there and work the same.
 KEYS
 ----
 Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+F
-          (SettingsKey2) opens it too, and either closes it again. Its Testing page has keys to bring
-          each encounter out near you now (none set as they come, but [ and ]), the same as rows you
-          run with Enter twice, and a row that wipes every NPC's memory. Alt+F11 opens it as well, but
+          (SettingsKey2) opens it too, and either closes it again. Its Testing page lists everything
+          RealNPCs can make happen near you now, by group: Enter on a row fires it (the panel closes
+          first), Right sets its key, Delete leaves it without one. A key RealNPCs or enRAGE already
+          uses is refused, with whose it is. The keys are in [Testing] in the ini (TestKeys switches
+          them all off). There is also a row that wipes every NPC's memory (Enter twice). Alt+F11 opens it as well, but
           only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
           About 15 seconds after loading, a notice says which key to use.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
@@ -683,6 +685,11 @@ N         read your letters, diaries and clippings (or take a diary you've just 
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)
 [         stage an execution on the road near you, out of sight, to see one now (ExecutionKey)
 Y         wake the person you are facing one stage (the Awakening, for testing; WakeKey)
+Shift+F7  two people near you talk in their real voices (TestTalkKey)
+Shift+F9  one man near you puts another's face into the bar (TestRoughKey)
+Shift+F2  the subtitle line in each font, to find the game's (TestFontKey)
+          These six (], [, Y and the three Shift keys) are the Testing page's; the rest of its rows
+          have no key as they come.
 T         the next line on the ticker now (on a long line, its next part first; TickerNextKey).
           T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
 None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's
