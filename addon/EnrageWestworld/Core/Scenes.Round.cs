@@ -29,16 +29,16 @@ namespace EnrageWestworld.Core
             string a = N(c, 0, seed);
             string pair = string.IsNullOrEmpty(couple) ? "the newlyweds" : couple;
             Scene s = new Scene { Kind = "round", Summary = why == "wedding" ? "someone stood the house a round for the newlyweds" : "someone stood the house a round" };
-            string call = why == "wedding" ? Voice.Pick(seed + "rw", "A round for " + pair + "! Married this very day!", "Drinks all round! To " + pair + ", and long life to them!", "Fill 'em up! I mean to drink to " + pair + ", wed this very day.")
+            string call = why == "wedding" ? Voice.Pick(seed + "rw", "A round for " + pair + "! Married this very day!", "Drinks all round! To " + pair + ", and long life to them!", "Fill 'em up! I mean to drink to " + pair + ", wed this very day.", "Glasses up! " + LostChild.Up(pair) + " are wed, and the whiskey's on me.")
                         : why == "goodnews" ? Voice.Pick(seed + "rg", "A round for the house! Good news came today, and I mean to drink to it.", "Drinks for everybody! Something finally went right.")
                         : why == "glad" ? Voice.Pick(seed + "rl", "Set 'em up, barkeep. One for everybody.", "Drinks all round! Don't ask why. Just drink.", "Everybody's glass, on me. It's been that kind of a day.")
                         : Voice.Pick(seed + "rf", "Put the room's drinks on my account tonight.", "A round for the house, and keep the change.");
             s.Add(0, call, "cheer", "face")
              .Add(0, null, null, "cb:round")
-             .Add(1, why == "wedding" ? Voice.Pick(seed + "rx", "To " + pair + "! And to you, " + a + ", for the whiskey.", "Long life to them. Thank you, " + a + ".")
+             .Add(1, why == "wedding" ? Voice.Pick(seed + "rx", "To " + pair + "! And to you, " + a + ", for the whiskey.", "Long life to them. Thank you, " + a + ".", "To the two of them. And to you, " + a + ", for once in your life.")
                                      : Voice.Pick(seed + "rt", "Well, I'll drink to that. Thank you kindly, " + a + ".", "Generous of you, " + a + ". Your health.",
                                 a + ", you're " + (c.AWoman ? "a lady" : "a gentleman") + ". To you."), "thanks", "face")
-             .Add(0, why == "wedding" ? Voice.Pick(seed + "ry", "May they put up with each other forty years.", "Here's to a full table and a quiet house.")
+             .Add(0, why == "wedding" ? Voice.Pick(seed + "ry", "May they put up with each other forty years.", "Here's to a full table and a quiet house.", "And may the first one be a boy who minds his mother.")
                                      : Voice.Pick(seed + "rr", "Drink up before I come to my senses.", "To better days. All of us.", "Don't thank me. Thank the Lord, for once."), "mild");
             return s;
         }
