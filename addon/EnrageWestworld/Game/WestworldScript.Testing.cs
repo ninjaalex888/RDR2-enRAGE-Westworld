@@ -228,6 +228,20 @@ namespace EnrageWestworld.InGame
                         skipped = "the rarity and the rests (Pacing \"fall\")";
                         return FallScene(Game.Player.Character, now, true, out fallWhy) ? null : fallWhy;
                     }
+                case "grudge":
+                    {
+                        if (_director.Busy)
+                            return "a scene is going on already";
+                        string gw;
+                        skipped = "the rarity and the rests (Pacing \"grudge\")";
+                        return GrudgeScene(Game.Player.Character, now, true, out gw) ? null : gw;
+                    }
+                case "grudge:you":
+                    {
+                        string gy;
+                        skipped = "the rarity and the rests; the mark that it was said is not set";
+                        return GrudgeAtYou(Game.Player.Character, now, true, out gy) ? null : gy;
+                    }
                 case "drink":
                     {
                         string drinkWhy;

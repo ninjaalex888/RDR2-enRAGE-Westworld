@@ -88,6 +88,36 @@ namespace EnrageWestworld.Core
             return m != null ? m.NameAt(0) : null;
         }
 
+        /// The first name of a friend of this person's whom the player killed (our own death record says "by the player"),
+        /// whose death they've had word of in the last `days`, and not yet held against him to his face; with the dead
+        /// one's id. Null if none.
+        public string YourKillGrieved(string id, int days, out string deadId)
+        {
+            deadId = null;
+            PersonState st = id != null ? Store.Find(id) : null;
+            if (st == null || st.Mind == null)
+                return null;
+            long now = Store.LastGameMin;
+            foreach (MindMemory m in st.Mind.Where(x => x.Kind == "death" && x.Sub == "friend" && x.Who != null && x.Who.Count > 0 && Math.Max(x.At, x.DueAt) <= now &&
+                                                        now - x.At < days * 1440L).OrderByDescending(x => x.At))
+            {
+                DeathEntry d = Store.DeathOf(m.Who[0]);
+                if (d == null || d.By != "player" || st.Has("grudge:" + m.Who[0]))
+                    continue;
+                deadId = m.Who[0];
+                return m.NameAt(0);
+            }
+            return null;
+        }
+
+        /// They've said it to his face (or stared it): never again for that death.
+        public void MarkGrudged(string id, string deadId)
+        {
+            PersonState st = id != null ? Store.Find(id) : null;
+            if (st != null && deadId != null)
+                st.Mark("grudge:" + deadId);
+        }
+
         /// This person remembers seeing the player do violence in the last `days` game days (a killing, an assault).
         public bool SawYouViolent(string id, int days)
         {

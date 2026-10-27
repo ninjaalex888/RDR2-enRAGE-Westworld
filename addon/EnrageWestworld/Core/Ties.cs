@@ -62,7 +62,7 @@ namespace EnrageWestworld.Core
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
                 case "lift":
                     return 0;    // the mark never saw who: nothing between them that he knows of (the thief knows)
-                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "help": case "defend": case "round":
+                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "help": case "defend": case "round": case "apology":
                     return 1;
                 case "scorn": case "passby": case "faced":
                     return -1;   // asked for a coin and sent off with a flea in the ear; left lying in the street
@@ -316,7 +316,7 @@ namespace EnrageWestworld.Core
                 return Voice.Pick(seed + "trouble", trouble).Replace("{other}", Person.FirstOf(t.Other(id)));
             }
             string[] pool = t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
-                          : t.Kind == "comfort" || t.Kind == "cheer" ? Kindness : t.Warmth < 0 ? Quarrel : Romantic(t.Kind) ? Sweet : Known;
+                          : t.Kind == "comfort" || t.Kind == "cheer" || t.Kind == "apology" ? Kindness : t.Warmth < 0 ? Quarrel : Romantic(t.Kind) ? Sweet : Known;
             return Voice.Pick(seed + "tie", pool).Replace("{other}", Person.FirstOf(t.Other(id)));
         }
 
