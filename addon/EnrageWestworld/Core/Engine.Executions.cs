@@ -49,7 +49,7 @@ namespace EnrageWestworld.Core
         {
             Person p = PersonOfResident(r);
             if (Cfg.WordOfMouth)
-                QueueDeathNews(p, now);
+                QueueDeathNews(p, now, byYou: false);   // the men did it: no avenger, no grief letter for him
             Later(new LaterAct
             {
                 Kind = "news", PersonId = p.Id, Title = "Word around " + ShortTown(town ?? r.Town), At = now,

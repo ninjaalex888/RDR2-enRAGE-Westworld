@@ -89,7 +89,7 @@ namespace EnrageWestworld.InGame
             }
             string seed = r.Id + "|" + Bridge.Now() / 1440;
             Executions.Plan plan = _engine.ExecutionPlan(r, region ?? town, seed);
-            Execution e = new Execution { R = r, Plan = plan, Town = r.Town ?? town, Region = region, StartedAt = now, Test = test };
+            Execution e = new Execution { R = r, Plan = plan, Town = town ?? r.Town, Region = region, StartedAt = now, Test = test };   // Town: nearest where it happens, for the news
             if (plan.BossId != null)
             {
                 HashSet<Resident> bound = new HashSet<Resident>(_resBind.Values.Select(b => b.R));
@@ -130,12 +130,25 @@ namespace EnrageWestworld.InGame
             foreach (Ped m in e.Men)
                 if (m != null && m.Exists() && !m.IsDead)
                     _cameAtYouSeen[m.Handle] = now;   // men holding a man at gunpoint: shooting them is self-defence, the whole time
-            bool captiveAlive = e.Captive != null && e.Captive.Exists() && !e.Captive.IsDead;
+            bool captiveThere = e.Captive != null && e.Captive.Exists();
+            bool captiveAlive = captiveThere && !e.Captive.IsDead;
             List<Ped> men = e.Men.Where(m => m != null && m.Exists() && !m.IsDead).ToList();
             float d = e.Captive != null && e.Captive.Exists() ? e.Captive.Position.DistanceTo(me.Position) : 999f;
-            if (!captiveAlive && e.Phase != "shot" && e.Phase != "leaving")
+            if (!captiveThere && e.Phase != "shot" && e.Phase != "leaving")
+            {
+                EndExecution("he's gone from the world");   // not seen to die: nothing comes of it
+                return;
+            }
+            if (!captiveAlive && (e.Phase == "held" || e.Phase == "fight" || e.Phase == "last"))
             {
                 ExecutionCaptiveDied(e, now);
+                return;
+            }
+            if (!captiveAlive && e.Phase == "saved")
+            {
+                Log.Write("EXECUTION " + e.R.Name + ": died after he was saved (the ledger has how)");
+                e.Phase = "leaving";
+                e.PhaseUntil = now + 30000;
                 return;
             }
             switch (e.Phase)
@@ -144,8 +157,8 @@ namespace EnrageWestworld.InGame
                     ExecutionHeld(e, men, d, now);
                     break;
                 case "fight":
-                    // saved once none of them is left standing near him
-                    if (men.All(m => m.Position.DistanceTo(e.Captive.Position) > 70f))
+                    // saved once none of them is left standing near him, or three minutes on whatever became of them
+                    if (men.All(m => m.Position.DistanceTo(e.Captive.Position) > 70f) || now >= e.PhaseUntil)
                         ExecutionSaved(e, now);
                     break;
                 case "last":
@@ -270,6 +283,7 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_COMBAT_PED(m.Handle, me.Handle, 0, 16);
                 }
                 e.Phase = "fight";
+                e.PhaseUntil = now + 180000;
                 Log.Write("EXECUTION " + e.R.Name + ": you stepped in; " + men.Count + " men fight you");
                 return;
             }

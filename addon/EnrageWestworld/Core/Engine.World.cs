@@ -128,7 +128,7 @@ namespace EnrageWestworld.Core
             }
         }
 
-        private void QueueDeathNews(Person p, long now)
+        private void QueueDeathNews(Person p, long now, bool byYou = true)
         {
             PersonState st = Store.Get(p);
             if (st.Family == null)
@@ -139,7 +139,7 @@ namespace EnrageWestworld.Core
                     continue;
                 Store.Rumors.Add(new Rumor
                 {
-                    FromId = p.Id, FromName = p.Name, FromWoman = p.Woman, Text = "died", Hops = 1, ToRelative = rel.Name, How = "death",
+                    FromId = p.Id, FromName = p.Name, FromWoman = p.Woman, Text = "died", Hops = 1, ToRelative = rel.Name, How = "death", NotByYou = !byYou,
                     SentAt = now, DueAt = now + 720 + _rng.Next(2880)
                 });
             }
@@ -161,7 +161,12 @@ namespace EnrageWestworld.Core
             bool far = rel.Town == null || rel.Town.Contains(",") || new[] { "Philadelphia", "New York", "Boston", "Chicago", "St. Louis", "Kansas City", "San Francisco", "Baltimore", "Chihuahua" }.Contains(rel.Town);
             bool can = Avenging.Contains(rel.Relation) || (AvengingWomen.Contains(rel.Relation) && _rng.Next(100) < 35);
             string reaction;
-            if (Cfg.Avengers && can && _rng.Next(100) < Cfg.AvengerChance)
+            if (r.NotByYou)
+            {
+                // someone else's doing: grief, and no one rides west after him for it
+                reaction = Voice.Pick(rel.Name + dead.Id, (rel.Woman ? "She" : "He") + " sat a long time without saying anything.", (rel.Woman ? "She" : "He") + " wants the body sent home.");
+            }
+            else if (Cfg.Avengers && can && _rng.Next(100) < Cfg.AvengerChance)
             {
                 Avenger a = new Avenger
                 {

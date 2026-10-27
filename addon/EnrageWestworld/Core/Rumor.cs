@@ -9,6 +9,9 @@ namespace EnrageWestworld.Core
 		public string FromId;
 
 		[DataMember]
+		public bool NotByYou;   // a death someone else caused (an execution on the road): no avenger, no grief letter to him
+
+		[DataMember]
 		public string FromName;
 
 		[DataMember]
