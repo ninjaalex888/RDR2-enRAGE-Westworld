@@ -301,7 +301,8 @@ namespace EnrageWestworld.InGame
 			{
 				_nextThought = gameTime + (int)((double)(_cfg.ThoughtEverySeconds * 1000) * (0.75 + _rng.NextDouble() * 0.5));
 				pt = StepBegin(out pd);
-				Toast toast = _engine.NextThought(Bridge.Now(), _inViewId ?? (_inViewId = id => NearHandleOf(id) != 0));   // only people in view: over their heads
+				// all about you: people in view first (over their heads), else anyone who knows you (the "Around town" box; Route)
+				Toast toast = _engine.NextThought(Bridge.Now(), _inViewId ?? (_inViewId = id => NearHandleOf(id) != 0)) ?? _engine.NextThought(Bridge.Now());
 				StepEnd("thoughts about you (step)", pt, pd);
 				if (toast != null)
 				{

@@ -1,4 +1,4 @@
-// Show minds (overnight 2026-10-27, the Testing page's tool): a small card over each named person within 15 m (at
+// Show minds (overnight 2026-10-27, the Testing page's tool): a small card over each named person within 11 m (at
 // most four, nearest first): who they are and their temper, their mood and the worry they're living through and its
 // stage, their ties, and what is on their mind now (the strongest pull, Engine.MindCard). The cards are worked out
 // twice a second and only drawn each frame, inside Draw.FrameBudget (four lines each). Only people the add-on already
@@ -24,6 +24,7 @@ namespace EnrageWestworld.InGame
         }
 
         private const float MindCardScale = 0.2f, MindCardAbove = 1.0f, MindCardWidth = 0.24f;
+        private const float MindCardMetres = 11f;   // Lex, 2026-10-27 (it was 15)
         private readonly List<MindCardShown> _mindCards = new List<MindCardShown>();
         private int _nextMindCards, _mindCardsShown;
         private Action _aShowMinds;
@@ -68,14 +69,14 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// The named people within 15 m, nearest first (at most four), and what to show for each.
+        /// The named people within MindCardMetres (11 m), nearest first (at most four), and what to show for each.
         private void BuildMindCards()
         {
             _mindCards.Clear();
             Ped me = Game.Player.Character;
             int clockHour = CLOCK.GET_CLOCK_HOURS();
             foreach (Ped p in World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) &&
-                                                             x.Position.DistanceTo(me.Position) < 15f).OrderBy(x => x.Position.DistanceTo(me.Position)))
+                                                             x.Position.DistanceTo(me.Position) < MindCardMetres).OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 Person who = KnownPerson(p);
                 if (who == null)

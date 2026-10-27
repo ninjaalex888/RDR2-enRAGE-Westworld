@@ -302,14 +302,18 @@ namespace EnrageWestworld.InGame
             switch (t.Kind)
             {
                 case "thought":
-                    // over the thinker's head (Lex, 2026-10-27: every thought there; these went to the "Around town" box).
-                    // NextThought asks only people in view, so the handle is there unless they left it this second.
+                    // over the thinker's head when they're in view (Lex, 2026-10-27); every one of these is about you (what
+                    // they remember of you, heard of you, your name, their heart, a sighting, kin's letters), so one far off
+                    // goes to the "Around town" box as before (Lex: far-off thoughts there only when they're about you)
                     int h = NearHandleOf(t.PersonId);
                     if (h != 0)
+                    {
                         _ticker.Push(t.Title + ", thinking", t.Text, "near", h);
-                    else
-                        Log.Detail("THOUGHT not shown, " + t.Title + " out of view: " + t.Text);
-                    return;
+                        return;
+                    }
+                    label = t.Title;
+                    text = t.Text;
+                    break;
                 case "diary":
                     label = t.Title;
                     text = t.Text;

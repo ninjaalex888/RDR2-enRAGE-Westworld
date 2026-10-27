@@ -723,7 +723,7 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[Testing]");
             b.AppendLine("TestKeys = " + B(TestKeys) + "   ; master switch for the keys below (the settings panel's Testing page fires them with it off too)");
-            b.AppendLine("ShowMinds = " + B(ShowMinds) + "   ; a small card over named people within 15 m: temper, mood, worry, ties and what is on their mind");
+            b.AppendLine("ShowMinds = " + B(ShowMinds) + "   ; a small card over named people within 11 m: temper, mood, worry, ties and what is on their mind");
             b.AppendLine("ShowWakeStages = " + B(ShowWakeStages) + "   ; a tag over each person within 25 m who has begun to wake: stirring, questioning, unravelling or awake, and what holds them back (riding, a counter, had their chance)");
             foreach (TestActions.Entry e in TestActions.All)
                 b.AppendLine(e.KeySetting + " = " + TestKeyOf(e) + "   ; " + e.Label + (e.Needs != null ? " (" + e.Needs + ")" : string.Empty) + "; None: no key");
