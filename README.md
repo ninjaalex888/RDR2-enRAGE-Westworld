@@ -70,7 +70,7 @@ Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) o
 Everything is kept in `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\`:
 
 - `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Ctrl+F7 or Alt+F) edits it too, along with enRAGE's `NemesisMod.ini`, and CasualHookups' settings when that mod is installed.
-- `RealNPCs.log` records what happened. Please attach it to bug reports.
+- `RealNPCs.log` records what happened. Please attach it to bug reports. While the mind underneath is being tested (`[Mind] MindShadow`, on), it also writes `MIND` lines: each nearby person's traits, and later their needs, feelings and mood. They change nothing anyone does; `[Mind] MindLive` (off) lets them reach the screen.
 - `backup\` holds a copy of `NemesisMod.ini` (and `CasualHookups.ini`) from before the panel first changed it in each session, and CasualHookups' original settings from before RealNPCs first set them.
 - `arthur.json` and `john.json` hold what people know and feel about you. `diaries\` holds the diaries you've found, as text files.
 

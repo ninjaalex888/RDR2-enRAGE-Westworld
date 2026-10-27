@@ -433,7 +433,11 @@ namespace EnrageWestworld.Core
             _today.Clear();
             _worryWear.Clear();
             _dossierWear.Clear();
+            Shadow.Clear();
         }
+
+        /// The mind in shadow mode (MindShadow.cs): in memory only, forgotten with the thinking above.
+        public readonly MindShadow Shadow = new MindShadow();
 
         /// memoriesOver: only memories pulling harder than this (for enRAGE's records); -1 everything.
         private Minds.Choice ThinkImpl(Person p, PersonState st, int hour, string seed, InnerLife.PlayerLook look, List<Minds.Candidate> extra, int memoriesOver, bool onlyOwn)

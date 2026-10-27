@@ -1085,6 +1085,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST stalker acts: " + Stalker.ActsStatus);
 			Log.Write("TEST worries: " + WorriesStatus());
 			Log.Write("TEST mind: " + MindsStatus());
+			Log.Write("TEST mind shadow: " + MindShadowStatus());
 			Log.Write("TEST perf: " + PerfStatus() + "; Core compiled ahead: " + _prejitStatus);
 			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST wake voices: " + WakeVoiceStatus());

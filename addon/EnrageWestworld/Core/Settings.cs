@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 79;
+        public const int CurrentVersion = 80;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -54,6 +54,8 @@ namespace EnrageWestworld.Core
         public bool Minds = true;
         public bool RecordMinds = true;
         public bool RecordFates = true;
+        public bool MindShadow = true;    // the NPC mind (daytime 2026-10-27): works out traits, needs, feelings and mood and only reports them
+        public bool MindLive = false;     // what the mind decides reaches the screen (off while it is tested)
 
         // [Display] - drawn on screen besides the ticker
         public bool FeelingBars = true;
@@ -570,6 +572,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("RecordMinds = " + B(RecordMinds) + "   ; enRAGE's own people think the same way: what RealNPCs saw them live through, weighed with enRAGE's own record of them (what they feel about you, its memories of you, what they've heard, their goals, their mood)");
             b.AppendLine("RecordFates = " + B(RecordFates) + "   ; when one of enRAGE's people dies of something RealNPCs did (despair, a street fight gone too far), it is written into enRAGE's record of them (their history, and their death if enRAGE missed it); it also lets despair reach them");
             b.AppendLine("ShareWithEnrage = " + B(ShareWithEnrage) + "   ; RealNPCs keeps its own record of who has died; when one of enRAGE's townsfolk dies and enRAGE didn't see it (the area unloaded before it looked), RealNPCs marks them dead in enRAGE's records too, so it doesn't bring them back");
+            b.AppendLine("MindShadow = " + B(MindShadow) + "   ; the mind underneath (in testing): works out each nearby person's traits, needs, feelings and mood and writes them to the log, the F7 dump and the Show minds cards; it changes nothing they do or think");
+            b.AppendLine("MindLive = " + B(MindLive) + "   ; what that mind decides reaches the screen (their moods, and later their thoughts); off while it is tested");
             b.AppendLine();
             b.AppendLine("[Ticker]");
             b.AppendLine("Ticker = " + B(Ticker) + "   ; a line at the bottom of the screen: what the people near you are thinking, else news");

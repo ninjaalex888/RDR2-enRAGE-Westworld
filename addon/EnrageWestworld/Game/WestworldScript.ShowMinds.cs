@@ -81,7 +81,11 @@ namespace EnrageWestworld.InGame
                 Person who = KnownPerson(p);
                 if (who == null)
                     continue;
-                string[] lines = _engine.MindCard(who, clockHour).Select(l => Draw.Fit(l, MindCardScale, MindCardWidth)).ToArray();
+                string mind = MindCardLine(p.Handle);   // the mind in shadow mode: their traits in words (WestworldScript.Mind.cs)
+                IEnumerable<string> card = _engine.MindCard(who, clockHour);
+                if (mind != null)
+                    card = card.Concat(new[] { mind });
+                string[] lines = card.Select(l => Draw.Fit(l, MindCardScale, MindCardWidth)).ToArray();
                 _mindCards.Add(new MindCardShown { Handle = p.Handle, Lines = lines, Width = lines.Max(l => Draw.Width(l, MindCardScale)) });
                 if (_mindCardsShown++ == 0)
                     Log.Write("SHOW minds: the first card, over " + who.Name + ": " + string.Join(" | ", lines));

@@ -820,6 +820,7 @@ namespace EnrageWestworld.InGame
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
+            MindShadowStep(now);   // the mind in shadow mode: traits, needs, feelings and mood, reported only (WestworldScript.Mind.cs)
             if (_drinkVoice != 0 || _drunkVoices.Count > 0)
                 Safe("vices", _aDrinkVoice ?? (_aDrinkVoice = () => { DrinkVoiceStep(_now); SoberVoices(false); }));   // a drinker's voice, and sober again at 4 (WestworldScript.Vices.cs)
             Safe("ceremonies", _aCeremony);

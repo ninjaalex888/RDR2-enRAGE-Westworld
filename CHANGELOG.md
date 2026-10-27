@@ -2,6 +2,10 @@
 
 ## Unreleased (daytime 2026-10-27, on top of 0.6.3)
 
+### The mind underneath, in shadow (being tested)
+
+- A mind under every person near you, run beside the game and only reported while it's tested (`[Mind] MindShadow`, on; `[Mind] MindLive`, off, lets it reach the screen later; settings version 80). First, traits: each person has fourteen, worked out from who they are and never saved: five broad ones with two sides each (curiosity and imagination, order and self-control, sociability and assertiveness, compassion and trust, anxiety and anger), honesty, piety, respect for the law and an appetite for risk. Their temper still stands (a hothead reads as a hothead), their faith counts, a trade and the years pull a little (people grow steadier and warier of risk with age), and enRAGE's own people bring the ten traits enRAGE gave them. The log says each person's once (`MIND traits: Earl Adair (resident, Proud): outspoken and boastful (reads as Proud); ...`), F7 sums it up (`TEST mind shadow:`), and the Show minds card has a last line, "mind: ...". For someone enRAGE gave no temper, the same line says which RealNPCs would give ("share (dry run)"); nothing is written to enRAGE. A person stays the same person: their traits come from who they are, not a fresh roll each time. It reads only people RealNPCs already knows, never makes anyone up, and saves nothing.
+
 ### Fixes from a review of the overnight work
 
 - Your save is never written over with an empty one at load. If something else had the save file open when the game loaded (OneDrive syncing Documents, a virus scanner, an editor), RealNPCs took it for a damaged file, started fresh and saved that over your real file twenty seconds later. Now it waits a moment, then leaves the file alone and saves nothing for that session (the log and F7 say so); a damaged file is kept as a dated copy, and the copy a crash leaves behind mid-save is recovered.

@@ -680,6 +680,10 @@ in the file. The new ones:
             ShareWithEnrage (true): RealNPCs keeps its own record of
             who has died; when one of enRAGE's townsfolk dies and enRAGE didn't see it, RealNPCs
             marks them dead there too
+            MindShadow (true, while it is tested): the mind underneath works out the traits, needs,
+            feelings and mood of the people near you and writes them to the log (MIND lines), F7
+            (TEST mind shadow) and the Show minds cards; it changes nothing anyone does or thinks.
+            MindLive (false): what that mind decides reaches the screen (moods first, later thoughts)
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left
