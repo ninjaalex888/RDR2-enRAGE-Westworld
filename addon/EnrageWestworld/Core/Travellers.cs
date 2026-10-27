@@ -71,6 +71,44 @@ namespace EnrageWestworld.Core
             return Voice.Pick(seed + "ti", "Thank you for nothing.", "Nobody stops out here.", "Suppose I'll follow the wheel ruts.");
         }
 
+        // snakebit (Tier 4): about one in three sits by the road holding his leg and asks for help instead of the way;
+        // stopping for him (a greeting, or standing by him) is seeing to the bite, and the town hears of it later
+        public const int BittenChance = 30;
+
+        public static string BittenHail(string seed)
+        {
+            return Voice.Pick(seed + "bh", "Mister! Over here! Snake got me!", "Help! Sir! I've been bit!", "You there! For the love of God, stop!");
+        }
+
+        public static string BittenAsk(string seed)
+        {
+            return Voice.Pick(seed + "ba", "Rattler. Got me above the boot. Leg won't hold me.", "Snake in the ditch grass. Leg's swelling like a melon.",
+                              "Bit on the ankle. You got a knife? Whiskey? Anything?");
+        }
+
+        public static string BittenThanks(string town, string seed)
+        {
+            return Voice.Pick(seed + "bt", "Lord. Thank you. I thought I'd die out here.", "Tight as that? Good. I can make " + town + " on it, slow.",
+                              "You're a Christian, mister, whatever else you are.");
+        }
+
+        public static string BittenRefused(string seed)
+        {
+            return Voice.Pick(seed + "br", "Leave me be, then! I'm snakebit, for God's sake!", "Go on. Go on and leave me.");
+        }
+
+        public static string BittenIgnored(string seed)
+        {
+            return Voice.Pick(seed + "bi", "Rode right by. Rode right by me.", "I'll crawl, then. Crawl to town.", "Leg's hot as a stove. Somebody else will come. Somebody.");
+        }
+
+        /// The town's word, some hours on, of the snakebit man the player stopped for.
+        public static string BittenNews(string town, string seed)
+        {
+            return Voice.Pick(seed + "bn", "A snakebit man limped into " + town + " off the road. Says a stranger on a horse stopped and saw to it.",
+                              "Fellow came into " + town + " with a rattler bite bound tight. Says a rider stopped when nobody else would.");
+        }
+
         public static IEnumerable<string> Lines()
         {
             for (int i = 0; i < 9; i++)
@@ -81,7 +119,24 @@ namespace EnrageWestworld.Core
                 yield return Thanks(town, "t" + i);
                 yield return Refused("r" + i);
                 yield return Ignored("i" + i);
+                yield return BittenHail("h" + i);
+                yield return BittenAsk("a" + i);
+                yield return BittenThanks(town, "t" + i);
+                yield return BittenRefused("r" + i);
+                yield return BittenIgnored("i" + i);
+                yield return BittenNews(town, "n" + i);
             }
+        }
+    }
+
+    public sealed partial class Engine
+    {
+        /// The player stopped for a snakebit man on the road: the nearest town hears of it two to five hours on.
+        public void SnakebiteTold(string town, string text, long now)
+        {
+            long due = now + 120 + Voice.Hash(town + now) % 180;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = text, DueAt = due });
+            Log("TRAVELLER the town will hear of the snakebite in " + (due - now) + " game min");
         }
     }
 }

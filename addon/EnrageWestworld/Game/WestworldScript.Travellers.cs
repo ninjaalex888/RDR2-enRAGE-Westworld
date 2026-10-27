@@ -23,11 +23,11 @@ namespace EnrageWestworld.InGame
             public string Phase = "spawn", Town, Seed;   // spawn, waiting, hailed, asked, going, done
             public float TownX, TownY;
             public int StartedAt, PhaseAt, StoppedSince, Tries;
-            public bool Test;
+            public bool Test, Bitten;   // Bitten: snakebit, sitting by the road, asking for help (Tier 4)
         }
 
         private TravellerRun _traveller;
-        private int _travellers, _travellerAnswered;
+        private int _travellers, _travellerAnswered, _travellerTests, _bitten, _bittenHelped;
         private string _travellerLast;
 
         private string TravellerNotNow(bool test = false)
@@ -51,8 +51,9 @@ namespace EnrageWestworld.InGame
             Vector3 p = Game.Player.Character.Position;
             float metres, tx, ty;
             string town = Travellers.Nearest(p.X, p.Y, out metres, out tx, out ty);
-            _traveller = new TravellerRun { StartedAt = now, PhaseAt = now, Test = test, Town = town, TownX = tx, TownY = ty, Model = Spawner.ModelFor(null, false, _rng.Next()), Seed = "tr" + now };
-            Log.Write("TRAVELLER begins: one on foot, bound for " + town + " (" + (int)(metres / 1000) + " km off)" + (test ? " (a test)" : ""));
+            bool bitten = test ? _travellerTests++ % 2 == 1 : _rng.Next(100) < Travellers.BittenChance;   // a test takes turns: lost, then snakebit
+            _traveller = new TravellerRun { StartedAt = now, PhaseAt = now, Test = test, Town = town, TownX = tx, TownY = ty, Model = Spawner.ModelFor(null, false, _rng.Next()), Seed = "tr" + now, Bitten = bitten };
+            Log.Write("TRAVELLER begins: one on foot, bound for " + town + " (" + (int)(metres / 1000) + " km off)" + (bitten ? ", snakebit" : "") + (test ? " (a test)" : ""));
         }
 
         private void TravellerStep(int now)
@@ -81,10 +82,13 @@ namespace EnrageWestworld.InGame
                 case "waiting":
                     if (d < 30f && NodInView(me, t.Man))
                     {
-                        TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 2000, 0f, 0f, 0f);
+                        if (!t.Bitten)
+                        {
+                            TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 2000, 0f, 0f, 0f);
+                            TravellerGesture(h, "happy_wave_fl_001");
+                        }
                         TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, -1, 0, 51, 0);
-                        TravellerGesture(h, "happy_wave_fl_001");
-                        Feed.Say("A traveller", Travellers.Hail(t.Seed), Speech.When(h, "greet", me.Handle), h, toYou: true);
+                        Feed.Say("A traveller", t.Bitten ? Travellers.BittenHail(t.Seed) : Travellers.Hail(t.Seed), Speech.When(h, t.Bitten ? "scared" : "greet", me.Handle), h, toYou: true);
                         t.Phase = "hailed";
                         t.PhaseAt = now;
                         Log.Write("TRAVELLER hails you (" + (int)d + " m)");
@@ -95,10 +99,10 @@ namespace EnrageWestworld.InGame
                 case "hailed":
                     if (d < 8f)
                     {
-                        Feed.Say("A traveller", Travellers.Ask(t.Town, t.Seed), Speech.When(h, "mild", me.Handle), h, toYou: true);
+                        Feed.Say("A traveller", t.Bitten ? Travellers.BittenAsk(t.Seed) : Travellers.Ask(t.Town, t.Seed), Speech.When(h, t.Bitten ? "scared" : "mild", me.Handle), h, toYou: true);
                         t.Phase = "asked";
                         t.PhaseAt = now;
-                        Log.Write("TRAVELLER asks you the way to " + t.Town);
+                        Log.Write(t.Bitten ? "TRAVELLER asks you for help: snakebit" : "TRAVELLER asks you the way to " + t.Town);
                     }
                     else if (d > 60f || now - t.PhaseAt > 60000)
                         TravellerIgnored(t, now);
@@ -153,7 +157,10 @@ namespace EnrageWestworld.InGame
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, true);
             PED.SET_PED_KEEP_TASK(h, true);
             WEAPON.REMOVE_ALL_PED_WEAPONS(h, true, true);
-            TASK.TASK_STAND_STILL(h, 240000);
+            if (t.Bitten)
+                TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_SIT_GROUND"), 240000, true, 0u, -1f, false);   // sat by the road, holding his leg
+            else
+                TASK.TASK_STAND_STILL(h, 240000);
             t.Man = m;
             if (!t.Test)
                 Pacing.Note(_store.Pace, "traveller", null, null, _store.LastGameMin);
@@ -204,8 +211,9 @@ namespace EnrageWestworld.InGame
             else
             {
                 Ped me = Game.Player.Character;
-                Feed.Say("A traveller", Travellers.Refused(t.Seed), Speech.When(handle, "scared", me.Handle), handle, toYou: true);
-                TASK.TASK_SMART_FLEE_PED(handle, me.Handle, 25f, 8000, 0, 2f, 0);
+                Feed.Say("A traveller", t.Bitten ? Travellers.BittenRefused(t.Seed) : Travellers.Refused(t.Seed), Speech.When(handle, "scared", me.Handle), handle, toYou: true);
+                if (!t.Bitten)
+                    TASK.TASK_SMART_FLEE_PED(handle, me.Handle, 25f, 8000, 0, 2f, 0);   // the snakebit can't run: he stays where he sat
                 t.Phase = "done";
                 t.PhaseAt = Game.GameTime;
                 Log.Write("TRAVELLER: you ran him off");
@@ -218,9 +226,21 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             int h = t.Man.Handle;
             Vector3 town = new Vector3(t.TownX, t.TownY, t.Man.Position.Z);
-            TASK.TASK_TURN_PED_TO_FACE_COORD(h, town.X, town.Y, town.Z, 1500);
-            TravellerGesture(h, Voice.Hash(t.Seed) % 2 == 0 ? "neutral_point_l_001" : "neutral_point_r_001");
-            Feed.Say("A traveller", Travellers.Thanks(t.Town, t.Seed), Speech.When(h, "thanks", me.Handle), h, toYou: true);
+            if (t.Bitten)
+            {
+                // stopping for him is seeing to the bite: he gets up and thanks you, and the town hears of it later
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                Feed.Say("A traveller", Travellers.BittenThanks(t.Town, t.Seed), Speech.When(h, "thanks", me.Handle), h, toYou: true);
+                if (!t.Test)
+                    _engine.SnakebiteTold(t.Town, Travellers.BittenNews(t.Town, t.Seed), _store.LastGameMin);
+                _bittenHelped++;
+            }
+            else
+            {
+                TASK.TASK_TURN_PED_TO_FACE_COORD(h, town.X, town.Y, town.Z, 1500);
+                TravellerGesture(h, Voice.Hash(t.Seed) % 2 == 0 ? "neutral_point_l_001" : "neutral_point_r_001");
+                Feed.Say("A traveller", Travellers.Thanks(t.Town, t.Seed), Speech.When(h, "thanks", me.Handle), h, toYou: true);
+            }
             // a little way toward the town, then on his own
             Vector3 dir = town - t.Man.Position;
             float len = Math.Max(1f, (float)Math.Sqrt(dir.X * dir.X + dir.Y * dir.Y));
@@ -230,17 +250,20 @@ namespace EnrageWestworld.InGame
             t.Phase = "going";
             t.PhaseAt = now;
             _travellerAnswered++;
-            Log.Write("TRAVELLER: " + how + "; he points toward " + t.Town + ", thanks you and walks that way");
+            Log.Write("TRAVELLER: " + how + (t.Bitten ? "; you see to the bite; he gets up, thanks you and limps off toward " + t.Town : "; he points toward " + t.Town + ", thanks you and walks that way"));
         }
 
         private void TravellerIgnored(TravellerRun t, int now)
         {
             int h = t.Man.Handle;
             Speech.SayTag(h, "mild", 0);
-            TASK.TASK_WANDER_STANDARD(h, 10f, 10);
-            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            if (!t.Bitten)
+            {
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // the snakebit stays sat where he is
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            }
             if (t.Man.Position.DistanceTo(Game.Player.Character.Position) < 20f && NodInView(Game.Player.Character, t.Man))
-                _ticker.Push("A traveller, thinking", Travellers.Ignored(t.Seed), "near", h);
+                _ticker.Push("A traveller, thinking", t.Bitten ? Travellers.BittenIgnored(t.Seed) : Travellers.Ignored(t.Seed), "near", h);
             t.Phase = "done";
             t.PhaseAt = now;
             Log.Write("TRAVELLER: you rode on; he goes on alone");
@@ -267,7 +290,7 @@ namespace EnrageWestworld.InGame
             if (t.Man != null && t.Man.Exists())
             {
                 if (t.Phase != "spawn")
-                    Safe("world events", () => RecordEvent("encounter:traveller", null, "a traveller asking the way", "player", "you", t.Man.Position, t.Man.Handle, t.Man.Handle, 0, why));
+                    Safe("world events", () => RecordEvent(t.Bitten ? "encounter:snakebite" : "encounter:traveller", null, t.Bitten ? "a snakebit man on the road" : "a traveller asking the way", "player", "you", t.Man.Position, t.Man.Handle, t.Man.Handle, 0, why));
                 bool seen = ENTITY.IS_ENTITY_ON_SCREEN(t.Man.Handle) && t.Man.Position.DistanceTo(Game.Player.Character.Position) < 120f;
                 Spawner.Release(t.Man, !t.Man.IsDead && !seen);   // the living go where nobody sees; the dead stay
             }
@@ -276,6 +299,8 @@ namespace EnrageWestworld.InGame
                 if (!t.Test)
                     MarkDone("traveller");
                 _travellers++;
+                if (t.Bitten)
+                    _bitten++;
                 _travellerLast = "bound for " + t.Town + ": " + why + (t.Test ? " (a test)" : "");
             }
             Log.Write("TRAVELLER over (" + why + ")");
@@ -285,7 +310,8 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.Travellers)
                 return "off ([Encounters] Travellers)";
-            return (_traveller != null ? "out now (" + _traveller.Phase + ", bound for " + _traveller.Town + ")" : "not out") + "; " + _travellers + " this session, " + _travellerAnswered + " shown the way" +
+            return (_traveller != null ? "out now (" + _traveller.Phase + ", bound for " + _traveller.Town + (_traveller.Bitten ? ", snakebit" : "") + ")" : "not out") + "; " + _travellers + " this session, " + _travellerAnswered + " answered" +
+                   " (snakebit " + _bitten + ", helped " + _bittenHelped + ")" +
                    (_travellerLast != null ? "; last: " + _travellerLast : "") + "; now: " + (TravellerNotNow() ?? "one could come");
         }
     }

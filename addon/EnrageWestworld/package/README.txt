@@ -624,7 +624,8 @@ in the file. The new ones:
             NightVisitor (true), NightVisitorChance (18): after midnight in a town, a pale figure over a
             body, gone when you look away; the town talks of it next morning
             Travellers (true), TravellerChance (20): by day on the roads, a man on foot asks you the way to
-            the nearest town; greet him or stop a moment and he finds his way
+            the nearest town; greet him or stop a moment and he finds his way (one in three is
+            snakebit and asks for help instead)
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
             Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
