@@ -19,6 +19,8 @@ namespace EnrageWestworld.Core
         private readonly Dictionary<string, KeyValuePair<string, Minds.Choice>> _thought = new Dictionary<string, KeyValuePair<string, Minds.Choice>>();
         // the worry's wear (not saved): id -> its arc, times thought, when last
         private readonly Dictionary<string, long[]> _worryWear = new Dictionary<string, long[]>();
+        // enRAGE's dossier for its records, worn by use (not saved): id|source|day -> times it won
+        private readonly Dictionary<string, int> _dossierWear = new Dictionary<string, int>();
         // what each has thought today (not saved): nobody thinks the same line twice in a day; a line already used
         // passes the turn to the next thing on their mind
         private readonly Dictionary<string, KeyValuePair<long, HashSet<string>>> _today = new Dictionary<string, KeyValuePair<long, HashSet<string>>>();
@@ -100,10 +102,30 @@ namespace EnrageWestworld.Core
             GoalItem g = p.Goals.FirstOrDefault();
             if (g != null)
                 extra.Add(new Minds.Candidate { Source = "enrage:goal:" + g.Type, Pull = (g.Type == "Avenge" && g.Target == "you" && p.Hate >= 40 ? 42 : 22) + j("goal"), Make = () => Voice.GoalLine(p, g, seed) });
-            if (st.Talks == 0 && st.Sightings > 0 && m == null)
+            if (st.Talks == 0 && st.Sightings > 0 && p.Hate == 0 && st.KnownDeeds.Count == 0 && !p.Memories.Any(x => x.AboutYou))
                 extra.Add(new Minds.Candidate { Source = "enrage:first sight", Pull = 22 + j("first"), Make = () => FirstSight(you, seed) });
             extra.Add(new Minds.Candidate { Source = "enrage:mood", Pull = 14 + j("mood"), Make = () => Voice.MoodLine(p, p.TopThought, seed) });
+            // enRAGE's dossier wears as memories do: each time one of its parts wins today it pulls 6 less, so the same
+            // source doesn't hold the ticker for hours (not saved; a new game day starts fresh)
+            long day = now / 1440;
+            foreach (Minds.Candidate x in extra)
+            {
+                int worn;
+                if (_dossierWear.TryGetValue(p.Id + "|" + x.Source + "|" + day, out worn))
+                    x.Pull -= 6 * worn;
+            }
+            KeyValuePair<string, Minds.Choice> was;
+            bool cached = _thought.TryGetValue(p.Id, out was) && was.Key == seed;
             Minds.Choice c = Think(p, st, (int)(now % 1440 / 60), seed, null, extra, -1, true);
+            if (c != null && !cached && c.Source != null && c.Source.StartsWith("enrage:"))
+            {
+                if (_dossierWear.Count > 3000)
+                    _dossierWear.Clear();
+                string key = p.Id + "|" + c.Source + "|" + day;
+                int n;
+                _dossierWear.TryGetValue(key, out n);
+                _dossierWear[key] = n + 1;
+            }
             return c != null ? c.Text : null;
         }
 
@@ -310,6 +332,7 @@ namespace EnrageWestworld.Core
             _thought.Clear();
             _today.Clear();
             _worryWear.Clear();
+            _dossierWear.Clear();
         }
 
         /// memoriesOver: only memories pulling harder than this (for enRAGE's records); -1 everything.

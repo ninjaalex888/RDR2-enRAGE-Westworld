@@ -23,6 +23,7 @@ namespace EnrageWestworld.InGame
         private const int FoughtRestMs = 900000;   // ...or after coming to blows (a brawl, a rough, a drunk's challenge)
         private readonly Dictionary<int, int> _sceneAtHandle = new Dictionary<int, int>();
         private readonly Dictionary<int, int> _restMsOf = new Dictionary<int, int>();   // a longer rest than PersonRestMs, by handle
+        private readonly Dictionary<int, int> _foughtWith = new Dictionary<int, int>();   // the two who came to blows, each to the other
         private int _nextChance;
 
         private sealed class Candidate
@@ -420,6 +421,11 @@ namespace EnrageWestworld.InGame
         private void NoteInScene(IList<Ped> people, string kind, int now)
         {
             bool blows = kind == "brawl" || kind == "rough" || kind == "drunk";
+            if (blows && people.Count >= 2 && people[0] != null && people[1] != null)
+            {
+                _foughtWith[people[0].Handle] = people[1].Handle;
+                _foughtWith[people[1].Handle] = people[0].Handle;
+            }
             for (int i = 0; i < people.Count; i++)
             {
                 Ped p = people[i];
@@ -436,6 +442,7 @@ namespace EnrageWestworld.InGame
                 {
                     _sceneAtHandle.Remove(h);
                     _restMsOf.Remove(h);
+                    _foughtWith.Remove(h);
                 }
         }
 

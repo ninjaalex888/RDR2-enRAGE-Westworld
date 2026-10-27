@@ -811,8 +811,12 @@ namespace EnrageWestworld.InGame
                 return "can't be directed now";
             // harm and despair of enRAGE's full records only through the record-safe path that books the death in enRAGE
             // (RecordFates: its history, and IsAlive if it missed the death; Lex's overnight brief, Tier 1.4)
-            if (_bridge.RecordAt(h) != null && (!_cfg.RecordFates || !_bridge.CanRevive))
+            NemesisRecord despairRec = _bridge.RecordAt(h);
+            if (despairRec != null && (!_cfg.RecordFates || !_bridge.CanBookDeath))
                 return "one of enRAGE's records (" + (!_cfg.RecordFates ? "RecordFates is off" : "enRAGE's history and roster saving weren't found") + ")";
+            string held = despairRec != null ? RecordFreeWhyNot(new Ped(h), despairRec) : null;
+            if (held != null)
+                return "one of enRAGE's records, not free of it (" + held + ")";
             if (act.St.Has(DespairMark))
                 return "already had their one chance";
             Ped ped = new Ped(h);
@@ -820,8 +824,8 @@ namespace EnrageWestworld.InGame
                 return "a story character, or not grown";
             if (MISC.GET_MISSION_FLAG())
                 return "a story mission";
-            if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h))
-                return "a mission character";
+            if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) && despairRec == null)
+                return "a mission character";   // enRAGE marks its own people so; whether it has a hold on them is asked above
             if (dist < 3f)
                 return "you were " + dist.ToString("0.0") + " m off, near enough to stop them";
             if (PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, h))
@@ -838,6 +842,13 @@ namespace EnrageWestworld.InGame
             {
                 if (now < act.PhaseUntil)
                     return;
+                string cant = MayDirectWhyNot(new Ped(h)) ?? (act.Rec != null ? RecordFreeWhyNot(new Ped(h), act.Rec) : null);
+                if (cant != null)
+                {
+                    Log.Write("WAKE despair: " + act.Name + " is let be at the last moment (" + cant + ")");
+                    act.Until = now;   // the act ends at the next look ("finished"); their one chance is spent
+                    return;
+                }
                 act.Phase = 4;
                 act.Sub = 0;
                 act.Until = now + (act.Method == "wall" ? 20000 : 9000);
@@ -884,8 +895,8 @@ namespace EnrageWestworld.InGame
             if (act.Phase == 5 && now >= act.PhaseUntil)
             {
                 act.Phase = 6;
-                if (!ENTITY.IS_ENTITY_DEAD(h))
-                    ENTITY.SET_ENTITY_HEALTH(h, 0, h);
+                if (!ENTITY.IS_ENTITY_DEAD(h) || PED.IS_PED_INCAPACITATED(h))
+                    ENTITY.SET_ENTITY_HEALTH(h, 0, h);   // out cold isn't dead: the game would let them get up
                 act.Until = now + 1500;   // dead by the next look (WhyEnded "ended" books it), or let go
             }
         }
@@ -1096,6 +1107,13 @@ namespace EnrageWestworld.InGame
             return act.Method == "wall" ? "running at a wall" : act.Method == "knife" ? "a knife" : "a gun, " + (act.Weapon == null ? "their own" : Despair.Words(act.Weapon));
         }
 
+        /// The same in a record's history, in his or her own words ("with a gun of his own").
+        private static string DespairHistory(WakeAct act)
+        {
+            string their = act.P != null && act.P.Woman ? "her" : "his";
+            return act.Method == "wall" ? "running headlong at a wall" : act.Method == "knife" ? "with a knife" : "with " + (act.Weapon == null ? "a gun of " + their + " own" : Despair.Words(act.Weapon));
+        }
+
         /// The death booked once, however it came (the shot can kill before the last step).
         private void DespairDied(WakeAct act)
         {
@@ -1107,10 +1125,13 @@ namespace EnrageWestworld.InGame
                 act.Res.Dead = true;
                 _engine.KeepResident(act.Res, Bridge.Now());
             }
-            LedgerNote(act.Handle, act.P.Id, act.Name, act.Res != null ? "resident" : _bridge.RecordAt(act.Handle) != null ? "record" : "folk", DespairHow(act), "self");   // known dead: no knocked-out test
             NemesisRecord rec = act.Rec ?? _bridge.RecordAt(act.Handle);
+            LedgerNote(act.Handle, act.P.Id, act.Name, act.Res != null ? "resident" : rec != null ? "record" : "folk", DespairHow(act), "self");   // known dead: no knocked-out test
             if (rec != null)
-                QueueRecordFate(rec, act.Name, "Died by " + (act.P.Woman ? "her" : "his") + " own hand (" + DespairHow(act) + ")" + (_placeTown != null ? ", in " + _placeTown : string.Empty) + ".");
+            {
+                string town = ENTITY.DOES_ENTITY_EXIST(act.Handle) ? _bridge.TownAt(new Ped(act.Handle).Position) : null;
+                QueueRecordFate(rec, act.Handle, act.Name, "Died by " + (act.P.Woman ? "her" : "his") + " own hand, " + DespairHistory(act) + ((town ?? _placeTown) != null ? ", in " + (town ?? _placeTown) : string.Empty) + ".");
+            }
             string how = act.Method ?? "gun";
             int c;
             _despairCount.TryGetValue(how, out c);
@@ -1205,7 +1226,14 @@ namespace EnrageWestworld.InGame
         private string WhyEnded(WakeAct act, Ped me, int now)
         {
             if (!ENTITY.DOES_ENTITY_EXIST(act.Handle)) return "gone";
-            if (ENTITY.IS_ENTITY_DEAD(act.Handle)) return act.Ending == "despair" && act.Phase >= 4 ? "ended" : "died";
+            if (ENTITY.IS_ENTITY_DEAD(act.Handle))
+            {
+                if (act.Ending != "despair" || act.Phase < 4)
+                    return "died";
+                if (PED.IS_PED_INCAPACITATED(act.Handle))
+                    ENTITY.SET_ENTITY_HEALTH(act.Handle, 0, act.Handle);   // the act's own end: only out cold would let them up again
+                return "ended";
+            }
             if (act.Phase >= 4 && act.Ending == "despair") return now >= act.Until ? "it didn't happen" : null;   // the last moments play out, to a deadline
             if (now >= act.Until) return act.Kind == "awake" && act.Phase == 0 ? "never reached you" : "finished";
             if (PED.IS_PED_IN_COMBAT(act.Handle, 0)) return "got into a fight";

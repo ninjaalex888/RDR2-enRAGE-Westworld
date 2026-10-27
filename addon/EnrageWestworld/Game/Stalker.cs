@@ -24,6 +24,9 @@ namespace EnrageWestworld.InGame
         private readonly Random _rng = new Random();
         private Ped _ped;
         private Mode _mode = Mode.Follow;
+
+        /// Running off because he was caught out (our own flight, not a fight or a fright of the game's).
+        public bool Fleeing { get { return _mode == Mode.Flee; } }
         private int _endsAt, _nextThink, _nextMutter, _modeUntil, _nextRelocate, _nextOrder, _fleeSince;
         private int _startHealth;
         private bool _spoke;

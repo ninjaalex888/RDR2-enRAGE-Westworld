@@ -42,7 +42,7 @@ namespace EnrageWestworld.InGame
 
         /// Why one of enRAGE's records can't be the stalker now (or stay one), or null: the same rules as MayDirect, except
         /// that our own hold on them doesn't count, plus no enRAGE plan due near them or for their gang within the hour.
-        private string RecordStalkWhyNot(Ped p)
+        private string RecordStalkWhyNot(Ped p, bool ourFlight = false)
         {
             if (p == null || !p.Exists() || ENTITY.IS_ENTITY_DEAD(p.Handle))
                 return "gone";
@@ -50,36 +50,62 @@ namespace EnrageWestworld.InGame
             NemesisRecord rec = _bridge.RecordAt(h);
             if (rec == null || !rec.IsAlive)
                 return "not one of enRAGE's people now";
-            bool busy = PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false);
+            bool busy = PED.IS_PED_IN_COMBAT(h, 0) || (PED.IS_PED_FLEEING(h) && !ourFlight) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false);
             string why = Directing.WhyNot(Natives.StoryModel(p), IsGrownUp(p), MISC.GET_MISSION_FLAG(), true, _cfg.EnragePeopleJoinIn, _bridge.EnrageFighter(h), _bridge.Interrogating, busy, false, false);
             if (why != null)
                 return why;
+            return RecordFreeWhyNot(p, rec);
+        }
+
+        /// Free of enRAGE altogether: in no role of its own but a world nemesis going about (a town man coming for you,
+        /// a sighting, a survivor are enRAGE's to steer), and no plan of its due within the hour that's his, his gang's or
+        /// near him. For what RealNPCs may do with a record beyond a scene: be the stalker, despair.
+        private string RecordFreeWhyNot(Ped p, NemesisRecord rec)
+        {
+            if (p == null || rec == null)
+                return "not one of enRAGE's people now";
+            string role = _bridge.RoleName(p.Handle);
+            if (role != null && role != "None" && role != "WorldNemesis")
+                return "enRAGE has him as " + role;
             long g = Bridge.Now();
             foreach (PlanInfo plan in _bridge.Plans())
                 if (!plan.Done && plan.DueAt - g < 60 && g - plan.DueAt < Math.Max(60, plan.WindowMin) &&
-                    ((plan.Gang != null && plan.Gang == rec.Gang) || plan.Pos.DistanceTo(p.Position) < 150f))
+                    ((plan.LeaderId != null && plan.LeaderId == rec.Id) || (plan.Gang != null && plan.Gang == rec.Gang) || plan.Pos.DistanceTo(p.Position) < 150f))
                     return "an enRAGE plan is due (" + (plan.Title ?? plan.Kind) + ")";
             return null;
+        }
+
+        /// enRAGE has just given them orders of its own (a fighter's role, an interrogation, a fight): the hand-back
+        /// leaves them alone. Gone, twenty minutes up, or a plan due: handed back to go about their day.
+        private static bool EnragesOrders(string why)
+        {
+            return why != null && (why.StartsWith("enRAGE") || why.Contains("fight") || why.Contains("interrogat") || why.Contains("busy"));
         }
 
         private sealed class RecordFate
         {
             public NemesisRecord Rec;
-            public string Name, History;
-            public int DueAt;
+            public string Id, Name, History;
+            public int Handle, DueAt, Since, Last, Watched;   // Watched: ms with the player in control since (enRAGE's world loop runs then)
+            public long GameAt;
         }
+
+        private const int FateWatchMs = 30000, FateGiveUpMs = 600000;
 
         private readonly List<RecordFate> _recordFates = new List<RecordFate>();
         private int _recordFatesBooked;
         private Action _aRecordFates;
 
-        /// A record died of something RealNPCs did: booked in enRAGE five seconds on (enRAGE's own sync may mark the
-        /// death first; then only the history is added).
-        private void QueueRecordFate(NemesisRecord rec, string name, string history)
+        /// A record died of something RealNPCs did: enRAGE resolves its people's deaths itself (and may decide one lived),
+        /// so we wait for it. Looked at every second from 5 s on: enRAGE marked the death -> our history line only;
+        /// enRAGE decided he lived, or he got up -> nothing; still alive on its books after 30 s of the player in control
+        /// (or 10 minutes in all) and the body down or gone -> enRAGE missed it: IsAlive too.
+        private void QueueRecordFate(NemesisRecord rec, int handle, string name, string history)
         {
-            if (!_cfg.RecordFates || rec == null || _recordFates.Any(f => f.Rec == rec))
+            if (!_cfg.RecordFates || rec == null || _recordFates.Any(f => f.Id == rec.Id))
                 return;
-            _recordFates.Add(new RecordFate { Rec = rec, Name = name, History = history, DueAt = Game.GameTime + 5000 });
+            int now = Game.GameTime;
+            _recordFates.Add(new RecordFate { Rec = rec, Id = rec.Id, Handle = handle, Name = name, History = history, DueAt = now + 5000, Since = now, Last = now, GameAt = _store.LastGameMin });
         }
 
         private void RecordFatesStep(int now)
@@ -93,15 +119,49 @@ namespace EnrageWestworld.InGame
 
         private void RecordFatesTick(int now)
         {
+            bool control = PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle);
             for (int i = _recordFates.Count - 1; i >= 0; i--)
             {
                 RecordFate f = _recordFates[i];
+                if (control)
+                    f.Watched += now - f.Last;
+                f.Last = now;
                 if (now < f.DueAt)
                     continue;
+                f.DueAt = now + 1000;
+                string drop = null, booked = null;
+                NemesisRecord rec = _bridge.RecordById(f.Id) ?? f.Rec;   // re-found: a save point restored swaps the roster
+                bool there = ENTITY.DOES_ENTITY_EXIST(f.Handle);
+                if (_store.LastGameMin < f.GameAt)
+                    drop = "the clock went back (a save loaded)";
+                else if (rec == null)
+                    drop = "not on enRAGE's roster any more";
+                else if (rec.PresumedDead)
+                    drop = "enRAGE decided he lived (presumed dead): left to it";
+                else if (!rec.IsAlive)
+                {
+                    drop = _bridge.BookDeath(rec, f.History, false);   // enRAGE resolved the death itself: our line says how
+                    booked = "resolved";
+                }
+                else if (there && !ENTITY.IS_ENTITY_DEAD(f.Handle))
+                    drop = "on their feet again: not dead after all";
+                else if (there && KnockedOutWhy(f.Handle) != null && now - f.Since < FateGiveUpMs)
+                    continue;   // only out cold so far
+                else if (f.Watched >= FateWatchMs || now - f.Since >= FateGiveUpMs)
+                {
+                    drop = _bridge.BookDeath(rec, f.History, true);   // enRAGE never resolved it
+                    booked = "marked";
+                }
+                else
+                    continue;
                 _recordFates.RemoveAt(i);
-                bool marked = _bridge.BookDeath(f.Rec, f.History);
+                if (drop != null)
+                {
+                    Log.Write("RECORD death not booked: " + f.Name + ": " + drop);
+                    continue;
+                }
                 _recordFatesBooked++;
-                Log.Write("RECORD death booked: " + f.Name + ", " + f.History + (marked ? " (enRAGE hadn't marked the death: RealNPCs did)" : " (enRAGE saw it; its history says how)"));
+                Log.Write("RECORD death booked: " + f.Name + ", " + f.History + (booked == "marked" ? " (enRAGE never resolved the death: RealNPCs marked it)" : " (enRAGE resolved it; its history says how)"));
             }
         }
 
@@ -109,7 +169,8 @@ namespace EnrageWestworld.InGame
         private string RecordCould(Ped p)
         {
             string stalk = !_cfg.StalkerRecords ? "off" : RecordStalkWhyNot(p) ?? "yes";
-            string despair = !_cfg.RecordFates ? "off" : _bridge.CanRevive ? "when awake and free" : "no (enRAGE's history and roster saving not found)";
+            string free = RecordFreeWhyNot(p, _bridge.RecordAt(p.Handle));
+            string despair = !_cfg.RecordFates ? "off" : !_bridge.CanBookDeath ? "no (enRAGE's history and roster saving not found)" : free != null ? "not now: " + free : "when awake and free";
             return "stalk " + stalk + "; despair " + despair + "; minds " + (_cfg.Minds && _cfg.RecordMinds ? "yes" : "off") + "; dress never (enRAGE knows them by their look)";
         }
 

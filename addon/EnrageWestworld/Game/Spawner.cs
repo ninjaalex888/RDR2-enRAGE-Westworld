@@ -20,6 +20,8 @@ namespace EnrageWestworld.InGame
         public static bool Borrow(Ped p)
         {
             int h = p.Handle;
+            Light.Remove(h);   // a handle the game reused: whatever it was before, it's taken over fully now
+            Quiet.Remove(h);
             ENTITY.SET_ENTITY_AS_MISSION_ENTITY(h, true, true);
             Ours.Add(h);
             Borrowed.Add(h);
@@ -27,6 +29,15 @@ namespace EnrageWestworld.InGame
         }
 
         private static readonly HashSet<int> Light = new HashSet<int>();
+        private static readonly HashSet<int> Quiet = new HashSet<int>();   // handed back to orders enRAGE has just given them
+
+        /// The next hand-back of this one leaves their tasks alone (enRAGE has just given them orders of its own: a
+        /// fight, an interrogation): only our hold on them goes.
+        public static void LeaveTasks(int handle)
+        {
+            if (Borrowed.Contains(handle))
+                Quiet.Add(handle);
+        }
 
         /// One of enRAGE's records, taken over lightly: ours to direct, but its mission-entity state is enRAGE's, and on
         /// hand-back it is never marked "no longer needed" (that could let the game clear a ped enRAGE spawned).
@@ -48,16 +59,19 @@ namespace EnrageWestworld.InGame
         {
             Ours.Remove(h);
             Borrowed.Remove(h);
+            bool light = Light.Remove(h), quiet = Quiet.Remove(h);   // cleared first, whether or not the ped is still there
             if (!ENTITY.DOES_ENTITY_EXIST(h))
                 return;
             StandUp(h);
-            TASK.CLEAR_PED_TASKS(h, true, false);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            if (quiet)
+                return;   // enRAGE's own orders stand
+            TASK.CLEAR_PED_TASKS(h, true, false);
             PED.SET_PED_KEEP_TASK(h, false);
-            if (Light.Remove(h))
-                return;   // one of enRAGE's records: enRAGE tasks them again itself
             if (!ENTITY.IS_ENTITY_DEAD(h))
-                TASK.TASK_WANDER_STANDARD(h, 10f, 10);
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // going about their day, not left standing where we put them
+            if (light)
+                return;   // one of enRAGE's records: never "no longer needed" (that could let the game clear one enRAGE spawned)
             ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
         }
 

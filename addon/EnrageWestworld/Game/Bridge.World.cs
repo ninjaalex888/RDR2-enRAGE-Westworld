@@ -15,7 +15,7 @@ namespace EnrageWestworld.InGame
     internal sealed class PlanInfo
     {
         public object Raw;
-        public string Id, Kind, Title, Place, Dead, Gang;
+        public string Id, Kind, Title, Place, Dead, Gang, LeaderId;
         public float X, Y, Z, PlotX, PlotY, PlotZ;
         public bool PlotSet, Live, Done, Known, Visited;
         public long DueAt;
@@ -351,6 +351,7 @@ namespace EnrageWestworld.InGame
                         Place = Get<string>(p, "Place"),
                         Dead = Get<string>(p, "Dead"),
                         Gang = Get<string>(p, "Gang"),
+                        LeaderId = Get<string>(p, "LeaderId"),
                         X = Get<float>(p, "X"),
                         Y = Get<float>(p, "Y"),
                         Z = Get<float>(p, "Z"),
@@ -441,32 +442,40 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        public bool CanBookDeath { get { return _history != null && _saveRoster != null; } }
+
         /// A record died of something RealNPCs did (despair, a street fight gone too far): its history says how, in plain
-        /// words, through enRAGE's own History; if enRAGE hadn't marked them dead (the area unloaded first), IsAlive goes
-        /// false too. Fate is left to enRAGE (a Fate keeps a record out of its funerals and burials). Then SaveRoster.
-        /// True if RealNPCs marked the death itself.
-        public bool BookDeath(NemesisRecord r, string history)
+        /// words, through enRAGE's own History; with `markDead` (the caller has waited, and enRAGE never resolved the
+        /// death: the area unloaded first), IsAlive goes false too. Never for a record enRAGE has decided lived
+        /// (PresumedDead: its cheat-death, a scar and a comeback). Fate is left to enRAGE (a Fate keeps a record out of
+        /// its funerals and burials). Then SaveRoster. Null when it was written, else why not.
+        public string BookDeath(NemesisRecord r, string history, bool markDead)
         {
-            if (r == null || !CanRevive)
-                return false;
+            if (r == null || !CanBookDeath)
+                return "enRAGE's history or roster saving wasn't found";
+            if (r.PresumedDead)
+                return "enRAGE decided he lived (presumed dead)";
             try
             {
-                bool marked = false;
-                if (r.IsAlive)
-                {
+                if (markDead && r.IsAlive)
                     r.IsAlive = false;
-                    marked = true;
-                }
                 if (history != null)
                     History(r, history);
                 RosterChanged();
-                return marked;
+                return null;
             }
             catch (Exception ex)
             {
                 Fail("BookDeath", ex);
-                return false;
+                return "failed: " + ex.Message;
             }
+        }
+
+        /// The record with this id on enRAGE's roster now (a save point restored swaps the roster's objects).
+        public NemesisRecord RecordById(string id)
+        {
+            List<NemesisRecord> roster = id != null ? Roster() : null;
+            return roster != null ? roster.FirstOrDefault(x => x != null && x.Id == id) : null;
         }
 
         public bool CanMakePeople { get { ResolveMore(); return _newRecord != null && _roster != null && _saveRoster != null; } }

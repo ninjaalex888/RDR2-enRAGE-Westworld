@@ -248,9 +248,11 @@ namespace EnrageWestworld.InGame
                     // one of enRAGE's people: looked at every second, and handed back the moment enRAGE has a use for them
                     _nextRecordCheck = now + 1000;
                     Ped sp = _stalker.Handle != 0 ? new Ped(_stalker.Handle) : null;
-                    string back = sp == null || !sp.Exists() ? "gone" : RecordStalkWhyNot(sp) ?? (now - _stalkerSince > RecordStalkMs ? "his twenty minutes are up" : null);
+                    string back = sp == null || !sp.Exists() ? "gone" : RecordStalkWhyNot(sp, _stalker.Fleeing) ?? (now - _stalkerSince > RecordStalkMs ? "his twenty minutes are up" : null);
                     if (back != null)
                     {
+                        if (sp != null && EnragesOrders(back))
+                            Spawner.LeaveTasks(sp.Handle);   // enRAGE's new orders for him stand
                         Log.Write("STALKER " + _stalkerLabel + ": one of enRAGE's people, handed back (" + back + ")");
                         _stalker.Finish(false);
                         EndStalker(now);
@@ -474,6 +476,7 @@ namespace EnrageWestworld.InGame
         private void BeginStalker(Fallen f, uint model, bool woman, string label, int now, bool test)
         {
             _stalkerFallen = f;
+            _stalkerRecord = false;
             _stalkerModel = model;
             _stalkerWoman = woman;
             _stalkerLabel = label;
@@ -504,6 +507,7 @@ namespace EnrageWestworld.InGame
         {
             Fallen f = _stalker.Revenant;
             _stalker = null;
+            _stalkerRecord = false;
             _stalkerCooldown = now + 60000;
             _nextStalkRoll = now + _cfg.StalkerEveryMinutes * 60000;   // the next roll counts from when this one ends
             if (f != null)

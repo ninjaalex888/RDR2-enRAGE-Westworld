@@ -213,14 +213,15 @@ namespace EnrageWestworld.InGame
             };
             if (!_engine.NoteDied(e))
                 return;
-            // one of enRAGE's people dead after one of our street fights (by another's hand, not the player's): its record
-            // says how (RecordFates)
-            int sceneAt;
-            if (kind == "record" && there && by == "another" && _sceneAtHandle.TryGetValue(h, out sceneAt) && Game.GameTime - sceneAt < 120000)
+            // one of enRAGE's people dead by the hand of the man he came to blows with in one of our street scenes, in the
+            // last two minutes (not the player's): its record says how (RecordFates)
+            int sceneAt, foe, rest;
+            if (kind == "record" && there && by == "another" && _sceneAtHandle.TryGetValue(h, out sceneAt) && Game.GameTime - sceneAt < 120000 &&
+                _restMsOf.TryGetValue(h, out rest) && rest == FoughtRestMs && _foughtWith.TryGetValue(h, out foe) && foe == source)
             {
                 NemesisRecord fought = _bridge.RecordAt(h);
                 if (fought != null)
-                    QueueRecordFate(fought, name, "Died after a street fight" + (e.Town != null ? ", in " + e.Town : string.Empty) + ".");
+                    QueueRecordFate(fought, h, name, "Died after a street fight" + (e.Town != null ? ", in " + e.Town : string.Empty) + ".");
             }
             _ledgerNoted++;
             _ledgerLast = e;

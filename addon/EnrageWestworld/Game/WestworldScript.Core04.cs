@@ -713,6 +713,7 @@ namespace EnrageWestworld.InGame
                 if (f != null && !f.Done)
                     f.ReturnAt = Bridge.Now() + 240;
                 _stalker = null;
+                _stalkerRecord = false;
                 _stalkerPendingUntil = 0;
                 _stalkerCooldown = now + 120000;
             }
