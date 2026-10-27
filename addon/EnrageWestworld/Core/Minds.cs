@@ -97,6 +97,45 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// One of the player's deeds, as a memory's group: deed:violence, deed:theft, deed:kindness; null for the rest
+        /// (visits, hunting, a wedding...).
+        public static string DeedGroup(string kind)
+        {
+            switch (kind)
+            {
+                case "murder": case "kill": case "lawkill": case "namedkill": case "assault": case "bankrobbery": case "stagecoach": case "trainrobbery":
+                    return "deed:violence";
+                case "robbery": case "theft": case "horsetheft": case "looting": case "graverobbing":
+                    return "deed:theft";
+                case "mercy": case "peace": case "thiefcaught": case "spared":
+                    return "deed:kindness";
+                default:
+                    return null;
+            }
+        }
+
+        /// How a deed of the player's seen with their own eyes stays with someone, and how it felt.
+        public static int DeedStrength(string kind)
+        {
+            switch (kind)
+            {
+                case "lawkill": case "bankrobbery": case "trainrobbery": return 88;
+                case "murder": case "namedkill": case "stagecoach": return 82;
+                case "kill": return 66;
+                case "assault": return 55;
+                case "robbery": case "graverobbing": return 60;
+                case "horsetheft": return 50;
+                case "theft": case "looting": return 44;
+                default: return 48;   // a kindness
+            }
+        }
+
+        public static int DeedFeel(string kind)
+        {
+            string g = DeedGroup(kind);
+            return g == "deed:violence" ? (kind == "kill" || kind == "assault" ? -2 : -3) : g == "deed:theft" ? -2 : 2;
+        }
+
         /// Whether one of the two did it to the other (the first in the scene did it), rather than both together.
         public static bool OneSided(string kind)
         {
@@ -152,6 +191,9 @@ namespace EnrageWestworld.Core
                 case "drunk": h = 1080; break;
                 case "warmth": h = 1440; break;
                 case "rescued": h = 2160; break;
+                case "deed:violence": h = 4320; break;   // a killing seen: days
+                case "deed:theft": h = 2880; break;
+                case "deed:kindness": h = 2160; break;
                 default: h = 1440; break;
             }
             return m.How == "heard" ? Math.Min(h, 1440) : h;
@@ -218,13 +260,13 @@ namespace EnrageWestworld.Core
             switch (temper)
             {
                 case "Coward":
-                    return m.Kind == "blows" || m.Kind == "quarrel" || m.Kind == "theft" ? 1.3 : 1.0;
+                    return m.Kind == "blows" || m.Kind == "quarrel" || m.Kind == "theft" || m.Kind == "deed:violence" ? 1.3 : 1.0;
                 case "Greedy":
-                    return m.Kind == "theft" || m.Sub == "debt" || m.Sub == "charity" ? 1.3 : 1.0;
+                    return m.Kind == "theft" || m.Kind == "deed:theft" || m.Sub == "debt" || m.Sub == "charity" ? 1.3 : 1.0;
                 case "Loyal":
-                    return m.Kind == "warmth" || m.Kind == "rescued" || m.Feel > 0 ? 1.3 : 1.0;
+                    return m.Kind == "warmth" || m.Kind == "rescued" || m.Kind == "deed:kindness" || m.Feel > 0 ? 1.3 : 1.0;
                 case "Hothead": case "Proud":
-                    return m.Kind == "quarrel" || m.Kind == "slight" || m.Kind == "blows" ? 1.3 : 1.0;
+                    return m.Kind == "quarrel" || m.Kind == "slight" || m.Kind == "blows" || m.Kind == "deed:violence" ? 1.3 : 1.0;
                 case "Cold":
                     return 0.8;
                 case "Drifter":
@@ -288,13 +330,13 @@ namespace EnrageWestworld.Core
         /// The line for a memory: by its group (or the exact kind first), how they knew it, their part in it, how far
         /// they've got with it and their temperament; with someone in it in sight, now and then a line for that. The
         /// same memory steps through its pool as it's thought again, so it isn't said the same way twice running.
-        public static string Line(MindMemory m, Person p, long now, InnerLife.Context day, string seed)
+        public static string Line(MindMemory m, Person p, long now, InnerLife.Context day, string seed, string you = null, bool youNear = false)
         {
             string phase = Phase(m, now);
             string tg = TemperGroup(p.Personality);
             string role = m.How == "did" && m.Role != null ? ":" + m.Role : string.Empty;
             string[] pool = null;
-            if (m.How == "did" && InSight(m, day) && Voice.Chance(seed + "|near", 55))
+            if (((m.How == "did" && InSight(m, day)) || (IsDeed(m) && youNear)) && Voice.Chance(seed + "|near", 55))
                 pool = Find(m, role, "near", tg);
             // their own part at this phase, then the plain words at this phase, then the nearest other phase
             string alt = phase == "fresh" ? "chewing" : phase == "chewing" ? "fresh" : "chewing";
@@ -304,7 +346,13 @@ namespace EnrageWestworld.Core
             if (pool == null || pool.Length == 0)
                 return null;
             string raw = pool[(Voice.Hash(m.Key + "|" + p.Id) + m.Times) % pool.Length];
-            return Fill(raw, m, p);
+            return Fill(raw, m, p, you);
+        }
+
+        /// A memory of something the player did.
+        public static bool IsDeed(MindMemory m)
+        {
+            return m.Kind != null && m.Kind.StartsWith("deed:");
         }
 
         private static string[] Find(MindMemory m, string role, string phase, string tg)
@@ -320,10 +368,10 @@ namespace EnrageWestworld.Core
         }
 
         /// The names as this person knows them; a sentence never starts small ("a farmhand" first is "A farmhand").
-        public static string Fill(string raw, MindMemory m, Person p)
+        public static string Fill(string raw, MindMemory m, Person p, string you = null)
         {
             string who = m.NameAt(0) ?? "somebody", a = m.NameAt(0) ?? "somebody", b = m.NameAt(1) ?? "somebody";
-            string s = raw.Replace("{who}", who).Replace("{a}", a).Replace("{b}", b)
+            string s = raw.Replace("{who}", who).Replace("{a}", a).Replace("{b}", b).Replace("{you}", you ?? "that stranger")
                           .Replace("{town}", string.IsNullOrEmpty(m.Town ?? p.Home) ? "this town" : m.Town ?? p.Home);
             return Sentences(s);
         }

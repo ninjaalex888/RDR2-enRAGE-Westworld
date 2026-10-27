@@ -628,6 +628,7 @@ namespace EnrageWestworld.InGame
 
         private void NoteDeedEyes(Deed d, Vector3 pos, int except)
         {
+            NoteDeedMinds(d, pos, except);   // whoever saw him do it remembers it (Minds)
             if (d == null || d.TalkAt <= 0)
                 return;
             if (d.Witnesses <= 0)
@@ -713,6 +714,7 @@ namespace EnrageWestworld.InGame
                 e.WatchUntil = 0;
                 e.Handles.Add(h);
                 Log.Write("DEED " + d.Kind + " " + Deeds.Place(d) + ": " + TalkName(p) + " came upon the body and saw you by it (" + (int)p.Position.DistanceTo(e.Body) + " m from it); talk in an hour if they live");
+                NoteDeedMinds(d, e.Body, e.Victim, p);
                 return true;
             }
             return false;
@@ -943,7 +945,7 @@ namespace EnrageWestworld.InGame
             {
                 Vector3 pos = Game.Player.Character.Position;
                 long g = Bridge.Now();
-                _engine.OnDeed(Deeds.Make("looting", null, _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, 0, 30f)), WitnessesNear(pos, 0, 30f), g);
+                NoteDeedMinds(_engine.OnDeed(Deeds.Make("looting", null, _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, 0, 30f)), WitnessesNear(pos, 0, 30f), g), pos, 0);
             }
             List<Paper> papers = _store.Papers.Where(x => x.Delivered).OrderByDescending(x => x.At).ToList();
             _reader.Show(papers, papers.IndexOf(diary));

@@ -110,8 +110,8 @@ namespace EnrageWestworld.InGame
                 {
                     Vector3 pos = Game.Player.Character.Position;
                     long g = Bridge.Now();
-                    _engine.OnDeed(Deeds.Make("peace", kind == "standoff" ? "a standoff" : "a fight", _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z,
-                        CountPeopleNear(pos, 0, 25f)), WitnessesNear(pos, 0, 25f), g);
+                    NoteDeedMinds(_engine.OnDeed(Deeds.Make("peace", kind == "standoff" ? "a standoff" : "a fight", _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z,
+                        CountPeopleNear(pos, 0, 25f)), WitnessesNear(pos, 0, 25f), g), pos, 0);
                 }
                 return true;
             }
@@ -193,7 +193,7 @@ namespace EnrageWestworld.InGame
             {
                 Vector3 pos = me.Position;
                 long g = Bridge.Now();
-                _engine.OnDeed(Deeds.Make("thiefcaught", null, _bridge.TownAt(pos) ?? t.Town, ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, 0, 30f)), WitnessesNear(pos, 0, 30f), g);
+                NoteDeedMinds(_engine.OnDeed(Deeds.Make("thiefcaught", null, _bridge.TownAt(pos) ?? t.Town, ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, 0, 30f)), WitnessesNear(pos, 0, 30f), g), pos, 0);
             }
             Log.Write("PICKPOCKET " + how + " by you");
         }
@@ -242,8 +242,8 @@ namespace EnrageWestworld.InGame
                     {
                         Vector3 pos = p.Ped.Position;
                         long g = Bridge.Now();
-                        _engine.OnDeed(Deeds.Make("mercy", Grammar.LowerFirst(p.Label), _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, p.Ped.Handle, 30f)),
-                            WitnessesNear(pos, p.Ped.Handle, 30f), g);
+                        NoteDeedMinds(_engine.OnDeed(Deeds.Make("mercy", Grammar.LowerFirst(p.Label), _bridge.TownAt(pos), ZoneAt(pos), g, pos.X, pos.Y, pos.Z, CountPeopleNear(pos, p.Ped.Handle, 30f)),
+                            WitnessesNear(pos, p.Ped.Handle, 30f), g), pos, p.Ped.Handle);
                     }
                     Log.Write("MERCY: you lowered your gun on " + p.Plea.Name);
                 }

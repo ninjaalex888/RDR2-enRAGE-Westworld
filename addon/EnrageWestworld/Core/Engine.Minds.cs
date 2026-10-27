@@ -61,6 +61,29 @@ namespace EnrageWestworld.Core
                     RememberSaw(w, a, b, kind, group, town, place, now, key);
         }
 
+        /// One of the player's deeds, seen by those around (`watchers`: in clear sight of him when it happened).
+        public void RememberDeed(Deed d, IList<Minds.Party> watchers, string place)
+        {
+            if (!Cfg.Minds || d == null || watchers == null)
+                return;
+            string group = Minds.DeedGroup(d.Kind);
+            if (group == null)
+                return;
+            long now = Store.LastGameMin;
+            foreach (Minds.Party w in watchers)
+            {
+                PersonState st = w != null ? MindOf(w.Id, w.Name) : null;
+                if (st == null)
+                    continue;
+                MindMemory m = Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = group, Sub = d.Kind, Who = new List<string> { "player" }, Town = d.Town, Place = place, At = now, How = "saw",
+                    Feel = Minds.DeedFeel(d.Kind), Strength = Minds.DeedStrength(d.Kind), Key = "deed:" + d.Id
+                }, now);
+                Detail("MIND " + (w.Name ?? w.Id) + " saw you: " + d.Kind + " (" + m.Strength + ", " + st.Mind.Count + " kept)");
+            }
+        }
+
         private void RememberDid(Minds.Party self, Minds.Party other, string kind, string group, string role, string town, string place, long now, string key)
         {
             PersonState st = MindOf(self.Id, self.Name);
@@ -187,12 +210,16 @@ namespace EnrageWestworld.Core
                 foreach (MindMemory m in st.Mind)
                 {
                     MindMemory mm = m;
-                    // saved from an execution: its own words (Executions.After), for the three days they last
-                    Func<string> make = m.Kind == "rescued" ? (Func<string>)(() => AfterRescue(st, seed + "|" + mm.Times)) : () => Minds.Line(mm, p, now, day, seed);
+                    bool deed = Minds.IsDeed(m), youNear = look != null && look.Near;
+                    // saved from an execution: its own words (Executions.After), for the three days they last; the
+                    // player's deeds: him as they know him
+                    Func<string> make = m.Kind == "rescued" ? (Func<string>)(() => AfterRescue(st, seed + "|" + mm.Times))
+                        : deed ? () => Minds.Line(mm, p, now, day, seed, Voice.YouPrivate(p, Talk.RefFor(p, st, Player), true), youNear)
+                        : (Func<string>)(() => Minds.Line(mm, p, now, day, seed));
                     c.Add(new Minds.Candidate
                     {
                         Source = "memory:" + m.Sub + "/" + m.How + (m.How == "did" && m.Role != null ? ":" + m.Role : string.Empty),
-                        Pull = Minds.Pull(m, now, day, p.Personality), M = m, Make = make
+                        Pull = Minds.Pull(m, now, day, p.Personality) + (deed && youNear ? 20 : 0), M = m, Make = make
                     });
                 }
             // the worry they're living through

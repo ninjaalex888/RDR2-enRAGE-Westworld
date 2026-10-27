@@ -127,6 +127,48 @@ namespace EnrageWestworld.InGame
             return list;
         }
 
+        /// One of the player's deeds: those around with a clear view of him remember it. For violence a few passers-by
+        /// are kept as residents, as for a fight. `only`: just this one (someone who came upon the body and saw him).
+        private void NoteDeedMinds(Deed d, Vector3 pos, int except, Ped only = null)
+        {
+            if (!_cfg.Minds || d == null || Minds.DeedGroup(d.Kind) == null)
+                return;
+            try
+            {
+                Ped me = Game.Player.Character;
+                bool strong = Minds.DeedGroup(d.Kind) == "deed:violence";
+                var list = new List<Minds.Party>();
+                int saved = 0;
+                IEnumerable<Ped> around = only != null ? (IEnumerable<Ped>)new[] { only } : World.GetAllPeds().Where(x => x != null && x.Exists() && x.Position.DistanceTo(pos) <= 35f).OrderBy(x => x.Position.DistanceTo(pos));
+                foreach (Ped p in around)
+                {
+                    int h = p.Handle;
+                    if (h == except || h == me.Handle || Spawner.IsOurs(h) || !Natives.Bystander(p, me.Handle, IsRecord(h)) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(h, me.Handle, 17))
+                        continue;
+                    string id, name;
+                    bool lasting = LastingId(p, out id, out name) && _engine.Lasting(id);
+                    if (!lasting && !(strong && saved < NewMindsPerEvent))
+                        continue;
+                    Minds.Party w = PartyOf(p, !lasting);
+                    if (w == null || w.Id == null || !_engine.Lasting(w.Id))
+                        continue;
+                    if (!lasting)
+                        saved++;
+                    list.Add(w);
+                    if (list.Count >= 12)
+                        break;
+                }
+                if (list.Count > 0)
+                    _engine.RememberDeed(d, list, _engine.NowIndoors ? _engine.NowPlace : null);
+            }
+            catch (System.Exception ex)
+            {
+                if (!_noteMindsFailed)
+                    Log.Write("MIND remembering a deed failed (" + d.Kind + "): " + ex);
+                _noteMindsFailed = true;
+            }
+        }
+
         /// For the F7 dump: what is on the minds of the nearest people with a name, strongest first.
         private string MindsStatus()
         {
