@@ -46,7 +46,7 @@ namespace EnrageWestworld.InGame
             public string Variant;          // despair: the gun arc (jamie, leader) or the poisoning (drink, slow)
             public DespairClip[] Seq;       // despair: its clips (WestworldScript.Despair.cs), null for the wall and the knife
             public int ClipIdx, ClipAt, ShotHealth, ShotCheckAt;   // the shot: their health just before it, and when to look at what it did
-            public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed, Sobbed;   // Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
+            public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed, Sobbed, Triggered;   // Triggered: the shot fired by the gun's own trigger (heard)   // Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
             public Person P;
             public PersonState St;
             public Resident Res;
@@ -926,7 +926,7 @@ namespace EnrageWestworld.InGame
                 uint cause = dead ? PED.GET_PED_CAUSE_OF_DEATH(h) : 0;
                 Log.Write("WAKE despair: " + act.Name + "'s shot, 0.3 s on: health " + act.ShotHealth + " -> " + ENTITY.GET_ENTITY_HEALTH(h) +
                           (dead ? ", dead" + (cause == act.Arm ? " by the gun" : " (the cause of death " + cause + ", not the gun " + act.Arm + ")") : ", still alive: no bullet struck them") +
-                          (PED.IS_PED_SHOOTING(h) ? ", shooting" : ""));
+                          (act.Triggered ? ", the trigger pulled" : ", no gun in hand to fire, so no shot heard"));
             }
             if (act.Phase == 5 && now >= act.PhaseUntil && act.Method == "knife" && act.Sub == 1)
             {
@@ -1022,7 +1022,8 @@ namespace EnrageWestworld.InGame
             Vector3 from = hand.DistanceTo(pos) < 2f ? hand : head + new Vector3((float)-Math.Sin(heading) * 0.35f, (float)Math.Cos(heading) * 0.35f, 0f);
             act.ShotHealth = ENTITY.GET_ENTITY_HEALTH(h);
             act.ShotCheckAt = now + 300;   // what it did, looked at before the limp's health 0 can hide it
-            MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, act.Arm, h, true, false, 1000f, false);
+            act.Triggered = GunTrigger(h, head, act.Arm);   // the gun's own trigger, for the sound: a bullet made in the air is silent (Lex's gunshot row, WestworldScript.Gunshot.cs)
+            MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, act.Arm, h, true, false, 1000f, false);   // and the bullet that kills, in case the trigger's misses
             act.Phase = 5;
             act.PhaseUntil = now + 1500;
         }

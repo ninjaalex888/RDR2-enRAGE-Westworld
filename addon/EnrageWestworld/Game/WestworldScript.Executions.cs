@@ -406,6 +406,7 @@ namespace EnrageWestworld.InGame
             if (shooter != null)
             {
                 Vector3 from = shooter.Position + new Vector3(0f, 0f, 1.3f);
+                GunTrigger(shooter.Handle, head, Natives.Hash("WEAPON_REVOLVER_CATTLEMAN"));   // the shot heard: a bullet made in the air is silent (WestworldScript.Gunshot.cs)
                 MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, Natives.Hash("WEAPON_REVOLVER_CATTLEMAN"), shooter.Handle, true, false, 1000f, false);
             }
             if (!ENTITY.IS_ENTITY_DEAD(ch))

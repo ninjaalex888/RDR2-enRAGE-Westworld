@@ -4,7 +4,12 @@
 // screen a few seconds apart, so Lex can say which he heard, and logs what each did: their own gun's trigger
 // (_SHOOT_TRIGGER_AT_COORDS, not named in the .NET API), a bullet from their hand as despair fires it, one from a metre
 // beside them with the gun's set loaded, the same owned by nobody, the trigger again with the gun aimed first, and the
-// game's shoot task. Nobody is hurt; the revolver is theirs only for the run. The winner goes into despair's shot.
+// game's shoot task. Nobody is hurt; the revolver is theirs only for the run.
+// What Lex heard (2026-10-27, three runs on Dorsey Castle): 1, 5 and 6, never 2, 3 or 4. A bullet made in the air by
+// SHOOT_SINGLE_BULLET_BETWEEN_COORDS is silent in RDR2 wherever it starts and whoever owns it; a gun fired by its own
+// trigger or by the shoot task is heard. So despair's shot and the execution's last bullet pull the trigger first
+// (GunTrigger). The game's own readings told nothing: the ammo never fell, "shot recently" was false for every shot
+// heard and IS_PED_SHOOTING true only for the task, so the row logs only that and leaves the rest to the ear.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,7 +23,6 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private const ulong ShootTrigger = 0x4C57F27D1554E6B0;      // _SHOOT_TRIGGER_AT_COORDS(ped, x, y, z, p4, p5 = -1 in R*'s scripts, p6, p7): "triggers a gunshot" (the natives database)
-        private const ulong HasPedShotRecently = 0xB7DBB2986B87E230; // _HAS_PED_SHOT_RECENTLY(ped, seconds) -> bool: the ped fired a weapon in that time
 
         private static readonly string[] GunshotWays =
         {
@@ -32,9 +36,9 @@ namespace EnrageWestworld.InGame
 
         private sealed class GunshotRun
         {
-            public int Handle, Idx, Phase, NextAt, FiredAt, AmmoBefore;
+            public int Handle, Idx, Phase, NextAt, FiredAt;
             public string Name;
-            public bool GunGiven, Shooting, Impact;
+            public bool GunGiven, Shooting;
             public Vector3 Spot;
             public readonly List<string> Results = new List<string>();
         }
@@ -107,17 +111,12 @@ namespace EnrageWestworld.InGame
             if (t.Phase == 1)
             {
                 // watched every frame after each shot (0.6 s; 2 s for the aimed trigger and the shoot task, which raise the gun
-                // first): did they fire, did something land near the spot
+                // first); the ear is the real test (see the top)
                 t.Shooting |= PED.IS_PED_SHOOTING(h);
-                t.Impact |= MISC.HAS_BULLET_IMPACTED_IN_AREA(t.Spot.X, t.Spot.Y, t.Spot.Z, 2.5f, true, true) || MISC.HAS_BULLET_IMPACTED_IN_AREA(t.Spot.X, t.Spot.Y, t.Spot.Z, 2.5f, false, false);
                 if (now - t.FiredAt < (t.Idx >= 4 ? 2000 : 600))
                     return;
-                bool recently = Function.Call<bool>(HasPedShotRecently, h, 1.5f);
-                int ammo = WEAPON.GET_AMMO_IN_PED_WEAPON(h, TestRevolver);
-                string line = "#" + (t.Idx + 1) + " (" + GunshotWays[t.Idx] + "): " + (t.Shooting ? "shooting seen" : "no shooting seen") + ", " +
-                              (recently ? "the game says they fired" : "the game says they didn't fire") + ", ammo " + t.AmmoBefore + " -> " + ammo + ", " +
-                              (t.Impact ? "a bullet landed near the spot" : "nothing landed near the spot") +
-                              ", the gun in hand: " + (WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(h, 0) != 0 ? "yes" : "NO") + ", its set loaded: " + (WEAPON._HAS_WEAPON_ASSET_LOADED(TestRevolver) ? "yes" : "no");
+                string line = "#" + (t.Idx + 1) + " (" + GunshotWays[t.Idx] + "): " + (t.Shooting ? "shooting seen" : "no shooting seen") +
+                              ", the gun in hand: " + (WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(h, 0) != 0 ? "yes" : "NO");
                 t.Results.Add(line);
                 Log.Write("GUNSHOT " + line);
                 TASK.CLEAR_PED_TASKS(h, true, false);
@@ -164,9 +163,7 @@ namespace EnrageWestworld.InGame
                 side = new Vector3(1f, 0f, 0f);
             side.Normalize();
             Vector3 beside = pos + side + new Vector3(0f, 0f, 0.3f);   // a metre to their side, clear of anyone's body
-            t.AmmoBefore = WEAPON.GET_AMMO_IN_PED_WEAPON(h, TestRevolver);
             t.Shooting = false;
-            t.Impact = false;
             switch (t.Idx)
             {
                 case 0:
@@ -204,9 +201,23 @@ namespace EnrageWestworld.InGame
                 WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
             }
             Spawner.Release(new Ped(h), false);   // handed back: events unblocked, orders cleared, wandering (never deleted)
-            int fired = t.Results.Count(r => r.Contains("the game says they fired"));
-            Log.Write("GUNSHOT test done on " + t.Name + ": " + t.Results.Count + " of " + GunshotWays.Length + " tried, " + fired + " fired by their own gun" + (why != null ? " (" + why + ")" : ""));
+            Log.Write("GUNSHOT test done on " + t.Name + ": " + t.Results.Count + " of " + GunshotWays.Length + " tried" + (why != null ? " (" + why + ")" : ""));
             Hint("Gunshots over" + (why != null ? " (" + why + ")" : "") + ". Which numbers did you hear? (each in the log, GUNSHOT)", 7000);
+        }
+
+        /// The gun in their hand fired at a point by its own trigger, the one kind of shot we make that is heard (see the top):
+        /// a round in the cylinder first. False when there's no gun in hand to fire (weapon 0: their ammo left alone).
+        private bool GunTrigger(int h, Vector3 at, uint weapon)
+        {
+            if (WEAPON.GET_CURRENT_PED_WEAPON_ENTITY_INDEX(h, 0) == 0)
+                return false;
+            if (weapon != 0)
+            {
+                WEAPON.SET_PED_AMMO(h, weapon, Math.Max(WEAPON.GET_AMMO_IN_PED_WEAPON(h, weapon), 6));
+                WEAPON.SET_AMMO_IN_CLIP(h, weapon, 6);   // as the row had it when it was heard
+            }
+            Function.Call(ShootTrigger, h, at.X, at.Y, at.Z, 0, -1f, 0, 0f);   // p4 0, p5 -1 as R*'s scripts, p6 0, p7 0: as heard in the row
+            return true;
         }
 
         private string GunshotTestStatus()
