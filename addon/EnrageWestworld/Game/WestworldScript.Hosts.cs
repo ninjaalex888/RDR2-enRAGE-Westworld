@@ -82,11 +82,11 @@ namespace EnrageWestworld.InGame
             return pool.Count == 0 ? null : pool[_rng.Next(pool.Count)];
         }
 
-        private void StrangerMusing()
+        private bool StrangerMusing()
         {
             Ped p = Bystander(3f, 14f, true);
             if (p == null)
-                return;
+                return false;
             bool woman = !PED.IS_PED_MALE(p.Handle);
             int tier = _store.Reveries.Values.Count(r => r.Woke) >= 2 || _store.Fallen.Count(f => f.Returned > 0) >= 1 ? 1 : 0;
             string line = Hosts.StrangerAloud(tier, p.Handle + "|" + Game.GameTime / 60000);
@@ -94,6 +94,7 @@ namespace EnrageWestworld.InGame
             TASK.TASK_LOOK_AT_ENTITY(p.Handle, Game.Player.Character.Handle, 5000, 0, 51, 0);
             Feed.Say(label + ", to nobody in particular", line, Speech.For(p.Handle, line, 0, 0, 0, false, "uneasy"), p.Handle);   // their own voice, unsettled
             Log.Write("MUSING " + label + ": " + line);
+            return true;
         }
 
         private void StartGlitch(int now)

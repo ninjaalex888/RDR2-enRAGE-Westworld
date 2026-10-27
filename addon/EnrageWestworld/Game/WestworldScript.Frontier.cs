@@ -253,7 +253,8 @@ namespace EnrageWestworld.InGame
                 }
                 return;
             }
-            if (target == 0 || now < _pleadCooldown)
+            bool armed = now < _pleaArmedUntil;   // the Testing page's plea: no wait, and someone who pleaded before may again
+            if (target == 0 || (now < _pleadCooldown && !armed))
             {
                 _aimTarget = 0;
                 return;
@@ -264,7 +265,7 @@ namespace EnrageWestworld.InGame
                 _aimSince = now;
                 return;
             }
-            if (now - _aimSince < 1200)
+            if (now - _aimSince < (armed ? 300 : 1200))
                 return;
             if (!ENTITY.DOES_ENTITY_EXIST(target) || !ENTITY.IS_ENTITY_A_PED(target))
             {
@@ -272,7 +273,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             Ped ped = new Ped(target);
-            if (_pleadedAt.ContainsKey(target) || !PED.IS_PED_HUMAN(target) || !Natives.Bystander(ped, me.Handle) || Spawner.IsOurs(target) || _bridge.RecordAt(target) != null ||
+            if ((_pleadedAt.ContainsKey(target) && !armed) || !PED.IS_PED_HUMAN(target) || !Natives.Bystander(ped, me.Handle) || Natives.StoryModel(ped) || Spawner.IsOurs(target) || _bridge.RecordAt(target) != null ||
                 ped.Position.DistanceTo(me.Position) > 30f || PED.IS_PED_IN_COMBAT(me.Handle, 0) || _director.Involves(target) ||
                 _bridge.EnrageHandlesAtGunpoint(ped, me, 30f))   // one of enRAGE's outlaws: he's enRAGE's to handle (Bridge.Gunpoint.cs)
             {
@@ -284,6 +285,11 @@ namespace EnrageWestworld.InGame
             string label = Grammar.UpperFirst(Director.Kind(ped, woman));
             Plea plea = Pleas.For(woman, Grammar.LowerFirst(label), _placeTown, TownHostTier(), target + "|" + Bridge.Now() / 1440);
             _plea = new Pleading { Ped = ped, Plea = plea, Label = label, Woman = woman, At = now, LastAimedAt = now, Health = ENTITY.GET_ENTITY_HEALTH(target) };
+            if (armed)
+            {
+                _pleaArmedUntil = 0;
+                Log.Write("TEST plea: " + plea.Name + " pleads (" + label + ")");
+            }
             _pleadedAt[target] = now;
             _pleadNames[target] = plea.Name;
             _pleadCooldown = now + 25000;
@@ -313,15 +319,16 @@ namespace EnrageWestworld.InGame
 
         // ---- riding into town -----------------------------------------------------------------------
 
-        private void QueueArrival(string town, bool firstVisit)
+        private bool QueueArrival(string town, bool firstVisit, bool force = false)
         {
             if (!_cfg.ArrivalTalk || _engine == null || MISC.GET_MISSION_FLAG())
-                return;
+                return false;
             bool wanted = LAW.GET_BOUNTY(Game.Player.Handle) > 0;
             ArrivalTalk t = _engine.Arrival(town, wanted, firstVisit, TownHostTier(), Bridge.Now(), town + "|" + Bridge.Now() / 60);
-            if (t == null || _rng.Next(100) >= (t.Mood == "greet" ? 40 : 70))
-                return;
-            _arrival = new PendingArrival { At = Game.GameTime + 3000 + _rng.Next(4000), Talk = t, Town = town };
+            if (t == null || (!force && _rng.Next(100) >= (t.Mood == "greet" ? 40 : 70)))
+                return false;   // force: a test skips the roll
+            _arrival = new PendingArrival { At = Game.GameTime + (force ? 500 : 3000 + _rng.Next(4000)), Talk = t, Town = town };
+            return true;
         }
 
         private void ArrivalTick(int now)

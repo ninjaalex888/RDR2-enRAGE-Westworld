@@ -39,7 +39,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// The people near the player who could be in a scene for a reason: named, free, not busy with anything else.
-        private List<Candidate> ReasonCandidates(Ped me, int now)
+        private List<Candidate> ReasonCandidates(Ped me, int now, bool test = false)
         {
             var list = new List<Candidate>();
             foreach (Ped p in World.GetAllPeds())
@@ -50,8 +50,8 @@ namespace EnrageWestworld.InGame
                     PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) || _wakeActs.Any(w => w.Handle == h) ||
                     PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h))
                     continue;
-                if (Resting(h, now))
-                    continue;
+                if (!test && Resting(h, now))
+                    continue;   // a test skips the rests (it logs that it did)
                 Someone who = SomeoneOf(p);
                 if (who != null)
                     list.Add(new Candidate { Ped = p, Who = who });
@@ -202,75 +202,10 @@ namespace EnrageWestworld.InGame
                 }
                 if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
                     continue;
-                Scene s;
-                if (kind == "avoid")
-                    s = Scenes.Avoid(cast, seed);
-                else if (kind == "tend")
-                    s = Scenes.Tend(cast, seed, done.Hurt ?? "rough");
-                else if (kind == "beg")
-                {
-                    // the answer comes from the asked one's own nature (Exchanges.Manner); the scene's kind is how it went
-                    long bday = Bridge.Now() / 1440;
-                    string bk;
-                    int bst;
-                    bool bg;
-                    s = Scenes.Beg(cast, seed, Exchanges.Manner(done, (InnerLife.WorryNow(done.P, bday, out bk, out bst, out bg) && bst == 2) || done.Hurt != null));
-                }
-                else if (kind == "rough" || kind == "lift" || kind == "drunk")
-                {
-                    long tday = Bridge.Now() / 1440;
-                    string wk;
-                    int wst;
-                    bool wg;
-                    string answer = Exchanges.Manner(done, (InnerLife.WorryNow(done.P, tday, out wk, out wst, out wg) && wst == 2) || done.Hurt != null);
-                    SceneTie bad = _store.Ties.FirstOrDefault(t => t.Has(doer.Id) && t.Has(done.Id));
-                    // a lift is noticed too late now and then: by the alert, more often (the thief is long gone by then)
-                    s = kind == "rough" ? Scenes.Rough(cast, seed, bad != null && bad.Warmth < 0, answer)
-                      : kind == "lift" ? Scenes.Lift(cast, seed, Voice.Chance(seed + "late", Reasons.Alert(done.Temper) ? 60 : 35))
-                      : Scenes.Drunk(cast, seed, answer);
-                }
-                else if (kind.StartsWith("court:"))
-                {
-                    // one taken with the other: the other's answer, and what weighed, are in the kind (Reasons.Courtship)
-                    string[] parts = kind.Split(':');
-                    s = Scenes.Court(cast, seed, parts[1], parts.Length > 2 ? parts[2] : null);
-                    NoteCourt(doer, done, parts[1], parts.Length > 2 ? parts[2] : null);
-                    CourtSeen(first, second, doer, done, parts[1], parts.Length > 2 ? parts[2] : null, pr.Apart > 2.6f, seed);
-                }
-                else if (kind.StartsWith("x:"))
-                {
-                    // an exchange written for the reason (Exchanges.cs): the second one's answer comes from their own state
-                    Someone fw = pr.Why.BFirst ? pr.B.Who : pr.A.Who, sw = pr.Why.BFirst ? pr.A.Who : pr.B.Who;
-                    long day = Bridge.Now() / 1440;
-                    string wk;
-                    int wst;
-                    bool wg;
-                    bool atWorst = (InnerLife.WorryNow(sw.P, day, out wk, out wst, out wg) && wst == 2) || sw.Hurt != null;   // sore from today, too
-                    SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(fw.Id) && t.Has(sw.Id));
-                    string fn = cast.Names[0] ?? Person.FirstOf(fw.Name), sn = cast.Names[1] ?? Person.FirstOf(sw.Name);
-                    s = kind == "x:debt" || kind == "x:feud" || kind == "x:courting"
-                        ? Exchanges.MakeLinked(kind, fw, sw, fn, sn, day, seed)   // the worrier (A) and the one at the other end (B)
-                        : Exchanges.Make(kind, fw, sw, fn, sn, day, atWorst, tie, seed);
-                }
-                else
-                    s = Scenes.Make(kind, cast, seed);
+                Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
                 if (s == null)
                     continue;
-                if (pr.Apart > 2.6f && (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind.StartsWith("court:")))
-                {
-                    // trouble goes to its victim: the attacker, the thief or the drunk walks over, and the other stays put
-                    // (at the bar the rough move needs; the Director's "meet" works whichever of the two walks)
-                    s.Beats.Insert(0, new Beat(0, null, null, "meet"));
-                }
-                else if (pr.Apart > 2.6f)
-                {
-                    // apart: one turns to the other, the other walks over, and not a word until they're face to face (the
-                    // Director's "meet" waits for it, and gives up if they never get there). The second walks, unless they
-                    // sit or lean and the first doesn't: then the first does (a seated man was too often left waiting for)
-                    int walker = PED.IS_PED_USING_ANY_SCENARIO(second.Handle) && !PED.IS_PED_USING_ANY_SCENARIO(first.Handle) ? 0 : 1;
-                    s.Beats.Insert(0, new Beat(walker, null, null, "meet"));
-                    s.Beats.Insert(0, new Beat(1 - walker, null, null, "face"));
-                }
+                AddMeet(s, kind, first, second, pr.Apart);
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
                           " (strength " + pr.Why.Strength + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
                 List<Ped> cast2 = new List<Ped> { first, second };
@@ -280,6 +215,85 @@ namespace EnrageWestworld.InGame
                 return true;
             }
             return false;
+        }
+
+        /// The scene for a kind between first and second (the one who does it first): the trouble kinds, a courtship, an
+        /// exchange (the second one's answer from their own state), or Scenes.Make; null when this pair can't have it.
+        /// `note`: a courtship is noted (its tie and thoughts); a test doesn't. Shared by ReasonScene and the Testing page.
+        private Scene BuildSceneFor(string kind, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, bool apart, bool note, string courtAnswer = null)
+        {
+            if (kind == "avoid")
+                return Scenes.Avoid(cast, seed);
+            if (kind == "tend")
+                return Scenes.Tend(cast, seed, done.Hurt ?? "rough");
+            if (kind == "beg")
+            {
+                // the answer comes from the asked one's own nature (Exchanges.Manner); the scene's kind is how it went
+                long bday = Bridge.Now() / 1440;
+                string bk;
+                int bst;
+                bool bg;
+                return Scenes.Beg(cast, seed, Exchanges.Manner(done, (InnerLife.WorryNow(done.P, bday, out bk, out bst, out bg) && bst == 2) || done.Hurt != null));
+            }
+            if (kind == "rough" || kind == "lift" || kind == "drunk")
+            {
+                long tday = Bridge.Now() / 1440;
+                string wk;
+                int wst;
+                bool wg;
+                string answer = Exchanges.Manner(done, (InnerLife.WorryNow(done.P, tday, out wk, out wst, out wg) && wst == 2) || done.Hurt != null);
+                SceneTie bad = _store.Ties.FirstOrDefault(t => t.Has(doer.Id) && t.Has(done.Id));
+                // a lift is noticed too late now and then: by the alert, more often (the thief is long gone by then)
+                return kind == "rough" ? Scenes.Rough(cast, seed, bad != null && bad.Warmth < 0, answer)
+                     : kind == "lift" ? Scenes.Lift(cast, seed, Voice.Chance(seed + "late", Reasons.Alert(done.Temper) ? 60 : 35))
+                     : Scenes.Drunk(cast, seed, answer);
+            }
+            if (kind.StartsWith("court:") || (kind == "court" && courtAnswer != null))
+            {
+                // one taken with the other: the other's answer, and what weighed, are in the kind (Reasons.Courtship)
+                string[] parts = kind == "court" ? new[] { "court", courtAnswer } : kind.Split(':');
+                Scene c = Scenes.Court(cast, seed, parts[1], parts.Length > 2 ? parts[2] : null);
+                if (note)
+                {
+                    NoteCourt(doer, done, parts[1], parts.Length > 2 ? parts[2] : null);
+                    CourtSeen(first, second, doer, done, parts[1], parts.Length > 2 ? parts[2] : null, apart, seed);
+                }
+                return c;
+            }
+            if (kind.StartsWith("x:"))
+            {
+                // an exchange written for the reason (Exchanges.cs): the second one's answer comes from their own state
+                long day = Bridge.Now() / 1440;
+                string wk;
+                int wst;
+                bool wg;
+                bool atWorst = (InnerLife.WorryNow(done.P, day, out wk, out wst, out wg) && wst == 2) || done.Hurt != null;   // sore from today, too
+                SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(doer.Id) && t.Has(done.Id));
+                string fn = cast.Names[0] ?? Person.FirstOf(doer.Name), sn = cast.Names[1] ?? Person.FirstOf(done.Name);
+                return kind == "x:debt" || kind == "x:feud" || kind == "x:courting"
+                    ? Exchanges.MakeLinked(kind, doer, done, fn, sn, day, seed)   // the worrier (A) and the one at the other end (B)
+                    : Exchanges.Make(kind, doer, done, fn, sn, day, atWorst, tie, seed);
+            }
+            return Scenes.Make(kind, cast, seed);
+        }
+
+        /// Two people apart: the one who does it walks over for trouble (the attacker, the thief, the drunk, the beggar,
+        /// the friend, the suitor), else one turns to the other and the other walks over, and not a word until they're
+        /// face to face (the Director's "meet" waits for it, and gives up if they never get there).
+        private static void AddMeet(Scene s, string kind, Ped first, Ped second, float apart)
+        {
+            if (apart <= 2.6f)
+                return;
+            if (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind.StartsWith("court"))
+            {
+                s.Beats.Insert(0, new Beat(0, null, null, "meet"));
+                return;
+            }
+            // the second walks, unless they sit or lean and the first doesn't: then the first does (a seated man was too
+            // often left waiting for)
+            int walker = PED.IS_PED_USING_ANY_SCENARIO(second.Handle) && !PED.IS_PED_USING_ANY_SCENARIO(first.Handle) ? 0 : 1;
+            s.Beats.Insert(0, new Beat(walker, null, null, "meet"));
+            s.Beats.Insert(0, new Beat(1 - walker, null, null, "face"));
         }
 
         /// In a saloon, the barkeep has his say when it gets rough (a face in the bar, fists, a drunk on the floor): he

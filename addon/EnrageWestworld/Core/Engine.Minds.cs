@@ -446,6 +446,40 @@ namespace EnrageWestworld.Core
             w[2] = now;
         }
 
+        /// The Testing page's Show minds card (four short lines): who they are, their mood and worry, their ties and
+        /// memories, and what pulls hardest on them now. Nothing is worn or made.
+        public string[] MindCard(Person p, int hour)
+        {
+            long now = Store.LastGameMin, day = now / 1440;
+            PersonState st = Store.Find(p.Id);
+            InnerLife.Context ctx = ThoughtDay(p.Home, p.Id);
+            string mood = InnerLife.MoodOf(p, ctx, p.Id + "|card") ?? "even";
+            string worry = now > 0 ? InnerLife.WorryStatus(p, day) : "none";
+            int warm = 0, hostile = 0;
+            foreach (SceneTie t in Store.Ties)
+                if (t.Has(p.Id))
+                {
+                    if (t.Warmth > 0)
+                        warm++;
+                    else if (t.Warmth < 0)
+                        hostile++;
+                }
+            string top = "the old mix (Minds off)";
+            if (Cfg.Minds)
+            {
+                Minds.Candidate best = Candidates(p, st, hour, p.Id + "|card|" + now / 45, null, ctx, now).OrderByDescending(k => k.Pull).FirstOrDefault();
+                top = best != null ? best.Source + " (" + (int)Math.Round(best.Pull) + ")" : "nothing much";
+            }
+            MindMemory last = st != null && st.Mind.Count > 0 ? st.Mind.OrderByDescending(m => m.At).First() : null;
+            return new[]
+            {
+                p.Name + " (" + (p.Personality ?? "plain") + (p.Home != null ? ", of " + p.Home : string.Empty) + ")",
+                "mood " + mood + "; worry " + worry,
+                "ties " + warm + " warm, " + hostile + " hostile; " + (st != null ? st.Mind.Count : 0) + (st != null && st.Mind.Count == 1 ? " memory" : " memories") + (last != null ? ", last " + last.Sub + " (" + last.How + ")" : string.Empty),
+                "on their mind: " + top
+            };
+        }
+
         /// For the F7 dump: what is on this person's mind now, strongest first, nothing worn.
         public string MindStatus(Person p, int hour, string seed, InnerLife.PlayerLook look)
         {

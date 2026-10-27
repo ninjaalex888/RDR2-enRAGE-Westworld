@@ -364,6 +364,7 @@ namespace EnrageWestworld.InGame
             _now = now;
             Safe("ticker", _aFrame);
             FeelingsStep(now);
+            ShowMindsStep(now);   // the Testing page's cards over people (WestworldScript.ShowMinds.cs)
             NewsStep(now);
             SubtitleDraw(now);
         }

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 66;
+        public const int CurrentVersion = 67;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -375,6 +375,7 @@ namespace EnrageWestworld.Core
                 return s;
             }
             s.SettingsVersion = 1;
+            var testSeen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
             try
             {
                 foreach (string raw in File.ReadAllLines(path))
@@ -392,6 +393,8 @@ namespace EnrageWestworld.Core
                         value = value.Substring(0, comment).Trim();
                     if (value.StartsWith(";"))
                         value = string.Empty;
+                    if (TestActions.ByKey(key) != null)
+                        testSeen.Add(key);
                     FieldInfo f = typeof(Settings).GetField(key, BindingFlags.IgnoreCase | BindingFlags.Instance | BindingFlags.Public);
                     if (f == null)
                     {
@@ -423,6 +426,11 @@ namespace EnrageWestworld.Core
                 return s;
             }
             s.Clamp();
+            bool testMissing = false;
+            foreach (TestActions.Entry te in TestActions.All)
+                testMissing |= !testSeen.Contains(te.KeySetting);
+            if (testMissing && s.SettingsVersion >= CurrentVersion)
+                s.SettingsVersion = CurrentVersion - 1;   // a Testing key missing from the file: written again with all of them (values kept)
             if (s.SettingsVersion < CurrentVersion)
             {
                 if (s.SettingsVersion < 3 && s.TestKey != null && s.TestKey.Replace(" ", "").Equals("Ctrl+F7", StringComparison.OrdinalIgnoreCase))

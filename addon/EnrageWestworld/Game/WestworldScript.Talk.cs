@@ -393,12 +393,12 @@ namespace EnrageWestworld.InGame
         }
 
         /// The test key: the pair nearest you, two already standing together first, the second walking over if they're apart.
-        private void TalkTestStart(int now)
+        /// A test (the Testing page): null when it started, else why not (logged as before).
+        private string TalkTestStart(int now)
         {
             if (_talk != null)
             {
-                Log.Write("TALK test: a conversation is already going on.");
-                return;
+                return TestStartRefused("TALK test: ", "TALK test: a conversation is already going on.");
             }
             Ped me = Game.Player.Character;
             List<Ped> near = TalkCandidates(me);
@@ -426,10 +426,10 @@ namespace EnrageWestworld.InGame
                 }
             if (a == null)
             {
-                Log.Write("TALK test: no two people within " + TalkNear + " m of you are within " + TalkReach + " m of one another (" + near.Count + " around).");
-                return;
+                return TestStartRefused("TALK test: ", "TALK test: no two people within " + TalkNear + " m of you are within " + TalkReach + " m of one another (" + near.Count + " around).");
             }
             TalkBegin(a, b, now, true, RidersPassing(me));
+            return null;
         }
 
         /// Starts a conversation between two people: they face each other, or (the test only) one walks over first.

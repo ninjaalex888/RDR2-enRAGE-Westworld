@@ -432,18 +432,17 @@ namespace EnrageWestworld.InGame
         /// which turns sharp, cold, kind with each press), with no tie left between them. The victim is the man nearest
         /// you at the bar, else the nearest man on his feet, else the nearest; the attacker the nearest other man, one on
         /// his feet first. The angle is chosen by what's by the victim.
-        private void RoughTestStart(int now)
+        /// A test (the Testing page): null when it started, else why not (logged as before).
+        private string RoughTestStart(int now)
         {
             if (_rough != null || _director.Busy)
             {
-                Log.Write("ROUGH test: " + (_rough != null ? "the move is already playing." : "a street scene is going on; try again when it's over."));
-                return;
+                return TestStartRefused("ROUGH test: ", (_rough != null ? "the move is already playing." : "a street scene is going on; try again when it's over."));
             }
             Ped me = Game.Player.Character;
             if (!STREAMING.DOES_ANIM_DICT_EXIST(SmashDict) || !STREAMING.DOES_ANIM_DICT_EXIST(WallDict))
             {
-                Log.Write("ROUGH test: this game is missing the moves' animation sets (" + SmashDict + ", " + WallDict + ").");
-                return;
+                return TestStartRefused("ROUGH test: ", "ROUGH test: this game is missing the moves' animation sets (" + SmashDict + ", " + WallDict + ").");
             }
             List<Ped> men = World.GetAllPeds().Where(p => p != null && p.Exists() && PED.IS_PED_MALE(p.Handle) && p.Position.DistanceTo(me.Position) < RoughNear &&
                                                           TalkLeftOut(p, me) == null && MayDirect(p))
@@ -453,8 +452,7 @@ namespace EnrageWestworld.InGame
             Ped att = vic == null ? null : men.Where(p => p.Handle != vic.Handle).OrderBy(p => (PED.IS_PED_USING_ANY_SCENARIO(p.Handle) ? 20f : 0f) + p.Position.DistanceTo(vic.Position)).FirstOrDefault();
             if (vic == null || att == null)
             {
-                Log.Write("ROUGH test: two men free to be directed are needed within " + RoughNear + " m (" + men.Count + " around).");
-                return;
+                return TestStartRefused("ROUGH test: ", "ROUGH test: two men free to be directed are needed within " + RoughNear + " m (" + men.Count + " around).");
             }
             bool saloon = _placeKind == "saloon";
             string seed = att.Handle + "|" + vic.Handle + "|test" + now;
@@ -462,8 +460,7 @@ namespace EnrageWestworld.InGame
             string cant = TroubleCant("rough", att, vic, cast);
             if (cant != null)
             {
-                Log.Write("ROUGH test: " + TalkName(att) + " can't rough up " + TalkName(vic) + " here (" + cant + ").");
-                return;
+                return TestStartRefused("ROUGH test: ", TalkName(att) + " can't rough up " + TalkName(vic) + " here (" + cant + ").");
             }
             string answer = RoughTestAnswers[_roughTestTurn++ % RoughTestAnswers.Length];
             Scene s = Scenes.Rough(cast, seed, false, answer);
@@ -474,6 +471,7 @@ namespace EnrageWestworld.InGame
                       (AtBar(vic) ?? "not at the bar: " + ScenarioName(vic)) + ", " + (cast.Tempers[1] ?? "no temper") + "), " + (int)apart + " m apart, " + (int)vic.Position.DistanceTo(me.Position) +
                       " m from you: the whole scene, and he answers " + answer + " (" + (answer == "sharp" ? "swings back" : answer == "cold" ? "walks off promising more" : "runs") + ")");
             StartScene(s, new List<Ped> { att, vic }, cast, seed, now, test: true);
+            return null;
         }
 
         /// The bar scenario this person is in, by name, or null.

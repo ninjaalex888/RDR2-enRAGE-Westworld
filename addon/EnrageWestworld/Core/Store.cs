@@ -292,6 +292,7 @@ namespace EnrageWestworld.Core
             if (Links == null) Links = new List<WorryLink>();
             if (Deaths == null) Deaths = new List<DeathEntry>();
             if (Later == null) Later = new List<LaterAct>();
+            Papers.RemoveAll(p => p != null && p.Id != null && p.Id.StartsWith("test-"));   // the Testing page's test letters go on load
             if (RewoundShares == null) RewoundShares = new List<string>();
             foreach (Post p in Posts)
             {

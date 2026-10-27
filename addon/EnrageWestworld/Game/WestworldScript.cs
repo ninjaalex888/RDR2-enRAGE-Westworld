@@ -183,7 +183,6 @@ namespace EnrageWestworld.InGame
 			try
 			{
 				Step();
-				PerfFrame(System.Diagnostics.Stopwatch.GetTimestamp() - stepStart);
 			}
 			catch (Exception ex)
 			{
@@ -211,6 +210,10 @@ namespace EnrageWestworld.InGame
 						return;
 					}
 				}
+			}
+			finally
+			{
+				PerfFrame(System.Diagnostics.Stopwatch.GetTimestamp() - stepStart);
 			}
 		}
 
@@ -1027,6 +1030,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST mind: " + MindsStatus());
 			Log.Write("TEST perf: " + PerfStatus());
 			Log.Write("TEST testing: " + TestingStatus());
+			Log.Write("TEST show minds: " + ShowMindsStatus());
 			Log.Write("TEST near: " + NearStatus());
 			Log.Write("TEST regulars: " + RegularsStatus());
 			MarkRegulars();
