@@ -429,7 +429,7 @@ namespace EnrageWestworld.Core
 
         public bool PlayerNameKnownIn(string town)
         {
-            return Store.People.Values.Count(s => s.KnowsName) >= 8 || Store.Deeds.Count(d => d.Town == town && d.Weight >= 60) >= 2;
+            return Store.People.Values.Count(s => s.KnowsName) >= 8 || Store.Deeds.Count(d => d.Known && d.Town == town && d.Weight >= 60) >= 2;
         }
 
         private void RumourTick(long now)
@@ -991,7 +991,7 @@ namespace EnrageWestworld.Core
             List<string> rumours = RumourPool(town, 3);
             if (rumours.Count > 0 && Voice.Chance(seed + "r", 50))
                 return "Heard " + Grammar.LowerFirst(rumours[Voice.Hash(seed) % rumours.Count].TrimEnd('.')) + ".";
-            if (Store.Deeds.Count(x => x.Weight >= 40 && Store.LastGameMin - x.At < 7 * 1440) >= 2 && Voice.Chance(seed + "fame", 35))
+            if (Store.Deeds.Count(x => x.Known && x.Weight >= 40 && Store.LastGameMin - x.At < 7 * 1440) >= 2 && Voice.Chance(seed + "fame", 35))
                 return Voice.Pick(seed + "f", "Is that him? The one they're all talking about?", "Don't stare. Men like that notice when you stare.",
                     "Keep walking. Keep walking. Don't give him a reason.", "Mama always said trouble rides in on a quiet horse.");
             if (everyday && Voice.Chance(seed + "day", 55))
@@ -1058,7 +1058,7 @@ namespace EnrageWestworld.Core
                 c.Nearby = Nearby.Where(n => n.Id != id).ToList();
             if (town != null)
             {
-                c.TownDeeds = Store.Deeds.Where(d => d.Town == town && InnerLife.TalkedAbout.Contains(d.Kind) && now - d.At >= 120 && now - d.At < 3 * 1440)
+                c.TownDeeds = Store.Deeds.Where(d => d.Known && d.Town == town && InnerLife.TalkedAbout.Contains(d.Kind) && now - d.At >= 120 && now - d.At < 3 * 1440)
                                          .OrderByDescending(d => d.At).Take(3).ToList();
                 c.TownTies = Ties.TalkOf(Store.Ties, town, id, now);
             }

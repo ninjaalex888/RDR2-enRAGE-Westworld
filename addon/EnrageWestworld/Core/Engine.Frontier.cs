@@ -17,7 +17,7 @@ namespace EnrageWestworld.Core
             // the deed this town knows best: done here lately, or heard of here
             Deed top = null;
             int topWeight = 0;
-            foreach (Deed d in Store.Deeds.Where(x => x.Weight >= 10 && now - x.At < 14 * 1440 && x.Kind != "visit" && x.Kind != "hunt" && !Deeds.IsShop(x.Kind)))
+            foreach (Deed d in Store.Deeds.Where(x => x.Known && x.Weight >= 10 && now - x.At < 14 * 1440 && x.Kind != "visit" && x.Kind != "hunt" && !Deeds.IsShop(x.Kind)))
             {
                 int w = 0;
                 if (d.Town == town)
@@ -36,7 +36,7 @@ namespace EnrageWestworld.Core
                     top = d;
                 }
             }
-            int notoriety = Store.Deeds.Count(x => x.Weight >= 25);
+            int notoriety = Store.Deeds.Count(x => x.Known && x.Weight >= 25);
             return Pleas.Arrival(town, top, wanted, firstVisit, notoriety, hostTier, seed);
         }
 
@@ -45,7 +45,7 @@ namespace EnrageWestworld.Core
         {
             if (town == null)
                 return null;
-            return Store.Deeds.Where(d => d.Town == town && now - d.At < 1440 && now >= d.At && d.Weight >= 45 && (Deeds.IsViolent(d.Kind) || Pleas.IsThieving(d.Kind)))
+            return Store.Deeds.Where(d => d.Town == town && d.TalkAt == 0 && now - d.At < 1440 && now >= d.At && d.Weight >= 45 && (Deeds.IsViolent(d.Kind) || Pleas.IsThieving(d.Kind)))
                 .OrderByDescending(d => d.Weight).FirstOrDefault();
         }
 
@@ -83,7 +83,7 @@ namespace EnrageWestworld.Core
         /// The player's legend, bent out of shape the way old-timers tell it, or null if he hasn't earned one.
         public string Legend(long now, string seed)
         {
-            Deed d = Store.Deeds.Where(x => x.Weight >= 50 && (Deeds.IsViolent(x.Kind) || x.Kind == "bankrobbery" || x.Kind == "trainrobbery" || x.Kind == "stagecoach"))
+            Deed d = Store.Deeds.Where(x => x.Known && x.Weight >= 50 && (Deeds.IsViolent(x.Kind) || x.Kind == "bankrobbery" || x.Kind == "trainrobbery" || x.Kind == "stagecoach"))
                 .OrderByDescending(x => x.Weight).ThenByDescending(x => x.At).FirstOrDefault();
             if (d == null)
                 return null;

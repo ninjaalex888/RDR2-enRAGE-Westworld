@@ -26,6 +26,9 @@ namespace EnrageWestworld.Core
         [DataMember] public bool Unseen;      // nobody lived to tell who did it: the talk doesn't know
 
         public string Where { get { return Town ?? Zone; } }
+
+        /// The town can know it was him: its talk has started and someone lived to tell who did it (Knowing.cs).
+        public bool Known { get { return !Unseen && TalkAt == 0; } }
     }
 
     [DataContract]
