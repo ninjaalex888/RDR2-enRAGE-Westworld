@@ -46,7 +46,7 @@ namespace EnrageWestworld.Core
 
         public static string Hail(string seed)
         {
-            return Voice.Pick(seed + "th", "Mister! Hold up a moment!", "Say there! You, on the horse!", "Excuse me! Sir!");
+            return Voice.Pick(seed + "th", "Mister! Hold up a moment!", "Say there! You, on the horse!", "Excuse me! Sir!", "Hey! Hey, you there! A minute of your time!");
         }
 
         public static string Ask(string town, string seed)
@@ -69,7 +69,7 @@ namespace EnrageWestworld.Core
 
         public static string Ignored(string seed)
         {
-            return Voice.Pick(seed + "ti", "Thank you for nothing.", "Nobody stops out here.", "Suppose I'll follow the wheel ruts.");
+            return Voice.Pick(seed + "ti", "Thank you for nothing.", "Nobody stops out here.", "Suppose I'll follow the wheel ruts.", "Ask a rattlesnake for directions, I'd get more sense.");
         }
 
         // snakebit (Tier 4): about one in three sits by the road holding his leg and asks for help instead of the way;
@@ -78,7 +78,7 @@ namespace EnrageWestworld.Core
 
         public static string BittenHail(string seed)
         {
-            return Voice.Pick(seed + "bh", "Mister! Over here! Snake got me!", "Help! Sir! I've been bit!", "You there! For the love of God, stop!");
+            return Voice.Pick(seed + "bh", "Mister! Over here! Snake got me!", "Help! Sir! I've been bit!", "You there! For the love of God, stop!", "Over here! Please! I can't walk!");
         }
 
         public static string BittenAsk(string seed)
@@ -171,7 +171,7 @@ namespace EnrageWestworld.Core
 
         public static string RobThought(string seed)
         {
-            return Voice.Pick(seed + "rx", "Not the watch. Please, not Pa's watch.", "Hands up. Keep them up. Don't look at their faces.", "Somebody ride by. Somebody.");
+            return Voice.Pick(seed + "rx", "Not the watch. Please, not Pa's watch.", "Hands up. Keep them up. Don't look at their faces.", "Somebody ride by. Somebody.", "Ma said the road was dangerous. Ma was right.");
         }
 
         /// To the player, after they've gone with his money.
