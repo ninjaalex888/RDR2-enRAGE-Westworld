@@ -83,6 +83,8 @@ namespace EnrageWestworld.InGame
                 return;   // someone took a fall (WestworldScript.Kindness.cs)
             if (saloon && RoundScene(me, now, false, out fallWhy))
                 return;   // someone stands the house a drink (WestworldScript.Round.cs)
+            if (saloon && DrinkScene(me, now, false, out fallWhy))
+                return;   // someone drinks away bad news (WestworldScript.Vices.cs)
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < 22f &&

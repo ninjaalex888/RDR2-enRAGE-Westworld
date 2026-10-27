@@ -25,6 +25,7 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, int> _restMsOf = new Dictionary<int, int>();   // a longer rest than PersonRestMs, by handle
         private readonly Dictionary<int, int> _foughtWith = new Dictionary<int, int>();   // the two who came to blows, each to the other
         private int _nextChance;
+        private static readonly uint DrinkingDrunk = Natives.Hash("WORLD_HUMAN_DRINKING_DRUNK");   // the game's drinking-drunk scenario (also the drinker's, Vices)
 
         private sealed class Candidate
         {
@@ -131,10 +132,12 @@ namespace EnrageWestworld.InGame
             if (PED.IS_PED_USING_ANY_SCENARIO(p.Handle))
             {
                 uint type = (uint)TASK._GET_SCENARIO_POINT_TYPE_PED_IS_USING(p.Handle);
-                uint slumped = Natives.Hash("WORLD_HUMAN_DRUNK_BAR_SLUMPED"), reeling = Natives.Hash("WORLD_HUMAN_DRINKING_DRUNK");
+                uint slumped = Natives.Hash("WORLD_HUMAN_DRUNK_BAR_SLUMPED"), reeling = DrinkingDrunk;
                 if (type == slumped || type == reeling || PED.IS_PED_USING_SCENARIO_HASH(p.Handle, slumped) || PED.IS_PED_USING_SCENARIO_HASH(p.Handle, reeling))
                     return true;
             }
+            if (who != null && Drinking(who.Id))
+                return true;   // drinking away bad news tonight (WestworldScript.Vices.cs)
             string kind;
             int stage;
             bool good;

@@ -636,6 +636,8 @@ in the file. The new ones:
             Kindnesses (true): someone who trips in the street is helped up, or left lying, by the one
             who saw it; walk up while they're down and you help them yourself; someone may step in
             before a bully's blow lands; and of an evening someone glad stands the saloon a round
+            Vices (true): someone with bad news, or word of a friend's death, drinks the night away in
+            the saloon (and a friend may sit with them)
             RoughHandling (true): a man with a grudge (or a hothead with drink in him) smashes another's
             face into the nearest table, bar or wall; NpcThieves (true): pickpockets among the
             townsfolk, and begging; DrunkChallenges (true): a drunk calls a man out at night

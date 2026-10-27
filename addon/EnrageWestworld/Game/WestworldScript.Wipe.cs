@@ -68,6 +68,7 @@ namespace EnrageWestworld.InGame
             TrystAbort();
             PassingAbort();
             SightsReset("memories wiped");
+            VicesReset();
             _sightSeen.Clear();
             _sightTown.Clear();
             if (_rough != null)

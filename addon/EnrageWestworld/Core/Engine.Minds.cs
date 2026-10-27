@@ -75,6 +75,19 @@ namespace EnrageWestworld.Core
             return c != null ? c.Text : null;
         }
 
+        /// The first name of a friend whose death this person has had word of within the last `minutes` (a "heard"
+        /// friend's death come due), or null.
+        public string GriefFor(string id, long minutes)
+        {
+            PersonState st = id != null ? Store.Find(id) : null;
+            if (st == null || st.Mind == null)
+                return null;
+            long now = Store.LastGameMin;
+            MindMemory m = st.Mind.Where(x => x.Kind == "death" && x.Sub == "friend" && Math.Max(x.At, x.DueAt) <= now && now - Math.Max(x.At, x.DueAt) < minutes)
+                                  .OrderByDescending(x => Math.Max(x.At, x.DueAt)).FirstOrDefault();
+            return m != null ? m.NameAt(0) : null;
+        }
+
         /// This person remembers seeing the player do violence in the last `days` game days (a killing, an assault).
         public bool SawYouViolent(string id, int days)
         {
