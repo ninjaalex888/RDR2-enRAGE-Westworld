@@ -64,7 +64,7 @@ namespace EnrageWestworld.Core
                      .Add(0, "Pity. She stepped on my feet the whole night.", "mild")
                      .Add(1, "That was on purpose.", "mock")
                      .Add(0, "...Was it?", "mild")
-                     .Add(1, "Forty years she's dined out on that story, " + a + ".", "mild")
+                     .Add(1, (InnerLife.ClockYear >= 1905 ? "Near forty years" : "Thirty years and more") + " she's dined out on that story, " + a + ".", "mild")   // from '68: 1899 or 1907
                      .Add(0, "Well. Tell her I said she dances better now.", "mild")
                      .Add(1, "I'll tell her. She'll laugh herself sick.", "cheer");
                     break;
