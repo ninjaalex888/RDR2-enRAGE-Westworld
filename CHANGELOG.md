@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased (overnight 2026-10-27)
+
+- A frame-time meter (`[Output] PerfMeter`, on; settings version 65). Every part of RealNPCs is timed each frame, its own time only. F7 writes the ten costliest and the whole add-on's cost (`TEST perf:`). The log says when RealNPCs averages over 1 ms a frame for 10 seconds, or one frame takes over 4 ms (`PERF: over budget`, `PERF: peak`), at most once a minute each, naming what cost most.
+
 ## 0.6.3 (not released yet)
 
 All of 0.6.3 so far was built on 2026-10-26. Seen working in game: the execution on the road (both saving him and the shooting), the settings panel's Testing page, and women answering your flirting by chance (better, still being tested). Not yet seen in game: Minds, the despair act, news taking time, greeting first, the "Hook up" prompt, the CasualHookups fallback and the body-watch witness.

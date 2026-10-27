@@ -179,9 +179,11 @@ namespace EnrageWestworld.InGame
 				}
 				return;
 			}
+			long stepStart = System.Diagnostics.Stopwatch.GetTimestamp();   // the frame-time meter's total (WestworldScript.Perf.cs)
 			try
 			{
 				Step();
+				PerfFrame(System.Diagnostics.Stopwatch.GetTimestamp() - stepStart);
 			}
 			catch (Exception ex)
 			{
@@ -1035,6 +1037,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST stalker acts: " + Stalker.ActsStatus);
 			Log.Write("TEST worries: " + WorriesStatus());
 			Log.Write("TEST mind: " + MindsStatus());
+			Log.Write("TEST perf: " + PerfStatus());
 			Log.Write("TEST near: " + NearStatus());
 			Log.Write("TEST regulars: " + RegularsStatus());
 			MarkRegulars();

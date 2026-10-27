@@ -51,6 +51,11 @@ namespace EnrageWestworld.InGame
         {
             if (_featureOff.Contains(feature))
                 return;
+            // timed for the frame-time meter (WestworldScript.Perf.cs): its own time, nested features subtracted
+            bool timed = _cfg == null || _cfg.PerfMeter;
+            PerfSlot slot = timed ? PerfSlotOf(feature) : null;
+            int depth = 0;
+            long start = timed ? PerfBegin(out depth) : 0;
             try
             {
                 a();
@@ -67,6 +72,11 @@ namespace EnrageWestworld.InGame
                     _featureOff.Add(feature);
                     Log.Write(feature + " kept failing and is switched off until the game restarts (details above). Everything else carries on.");
                 }
+            }
+            finally
+            {
+                if (timed)
+                    PerfEnd(slot, start, depth);
             }
         }
 

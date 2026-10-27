@@ -646,6 +646,8 @@ in the file. The new ones:
             to that is its own (better after a greeting), then the screen goes dark, an hour passes
             CasualHookupsDecides (true): with CasualHookups installed, its Flirt works only on a
             woman who has said yes to you, and RealNPCs doesn't fade to black itself
+[Output]    PerfMeter (true): times every part of RealNPCs each frame; F7 writes the costliest,
+            and the log says when it goes over budget (PERF)
 [Mind]      Minds (true): people think about what is most on their minds, from what they lived through;
             false: the old mix of thoughts. ShareWithEnrage (true): RealNPCs keeps its own record of
             who has died; when one of enRAGE's townsfolk dies and enRAGE didn't see it, RealNPCs

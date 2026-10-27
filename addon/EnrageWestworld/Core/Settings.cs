@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 64;
+        public const int CurrentVersion = 65;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -186,6 +186,7 @@ namespace EnrageWestworld.Core
         public string SettingsKey = "Ctrl+F7";
         public string SettingsKey2 = "Alt+F";
         public bool DebugLog;
+        public bool PerfMeter = true;
 
         /// Where notices go: "corner" (the "Around town" box), "ticker" or "gamefeed" (the game's own top-left updates).
         /// The old routes that were white text (subtitles, enRAGE's notice line) go to the box, as does the ticker when
@@ -655,6 +656,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("SettingsKey = " + SettingsKey + "   ; opens the RealNPCs settings panel (with any enRAGE version), and closes it again");
             b.AppendLine("SettingsKey2 = " + SettingsKey2 + "   ; a second key that does the same (None: no second key)");
             b.AppendLine("DebugLog = " + B(DebugLog));
+            b.AppendLine("PerfMeter = " + B(PerfMeter) + "   ; times every part of RealNPCs each frame: F7 writes the costliest (TEST perf), and the log says when the add-on goes over 1 ms a frame for 10 s or one frame over 4 ms (PERF)");
             return b.ToString();
         }
 
