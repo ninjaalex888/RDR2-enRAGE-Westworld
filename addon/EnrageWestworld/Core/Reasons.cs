@@ -26,6 +26,7 @@ namespace EnrageWestworld.Core
         public string Hurt;       // just had it done to them (the last hour and a half): "rough" (a face in the bar) or "robbed", else null
         public bool Taken;        // spoken for: a sweetheart, someone they're courting, an affair of enRAGE's
         public string Mood;       // their day: "sore", "glad" or null (InnerLife.MoodOf)
+        public string Grief;      // the first name of a friend whose death they've had word of in the last three days, else null
         public bool Known;        // known lately for a face in the bar or a hand in a coat
     }
 
@@ -108,6 +109,13 @@ namespace EnrageWestworld.Core
                     // the first time words; then it picks up again (and may be made up: Exchanges); two hot men, blows
                     return new Reason { Kind = blows ? "brawl" : tie.Stage >= 1 || tie.Kind != "argue" ? "x:quarrel" : "argue", Strength = 70 - 10 * tie.Warmth,
                                         Why = blows ? "their quarrel comes to blows" : "their quarrel picks up again" };
+                }
+                // a friend of someone grieving (word of a friend's death in the last three days) offers sympathy, once a day
+                // between them (Scenes.Condole)
+                if (tie.Warmth > 0 && (a.Grief != null || b.Grief != null) && !(tie.Kind == "comfort" && now - tie.At >= 0 && now - tie.At < 1440))
+                {
+                    Someone grieving = a.Grief != null ? a : b, friend = grieving == a ? b : a;
+                    return new Reason { Kind = "condole", Strength = 62, BFirst = friend == b, Why = friend.Name + " offers " + grieving.Name + " sympathy for " + grieving.Grief };
                 }
                 // a friend (or sweetheart) of someone who has just been roughed up or robbed goes to them: a small kindness
                 if (tie.Warmth > 0 && (a.Hurt != null || b.Hurt != null))

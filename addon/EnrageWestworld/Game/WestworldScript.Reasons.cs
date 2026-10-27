@@ -105,6 +105,7 @@ namespace EnrageWestworld.InGame
             s.Taken = _engine.SpokenFor(s.Id);
             s.Known = _store.Ties.Any(t => t.Doer == s.Id && (t.Kind == "rough" || t.Kind == "pickpocket") && g - t.At >= 0 && g - t.At < 3 * 1440);
             s.Mood = s.P != null ? _engine.MoodToday(s.P, s.P.Home ?? _placeTown) : null;
+            s.Grief = _engine.GriefFor(s.Id, 3 * 1440);
             return s;
         }
 
@@ -230,6 +231,18 @@ namespace EnrageWestworld.InGame
         {
             if (kind == "avoid")
                 return Scenes.Avoid(cast, seed);
+            if (kind == "condole")
+            {
+                // the grieving one's answer from their own nature; a test with nobody grieving says "your loss"
+                string manner = Exchanges.Manner(done, done.Hurt != null || done.Mood == "sore");
+                if (note)
+                {
+                    _condoles++;
+                    _condoleLast = doer.Name + " to " + done.Name + " (" + (done.Grief ?? "a loss") + ", " + manner + ")";
+                    Log.Write("CONDOLE " + doer.Name + " offers " + done.Name + " sympathy for " + (done.Grief ?? "a loss") + " (" + manner + ")");
+                }
+                return Scenes.Condole(cast, seed, done.Grief, manner);
+            }
             if (kind == "tiff" || kind == "mend")
             {
                 // sweethearts (Scenes.Lovers.cs): words, or one making it up with a gift that the other takes or doesn't
@@ -308,7 +321,7 @@ namespace EnrageWestworld.InGame
         {
             if (apart <= 2.6f)
                 return;
-            if (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind == "mend" || kind.StartsWith("court"))
+            if (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind == "mend" || kind == "condole" || kind.StartsWith("court"))
             {
                 s.Beats.Insert(0, new Beat(0, null, null, "meet"));
                 return;

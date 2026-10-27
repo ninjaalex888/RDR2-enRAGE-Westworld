@@ -270,7 +270,8 @@ namespace EnrageWestworld.InGame
                    "; sweethearts' words " + _tiffs + ", made up " + _mendsTaken + ", gifts turned down " + _mendsRefused + (_loversLast != null ? " (last: " + _loversLast + ")" : "");
         }
 
-        private int _tiffs, _mendsTaken, _mendsRefused, _mendTurn;
+        private int _tiffs, _mendsTaken, _mendsRefused, _mendTurn, _condoles;
+        private string _condoleLast;
         private string _loversLast;
 
         private static readonly HashSet<string> TroubleKinds = new HashSet<string> { "rough", "lift", "pickpocket", "drunk", "charity", "scorn", "avoid", "comfort" };
