@@ -123,6 +123,59 @@ namespace EnrageWestworld.Core
                               "Stranger found dead in the ditch on the " + town + " road. Rattler bite. Folk wonder who passed him by.");
         }
 
+        // a robbery on the road (Tier 4, the NPC version): about one in five is being held up by two of the region's outlaws
+        // when you come on him; they take his money and go, unless you step in
+        public const int RobbedChance = 20;
+
+        public static string RobThreat(string seed)
+        {
+            return Voice.Pick(seed + "rt", "Purse. Slow, now.", "Turn out your pockets. All of them.", "Boots too, if there's money in 'em.", "Watch and chain. Don't make me ask twice.");
+        }
+
+        public static string RobPlead(string town, string seed)
+        {
+            return Voice.Pick(seed + "rp", "Please. It's all I've got.", "That's a month's wages. Please.", "I've a wife waiting in " + town + ". Please.", "Take it. Just don't shoot.");
+        }
+
+        public static string RobWarn(bool mounted, string seed)
+        {
+            return Voice.Pick(seed + "rw", mounted ? "Keep riding, mister. This don't concern you." : "Keep walking, mister. This don't concern you.", "Look the other way and keep going.");
+        }
+
+        public static string RobHandOver(string seed)
+        {
+            return Voice.Pick(seed + "rh", "Here. Here, take it.", "That's everything. I swear that's everything.");
+        }
+
+        public static string RobDone(string seed)
+        {
+            return Voice.Pick(seed + "rd", "Much obliged for the donation.", "Obliged. Don't follow us.", "Count to a hundred before you move.");
+        }
+
+        public static string RobThought(string seed)
+        {
+            return Voice.Pick(seed + "rx", "Not the watch. Please, not Pa's watch.", "Hands up. Keep them up. Don't look at their faces.", "Somebody ride by. Somebody.");
+        }
+
+        /// To the player, after they've gone with his money.
+        public static string RobbedAfter(string seed)
+        {
+            return Voice.Pick(seed + "ra", "They took every cent. Every last cent.", "Two of them. Took my money and my watch. You saw.", "Well. I'm walking to town with empty pockets.");
+        }
+
+        /// To the player, once he's driven them off.
+        public static string RobSaved(string seed)
+        {
+            return Voice.Pick(seed + "rs", "Lord. Thank you. I thought they'd shoot me after.", "You're a brave fool, mister. Thank you.", "That took sand, mister. Thank you.");
+        }
+
+        /// The town's word, some hours on.
+        public static string RobNews(string town, bool saved, string seed)
+        {
+            return saved ? Voice.Pick(seed + "rn", "Word is a stranger drove off two road agents who had a man at gunpoint near " + town + ".", "Road agents tried a man outside " + town + ". Somebody came along and made them sorry.")
+                         : Voice.Pick(seed + "rn", "Two road agents held up a man on foot outside " + town + " and took all he had.", "Robbery on the " + town + " road in broad day. They took a poor man's wages.");
+        }
+
         public static IEnumerable<string> Lines()
         {
             for (int i = 0; i < 9; i++)
@@ -140,6 +193,15 @@ namespace EnrageWestworld.Core
                 yield return BittenIgnored("i" + i, i % 2 == 0);
                 yield return BittenNews(town, "n" + i, i % 2 == 0);
                 yield return BittenDied(town, "d" + i);
+                yield return RobThreat("rt" + i);
+                yield return RobPlead(town, "rp" + i);
+                yield return RobWarn(i % 2 == 0, "rw" + i);
+                yield return RobHandOver("rh" + i);
+                yield return RobDone("rd" + i);
+                yield return RobThought("rx" + i);
+                yield return RobbedAfter("ra" + i);
+                yield return RobSaved("rs" + i);
+                yield return RobNews(town, i % 2 == 0, "rn" + i);
             }
         }
     }
@@ -152,6 +214,14 @@ namespace EnrageWestworld.Core
             long due = now + 120 + Voice.Hash(town + now) % 180;
             Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = text, DueAt = due });
             Log("TRAVELLER the town will hear of the snakebite in " + (due - now) + " game min");
+        }
+
+        /// When the traveller was held up (or saved from it): the nearest town hears two to five hours on.
+        public void RobberyTold(string town, string text, long now)
+        {
+            long due = now + 120 + Voice.Hash(text + now) % 180;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = text, DueAt = due });
+            Log("TRAVELLER the town will hear of the robbery in " + (due - now) + " game min");
         }
 
         /// Left by the road: half the time (Travellers.BittenDies) the town hears he was found dead, four to eight hours on.
