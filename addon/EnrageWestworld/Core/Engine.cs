@@ -51,6 +51,7 @@ namespace EnrageWestworld.Core
 			_rng = new Random(seed);
 			InnerLife.Counterpart = LinkedName;   // worries name the real person linked to them (Links.cs)
 			InnerLife.CounterpartDead = LinkedDead;
+			HookMindFirst();   // the mind's own thoughts first, with [Mind] MindLive on (Engine.MindLive.cs)
 		}
 
 		public Person Find(string id)

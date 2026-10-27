@@ -12,6 +12,8 @@
 
 - And what shows of it (still only reported): the rules of 1899 decide how much of a feeling reaches the face. A man hides fear before other men (a timid one can't quite, and in a saloon he blusters), a woman of standing keeps her anger off her face in the street, nobody shows anger in church or before the law, drink loosens it all, and the coldest keep almost everything in. The thought always says what's really felt. Each `MIND` line says what shows and the first thing the game is proven able to do to show it (a gesture, a scenario, a recorded line), from a new catalogue of what has really played in game.
 
+- With `[Mind] MindLive` on, what people feel comes first in their thoughts: someone you shoved a minute ago thinks of you, in words of how they really feel about it (even when their face hides it), and a body's pressing want (hunger, tiredness, rain down the collar when it rains) speaks up now and then. A friend's feelings name the friend; a stranger who shares the name never does. The same line never comes twice in a game day. Off (the default), thoughts are exactly as before.
+
 ### Fixes from a review of the overnight work
 
 - Your save is never written over with an empty one at load. If something else had the save file open when the game loaded (OneDrive syncing Documents, a virus scanner, an editor), RealNPCs took it for a damaged file, started fresh and saved that over your real file twenty seconds later. Now it waits a moment, then leaves the file alone and saves nothing for that session (the log and F7 say so); a damaged file is kept as a dated copy, and the copy a crash leaves behind mid-save is recovered.

@@ -500,6 +500,17 @@ namespace EnrageWestworld.Core
         {
             var c = new List<Minds.Candidate>();
             List<string> told = st != null ? st.Musings : null;   // the old pools' repeats; a memory's are its own
+            if (Cfg.MindLive)
+            {
+                // the mind's own say (Engine.MindLive.cs): a feeling still felt pulls hardest, a pressing need above the old pools
+                float pull;
+                KeyValuePair<string, string> mf = MindSay(p, hour, seed, day, now, false, out pull);
+                if (mf.Key != null)
+                {
+                    string mline = mf.Key;
+                    c.Add(new Minds.Candidate { Source = mf.Value, Pull = pull, Make = () => mline });
+                }
+            }
             // what they lived through
             if (st != null && st.Mind != null)
                 foreach (MindMemory m in st.Mind)

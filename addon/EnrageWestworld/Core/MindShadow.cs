@@ -78,6 +78,9 @@ namespace EnrageWestworld.Core
             get { return _events.Count; }
         }
 
+        /// Told of each feeling kept, by id (the Engine drops that person's cached thought, so it can come first at once).
+        public Action<string> OnFeel;
+
         /// A feeling had now, kept for their mood (at most FeltPerPerson a person, 600 people).
         public void Feel(string id, Feeling f, long now)
         {
@@ -103,8 +106,10 @@ namespace EnrageWestworld.Core
                         least = i;
                 list.RemoveAt(least);
             }
-            list.Add(new FeltAt { Kind = k, Intensity = f.Intensity, At = now, About = f.About });
+            list.Add(new FeltAt { Kind = k, Intensity = f.Intensity, At = now, About = f.About, AboutId = f.AboutId, DoerId = f.DoerId });
             FeelingsNoted++;
+            if (OnFeel != null)
+                OnFeel(id);
         }
 
         /// What they felt lately (null: nothing).

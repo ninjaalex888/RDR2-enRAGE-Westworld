@@ -683,7 +683,7 @@ in the file. The new ones:
             MindShadow (true, while it is tested): the mind underneath works out the traits, needs,
             feelings and mood of the people near you and writes them to the log (MIND lines), F7
             (TEST mind shadow) and the Show minds cards; it changes nothing anyone does or thinks.
-            MindLive (false): what that mind decides reaches the screen (moods first, later thoughts)
+            MindLive (false): what that mind decides reaches the screen: moods, and thoughts of what people really feel (about you, a friend, a stranger) and of a pressing want
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left

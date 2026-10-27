@@ -26,6 +26,7 @@ namespace EnrageWestworld.Core
         public string Company;           // friends neighbours strangers alone
         public int Witnesses, Doers = 1, WakeStage;
         public string DoerName, TargetName;   // for the log: whom the feeling is about
+        public string DoerId, TargetId;       // the same by id ("player" for him; null unknown), for the thought's words
     }
 
     /// The feeling named, how strong, and the urge.
@@ -36,6 +37,8 @@ namespace EnrageWestworld.Core
         public float Intensity;      // 0..1
         public string Urge;
         public string About;         // whom it's about (a name, "you" for the player), or null
+        public string AboutId;       // the same by id ("player"), or null; DoerId: whoever did it, for a feeling about oneself
+        public string DoerId;
         public string Why;           // the event kind
         public float[] All;          // every feeling's intensity, in Kinds order (for the log and the tests)
 
@@ -177,7 +180,8 @@ namespace EnrageWestworld.Core
                 WarmDoer = toDoer, WarmTarget = toTarget, Place = h.Place ?? "street", Woman = woman, WomenPresent = true,
                 Company = home != null && home == h.Town ? "neighbours" : "strangers", Witnesses = sawCount >= 0 ? sawCount : h.Witnesses != null ? h.Witnesses.Count : 0,
                 Armed = kind == "killing" || k == "standoff" || doer == "player", DoerDrunk = k == "drunk" && id == target, Doers = 1,
-                DoerName = doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName
+                DoerName = doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName,
+                DoerId = doer, TargetId = target
             };
         }
 
@@ -284,6 +288,8 @@ namespace EnrageWestworld.Core
             f.Kind = best < 0 ? "none" : Feeling.Kinds[best];
             f.Intensity = best < 0 ? 0f : a[best];
             f.About = f.Kind == "grief" || f.Kind == "pity" || f.Kind == "relief" ? e.TargetName : f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride" ? null : e.DoerName;
+            f.AboutId = f.Kind == "grief" || f.Kind == "pity" || f.Kind == "relief" ? e.TargetId : f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride" ? null : e.DoerId;
+            f.DoerId = e.DoerId;
             f.Urge = UrgeOf(f, e, m, role, standing, t);
             return f;
         }

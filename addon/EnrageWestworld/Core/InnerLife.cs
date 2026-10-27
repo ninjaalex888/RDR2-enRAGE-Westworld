@@ -267,10 +267,23 @@ namespace EnrageWestworld.Core
             return Thought(p, hour, seed, told, out source, look, day);
         }
 
+        /// The mind's own say, first ([Mind] MindLive; set by the Engine): a feeling still strongly felt, then a pressing
+        /// need. Null (the default, and with MindLive off) leaves every thought as it was. Returns the line and its source.
+        public static Func<Person, int, string, List<string>, Context, KeyValuePair<string, string>> MindFirst;
+
         /// The same, with where it came from (for the log and the tests): again, look, tie, linked, worry, towntie,
         /// towntalk, day, era, now:<what> (InnerLife.Now.cs) or filler:<pool>.
         public static string Thought(Person p, int hour, string seed, List<string> told, out string source, PlayerLook look = null, Context day = null)
         {
+            if (MindFirst != null && p != null)
+            {
+                KeyValuePair<string, string> first = MindFirst(p, hour, seed, told, day);
+                if (first.Key != null)
+                {
+                    source = first.Value;
+                    return first.Key;
+                }
+            }
             // a regular who has met him before knows him again
             if (look != null && look.Near && look.Seen >= 2 && Voice.Hash(seed + "again") % 100 < 22)
             {

@@ -18,6 +18,8 @@ namespace EnrageWestworld.Core
         public float Intensity;
         public long At;           // game minute
         public string About;      // whom (a name, "you"), for the log and F7
+        public string AboutId;    // the same by id ("player"), or null; DoerId whoever did it (Feeling's), for the thought's words
+        public string DoerId;
     }
 
     /// A mood: pleasant or not, keyed up or flat, in control or not, each -1..1.
