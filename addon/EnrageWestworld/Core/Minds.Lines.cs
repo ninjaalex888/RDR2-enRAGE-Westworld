@@ -203,6 +203,12 @@ namespace EnrageWestworld.Core
             { "round|did:done|fresh", new[] { "{who} stood us all a drink. Good sort.", "Whiskey on {who}. Still warm in the chest." } },
             { "round|did:done|chewing", new[] { "Owe {who} a drink now. Fair is fair." } },
             { "round|saw|fresh", new[] { "{a} bought a round. Bet {a} regrets it come morning.", "Saw {a} stand the house a drink. Must be flush." } },
+            // a debt paid in the street: the one who paid (doer), the one paid (done), and those who saw it counted out
+            { "settled|did:doer|fresh", new[] { "Square with {who}. Said out loud, in the street. Good.", "Eleven dollars gone. Felt like a hundred lifted off." } },
+            { "settled|did:doer|chewing", new[] { "No more crossing the street when {who} comes. That's worth eleven dollars." } },
+            { "settled|did:done|fresh", new[] { "{who} paid. Every coin. Counted them twice.", "Had {who} down as a deadbeat. Wrong, for once." } },
+            { "settled|did:done|chewing", new[] { "{who}'s good for it, it turns out. I'll remember that." } },
+            { "settled|saw|fresh", new[] { "{a} paid {b} back right there in the street. Counted out loud.", "Saw money change hands. {a} and {b}, square at last." } },
             { "helpup|did|fresh", new[] { "{you} gave me a hand up when nobody else would.", "Knee aches. But {you} stopped. I'll remember it." } },
             { "helpup|did|chewing", new[] { "Owe {you} for that. Somehow.", "Told everybody how {you} helped me up. Half didn't believe it." } },
             { "helpup|did|letting", new[] { "{you}. A kind hand, once. I keep it." } },

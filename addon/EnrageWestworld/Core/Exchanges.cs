@@ -120,6 +120,11 @@ namespace EnrageWestworld.Core
         private static readonly string[] OwedCold = { "Mind you don't forget it.", "One week. I'll be counting.", "I'll hold you to it." };
         private static readonly string[] OwedSharp = { "Soon ain't a day of the week.", "You said that last week.", "Don't swear. Pay." };
         private static readonly string[] Paid = { "Here. Eleven dollars, {b}. Count it.", "...Square, then. Square and glad of it." };
+        // paid in the street (Tier 4): counted out where folks can see, the one who paid asks it said aloud, and it is
+        private static readonly string[] PaidCount = { "...nine, ten, eleven. Eleven it is.", "Eight... nine... ten... eleven. Well, I'll be." };
+        private static readonly string[] PaidAsk = { "Say it so they can hear, {b}.", "Out loud, {b}. Let the street hear it." };
+        private static readonly string[] PaidWitness = { "You all heard it. {a} paid me square, every cent.", "Mark it, folks. {a} owes me nothing. Not one cent." };
+        private static readonly string[] PaidLast = { "Lighter than I've felt in a month.", "Never again. Not a dollar, not from anybody.", "There. Now I can look a man in the eye." };
         private static readonly string[] Mule = { "Working my mule hard, {b}? Sleeping well?", "I didn't want it this way, {a}. You know I didn't.", "Owed is owed, {a}." };
 
         // a feud: A (the one worrying) at the neighbour, by stage; mended or not at the end
@@ -168,8 +173,11 @@ namespace EnrageWestworld.Core
                     }
                     else if (good)
                     {
-                        s.Add(0, fill(Paid[0]), "relieved", "face").Add(1, fill(Paid[1]), "thanks");
-                        s.Kind = "cheer";
+                        // paid where the street can see it: counted out, said aloud at the debtor's asking (a settled tie; word gets round)
+                        s.Add(0, fill(Paid[0]), "relieved", "face").Add(1, fill(Voice.Pick(seed + "pc", PaidCount)), "mild")
+                         .Add(0, fill(Voice.Pick(seed + "pa", PaidAsk)), "mild").Add(1, fill(Voice.Pick(seed + "pw", PaidWitness)), "cheer")
+                         .Add(0, fill(Voice.Pick(seed + "pl", PaidLast)), "relieved");
+                        s.Kind = "settled";
                     }
                     else
                     {
@@ -298,7 +306,7 @@ namespace EnrageWestworld.Core
             return Hello.Concat(Snap.Values).Concat(GoodNews.Values).Concat(BadNews.Values).Concat(KindToTrouble).Concat(ColdToTrouble).Concat(SharpToTrouble)
                 .Concat(SnapBack).Concat(KindToGood).Concat(ColdToGood).Concat(SharpToGood).Concat(KindToBad).Concat(ColdToBad).Concat(SharpToBad)
                 .Concat(QuarrelAgain).Concat(MakeUp).Concat(Accept).Concat(Refuse).Concat(Stand).Concat(Dare).Concat(SweetHello).Concat(SweetBack)
-                .Concat(CallIn).Concat(Owe).Concat(OwedKind).Concat(OwedCold).Concat(OwedSharp).Concat(Paid).Concat(Mule).Concat(Fence).Concat(Shake).Concat(Done).Concat(Court).Concat(CourtWarm).Concat(CourtCool).Concat(Yes).Concat(No);
+                .Concat(CallIn).Concat(Owe).Concat(OwedKind).Concat(OwedCold).Concat(OwedSharp).Concat(Paid).Concat(PaidCount).Concat(PaidAsk).Concat(PaidWitness).Concat(PaidLast).Concat(Mule).Concat(Fence).Concat(Shake).Concat(Done).Concat(Court).Concat(CourtWarm).Concat(CourtCool).Concat(Yes).Concat(No);
         }
 
         /// The worry kinds every reason needs lines for, for the tests.

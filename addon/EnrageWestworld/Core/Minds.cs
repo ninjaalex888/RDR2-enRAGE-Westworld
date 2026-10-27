@@ -89,7 +89,7 @@ namespace EnrageWestworld.Core
                     return "theft";
                 case "drunk":
                     return "drunk";
-                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "makeup": case "help": case "defend": case "round": case "apology":
+                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "makeup": case "help": case "defend": case "round": case "apology": case "settled":
                     return "warmth";
                 case "smalltalk": case "gossip": case "haggle": case "hosts":
                     return "talk";
@@ -141,7 +141,7 @@ namespace EnrageWestworld.Core
         public static bool OneSided(string kind)
         {
             return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" || kind == "avoid" ||
-                   kind == "help" || kind == "passby" || kind == "defend" || kind == "faced" || kind == "round";
+                   kind == "help" || kind == "passby" || kind == "defend" || kind == "faced" || kind == "round" || kind == "settled";
         }
 
         /// How much it stays with someone, by group and by how they knew it.

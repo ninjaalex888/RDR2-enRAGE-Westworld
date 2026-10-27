@@ -363,7 +363,7 @@ namespace EnrageWestworld.Core
                 if ((t.Kind == "rough" || t.Kind == "pickpocket") && !did) return "sore";
                 if (t.Kind == "scorn" && did) return "sore";      // asked, and was sent off
                 if (t.Kind == "drunk" && did) return "sore";      // the morning after, and everybody grinning
-                if (t.Kind == "charity" || t.Kind == "comfort" || t.Kind == "cheer" || t.Kind == "makeup" || t.Kind == "sweet" || t.Kind == "propose" || t.Kind == "flirt") return "glad";
+                if (t.Kind == "charity" || t.Kind == "comfort" || t.Kind == "cheer" || t.Kind == "settled" || t.Kind == "makeup" || t.Kind == "sweet" || t.Kind == "propose" || t.Kind == "flirt") return "glad";
             }
             if (!day.Indoors && (day.Weather == "rain" || day.Weather == "storm" || day.Weather == "snow" || day.Weather == "dust") && Voice.Chance(seed + "wmood", 33))
                 return "sore";

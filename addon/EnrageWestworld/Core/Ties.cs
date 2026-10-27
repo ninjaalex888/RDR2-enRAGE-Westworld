@@ -63,7 +63,7 @@ namespace EnrageWestworld.Core
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
                 case "lift":
                     return 0;    // the mark never saw who: nothing between them that he knows of (the thief knows)
-                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "help": case "defend": case "round": case "apology":
+                case "flirt": case "propose": case "sweet": case "comfort": case "cheer": case "charity": case "help": case "defend": case "round": case "apology": case "settled":
                     return 1;
                 case "scorn": case "passby": case "faced":
                     return -1;   // asked for a coin and sent off with a flea in the ear; left lying in the street
@@ -106,7 +106,8 @@ namespace EnrageWestworld.Core
             return kind == "rough" || kind == "pickpocket" || kind == "lift" || kind == "drunk" || kind == "charity" || kind == "scorn" ||   // (the asking is A's doing too)
                    kind == "help" || kind == "passby" ||   // A helped B up, or walked past B
                    kind == "defend" || kind == "faced" ||  // A stood up for B; A faced B down
-                   kind == "round";                        // A stood B a drink
+                   kind == "round" ||                      // A stood B a drink
+                   kind == "settled";                      // A paid B what was owed, in the street
         }
 
         public static SceneTie Note(List<SceneTie> all, string aId, string aName, string bId, string bName, string town, string kind, long now, string doer)
@@ -150,7 +151,7 @@ namespace EnrageWestworld.Core
         /// the thinker's own, newest first.
         public static List<SceneTie> TalkOf(IEnumerable<SceneTie> all, string town, string notId, long now)
         {
-            return all.Where(t => t.Town == town && t.Kind != "lift" && (t.Warmth < 0 || Romantic(t.Kind) || t.Kind == "makeup" || t.Kind == "charity" || t.Kind == "help" || t.Kind == "round") && !t.Has(notId) && now - t.At >= 0 && now - t.At < 2 * 1440L)
+            return all.Where(t => t.Town == town && t.Kind != "lift" && (t.Warmth < 0 || Romantic(t.Kind) || t.Kind == "makeup" || t.Kind == "charity" || t.Kind == "help" || t.Kind == "round" || t.Kind == "settled") && !t.Has(notId) && now - t.At >= 0 && now - t.At < 2 * 1440L)
                       .OrderByDescending(t => t.At).ToList();
         }
 
@@ -687,6 +688,9 @@ namespace EnrageWestworld.Core
         private static readonly string[] FacedDid = { "Told {other} to his face. About time somebody did.", "{other} looked at me like murder. Let him." };
         private static readonly string[] RoundDid = { "{other} drank my health tonight. Worth every cent.", "Stood {other} a drink. Felt like a rich man, for once." };
         private static readonly string[] RoundDone = { "{other} stood me a drink. I'll remember that.", "Drank to {other}'s health. Meant it, too." };
+        private static readonly string[] SettledDid = { "Paid {other} every cent, out in the street where folks could see.", "{other} said it out loud: square. I'll sleep tonight.", "Owe {other} nothing now. Strange, how light a body feels." };
+        private static readonly string[] SettledDone = { "{other} paid me back. Every cent. I'd have bet the other way.", "Counted {other}'s money twice. All there.", "Didn't think I'd see that money again. {other} surprised me." };
+        private static readonly string[] TownSettled = { "{a} paid {b} back in the street, every cent, with folks watching.", "Heard {a} squared up with {b} in front of half the town.", "{a} paid what was owed. {b} said so out loud. Good for {a}." };
         private static readonly string[] TownRound = { "{a} stood the whole saloon a round. Folks'll be friends with {a} till Sunday.", "{a} bought for the house, {b} says. Wish I'd been there." };
         private static readonly string[] FacedDone = { "{other} put their nose in my business. I won't forget it.", "{other}, playing the hero. In front of half the street." };
 
@@ -751,7 +755,7 @@ namespace EnrageWestworld.Core
                                  : t.Kind == "pickpocket" ? (did ? CaughtDid : CaughtDone) : t.Kind == "charity" ? (did ? CharityDid : CharityDone)
                                  : t.Kind == "scorn" ? (did ? ScornDid : ScornDone) : t.Kind == "help" ? (did ? HelpDid : HelpDone)
                                  : t.Kind == "passby" ? (did ? PassDid : PassDone) : t.Kind == "defend" ? (did ? DefendDid : DefendDone)
-                                 : t.Kind == "faced" ? (did ? FacedDid : FacedDone) : t.Kind == "round" ? (did ? RoundDid : RoundDone) : (did ? DrunkDid : DrunkDone);
+                                 : t.Kind == "faced" ? (did ? FacedDid : FacedDone) : t.Kind == "round" ? (did ? RoundDid : RoundDone) : t.Kind == "settled" ? (did ? SettledDid : SettledDone) : (did ? DrunkDid : DrunkDone);
                 return Voice.Pick(seed + "trouble", trouble).Replace("{other}", Person.FirstOf(t.Other(id)));
             }
             string[] pool = t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
@@ -849,7 +853,7 @@ namespace EnrageWestworld.Core
             }
             string[] pool = t.Kind == "brawl" ? TownBlows : t.Kind == "makeup" ? TownMadeUp : Romantic(t.Kind) ? TownWarm
                           : t.Kind == "rough" ? TownRough : t.Kind == "pickpocket" ? TownCaught : t.Kind == "drunk" ? TownDrunk
-                          : t.Kind == "charity" ? TownCharity : t.Kind == "scorn" ? TownScorn : t.Kind == "help" ? TownHelp : t.Kind == "passby" ? TownPassby : t.Kind == "round" ? TownRound : TownHostile;
+                          : t.Kind == "charity" ? TownCharity : t.Kind == "scorn" ? TownScorn : t.Kind == "help" ? TownHelp : t.Kind == "passby" ? TownPassby : t.Kind == "round" ? TownRound : t.Kind == "settled" ? TownSettled : TownHostile;
             // in the trouble lines {a} did it: the one who did, whichever way round the tie was first made
             bool swap = Trouble(t.Kind) && t.Doer != null && t.Doer == t.B;
             string an = swap ? t.BName : t.AName, bn = swap ? t.AName : t.BName;
@@ -862,7 +866,7 @@ namespace EnrageWestworld.Core
             return Quarrel.Concat(Blows).Concat(Money).Concat(Sweet).Concat(Known).Concat(Kindness).Concat(MadeUp).Concat(Shrugged)
                 .Concat(RoughDid).Concat(RoughDone).Concat(LiftDid).Concat(LiftDone).Concat(CaughtDid).Concat(CaughtDone).Concat(DrunkDid).Concat(DrunkDone).Concat(AvoidDid).Concat(AvoidDone)
                 .Concat(CharityDid).Concat(CharityDone).Concat(ScornDid).Concat(ScornDone).Concat(TownCharity).Concat(TownScorn)
-                .Concat(TownRough).Concat(TownCaught).Concat(TownDrunk).Concat(HelpDid).Concat(HelpDone).Concat(PassDid).Concat(PassDone).Concat(TownHelp).Concat(TownPassby).Concat(DefendDid).Concat(DefendDone).Concat(FacedDid).Concat(FacedDone).Concat(RoundDid).Concat(RoundDone).Concat(TownRound)
+                .Concat(TownRough).Concat(TownCaught).Concat(TownDrunk).Concat(HelpDid).Concat(HelpDone).Concat(PassDid).Concat(PassDone).Concat(TownHelp).Concat(TownPassby).Concat(DefendDid).Concat(DefendDone).Concat(FacedDid).Concat(FacedDone).Concat(RoundDid).Concat(RoundDone).Concat(TownRound).Concat(SettledDid).Concat(SettledDone).Concat(TownSettled)
                 .Concat(DeadFoe).Concat(DeadFriend).Concat(DeadKnown)
                 .Concat(TownHostile).Concat(TownBlows).Concat(TownWarm).Concat(TownMadeUp)
                 .Concat(TownDeadFoe).Concat(TownDeadWarm).Concat(TownDeadMended);
