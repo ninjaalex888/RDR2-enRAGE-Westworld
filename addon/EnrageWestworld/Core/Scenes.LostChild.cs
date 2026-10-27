@@ -30,13 +30,16 @@ namespace EnrageWestworld.Core
         private static readonly string[] BoyMarks = { "a brown cap too big for him", "a patch on the knee of his trousers", "a red kerchief round his neck", "hair the color of straw", "a slingshot in his back pocket" };
         private static readonly string[] GirlMarks = { "a blue ribbon in her hair", "a yellow pinafore", "a rag doll she won't put down", "freckles, ever so many freckles", "a green gingham dress" };
 
-        /// Her own child: the same one InnerLife gives her everywhere (the fever worry's child, by her id), and the rest
-        /// from her id too, so it's the same child each time.
+        /// Her own youngest, by her id, so it's the same child each time. Not the child InnerLife's fever worry gives her
+        /// (`|cw`, `|child`): that one may be in bed with a fever, or buried, while she's asking after this one.
         public static Child Of(string personId)
         {
-            bool girl = Voice.Hash(personId + "|cw") % 2 == 0;
+            bool girl = Voice.Hash(personId + "|cw2") % 2 == 0;
             string[] marks = girl ? GirlMarks : BoyMarks;
-            return new Child { Boy = !girl, Name = Residents.FirstName(girl, personId + "|child"), Mark = marks[Voice.Hash(personId + "|m") % marks.Length], Age = 5 + Voice.Hash(personId + "|age") % 5 };
+            string name = Residents.FirstName(girl, personId + "|child2");
+            if (girl == (Voice.Hash(personId + "|cw") % 2 == 0) && name == Residents.FirstName(girl, personId + "|child"))
+                name = Residents.FirstName(girl, personId + "|child3");
+            return new Child { Boy = !girl, Name = name, Mark = marks[Voice.Hash(personId + "|m") % marks.Length], Age = 5 + Voice.Hash(personId + "|age") % 5 };
         }
 
         /// A woman who'd have a young child: of an age for it (or of no known age), and not of a trade with no family.

@@ -65,7 +65,7 @@ namespace EnrageWestworld.Core
             { "grudge", new Rule("grudge", false, 30, 180, 0, 1440) },             // per pair a day
             { "callout", new Rule("callout", false, 40, 1440, 1440, 2880) },       // a noon callout: once a day at most
             { "preacher", new Rule("preacher", false, 35, 0, 1440, 2880) },       // a Sunday's street preacher: once a town a day, a person every two
-            { "lostchild", new Rule("lostchild", false, 15, 720, 4320, 10080) },  // a mother asking after her child: three days a town, a week a woman
+            { "lostchild", new Rule("lostchild", false, 15, 720, 4320, 129600) },  // a mother asking after her child: three days a town, a season a woman
             { "sabbath", new Rule("sabbath", false, 30, 120, 120, 10080) },       // a Sunday morning's kneel by the church: two hours between, a week a person
             { "bell", new Rule("bell", false, 60, 1200, 1440, 0) },              // the bell at three: a night between, a town a night
             // big: encounters; rare, budgeted, with quiet between
