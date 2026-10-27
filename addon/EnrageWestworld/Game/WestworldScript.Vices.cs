@@ -111,7 +111,7 @@ namespace EnrageWestworld.InGame
                 _ticker.Push(drinker.Who.Name + ", thinking", thought, "near", h);
             _drinks++;
             _drinkLast = drinker.Who.Name + " (" + drinkWhy + ")" + (test ? ", a test" : "");
-            Log.Write("VICE drink: " + drinker.Who.Name + " drinks after " + (drinkWhy.StartsWith("grief:") ? "word of " + drinkWhy.Substring(6) + "'s death" : "bad news (" + drinkWhy.Substring(8) + ")") +
+            Log.Write("VICE drink: " + drinker.Who.Name + " drinks after " + (drinkWhy.StartsWith("grief:") ? "word of " + drinkWhy.Substring(6) + "'s death" : drinkWhy.StartsWith("loss:") ? "a death in the family (" + drinkWhy.Substring(5) + ")" : "bad news (" + drinkWhy.Substring(8) + ")") +
                       (stance ? ", the drinker's stance" : "") + "; thinks: " + thought + (test ? " (a test" + (skipped != null ? "; skipped: " + skipped : "") + ")" : ""));
             // a friend close by comes to say they're sorry
             Candidate friend = people.Where(o => o != drinker && o.Who.Id != drinker.Who.Id && o.Ped.Position.DistanceTo(drinker.Ped.Position) < 5f && TieWarmth(o.Who.Id, drinker.Who) > 0)

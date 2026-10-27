@@ -17,6 +17,8 @@ namespace EnrageWestworld.Core
         {
             if (griefFor != null)
                 return "grief:" + griefFor;
+            if (worryEndedBadly && Array.IndexOf(Losses, worryKind) >= 0)
+                return "loss:" + worryKind;   // a worry that ended in a death: mourning, not bad luck (and the Coward mourns too)
             if (worryEndedBadly && temper != "Coward")
                 return "badnews:" + (worryKind ?? "trouble");
             return null;
@@ -32,6 +34,8 @@ namespace EnrageWestworld.Core
                 who = why.Substring(6);
                 pool = g == "bold" ? GriefBold : g == "cold" ? GriefCold : Grief;
             }
+            else if (why != null && why.StartsWith("loss:"))
+                pool = why == "loss:fever" ? LossFever : why == "loss:letter" ? LossLetter : LossSon;
             else
                 pool = g == "bold" ? BadNewsBold : g == "cold" ? BadNewsCold : BadNews;
             return pool[Voice.Hash(seed + "|vice") % pool.Length].Replace("{who}", who ?? "them");
@@ -41,21 +45,28 @@ namespace EnrageWestworld.Core
         public static Scene Comfort(SceneCast c, string seed, string why)
         {
             string a = Scenes.N(c, 0, seed);
-            bool grief = why != null && why.StartsWith("grief:");
+            bool grief = why != null && why.StartsWith("grief:"), loss = why != null && why.StartsWith("loss:");
             string who = grief ? why.Substring(6) : null;
             Scene s = new Scene { Kind = "comfort", Summary = "a friend sat with someone drinking away bad news" };
             s.Add(1, grief ? Voice.Pick(seed + "cg", "Heard about " + who + ", " + a + ". I'm sorry.", "Sorry about " + who + ". Truly.", a + ". I heard about " + who + ". Sit, I'll stand you the next.")
+                           : loss ? Voice.Pick(seed + "cl", "Sorry for your trouble, " + a + ". I heard.", "I heard, " + a + ". I'm so sorry.", a + ". Sit. I'll get these.")
                            : Voice.Pick(seed + "cb", "Sorry to hear it, " + a + ".", "Heard how it went, " + a + ". Rotten luck.", "Bad day, " + a + "? I heard."), "sorry", "face")
-             .Add(0, grief ? Voice.Pick(seed + "ca", "...Yeah. Thanks.", "Can't believe it. Can't.", "Don't. Just drink with me.")
-                           : Voice.Pick(seed + "cr", "...Yeah. Thanks.", "Don't want to talk about it.", "Pour me another and we'll call it even."), "drunk")
+              .Add(0, grief ? Voice.Pick(seed + "ca", "...I know. Thank you.", "Can't believe it. Can't.", "Don't. Just drink with me.")
+                           : loss ? Voice.Pick(seed + "cm", "Can't speak of it. Not yet.", "Just sit with me.", "...I know. Thank you.")
+                           : Voice.Pick(seed + "cr", "...I know. Thank you.", "Don't want to talk about it.", "Pour me another and we'll call it even."), "drunk")
              .Add(1, Voice.Pick(seed + "cw", "Go easy, now.", "I'll see you home after.", "Here's to better days."), "mild");
             return s;
         }
 
         private static readonly string[] Grief = { "Another. For {who}. And one after that.", "{who}'s gone. Whiskey doesn't help. Pour it anyway.",
                                                    "Keep seeing {who}'s face. Glass is empty again.", "Should've said something to {who}. Last time. Should've." };
-        private static readonly string[] GriefBold = { "Somebody'll pay for {who}. After this glass.", "Drink to {who}. Then find out who.", "{who} wouldn't want me crying. Wouldn't want me sober either." };
+        private static readonly string[] GriefBold = { "Somebody'll pay for {who}. After this glass.", "Drink to {who}. Then another. Then another.", "{who} wouldn't want me crying. Wouldn't want me sober either." };
         private static readonly string[] GriefCold = { "{who}. Well. Everybody goes.", "Don't feel it yet. Maybe the whiskey will.", "{who}'s gone. The bottle's here. One of them listens." };
+        // the worries that end in a death: a child's fever, the black-edged letter, the son brought home in a sack
+        public static readonly string[] Losses = { "fever", "letter", "son" };
+        private static readonly string[] LossFever = { "Little hands. So hot, then so cold. Fill it.", "Fetched the doctor too late. I was the one too late. Pour." };
+        private static readonly string[] LossLetter = { "Read it again. The words stay the same. Another.", "Wrote all spring into nothing. Pour." };
+        private static readonly string[] LossSon = { "My boy. My boy. Fill it up.", "Raised him steady. Steady didn't save him." };
         private static readonly string[] BadNews = { "Pour. Don't talk. Pour.", "Drink till it's somebody else's trouble.", "Gone wrong. All of it. Another.",
                                                      "Face hot. Hands cold. Glass empty." };
         private static readonly string[] BadNewsBold = { "Somebody's going to hear about this. Not tonight.", "Drink first. Break something after.", "Wait till morning. Then they'll hear from me." };
@@ -63,7 +74,7 @@ namespace EnrageWestworld.Core
 
         public static IEnumerable<string> AllLines()
         {
-            return Grief.Concat(GriefBold).Concat(GriefCold).Concat(BadNews).Concat(BadNewsBold).Concat(BadNewsCold);
+            return Grief.Concat(GriefBold).Concat(GriefCold).Concat(LossFever).Concat(LossLetter).Concat(LossSon).Concat(BadNews).Concat(BadNewsBold).Concat(BadNewsCold);
         }
     }
 }
