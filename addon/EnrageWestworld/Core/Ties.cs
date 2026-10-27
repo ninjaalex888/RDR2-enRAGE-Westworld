@@ -22,6 +22,7 @@ namespace EnrageWestworld.Core
         [DataMember] public long At;               // game minute of the latest
         [DataMember] public int Stage;             // how far a story between them has gone (follow-up scenes)
         [DataMember] public string Doer;           // for trouble one did to the other (rough, pickpocket, lift, drunk): who did it
+        [DataMember] public bool Courted;          // they were sweethearts (a flirt, sweet words, a proposal): a quarrel since leaves them at odds (Scenes.Mend)
 
         /// This one did it to the other (the attacker, the thief, the drunk who called him out).
         public bool Did(string id)
@@ -81,6 +82,18 @@ namespace EnrageWestworld.Core
             return kind == "flirt" || kind == "propose" || kind == "sweet";
         }
 
+        /// Sweethearts now: their last scene a romantic one, or the making up after a quarrel (Scenes.Mend).
+        public static bool Sweethearts(SceneTie t)
+        {
+            return t != null && (Romantic(t.Kind) || (t.Courted && t.Kind == "makeup"));
+        }
+
+        /// Sweethearts at odds: courting once, and their last meeting words or a cold shoulder, not yet past mending.
+        public static bool Cooled(SceneTie t)
+        {
+            return t != null && t.Courted && t.Warmth >= -1 && (t.Kind == "argue" || t.Kind == "brushoff" || t.Kind == "snap" || t.Kind == "envy");
+        }
+
         /// Notes a scene between two people: the tie between them, made or carried on. Null if the scene leaves none.
         public static SceneTie Note(List<SceneTie> all, string aId, string aName, string bId, string bName, string town, string kind, long now)
         {
@@ -107,7 +120,9 @@ namespace EnrageWestworld.Core
                 t = new SceneTie { A = aId, B = bId };
                 all.Add(t);
             }
-            bool keepRomance = Romantic(t.Kind) && !Romantic(kind) && effect.Value > 0;   // a kindness between sweethearts: still sweethearts
+            bool keepRomance = Sweethearts(t) && !Romantic(kind) && effect.Value > 0;   // a kindness between sweethearts: still sweethearts
+            if (Romantic(kind) || Romantic(t.Kind))
+                t.Courted = true;
             if (t.Count > 0 && !keepRomance)
                 t.Stage++;   // they meet again: their story moves on (Reasons)
             t.AName = t.A == aId ? aName : bName;

@@ -68,6 +68,8 @@ namespace EnrageWestworld.Core
             new Entry("scene:flirt", "Street scenes", "A flirt", "TestFlirtSceneKey", needs: "a named man and woman within 16 m"),
             new Entry("scene:court", "Street scenes", "A courtship (the answer turns: yes, maybe, no)", "TestCourtKey", needs: "a named man and woman within 16 m"),
             new Entry("scene:propose", "Street scenes", "A proposal", "TestProposeKey", needs: "a named man and woman within 16 m"),
+            new Entry("scene:tiff", "Street scenes", "Sweethearts have words", "TestTiffKey", needs: "a named man and woman within 16 m"),
+            new Entry("scene:mend", "Street scenes", "Making it up with a gift (taken, then not)", "TestMendKey", needs: "a named man and woman within 16 m"),
             new Entry("scene:drunk", "Street scenes", "A drunk calls a man out", "TestDrunkKey", needs: "two named men within 16 m"),
             new Entry("scene:lift", "Street scenes", "A purse lifted", "TestLiftKey", needs: "two named people within 16 m"),
             new Entry("scene:pickpocket", "Street scenes", "A pickpocket caught at it", "TestPickpocketKey", needs: "a named man and another within 16 m"),

@@ -438,7 +438,7 @@ namespace EnrageWestworld.InGame
                     return men ? null : "it wants two men";
                 case "pickpocket":
                     return a.Woman ? "the thief's lines want a man" : null;
-                case "flirt": case "propose": case "court": case "x:sweet": case "x:courting":
+                case "flirt": case "propose": case "court": case "x:sweet": case "x:courting": case "tiff": case "mend":
                     return a.Woman != b.Woman || _cfg.SameSexRomance ? null : "it wants a man and a woman";
                 default:
                     return null;

@@ -260,11 +260,16 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.NpcFlirting || !_cfg.Romance)
                 return "off ([Romance] NpcFlirting)";
-            int here = _store.Ties.Count(t => t.Town == _placeTown && Ties.Romantic(t.Kind) && t.Warmth > 0);
+            int here = _store.Ties.Count(t => t.Town == _placeTown && Ties.Sweethearts(t) && t.Warmth > 0);
+            int odds = _store.Ties.Count(t => t.Town == _placeTown && Ties.Cooled(t));
             return "this session: " + (_courtCount.Count == 0 ? "none yet" : string.Join(", ", _courtCount.Select(kv => kv.Key + " " + kv.Value))) +
                    (_courtLast != null ? "; last: " + _courtLast : "") + "; thoughts on the ticker " + _courtShown + ", out of view " + _courtUnseen +
-                   "; romances in " + (_placeTown ?? "this place") + ": " + here;
+                   "; romances in " + (_placeTown ?? "this place") + ": " + here + ", at odds " + odds +
+                   "; sweethearts' words " + _tiffs + ", made up " + _mendsTaken + ", gifts turned down " + _mendsRefused + (_loversLast != null ? " (last: " + _loversLast + ")" : "");
         }
+
+        private int _tiffs, _mendsTaken, _mendsRefused, _mendTurn;
+        private string _loversLast;
 
         private static readonly HashSet<string> TroubleKinds = new HashSet<string> { "rough", "lift", "pickpocket", "drunk", "charity", "scorn", "avoid", "comfort" };
         private readonly Dictionary<string, int> _troubleCount = new Dictionary<string, int>();

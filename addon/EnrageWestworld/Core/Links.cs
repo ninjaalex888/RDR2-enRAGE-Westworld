@@ -62,7 +62,7 @@ namespace EnrageWestworld.Core
             List<SceneTie> mine = ties.Where(t => t.Has(p.Id)).OrderByDescending(t => t.At).ToList();
             foreach (SceneTie t in mine)
             {
-                bool fits = kind == "debt" ? t.Kind == "debt" : kind == "feud" ? t.Warmth < 0 : Ties.Romantic(t.Kind);
+                bool fits = kind == "debt" ? t.Kind == "debt" : kind == "feud" ? t.Warmth < 0 : Ties.Sweethearts(t);
                 Resident known = fits ? fit.FirstOrDefault(r => t.Has(r.Id)) : null;
                 if (known != null)
                     return known;

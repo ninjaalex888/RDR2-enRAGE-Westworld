@@ -76,6 +76,14 @@ namespace EnrageWestworld.Core
             }
             if (tie != null)
             {
+                // sweethearts at odds since they last met: the cooler head comes to make it up, with a small gift, where
+                // the street can see it (Scenes.Mend)
+                if (Ties.Cooled(tie) && (mixed || where.SameSex) && Voice.Hash(a.Id + b.Id + tie.Count + "mend") % 100 < Scenes.MendChance)
+                {
+                    bool bBrings = Hot(a) && !Hot(b);
+                    return new Reason { Kind = "mend", Strength = 64, BFirst = bBrings,
+                                        Why = (bBrings ? b.Name : a.Name) + " comes to make it up with " + (bBrings ? a.Name : b.Name) + ", with a small gift" };
+                }
                 // the one it was done to (a face in the bar, a hand in his coat) sees the one who did it: the timid
                 // keep clear of him from then on; the rest have it out, as with any other quarrel (below)
                 if (tie.Warmth < 0 && (tie.Kind == "rough" || tie.Kind == "pickpocket" || tie.Kind == "avoid") && tie.Doer != null)
@@ -105,9 +113,14 @@ namespace EnrageWestworld.Core
                     Someone hurt = a.Hurt != null ? a : b, friend = hurt == a ? b : a;
                     return new Reason { Kind = "tend", Strength = 58, BFirst = friend == b, Why = friend.Name + " goes to " + hurt.Name + ", who was just " + (hurt.Hurt == "rough" ? "roughed up" : "robbed") };
                 }
-                if (tie.Warmth > 0 && (mixed || where.SameSex) && Ties.Romantic(tie.Kind))
+                if (tie.Warmth > 0 && (mixed || where.SameSex) && Ties.Sweethearts(tie))
                 {
                     bool ask = tie.Warmth >= 2 && tie.Stage >= 2 && !where.Night;
+                    // now and then sweethearts have words: a hot head, or a sore day, in one of them (Scenes.Tiff)
+                    bool aCross = Hot(a) || a.Mood == "sore", bCross = Hot(b) || b.Mood == "sore";
+                    if (!ask && Scenes.TiffNow(aCross || bCross, tie.Stage, a.Id + b.Id + tie.Count))
+                        return new Reason { Kind = "tiff", Strength = 60, BFirst = !aCross,
+                                            Why = "sweethearts, and " + (aCross ? a.Name : b.Name) + " has a grievance" };
                     return new Reason { Kind = ask ? "propose" : tie.Stage == 0 ? "flirt" : "x:sweet", Strength = 60 + 10 * tie.Warmth,
                                         Why = ask ? "they've been courting long enough for one to ask" : "they're sweet on each other" };
                 }

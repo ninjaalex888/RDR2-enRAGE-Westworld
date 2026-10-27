@@ -274,7 +274,7 @@ namespace EnrageWestworld.InGame
             if (x == null || y == null)
                 return false;
             SceneTie tie = _store.Ties.FirstOrDefault(s => s.Has(x.Id) && s.Has(y.Id));
-            if (tie != null && tie.Warmth > 0 && Ties.Romantic(tie.Kind))
+            if (tie != null && tie.Warmth > 0 && Ties.Sweethearts(tie))
                 return true;
             long day = Bridge.Now() / 1440;
             return _store.Links.Any(l => l.Kind == "courting" && ((l.Id == x.Id && l.OtherId == y.Id) || (l.Id == y.Id && l.OtherId == x.Id)) && InnerLife.ArcFor(l.Id, day) == l.Arc);

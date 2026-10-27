@@ -215,7 +215,7 @@ namespace EnrageWestworld.InGame
                         why = "neither may be directed and facing the other";
                         continue;
                     }
-                    bool romantic = Ties.Romantic(t.Kind);
+                    bool romantic = Ties.Sweethearts(t);
                     string kind = Passing.KindOf(t.Warmth, romantic);
                     bool aFirst = Passing.AFirst(kind, who[i].Id, who[j].Id, who[i].Temper, who[j].Temper, t.Doer, pseed);
                     if (!aMay)

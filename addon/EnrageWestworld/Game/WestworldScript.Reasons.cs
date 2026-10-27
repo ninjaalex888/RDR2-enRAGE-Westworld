@@ -230,6 +230,24 @@ namespace EnrageWestworld.InGame
         {
             if (kind == "avoid")
                 return Scenes.Avoid(cast, seed);
+            if (kind == "tiff" || kind == "mend")
+            {
+                // sweethearts (Scenes.Lovers.cs): words, or one making it up with a gift that the other takes or doesn't
+                // by their own nature; a test takes turns, taken then not
+                bool taken = kind == "mend" && (note ? Scenes.MendTaken(Exchanges.Manner(done, done.Hurt != null || done.Mood == "sore"), seed) : _mendTurn++ % 2 == 0);
+                if (note)
+                {
+                    if (kind == "tiff")
+                        _tiffs++;
+                    else if (taken)
+                        _mendsTaken++;
+                    else
+                        _mendsRefused++;
+                    _loversLast = doer.Name + " & " + done.Name + ": " + (kind == "tiff" ? "words" : taken ? "made it up" : "a gift turned down");
+                    Log.Write("ROMANCE " + _loversLast);
+                }
+                return kind == "tiff" ? Scenes.Tiff(cast, seed) : Scenes.Mend(cast, seed, taken);
+            }
             if (kind == "tend")
                 return Scenes.Tend(cast, seed, done.Hurt ?? "rough");
             if (kind == "beg")
@@ -290,7 +308,7 @@ namespace EnrageWestworld.InGame
         {
             if (apart <= 2.6f)
                 return;
-            if (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind.StartsWith("court"))
+            if (kind == "rough" || kind == "lift" || kind == "drunk" || kind == "beg" || kind == "tend" || kind == "mend" || kind.StartsWith("court"))
             {
                 s.Beats.Insert(0, new Beat(0, null, null, "meet"));
                 return;
