@@ -28,7 +28,13 @@ namespace EnrageWestworld.InGame
             public uint Model;
             public int CheckedAt;
             public bool Told;               // their MIND line is written this session
+            public Person P;                // as the add-on knows them (for the worry, the goals)
+            public NeedState Needs;         // worked out when looked at, again after NeedsMs (step 3)
+            public List<Concern> Concerns;
+            public int NeedsAt;
         }
+
+        private const int NeedsMs = 30000;   // needs move by the game hour: worked out again every 30 s (15 game minutes)
 
         private const float MindMetres = 20f;          // the mind's near ring (the doc's level 0)
         private const int MindWhoMs = 10000;           // nobody we know: looked up again after this
@@ -109,18 +115,40 @@ namespace EnrageWestworld.InGame
                 return;
             _mindLooks++;
             Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
-            if (t == null || w.Told || _mindTraitsTold.Contains(w.Id))
+            if (t == null)
+                return;
+            if (w.Needs == null || now - w.NeedsAt >= NeedsMs || now < w.NeedsAt)
+                MindNeeds(w, h, now);
+            if (w.Told || _mindTraitsTold.Contains(w.Id))
                 return;
             // one line a person a session, marked told only once it's written (the 20 a minute may hold it back); an
             // enRAGE townsperson with no temper has what would be shared on the same line (a dry run: nothing written)
             string share = !w.Src.TemperDecided && t.Label != null ? "; share (dry run): enRAGE gave no temper, RealNPCs would give " + t.Label + ", nothing written" : "";
             if (MindLog(now, "MIND traits: " + w.Name + " (" + w.Kind + ", " + (w.Src.Temper ?? (w.Src.TemperDecided ? "plain" : "no temper given")) + "): " + t.Describe() +
-                        (t.Nudged ? "; moved to fit their temper" : "") + (t.Mismatch ? "; THE TEMPER DOESN'T READ BACK" : "") + share))
+                        (t.Nudged ? "; moved to fit their temper" : "") + (t.Mismatch ? "; THE TEMPER DOESN'T READ BACK" : "") + share +
+                        "; needs: " + w.Needs.Words() + " (" + w.Needs.Numbers() + "); " + Needs.Words(w.Concerns)))
             {
                 w.Told = true;
                 if (_mindTraitsTold.Count < 2000)
                     _mindTraitsTold.Add(w.Id);
             }
+        }
+
+        /// Their needs and concerns now (step 3): the clock, the weather and the place as the add-on reads them, their
+        /// memories (read only, never made), whether they're in their cups, whether they saw the player do violence.
+        private void MindNeeds(MindWho w, int h, int now)
+        {
+            w.NeedsAt = now;
+            long g = _store.LastGameMin;
+            PersonState st = _store.Find(w.Id);
+            var c = new NeedContext
+            {
+                Hour = CLOCK.GET_CLOCK_HOURS(), Minute = CLOCK.GET_CLOCK_MINUTES(), Weekday = InnerLife.Weekday, GameDay = g > 0 ? g / 1440 : -1, Now = g,
+                Weather = _engine.NowWeather, Indoors = _engine.NowIndoors, Place = _engine.NowPlace, Others = Math.Max(0, _mindNear.Count - 1),
+                Drunk = InHisCups(new Ped(h), w.P), Feared = _engine.SawYouViolent(w.Id, 3), WakeStage = st != null ? st.WakeStage : 0, Memories = st != null ? st.Mind : null
+            };
+            w.Needs = Needs.Of(w.P, w.Traits, c);
+            w.Concerns = Needs.Of(w.P, c.GameDay, c.GameDay >= 0 ? Links.Against(_store.Links, w.Id, c.GameDay) : null);
         }
 
         /// Who this body is to the mind, from what the add-on already knows; cached by handle, looked up again when the
@@ -147,6 +175,7 @@ namespace EnrageWestworld.InGame
                 w.Name = rp.Name;
                 w.Kind = "record";
                 w.Src = TraitSource.From(rp, "record");
+                w.P = rp;
             }
             else
             {
@@ -159,6 +188,7 @@ namespace EnrageWestworld.InGame
                     w.Name = f.Name;
                     w.Kind = "folk";
                     w.Src = TraitSource.From(fp, "folk");
+                    w.P = fp;
                 }
                 else
                 {
@@ -170,6 +200,7 @@ namespace EnrageWestworld.InGame
                         w.Name = res.Name;
                         w.Kind = "resident";
                         w.Src = TraitSource.From(res, "resident");
+                        w.P = res;
                     }
                 }
             }
@@ -206,7 +237,8 @@ namespace EnrageWestworld.InGame
                 MindWho w;
                 if (_cfg == null || !_cfg.MindShadow || !_mindWho.TryGetValue(h, out w) || w.Id == null || w.Traits == null)
                     return null;
-                return "mind: " + w.Traits.Words(2) + (w.Traits.Label != null ? " (" + w.Traits.Label.ToLowerInvariant() + ")" : "");
+                return "mind: " + w.Traits.Words(2) + (w.Traits.Label != null ? " (" + w.Traits.Label.ToLowerInvariant() + ")" : "") +
+                       (w.Needs != null ? "; " + w.Needs.Words() : "") + (w.Concerns != null && w.Concerns.Count > 0 ? "; " + w.Concerns[0].Words : "");
             }
             catch
             {
@@ -229,7 +261,8 @@ namespace EnrageWestworld.InGame
                     MindWho w;
                     if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.Traits == null)
                         continue;
-                    near.Add(w.Name + ", " + w.Traits.Words(2) + (w.Traits.Label != null ? " (reads as " + w.Traits.Label + ")" : " (plain)"));
+                    near.Add(w.Name + ", " + w.Traits.Words(2) + (w.Traits.Label != null ? " (reads as " + w.Traits.Label + ")" : " (plain)") +
+                             (w.Needs != null ? ", " + w.Needs.Words() : "") + (w.Concerns != null ? ", " + Needs.Words(w.Concerns) : ""));
                 }
                 return "on, " + (_cfg.MindLive ? "LIVE" : "reporting only") + "; " + _mindNear.Count + " people within " + (int)MindMetres + " m, " + _mindLooks + " looks, traits worked out for " +
                        (_engine != null ? _engine.Shadow.TraitsMade + " (" + _engine.Shadow.Count + " kept)" : "nobody") + ", " + _mindLogged + " MIND lines, " + _mindLogHeld + " held back by the 20 a minute" +
