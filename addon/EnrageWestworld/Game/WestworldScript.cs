@@ -281,7 +281,7 @@ namespace EnrageWestworld.InGame
 			if (_cfg.Thoughts && flag && gameTime >= _nextThought)
 			{
 				_nextThought = gameTime + (int)((double)(_cfg.ThoughtEverySeconds * 1000) * (0.75 + _rng.NextDouble() * 0.5));
-				Toast toast = _engine.NextThought(Bridge.Now());
+				Toast toast = _engine.NextThought(Bridge.Now(), _inViewId ?? (_inViewId = id => NearHandleOf(id) != 0));   // only people in view: over their heads
 				if (toast != null)
 				{
 					_engine.Out.Add(toast);
@@ -998,6 +998,7 @@ namespace EnrageWestworld.InGame
 		{
 			Ped character = Game.Player.Character;
 			NemesisRecord nemesisRecord = null;
+			int recordHandle = 0;   // so the thought goes over his head, not in a notice (Lex, 2026-10-27)
 			float num = 40f;
 			Ped[] allPeds = World.GetAllPeds();
 			foreach (Ped ped in allPeds)
@@ -1013,6 +1014,7 @@ namespace EnrageWestworld.InGame
 					if (nemesisRecord2 != null)
 					{
 						nemesisRecord = nemesisRecord2;
+						recordHandle = ped.Handle;
 						num = num2;
 					}
 				}
@@ -1086,9 +1088,9 @@ namespace EnrageWestworld.InGame
 			Person person = PersonOf(nemesisRecord);
 			PersonState personState = _store.Get(person);
 			string thought = _engine.TickerThought(person, Bridge.Now());
-			Feed.Notice(person.Name + ", to " + (person.Woman ? "herself" : "himself"), "\"" + thought + "\"");
+			_ticker.Push(person.Name + ", thinking", thought, "near", recordHandle);   // over his head if he's in view, else passed over (never a notice)
 			_ticker.Refresh(person.Id);
-			Log.Write("TEST " + person.Name + " (" + num.ToString("0") + " m): " + Describe(person, personState) + ", awareness " + Hosts.Awareness(person, personState) + ", knows " + personState.KnownDeeds.Count + " deeds");
+			Log.Write("TEST " + person.Name + " (" + num.ToString("0") + " m): " + Describe(person, personState) + ", awareness " + Hosts.Awareness(person, personState) + ", knows " + personState.KnownDeeds.Count + " deeds; thinks: " + thought);
 		}
 
 		private static string Describe(Person p, PersonState st)

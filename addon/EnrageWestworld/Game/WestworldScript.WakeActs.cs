@@ -1299,12 +1299,13 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// What the person thinks as they do it: on the ticker, in the thinking style.
+        /// What the person thinks as they do it: over their head (Lex, 2026-10-27: every thought over the thinker's head;
+        /// it went to the "Around town" box), passed over when they're out of view.
         private void Think(WakeAct act, string text)
         {
             if (string.IsNullOrEmpty(text))
                 return;
-            Notice(act.Name, text, "thought", act.P.Woman ? "herself" : "himself");
+            _ticker.Push(act.Name + ", thinking", text, "near", act.Handle);
         }
 
         /// Something said aloud, ahead of the subtitle queue, in their own voice when the game has a fitting line.

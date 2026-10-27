@@ -705,12 +705,14 @@ namespace EnrageWestworld.Core
 			}
 		}
 
-		public Toast NextThought(long now)
+		/// inView (0.6.3, Lex: every thought over the thinker's head): only people it says are in view now are asked, so a
+		/// thought goes over a head and one of someone far off waits, unused, until he's seen.
+		public Toast NextThought(long now, Func<string, bool> inView = null)
 		{
 			List<KeyValuePair<int, Func<Toast>>> list = new List<KeyValuePair<int, Func<Toast>>>();
 			foreach (Person value in _byId.Values)
 			{
-				if (!value.IsAlive)
+				if (!value.IsAlive || (inView != null && !inView(value.Id)))
 				{
 					continue;
 				}

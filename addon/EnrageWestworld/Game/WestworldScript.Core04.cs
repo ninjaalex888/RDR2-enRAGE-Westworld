@@ -17,6 +17,18 @@ namespace EnrageWestworld.InGame
     {
         private readonly TickerBrain _ticker = new TickerBrain();
         private readonly List<NearThought> _near = new List<NearThought>();
+        private Func<string, bool> _inViewId;
+
+        /// The handle of someone in view near you (RefreshNear's list, once a second), by their id; 0 if not.
+        private int NearHandleOf(string id)
+        {
+            if (id == null)
+                return 0;
+            for (int i = 0; i < _near.Count; i++)
+                if (_near[i].Key == id && _near[i].Handle != 0)
+                    return _near[i].Handle;
+            return 0;
+        }
 
         /// Game minutes between a new thought for a counter keeper or a resident: 45, about the 90 real seconds the
         /// ticker waits before asking again (it was 600, so the same thought came back for 20 minutes).
@@ -290,9 +302,14 @@ namespace EnrageWestworld.InGame
             switch (t.Kind)
             {
                 case "thought":
-                    label = t.Title;
-                    text = t.Text;
-                    break;
+                    // over the thinker's head (Lex, 2026-10-27: every thought there; these went to the "Around town" box).
+                    // NextThought asks only people in view, so the handle is there unless they left it this second.
+                    int h = NearHandleOf(t.PersonId);
+                    if (h != 0)
+                        _ticker.Push(t.Title + ", thinking", t.Text, "near", h);
+                    else
+                        Log.Detail("THOUGHT not shown, " + t.Title + " out of view: " + t.Text);
+                    return;
                 case "diary":
                     label = t.Title;
                     text = t.Text;
