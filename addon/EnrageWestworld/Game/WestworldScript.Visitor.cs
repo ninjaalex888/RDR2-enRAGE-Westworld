@@ -311,7 +311,7 @@ namespace EnrageWestworld.InGame
                 if (!v.Test)
                 {
                     MarkDone("visitor");
-                    _engine.VisitorSeen(v.Town, Bridge.Now());   // the town's talk next morning
+                    _engine.VisitorSeen(v.Town, Bridge.Now(), v.Fled);   // the town's talk next morning: of a body and a figure only if someone ran from it
                 }
                 _visitors++;
                 _visitorLast = (v.Town ?? "town") + ": " + why + (v.Test ? " (a test)" : "");

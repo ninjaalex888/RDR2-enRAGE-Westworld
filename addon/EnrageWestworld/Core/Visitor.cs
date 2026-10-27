@@ -20,7 +20,19 @@ namespace EnrageWestworld.Core
         /// What the town says next morning (no names: nobody knows whose body, and nobody saw the figure clearly).
         public static string Morning(string town, string seed)
         {
+            return Morning(town, seed, true);
+        }
+
+        /// The same; `witnessed` false when nobody but the player saw it (nobody ran from it), so the town has only
+        /// what was left: the dogs, the horses, the ground. Nobody can tell of a body or a figure they never saw.
+        public static string Morning(string town, string seed, bool witnessed)
+        {
             string t = string.IsNullOrEmpty(town) ? "town" : town;
+            if (!witnessed)
+                return Voice.Pick(seed + "vn",
+                    "Dogs in " + t + " howled half the night. This morning a patch of ground by the livery is swept clean.",
+                    "Every horse at the " + t + " livery was kicking at its stall before dawn. Nobody saw what set them off.",
+                    "Folk in " + t + " slept poorly. Dogs at it till four, and nobody can say at what.");
             return Voice.Pick(seed + "vm",
                 "Somebody saw a body behind the buildings last night. By sunup there was nothing there. Not even blood.",
                 "Talk in " + t + " of a dead man in the dark and somebody bent over him. Gone by morning, both of them.",

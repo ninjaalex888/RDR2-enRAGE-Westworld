@@ -74,8 +74,14 @@ namespace EnrageWestworld.Core
         /// for (a corner notice, no names).
         public void VisitorSeen(string town, long now)
         {
+            VisitorSeen(town, now, true);
+        }
+
+        /// `witnessed`: someone besides the player saw it (one ran from it); else the town has only what was left.
+        public void VisitorSeen(string town, long now, bool witnessed)
+        {
             long morning = (now / 1440 + (now % 1440 >= 7 * 60 ? 1 : 0)) * 1440 + 7 * 60 + Voice.Hash(town + now) % 120;
-            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = Visitor.Morning(town, town + now), DueAt = morning });
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = Visitor.Morning(town, town + now, witnessed), DueAt = morning });
             Log("VISITOR the town will talk of it in the morning (" + (morning - now) + " game min)");
         }
 
