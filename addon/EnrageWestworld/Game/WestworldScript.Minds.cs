@@ -169,6 +169,27 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// A death the ledger noted: whoever had a clear view of the body within 25 m remembers seeing it (a few
+        /// passers-by kept, as for a fight). The player's own killings are remembered as his deeds instead.
+        private void NoteDeathMinds(int h, DeathEntry e)
+        {
+            if (!_cfg.Minds || e == null || e.By == "player")
+                return;
+            try
+            {
+                Ped body = new Ped(h);
+                List<Minds.Party> watchers = MindWatchers(new List<Ped> { body }, 25f, true);
+                if (watchers.Count > 0)
+                    _engine.RememberDeathSaw(e, watchers);
+            }
+            catch (System.Exception ex)
+            {
+                if (!_noteMindsFailed)
+                    Log.Write("MIND remembering a death failed (" + e.Name + "): " + ex);
+                _noteMindsFailed = true;
+            }
+        }
+
         /// For the F7 dump: what is on the minds of the nearest people with a name, strongest first.
         private string MindsStatus()
         {

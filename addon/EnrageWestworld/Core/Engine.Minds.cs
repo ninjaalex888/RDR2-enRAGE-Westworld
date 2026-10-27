@@ -84,6 +84,71 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// A death RealNPCs noted: whoever had a tie or a worry link with them hears of it an hour or a few later (a
+        /// friend grieves for weeks, a foe or someone known for days).
+        private void RememberDeathHeard(DeathEntry e)
+        {
+            if (!Cfg.Minds || e == null || e.Id == null)
+                return;
+            long now = Store.LastGameMin;
+            var told = new Dictionary<string, string>();   // id -> friend, foe, known
+            var names = new Dictionary<string, string>();
+            foreach (SceneTie t in Store.Ties.Where(t => t.A == e.Id || t.B == e.Id))
+            {
+                string other = t.OtherId(e.Id);
+                if (other != null && !told.ContainsKey(other))
+                {
+                    told[other] = t.Warmth > 0 ? "friend" : t.Warmth < 0 ? "foe" : "known";
+                    names[other] = other == t.A ? t.AName : t.BName;
+                }
+            }
+            foreach (WorryLink l in Store.Links.Where(l => l.Id == e.Id || l.OtherId == e.Id))
+            {
+                string other = l.Id == e.Id ? l.OtherId : l.Id;
+                if (other != null && !told.ContainsKey(other))
+                    told[other] = l.Kind == "feud" ? "foe" : l.Kind == "courting" ? "friend" : "known";
+            }
+            foreach (KeyValuePair<string, string> kv in told)
+            {
+                if (HasDied(kv.Key))
+                    continue;
+                string nm;
+                PersonState st = MindOf(kv.Key, names.TryGetValue(kv.Key, out nm) ? nm : null);
+                if (st == null)
+                    continue;
+                string sub = kv.Value;
+                MindMemory m = Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "death", Sub = sub, How = "heard", Who = new List<string> { e.Id }, Names = new List<string> { Person.FirstOf(e.Name) ?? "somebody" },
+                    Town = e.Town, At = now, DueAt = now + 60 + Voice.Hash(kv.Key + "|" + e.Id) % 180,
+                    Feel = sub == "friend" ? -3 : sub == "foe" ? 0 : -1, Strength = sub == "friend" ? 72 : sub == "foe" ? 40 : 46, Key = "death:" + e.Id
+                }, now);
+                Detail("MIND " + (st.Name ?? kv.Key) + " will hear " + e.Name + " has died (" + sub + ", in " + (m.DueAt - now) + " min)");
+            }
+        }
+
+        /// A death seen by those around (not one of the player's own: those are remembered as his deeds).
+        public void RememberDeathSaw(DeathEntry e, IList<Minds.Party> watchers)
+        {
+            if (!Cfg.Minds || e == null || watchers == null || e.By == "player")
+                return;
+            long now = Store.LastGameMin;
+            var dead = new Minds.Party { Id = e.Id, Name = e.Name, Home = e.Town };
+            foreach (Minds.Party w in watchers)
+            {
+                PersonState st = w != null && w.Id != e.Id ? MindOf(w.Id, w.Name) : null;
+                if (st == null)
+                    continue;
+                string name = KnownAs(w, dead);
+                MindMemory m = Minds.Note(st.Mind, new MindMemory
+                {
+                    Kind = "death", Sub = "seen", How = "saw", Who = new List<string> { e.Id }, Names = new List<string> { name }, Town = e.Town, At = now,
+                    Feel = -2, Strength = 70, Key = "death:" + e.Id
+                }, now);
+                Detail("MIND " + (w.Name ?? w.Id) + " saw " + name + " die (" + m.Strength + ", " + st.Mind.Count + " kept)");
+            }
+        }
+
         private void RememberDid(Minds.Party self, Minds.Party other, string kind, string group, string role, string town, string place, long now, string key)
         {
             PersonState st = MindOf(self.Id, self.Name);
@@ -209,6 +274,8 @@ namespace EnrageWestworld.Core
             if (st != null && st.Mind != null)
                 foreach (MindMemory m in st.Mind)
                 {
+                    if (m.DueAt > now)
+                        continue;   // word of it hasn't reached them yet
                     MindMemory mm = m;
                     bool deed = Minds.IsDeed(m), youNear = look != null && look.Near;
                     // saved from an execution: its own words (Executions.After), for the three days they last; the
@@ -239,7 +306,8 @@ namespace EnrageWestworld.Core
                 string other = t.OtherId(p.Id);
                 bool dead = day.IsDead(other);
                 bool remembered = st != null && st.Mind.Any(m => m.How == "did" && m.Who != null && m.Who.Contains(other));
-                if (!remembered || dead)
+                bool mourned = st != null && st.Mind.Any(m => m.Kind == "death" && m.Who != null && m.Who.Contains(other));   // grief is the memory's now
+                if ((!remembered || dead) && !mourned)
                     c.Add(new Minds.Candidate
                     {
                         Source = dead ? "tie:dead" : "tie", Pull = dead ? 45 : 30 * Math.Pow(0.5, Math.Max(0, now - t.At) / 1440.0),

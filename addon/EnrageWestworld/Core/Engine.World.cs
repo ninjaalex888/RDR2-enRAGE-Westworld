@@ -1143,7 +1143,10 @@ namespace EnrageWestworld.Core
             Resident r = Resident.IsResident(e.Id) ? Store.FindResident(e.Id) : null;
             if (r != null)
                 r.Dead = true;
-            return Store.NoteDeath(e);
+            if (!Store.NoteDeath(e))
+                return false;
+            RememberDeathHeard(e);   // their friends and foes hear of it (Minds)
+            return true;
         }
 
         // ---- the real people at the other end of worries (Links.cs) ------------------------------------------------

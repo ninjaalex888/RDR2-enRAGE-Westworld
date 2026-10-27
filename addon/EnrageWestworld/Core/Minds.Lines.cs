@@ -179,6 +179,26 @@ namespace EnrageWestworld.Core
             { "deed:kindness|saw|near", new[] { "There's {you}. Nod to him. He earned a nod.", "{you}'s near. Strange, to feel safer for it." } },
             { "mercy|saw|fresh", new[] { "{you} had him at gunpoint and let him go. I'd not have.", "Gun up, then down. {you} let the man live." } },
             { "peace|saw|fresh", new[] { "{you} broke it up before it got ugly. Somebody had to.", "Saw {you} step between them. Sense, at last, in this town." } },
+            // ---- deaths: heard of (a friend, a foe, someone known) and seen ------------------------------------
+            { "friend|heard|fresh", new[] { "{who}'s dead. Said it out loud and it still isn't so.", "Last thing I said to {who} was about the weather. The weather." } },
+            { "friend|heard|chewing", new[] { "Walked past {who}'s door and slowed. Habit.", "Folks keep saying {who} is in a better place. Folks didn't know {who}." } },
+            { "friend|heard|letting", new[] { "Days since {who}. The quiet where they used to be is getting familiar.", "Laughed at something today. Then remembered {who}. Felt like stealing." } },
+            { "foe|heard|fresh", new[] { "{who}'s dead. I ought to feel something. I'm waiting.", "So {who} is gone. Nobody left to be sore at." } },
+            { "foe|heard|chewing", new[] { "Said hard things of {who}. Can't take them back now. Wouldn't, maybe.", "Folks look at me since {who} died. As if I wished it. Did I?" } },
+            { "foe|heard|letting", new[] { "{who}. The old quarrel went in the ground too.", "Funny thing, missing a quarrel." } },
+            { "known|heard|fresh", new[] { "{who}'s dead, they say. Saw them only last week.", "{who}. Didn't know them well. Knew them enough." } },
+            { "known|heard|chewing", new[] { "{who} was here, and now isn't. That's all a life is, some days.", "Keep thinking of the last time I passed {who}. Didn't even nod." } },
+            { "known|heard|letting", new[] { "Town's already filling the space {who} left.", "Hard to call up {who}'s face already. That's the worst of it." } },
+            { "death|saw|fresh|bold", new[] { "Saw {who} die. Quick. There are worse ways.", "{who} dropped and stayed dropped. Seen it before. Never gets easier." } },
+            { "death|saw|fresh|fearful", new[] { "{who} died right there. Right there, in front of me.", "Watched the life go out of {who}. Can't feel my hands." } },
+            { "death|saw|fresh|cold", new[] { "{who} is dead. Somebody will want the coat.", "Saw {who} go. Didn't owe them anything. Still." } },
+            { "death|saw|fresh|plain", new[] { "{who}, dead in the dirt. A minute ago, alive.", "Saw {who} die. Took my hat off. Didn't know what else to do." } },
+            { "death|saw|chewing|bold", new[] { "Keep seeing {who} fall. Didn't flinch then. Flinching now.", "Death's quick out here. {who} found that out." } },
+            { "death|saw|chewing|fearful", new[] { "Every shot I hear now, I think of {who}.", "Keep my eyes on the ground where {who} fell. Can't help it." } },
+            { "death|saw|chewing|cold", new[] { "{who}'s things will go cheap. Somebody ought to see to it.", "Dead is dead. {who} won't mind what I think." } },
+            { "death|saw|chewing|plain", new[] { "Wonder if {who} had people. Somebody ought to write.", "Keep going back to the spot where {who} fell." } },
+            { "death|saw|letting", new[] { "Days since {who} died in front of me. Still see it some nights.", "{who}. A name now, and a patch of ground I walk around." } },
+
             { "thiefcaught|saw|fresh", new[] { "{you} caught the thief. Collared him like a stray dog.", "Saw {you} grab that pickpocket. About time somebody did." } },
         };
 

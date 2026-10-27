@@ -217,7 +217,10 @@ namespace EnrageWestworld.InGame
             _ledgerLast = e;
             Log.Write("LEDGER died: " + DeathLedger.Describe(e));
             if (there)
+            {
                 AwakeSawDeath(h, pos);   // the fully awake who see it say so
+                NoteDeathMinds(h, e);    // and whoever saw it remembers it (Minds)
+            }
             if (kind == "folk")
                 _shareDue.Add(new LedgerDue { Id = id, Name = name, At = Game.GameTime + ShareAfterMs });
         }

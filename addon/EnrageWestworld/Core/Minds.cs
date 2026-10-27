@@ -29,6 +29,7 @@ namespace EnrageWestworld.Core
         [DataMember(Name = "x")] public int Times;            // times thought about since
         [DataMember(Name = "l")] public long LastAt;          // when last thought about (game minute; 0 never)
         [DataMember(Name = "y")] public string Key;           // the same thing noted twice is one memory
+        [DataMember(Name = "u")] public long DueAt;           // heard of: not on their mind until word reaches them (0: at once)
 
         public string WhoAt(int i)
         {
@@ -194,9 +195,10 @@ namespace EnrageWestworld.Core
                 case "deed:violence": h = 4320; break;   // a killing seen: days
                 case "deed:theft": h = 2880; break;
                 case "deed:kindness": h = 2160; break;
+                case "death": h = m.Sub == "friend" ? 30240 : m.Sub == "seen" ? 4320 : 7200; break;   // a friend: three weeks
                 default: h = 1440; break;
             }
-            return m.How == "heard" ? Math.Min(h, 1440) : h;
+            return m.How == "heard" && m.Kind != "death" ? Math.Min(h, 1440) : h;
         }
 
         // ---- keeping them ---------------------------------------------------------------------------------
@@ -260,11 +262,11 @@ namespace EnrageWestworld.Core
             switch (temper)
             {
                 case "Coward":
-                    return m.Kind == "blows" || m.Kind == "quarrel" || m.Kind == "theft" || m.Kind == "deed:violence" ? 1.3 : 1.0;
+                    return m.Kind == "blows" || m.Kind == "quarrel" || m.Kind == "theft" || m.Kind == "deed:violence" || (m.Kind == "death" && m.Sub == "seen") ? 1.3 : 1.0;
                 case "Greedy":
                     return m.Kind == "theft" || m.Kind == "deed:theft" || m.Sub == "debt" || m.Sub == "charity" ? 1.3 : 1.0;
                 case "Loyal":
-                    return m.Kind == "warmth" || m.Kind == "rescued" || m.Kind == "deed:kindness" || m.Feel > 0 ? 1.3 : 1.0;
+                    return m.Kind == "warmth" || m.Kind == "rescued" || m.Kind == "deed:kindness" || (m.Kind == "death" && m.Sub == "friend") || m.Feel > 0 ? 1.3 : 1.0;
                 case "Hothead": case "Proud":
                     return m.Kind == "quarrel" || m.Kind == "slight" || m.Kind == "blows" || m.Kind == "deed:violence" ? 1.3 : 1.0;
                 case "Cold":
