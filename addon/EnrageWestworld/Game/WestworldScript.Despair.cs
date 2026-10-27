@@ -305,8 +305,10 @@ namespace EnrageWestworld.InGame
         }
 
         /// One beat: the line for them (their temperament, the one they're closest to, nothing said already this session),
-        /// voiced with the game's lines for it. The plea and the last words are said to you when you're within 12 m and
-        /// they're on screen (subtitled); the plea with nobody near is the lonely one; everything else goes over their head.
+        /// voiced with the game's lines for it, and over their head until the next beat or the act's end (so no ordinary
+        /// thought the ticker picked before they were borrowed shows between). The plea and the last words are said to you
+        /// when you're within 12 m and they're on screen, subtitled as well when the game plays the voice (one it turns
+        /// down gets no subtitle, so the words stay over the head either way); the plea with nobody near is the lonely one.
         private void DespairSay(WakeAct act, string beat, int now, string[] voiceFirst = null)
         {
             int h = act.Handle;
@@ -322,17 +324,11 @@ namespace EnrageWestworld.InGame
             _despairLastLine = act.Name + " (" + pool + "): " + line;
             string[] voice = voiceFirst ?? DespairWords.VoiceLines(pool);
             if (toYou)
-            {
-                _despairLineUntil = 0;   // said to him: the subtitle carries it, nothing over the head as well
                 Feed.Say(act.Name, line, voice != null ? Speech.WhenSet(h, voice, me.Handle) : null, h, toYou: true, ahead: true);
-            }
-            else
-            {
-                if (voice != null)
-                    Speech.SayAny(h, voice, me.Handle);
-                _despairLine = new TickerLine { Label = act.Name + ", thinking", Text = line, Kind = "near", Handle = h };
-                _despairLineUntil = now + (beat == "last" ? 4500 : 5000);
-            }
+            else if (voice != null)
+                Speech.SayAny(h, voice, me.Handle);
+            _despairLine = new TickerLine { Label = act.Name + ", thinking", Text = line, Kind = "near", Handle = h };
+            _despairLineUntil = now + 30000;   // up until the next beat replaces it or the act ends (EndWakeAct); gone when they die
             Log.Write("WAKE despair: " + act.Name + " (" + pool + (toYou ? ", to you" : "") + "): " + line);
         }
 

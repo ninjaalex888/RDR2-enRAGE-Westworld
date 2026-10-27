@@ -1392,6 +1392,8 @@ namespace EnrageWestworld.InGame
 
         private void EndWakeAct(WakeAct act, string why = null)
         {
+            if (_despairLine != null && _despairLine.Handle == act.Handle)
+                _despairLine = null;   // despair's words go with the act
             if (why != null)
                 Log.Write("WAKE act ended: " + act.Name + " " + act.Kind + (act.Ending != null ? " -> " + act.Ending : "") + " (" + why + ")");
             int h = act.Handle;
