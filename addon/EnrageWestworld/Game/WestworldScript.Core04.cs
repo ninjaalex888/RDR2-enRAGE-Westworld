@@ -180,6 +180,9 @@ namespace EnrageWestworld.InGame
                 _director.Abort("stopping");
                 EndEncounters("the add-on stopped");
                 WakeActsAbort();
+                GrudgesAbort();      // someone walking up to have it out with you stops (their walk order cleared)
+                SoberVoices(true);   // the drink goes out of every voice we put it in
+                WakeVoiceEnd(_now, "the add-on stopped");
                 AnimTestEnd("the add-on stopped");
                 GunshotTestEnd("the add-on stopped");
                 TrystAbort();
