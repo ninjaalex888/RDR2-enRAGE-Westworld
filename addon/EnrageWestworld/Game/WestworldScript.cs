@@ -220,6 +220,8 @@ namespace EnrageWestworld.InGame
 			if (!InWorld())
 			{
 				TrystInTheDark();
+				if (_recordFates.Count > 0 && Game.IsLoading)
+					RecordFatesLoading();   // a save may be loading: no pending record death is booked after it (WestworldScript.Directing.cs)
 				SaveStep(QuietWhy());   // nobody can see a slow frame now: the time to save (WestworldScript.Saving.cs)
 				_perfUnseen = true;
 				return;
@@ -423,6 +425,11 @@ namespace EnrageWestworld.InGame
 			_store = Store.Load(StorePath, Log.Write);
 			_store.Player = _player;
 			SaveWarm();     // the first save's one-off cost, paid inside the load's long frame
+			if (_recordFates.Count > 0)
+			{
+				Log.Write("RECORD death not booked: " + _recordFates.Count + " still waiting when a save loaded, left to enRAGE");
+				_recordFates.Clear();
+			}
 			PrejitCore();   // Core's first-run compiling, on a pool thread (WestworldScript.Prejit.cs)
 			_perfFrames = 0;   // loading the save is a long frame by nature (400 ms at Ready, 2026-10-27): the meter settles again from here
 			PassingAbort();

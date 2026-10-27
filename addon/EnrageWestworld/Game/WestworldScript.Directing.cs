@@ -89,6 +89,8 @@ namespace EnrageWestworld.InGame
             public int Handle, DueAt, Since, Last, Watched;   // Watched: ms with the player in control since (enRAGE's world loop runs then)
             public long GameAt, PresumedAt;
             public bool WasPresumed;                          // "presumed dead" already when he died (a man come back): only a new one counts
+            public bool Interrupted;                          // a loading screen or a jump in the clock came between: never marked dead after one
+            public long ClockLast;                            // the live game minute at the last look (Bridge.Now)
         }
 
         private const int FateWatchMs = 30000, FateGiveUpMs = 600000;
@@ -106,8 +108,16 @@ namespace EnrageWestworld.InGame
             if (!_cfg.RecordFates || rec == null || _recordFates.Any(f => f.Id == rec.Id))
                 return;
             int now = Game.GameTime;
-            _recordFates.Add(new RecordFate { Rec = rec, Id = rec.Id, Handle = handle, Name = name, History = history, DueAt = now + 5000, Since = now, Last = now, GameAt = _store.LastGameMin,
+            _recordFates.Add(new RecordFate { Rec = rec, Id = rec.Id, Handle = handle, Name = name, History = history, DueAt = now + 5000, Since = now, Last = now, GameAt = _store.LastGameMin, ClockLast = Bridge.Now(),
                                               WasPresumed = rec.PresumedDead, PresumedAt = rec.PresumedDeadAt });
+        }
+
+        /// A loading screen (Step's quiet branch): a save may be loading, after which enRAGE's roster is that save's, so
+        /// nothing still waiting is ever booked (a living man in that save must never be written dead).
+        private void RecordFatesLoading()
+        {
+            for (int i = 0; i < _recordFates.Count; i++)
+                _recordFates[i].Interrupted = true;
         }
 
         private void RecordFatesStep(int now)
@@ -132,10 +142,16 @@ namespace EnrageWestworld.InGame
                     continue;
                 f.DueAt = now + 1000;
                 string drop = null, booked = null;
-                NemesisRecord rec = _bridge.RecordById(f.Id) ?? f.Rec;   // re-found: a save point restored swaps the roster
+                NemesisRecord rec = _bridge.RecordById(f.Id);   // re-found: a save point restored swaps the roster (never the old object: a booking into a record no longer on the roster writes nothing)
                 bool there = ENTITY.DOES_ENTITY_EXIST(f.Handle);
-                if (_store.LastGameMin < f.GameAt)
+                long clock = Bridge.Now();
+                if (clock - f.ClockLast > 30)
+                    f.Interrupted = true;   // the clock jumped (a save loaded, fast travel, sleep): enRAGE's roster may be another day's
+                f.ClockLast = clock;
+                if (_store.LastGameMin < f.GameAt || clock < f.GameAt)
                     drop = "the clock went back (a save loaded)";
+                else if (f.Interrupted)
+                    drop = "a loading screen or a jump in the clock came between (a save loaded, fast travel, sleep): left to enRAGE, never booked after one";
                 else if (rec == null)
                     drop = "not on enRAGE's roster any more";
                 else if (rec.PresumedDead && (!f.WasPresumed || rec.PresumedDeadAt != f.PresumedAt))
