@@ -35,6 +35,8 @@ namespace EnrageWestworld.Core
         /// stung by a fresh slight.
         public static bool CalloutWorthy(int warmth, int stage, string tieKind, long ageMinutes, string aTemper)
         {
+            if (aTemper == "Coward")
+                return false;   // a coward never calls a man out, whatever lies between them
             if (warmth < 0 && stage >= 1)
                 return true;
             bool slight = tieKind == "scorn" || tieKind == "brushoff" || tieKind == "faced" || tieKind == "passby" || tieKind == "argue";
