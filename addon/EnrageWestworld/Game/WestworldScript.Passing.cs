@@ -269,6 +269,8 @@ namespace EnrageWestworld.InGame
         {
             if (_animTest != null && _animTest.Handle == h)
                 return true;   // the Testing page's animation rows have them (WestworldScript.AnimTest.cs)
+            if (_gunTest != null && _gunTest.Handle == h)
+                return true;   // and its gunshot row (WestworldScript.Gunshot.cs)
             if (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h)
                 return true;
             if (_nod != null && ((_nod.A != null && _nod.A.Handle == h) || (_nod.B != null && _nod.B.Handle == h)))

@@ -113,6 +113,8 @@ namespace EnrageWestworld.InGame
         {
             if (_animTest != null)
                 AnimTestEnd("a new run was started");
+            if (_gunTest != null)
+                return "a gunshot run is going on";
             Ped me = Game.Player.Character;
             Ped p = World.GetAllPeds().Where(x => x != null && x.Exists() && !x.IsDead && x.Handle != me.Handle && PED.IS_PED_HUMAN(x.Handle) && !Natives.StoryModel(x) &&
                                                   x.Position.DistanceTo(me.Position) < 12f && _bridge.RecordAt(x.Handle) == null && MayDirectWhyNot(x) == null && !NotFree(x.Handle))

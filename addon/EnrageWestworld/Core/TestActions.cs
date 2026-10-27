@@ -54,6 +54,7 @@ namespace EnrageWestworld.Core
             new Entry("despairnow", "People", "Despair now, the next way in turn", "TestDespairNowKey", needs: "someone RealNPCs knows, 3-12 m away"),
             new Entry("despairanims", "People", "Despair animations, one by one", "TestDespairAnimsKey", needs: "someone free within 12 m"),
             new Entry("stageanims", "People", "Wake stage gestures, one by one", "TestStageAnimsKey", needs: "someone free within 12 m"),
+            new Entry("gunshot", "People", "Gunshots at the ground, six ways (which can you hear?)", "TestGunshotKey", needs: "someone free 2-12 m off; best out of town (people near may run, and the law may come)"),
             new Entry("fall", "People", "Someone takes a fall (and is helped up, or not)", "TestFallKey", needs: "two named people outdoors, one of them within 14 m and in view"),
             new Entry("preacher", "People", "A street preacher (Sunday afternoons)", "TestPreacherKey", needs: "a town street, a devout named person and another within 8 m"),
             new Entry("olddays", "People", "Two old men argue about the old days", "TestOldDaysKey", needs: "two named old men within 10 m"),

@@ -1082,6 +1082,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST wake voices: " + WakeVoiceStatus());
 			Log.Write("TEST wake anim sets: " + _wakeAnimsResult);
 			Log.Write("TEST anim test: " + AnimTestStatus());
+			Log.Write("TEST gunshot test: " + GunshotTestStatus());
 			Log.Write("TEST testing: " + TestingStatus());
 			Log.Write("TEST show minds: " + ShowMindsStatus());
 			Log.Write("TEST wake stages: " + WakeTagsStatus());

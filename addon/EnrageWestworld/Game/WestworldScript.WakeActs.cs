@@ -232,7 +232,7 @@ namespace EnrageWestworld.InGame
                 if (examined++ >= 8)
                     break;
                 int cool;
-                if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || (_animTest != null && _animTest.Handle == h) || PED.IS_PED_IN_COMBAT(h, 0) ||
+                if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || (_animTest != null && _animTest.Handle == h) || (_gunTest != null && _gunTest.Handle == h) || PED.IS_PED_IN_COMBAT(h, 0) ||
                     PED.IS_PED_FLEEING(h) || LawBusy(ped))
                     continue;
                 bool known = _resBind.ContainsKey(h);
@@ -906,8 +906,8 @@ namespace EnrageWestworld.InGame
             }
             if (act.Phase == 5 && act.ShotCheckAt > 0 && now >= act.ShotCheckAt)
             {
-                // Lex heard no shot (2026-10-27, twice): whether a bullet came at all. Health 0 at the end of the limp kills them
-                // either way, so their death proves nothing; the health now and the cause of death do.
+                // no gunshot was heard (Lex, 2026-10-27, twice): did a bullet come? The limp's health 0 kills them either
+                // way, so their death proves nothing; their health now and the cause of death do.
                 act.ShotCheckAt = 0;
                 bool dead = ENTITY.IS_ENTITY_DEAD(h);
                 uint cause = dead ? PED.GET_PED_CAUSE_OF_DEATH(h) : 0;
