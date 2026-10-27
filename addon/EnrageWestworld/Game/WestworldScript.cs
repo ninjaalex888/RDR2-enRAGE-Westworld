@@ -225,6 +225,7 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			int gameTime = Game.GameTime;
+			PrejitReport();
 			int pd;   // the frame-time meter's slots for what runs here outside any Safe (WestworldScript.Perf.cs)
 			long pt = StepBegin(out pd);
 			Feed.Tick();
@@ -422,6 +423,7 @@ namespace EnrageWestworld.InGame
 			_store = Store.Load(StorePath, Log.Write);
 			_store.Player = _player;
 			SaveWarm();     // the first save's one-off cost, paid inside the load's long frame
+			PrejitCore();   // Core's first-run compiling, on a pool thread (WestworldScript.Prejit.cs)
 			_perfFrames = 0;   // loading the save is a long frame by nature (400 ms at Ready, 2026-10-27): the meter settles again from here
 			PassingAbort();
 			WanderLaterClear();
@@ -1075,7 +1077,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST stalker acts: " + Stalker.ActsStatus);
 			Log.Write("TEST worries: " + WorriesStatus());
 			Log.Write("TEST mind: " + MindsStatus());
-			Log.Write("TEST perf: " + PerfStatus());
+			Log.Write("TEST perf: " + PerfStatus() + "; Core compiled ahead: " + _prejitStatus);
 			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST testing: " + TestingStatus());
 			Log.Write("TEST show minds: " + ShowMindsStatus());
