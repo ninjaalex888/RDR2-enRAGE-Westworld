@@ -54,12 +54,12 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] Grief = { "Another. For {who}. And one after that.", "{who}'s gone. Whiskey doesn't help. Pour it anyway.",
                                                    "Keep seeing {who}'s face. Glass is empty again.", "Should've said something to {who}. Last time. Should've." };
-        private static readonly string[] GriefBold = { "Somebody'll pay for {who}. After this glass.", "Drink to {who}. Then find out who." };
-        private static readonly string[] GriefCold = { "{who}. Well. Everybody goes.", "Don't feel it yet. Maybe the whiskey will." };
+        private static readonly string[] GriefBold = { "Somebody'll pay for {who}. After this glass.", "Drink to {who}. Then find out who.", "{who} wouldn't want me crying. Wouldn't want me sober either." };
+        private static readonly string[] GriefCold = { "{who}. Well. Everybody goes.", "Don't feel it yet. Maybe the whiskey will.", "{who}'s gone. The bottle's here. One of them listens." };
         private static readonly string[] BadNews = { "Pour. Don't talk. Pour.", "Drink till it's somebody else's trouble.", "Gone wrong. All of it. Another.",
                                                      "Face hot. Hands cold. Glass empty." };
-        private static readonly string[] BadNewsBold = { "Somebody's going to hear about this. Not tonight.", "Drink first. Break something after." };
-        private static readonly string[] BadNewsCold = { "Lost that one. Drink, then think.", "Numbers don't lie. Whiskey does. Better company." };
+        private static readonly string[] BadNewsBold = { "Somebody's going to hear about this. Not tonight.", "Drink first. Break something after.", "Wait till morning. Then they'll hear from me." };
+        private static readonly string[] BadNewsCold = { "Lost that one. Drink, then think.", "Numbers don't lie. Whiskey does. Better company.", "Bad luck's only arithmetic. Drink makes the numbers smaller." };
 
         public static IEnumerable<string> AllLines()
         {
