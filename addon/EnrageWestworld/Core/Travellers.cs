@@ -109,6 +109,20 @@ namespace EnrageWestworld.Core
                               "Fellow came into " + town + " with a rattler bite bound tight. Says a rider stopped when nobody else would.");
         }
 
+        /// Ridden past or run off, a snakebit man doesn't always make it: half the time (by the seed) the town hears so.
+        public const int BittenDiesChance = 50;
+
+        public static bool BittenDies(string seed)
+        {
+            return Voice.Hash(seed + "|dies") % 100 < BittenDiesChance;
+        }
+
+        public static string BittenDied(string town, string seed)
+        {
+            return Voice.Pick(seed + "bd", "They found a man dead near " + town + ", snakebit. He'd sat by the road a good while, by the look of it.",
+                              "Stranger found dead in the ditch on the " + town + " road. Rattler bite. Folk wonder who rode past him.");
+        }
+
         public static IEnumerable<string> Lines()
         {
             for (int i = 0; i < 9; i++)
@@ -125,6 +139,7 @@ namespace EnrageWestworld.Core
                 yield return BittenRefused("r" + i);
                 yield return BittenIgnored("i" + i);
                 yield return BittenNews(town, "n" + i);
+                yield return BittenDied(town, "d" + i);
             }
         }
     }
@@ -137,6 +152,19 @@ namespace EnrageWestworld.Core
             long due = now + 120 + Voice.Hash(town + now) % 180;
             Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = text, DueAt = due });
             Log("TRAVELLER the town will hear of the snakebite in " + (due - now) + " game min");
+        }
+
+        /// Left by the road: half the time (Travellers.BittenDies) the town hears he was found dead, four to eight hours on.
+        public void SnakebiteLeft(string town, string seed, long now)
+        {
+            if (!Travellers.BittenDies(seed))
+            {
+                Log("TRAVELLER the snakebit man makes it to town on his own");
+                return;
+            }
+            long due = now + 240 + Voice.Hash(seed + now) % 240;
+            Later(new LaterAct { Kind = "news", Title = "Word around " + ShortTown(town), At = now, Text = Travellers.BittenDied(town, seed), DueAt = due });
+            Log("TRAVELLER the snakebit man won't make it; the town will hear in " + (due - now) + " game min");
         }
     }
 }
