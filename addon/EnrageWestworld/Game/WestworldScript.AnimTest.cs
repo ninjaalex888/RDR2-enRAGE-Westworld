@@ -107,6 +107,7 @@ namespace EnrageWestworld.InGame
         private AnimTestRun _animTest;
         private Action _aAnimTest;
         private static readonly uint TestRevolver = Natives.Hash("WEAPON_REVOLVER_CATTLEMAN");
+        private static readonly uint PlayAnimTask = Natives.Hash("SCRIPT_TASK_PLAY_ANIM");   // the game's task name, for GET_SCRIPT_TASK_STATUS (here and in despair)
 
         private string AnimTestStart(string which, int now)
         {
@@ -242,7 +243,7 @@ namespace EnrageWestworld.InGame
                     {
                         t.Retried = true;
                         Log.Write("WAKE anim #" + (t.Idx + 1) + " " + t.Clip + " didn't start: " + (PED.IS_PED_USING_ANY_SCENARIO(h) ? "in a scenario, " : "") +
-                                  "the play task's status " + TASK.GET_SCRIPT_TASK_STATUS(h, Natives.Hash("SCRIPT_TASK_PLAY_ANIM"), true) + "; once more");
+                                  "the play task's status " + TASK.GET_SCRIPT_TASK_STATUS(h, PlayAnimTask, true) + "; once more");
                         TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, false, true);
                         if (c.Gun)
                             WEAPON.GIVE_WEAPON_TO_PED(h, TestRevolver, 6, true, false, 0, false, 0.5f, 1f, GiveReason, true, 0f, false);   // the clear put it away

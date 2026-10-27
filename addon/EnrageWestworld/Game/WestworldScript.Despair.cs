@@ -36,6 +36,14 @@ namespace EnrageWestworld.InGame
             return new DespairClip { Dict = dict, Clip = clip, MaxMs = maxMs, Flags = flags, ShotAt = shotAt };
         }
 
+        /// The sobbing and every despair set asked for ahead (an awake act beginning): asked for and checked in the same
+        /// frame, the first despair of a session never sobbed.
+        private void DespairPreload()
+        {
+            foreach (string d in new[] { SobDict, JamieDict, LeaderDict, DrinkDict, SickDict })
+                STREAMING.REQUEST_ANIM_DICT(d);
+        }
+
         /// The clips for a way, in order (null: the way has none, the wall and the knife).
         private static DespairClip[] DespairSequence(string method, string variant, string seed)
         {
@@ -175,6 +183,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_PLAY_ANIM(h, c.Dict, c.Clip, 4f, -4f, -1, c.Flags, 0f, false, 0, false, "", false);
                 act.ClipOn = true;
                 act.ClipSeen = false;
+                act.ClipRetried = false;
                 act.ClipAt = now;
                 act.PhaseUntil = now + 100;
                 return;
@@ -184,11 +193,25 @@ namespace EnrageWestworld.InGame
                 act.ClipSeen = true;
             else if (!act.ClipSeen && now - act.ClipAt > 1500)
             {
-                DespairSeqFallback(act, now, c.Clip + " didn't start");
+                if (!act.ClipRetried)
+                {
+                    act.ClipRetried = true;
+                    Log.Write("WAKE despair: " + act.Name + "'s " + c.Clip + " didn't start (" + (PED.IS_PED_USING_ANY_SCENARIO(h) ? "in a scenario, " : "") +
+                              "the play task's status " + TASK.GET_SCRIPT_TASK_STATUS(h, PlayAnimTask, true) + "); once more");
+                    TASK.CLEAR_PED_TASKS_IMMEDIATELY(h, false, true);
+                    if (act.Method == "gun")
+                        DespairHand(act);   // the clear put it away
+                    TASK.TASK_PLAY_ANIM(h, c.Dict, c.Clip, 8f, -4f, -1, c.Flags, 0f, false, 0, false, "", false);
+                    act.ClipAt = now;
+                    act.PhaseUntil = now + 100;
+                    return;
+                }
+                DespairSeqFallback(act, now, c.Clip + " didn't start, twice");
                 return;
             }
             if (c.ShotAt >= 0f && !act.ShotDone && playing)
             {
+                act.NextStep = now + 50;   // watched closely for the shot's point, as the wall run is
                 float at = ENTITY._GET_ENTITY_ANIM_CURRENT_TIME(h, c.Dict, c.Clip);
                 if (at >= c.ShotAt)
                 {

@@ -46,7 +46,7 @@ namespace EnrageWestworld.InGame
             public string Variant;          // despair: the gun arc (jamie, leader) or the poisoning (drink, slow)
             public DespairClip[] Seq;       // despair: its clips (WestworldScript.Despair.cs), null for the wall and the knife
             public int ClipIdx, ClipAt;
-            public bool ClipOn, ClipSeen, ShotDone;
+            public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed;   // Borrowed: taken over for despair's last steps (handed back in EndWakeAct)
             public Person P;
             public PersonState St;
             public Resident Res;
@@ -309,6 +309,8 @@ namespace EnrageWestworld.InGame
                 if (lost != null)
                     Feed.Mutter(p.Name, p.Woman, lost, Speech.When(act.Handle, "trail"));   // the sentence stops partway
             }
+            if (act.Kind == "awake" && !passive && _cfg.AwakeningDespair > 0 && !st.Has(DespairMark))
+                DespairPreload();   // the sobbing and the arcs' sets, ahead of a despair ending (WestworldScript.Despair.cs)
             _wakeActs.Add(act);
             _lastWakeActAt = now;
             Log.Write("WAKE act: " + p.Name + " (" + Awakening.StageName(st.WakeStage) + ") " + act.Kind + (passive ? " [passive: " + PassiveWhy(ped, res) + "]" : "") + ", " + (int)ped.Position.DistanceTo(me.Position) + " m away");
@@ -866,6 +868,17 @@ namespace EnrageWestworld.InGame
                 act.Sub = 0;
                 act.Until = now + (act.Method == "wall" ? 20000 : 9000);
                 _selfHarmed.Add(h);   // theirs alone: never booked as the player's doing
+                if (!Spawner.IsOurs(h))
+                {
+                    // taken over for the act, so the game gives them no orders of its own mid-way (the clips run up to half a
+                    // minute; the animation rows saw the game take people back between clips and in them); one of enRAGE's
+                    // or another script's people lightly, its own state left
+                    if (act.Rec != null || ENTITY.IS_ENTITY_A_MISSION_ENTITY(h))
+                        Spawner.BorrowLight(new Ped(h));
+                    else
+                        Spawner.Borrow(new Ped(h));
+                    act.Borrowed = true;
+                }
                 if (act.Method == "wall")
                     DespairRunStart(act, now);
                 else if (act.Seq != null)
@@ -1132,7 +1145,7 @@ namespace EnrageWestworld.InGame
         {
             string their = act.P != null && act.P.Woman ? "her" : "his";
             if (act.Method == "poison")
-                return "by poison";
+                return "with poison";
             return act.Method == "wall" ? "running headlong at a wall" : act.Method == "knife" ? "with a knife" : "with " + (act.Weapon == null ? "a gun of " + their + " own" : Despair.Words(act.Weapon));
         }
 
@@ -1352,6 +1365,17 @@ namespace EnrageWestworld.InGame
             if (why != null)
                 Log.Write("WAKE act ended: " + act.Name + " " + act.Kind + (act.Ending != null ? " -> " + act.Ending : "") + " (" + why + ")");
             int h = act.Handle;
+            if (act.Borrowed)
+            {
+                // despair's borrow: the weapon we gave taken back from the living, then handed back (unblocked, orders cleared,
+                // wandering if alive; never deleted). Release clears our hold even when they're gone, so the handle isn't
+                // left ours for whoever the game gives it to next.
+                act.Borrowed = false;
+                if (act.Given && ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h))
+                    WEAPON.REMOVE_WEAPON_FROM_PED(h, Natives.Hash(act.Weapon), true, TakeReason);
+                Spawner.Release(new Ped(h), false);
+                return;
+            }
             if (!ENTITY.DOES_ENTITY_EXIST(h))
                 return;
             if (act.Blocked)
