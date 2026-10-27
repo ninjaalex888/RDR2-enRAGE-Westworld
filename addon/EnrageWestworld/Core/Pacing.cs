@@ -75,13 +75,15 @@ namespace EnrageWestworld.Core
 
         /// Why this kind can't happen here and now, or null when it may. `roll` is 0-99 (seeded by the caller). With
         /// `test`, nothing stands in the way, and `skipped` says what would have.
-        public static string WhyNot(PaceState s, string kind, string place, string who, long now, int roll, bool test, out string skipped)
+        /// ignoreBig: the quiet after a big moment and the night's budget don't apply, only the kind's own rests (the
+        /// encounters, which may run several at once since 2026-10-27, Lex: up to [Encounters] EncountersAtOnce).
+        public static string WhyNot(PaceState s, string kind, string place, string who, long now, int roll, bool test, out string skipped, bool ignoreBig = false)
         {
             skipped = null;
             Rule r;
             if (s == null || !Rules.TryGetValue(kind, out r))
                 return null;
-            string why = Rest(s, r, place, who, now) ?? (roll >= r.Chance ? "the roll (" + roll + " of " + r.Chance + "%)" : null);
+            string why = Rest(s, r, place, who, now, ignoreBig) ?? (roll >= r.Chance ? "the roll (" + roll + " of " + r.Chance + "%)" : null);
             if (test)
             {
                 skipped = why;
@@ -90,7 +92,7 @@ namespace EnrageWestworld.Core
             return why;
         }
 
-        private static string Rest(PaceState s, Rule r, string place, string who, long now)
+        private static string Rest(PaceState s, Rule r, string place, string who, long now, bool ignoreBig = false)
         {
             long t;
             if (r.KindRest > 0 && s.LastKind.TryGetValue(r.Kind, out t) && now - t >= 0 && now - t < r.KindRest)
@@ -99,7 +101,7 @@ namespace EnrageWestworld.Core
                 return "a " + r.Kind + " here " + (now - t) + " min ago";
             if (r.WhoRest > 0 && who != null && s.LastWho.TryGetValue(r.Kind + "|" + who, out t) && now - t >= 0 && now - t < r.WhoRest)
                 return "them, " + (now - t) + " min ago";
-            if (r.Big)
+            if (r.Big && !ignoreBig)
             {
                 if (now - s.BigAt >= 0 && now - s.BigAt < QuietAfterBig)
                     return "quiet after the last big moment (" + (now - s.BigAt) + " of " + QuietAfterBig + " min)";

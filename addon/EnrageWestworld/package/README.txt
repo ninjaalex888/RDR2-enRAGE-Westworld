@@ -616,7 +616,8 @@ in the file. The new ones:
             tension stops building, QuietStillSeconds (3), QuietInCinematic (true): the same in the
             cinematic camera
 [Encounters] Encounters (true): the master switch. EncounterEveryMinutes (12): real minutes
-            between rolls, Executions (true), ExecutionChance (20, percent per roll, away from the
+            between rolls, EncountersAtOnce (5, 1-8): how many may be going on at once, a stalker
+            among them (one of each kind; a roll starts one at most), Executions (true), ExecutionChance (20, percent per roll, away from the
             towns, once a day), CryingWoman (true), CryingWomanChance (15, percent per roll, 10 pm to
             4 am in the wilds), Hermits (true, needs WestWorld), HermitChance (25, a new
             camp's chance per roll in the wilds), Gatherings (true, needs WestWorld),

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 78;
+        public const int CurrentVersion = 79;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -105,6 +105,7 @@ namespace EnrageWestworld.Core
         // [Encounters]
         public bool Encounters = true;
         public int EncounterEveryMinutes = 12;
+        public int EncountersAtOnce = 5;   // the encounters and a stalker going on at once (Lex, 2026-10-27; it was one; settings version 79)
         public bool CryingWoman = true;
         public int CryingWomanChance = 15;
         public bool NightVisitor = true;
@@ -498,6 +499,7 @@ namespace EnrageWestworld.Core
             StalkerActMax = Math.Max(StalkerActMin, Math.Min(40, StalkerActMax));
             QuietStillSeconds = Math.Max(1, Math.Min(60, QuietStillSeconds));
             EncounterEveryMinutes = Math.Max(2, Math.Min(120, EncounterEveryMinutes));
+            EncountersAtOnce = Math.Max(1, Math.Min(8, EncountersAtOnce));
             CryingWomanChance = Math.Max(0, Math.Min(100, CryingWomanChance));
             NightVisitorChance = Math.Max(0, Math.Min(100, NightVisitorChance));
             TravellerChance = Math.Max(0, Math.Min(100, TravellerChance));
@@ -632,6 +634,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("[Encounters]");
             b.AppendLine("Encounters = " + B(Encounters) + "   ; master switch: rare, unsettling things out in the wilds at night (a woman crying in the dark, hermits, gatherings). false turns off everything in this section");
             b.AppendLine("EncounterEveryMinutes = " + EncounterEveryMinutes + "   ; real minutes of play between rolls for an encounter, when the time and place are right (2-120)");
+            b.AppendLine("EncountersAtOnce = " + EncountersAtOnce + "   ; how many encounters (and a stalker) may be going on at once, one of each kind (1-8); each roll starts one at most, so they come one by one");
             b.AppendLine("CryingWoman = " + B(CryingWoman) + "   ; at night in the wilds, a woman sobbing in the dark. Go close and she may draw a knife, or not be alone");
             b.AppendLine("CryingWomanChance = " + CryingWomanChance + "   ; percent on each roll, between ten at night and four in the morning");
             b.AppendLine("NightVisitor = " + B(NightVisitor) + "   ; after midnight in a town, a pale figure crouched over a body: it rises, stares, and is gone when you look away; next morning the town speaks of it");

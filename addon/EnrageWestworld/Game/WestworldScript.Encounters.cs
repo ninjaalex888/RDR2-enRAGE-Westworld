@@ -86,23 +86,24 @@ namespace EnrageWestworld.InGame
                 TravellerStep(now);
             VisitorBodyStep();   // a body left behind goes once nobody can see (WestworldScript.Visitor.cs)
             HermitStep(now);   // a hermit at his camp, when you come near one
-            if ((_execRequested || _encounterRequested != null) && !EncounterLive)
+            string asked = _execRequested ? "execution" : _encounterRequested;
+            if (asked != null)
             {
                 // the Testing page: one staged nearby now, if nothing stands in the way
-                string kind = _execRequested ? "execution" : _encounterRequested;
                 _execRequested = false;
                 _encounterRequested = null;
-                string block = EncounterBlocker();
+                string block = EncounterKindLive(asked) ? "one is out already (" + EncounterWhat + ")"
+                    : EncountersFull ? EncountersLive + " encounters are going on (at most " + _cfg.EncountersAtOnce + ")" : EncounterBlocker();
                 if (block != null)
                 {
-                    Log.Write("ENCOUNTER test, " + kind + ": not now: " + block);
+                    Log.Write("ENCOUNTER test, " + asked + ": not now: " + block);
                     Hint("Not now: " + block + ".", 5000);
                 }
                 else
-                    StageEncounter(kind, now);
+                    StageEncounter(asked, now);
             }
-            if (EncounterLive || !_cfg.Encounters)
-                return;
+            if (EncountersFull || !_cfg.Encounters)
+                return;   // up to [Encounters] EncountersAtOnce at once, the stalker among them (Lex, 2026-10-27: it was one)
             int every = _cfg.EncounterEveryMinutes * 60000;
             if (_nextEncounterRoll == 0 || _nextEncounterRoll - now > every)
             {
@@ -112,82 +113,22 @@ namespace EnrageWestworld.InGame
             if (now < _nextEncounterRoll)
                 return;
             _nextEncounterRoll = now + every;
-            string why = EncounterBlocker() ?? Pacing.BigWhyNot(_store.Pace, _store.LastGameMin);   // and the quiet after a big moment (Pacing.cs)
+            // since 2026-10-27 a big moment's quiet no longer stops a roll (it held them to a single one); each kind keeps its
+            // own rests (once a night, once a day) and its chance
+            string why = EncounterBlocker();
             if (why != null)
             {
                 _encounterWait = why;
                 Log.Write("Encounter roll skipped: " + why);
                 return;
             }
+            // each kind that isn't out already, in turn from a different one each roll; at most one starts a roll, so several
+            // arrive one by one, not together
             List<string> notNow = new List<string>();   // each kind that's on but can't happen here and now, and why
-            if (_cfg.CryingWoman)
+            int first = _encounterTurn++ & 0x7fffffff;
+            for (int i = 0; i < 6; i++)
             {
-                string not = CryingNotNow();
-                if (not != null)
-                    notNow.Add("the crying woman: " + not);
-                else if (EncounterRoll("the crying woman", _cfg.CryingWomanChance))
-                {
-                    _encounterWait = null;
-                    StartCrying(now);
-                    return;
-                }
-            }
-            if (_cfg.Executions)
-            {
-                string not = ExecutionNotNow();
-                if (not != null)
-                    notNow.Add("an execution on the road: " + not);
-                else if (EncounterRoll("an execution on the road", _cfg.ExecutionChance))
-                {
-                    _encounterWait = null;
-                    StartExecution(now, false);
-                    if (_exec != null)
-                        return;
-                }
-            }
-            if (_cfg.Hermits)
-            {
-                string not = HermitNotNow();
-                if (not != null)
-                    notNow.Add("a hermit's camp: " + not);
-                else if (EncounterRoll("a hermit's camp", _cfg.HermitChance) && NewCamp(now))
-                {
-                    _encounterWait = null;
-                    return;
-                }
-            }
-            if (_cfg.NightVisitor)
-            {
-                string skippedV;
-                string not = VisitorNotNow() ?? Pacing.WhyNot(_store.Pace, "visitor", _placeTown, null, _store.LastGameMin, 0, false, out skippedV);
-                if (not != null)
-                    notNow.Add("the night visitor: " + not);
-                else if (EncounterRoll("the night visitor", _cfg.NightVisitorChance))
-                {
-                    _encounterWait = null;
-                    StartVisitor(now);   // Pacing notes it once it's really out (VisitorSpawn)
-                    return;
-                }
-            }
-            if (_cfg.Travellers)
-            {
-                string skippedT;
-                string not = TravellerNotNow() ?? Pacing.WhyNot(_store.Pace, "traveller", null, null, _store.LastGameMin, 0, false, out skippedT);
-                if (not != null)
-                    notNow.Add("a traveller: " + not);
-                else if (EncounterRoll("a traveller asking the way", _cfg.TravellerChance))
-                {
-                    _encounterWait = null;
-                    StartTraveller(now);   // Pacing notes it once he's on the road (TravellerSpawn)
-                    return;
-                }
-            }
-            if (_cfg.Gatherings)
-            {
-                string not = GatherNotNow();
-                if (not != null)
-                    notNow.Add("a gathering: " + not);
-                else if (EncounterRoll("a gathering", _cfg.GatheringChance) && StartGathering(now))
+                if (TryEncounter((first + i) % 6, notNow, now))
                 {
                     _encounterWait = null;
                     return;
@@ -196,6 +137,115 @@ namespace EnrageWestworld.InGame
             _encounterWait = notNow.Count > 0 ? string.Join("; ", notNow) : null;
             if (_encounterWait != null)
                 Log.Write("Encounter roll skipped: " + _encounterWait);
+        }
+
+        private int _encounterTurn;
+
+        /// One kind's chance on this roll: true when it started. A kind already out is passed over (one of each, for now).
+        private bool TryEncounter(int kind, List<string> notNow, int now)
+        {
+            string not, skipped;
+            switch (kind)
+            {
+                case 0:
+                    if (!_cfg.CryingWoman || _crying != null)
+                        return false;
+                    not = CryingNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("the crying woman: " + not);
+                        return false;
+                    }
+                    if (!EncounterRoll("the crying woman", _cfg.CryingWomanChance))
+                        return false;
+                    StartCrying(now);
+                    return true;
+                case 1:
+                    if (!_cfg.Executions || _exec != null)
+                        return false;
+                    not = ExecutionNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("an execution on the road: " + not);
+                        return false;
+                    }
+                    if (!EncounterRoll("an execution on the road", _cfg.ExecutionChance))
+                        return false;
+                    StartExecution(now, false);
+                    return _exec != null;
+                case 2:
+                    if (!_cfg.Hermits || _hermit != null)
+                        return false;
+                    not = HermitNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("a hermit's camp: " + not);
+                        return false;
+                    }
+                    return EncounterRoll("a hermit's camp", _cfg.HermitChance) && NewCamp(now);
+                case 3:
+                    if (!_cfg.NightVisitor || _visitor != null)
+                        return false;
+                    not = VisitorNotNow() ?? Pacing.WhyNot(_store.Pace, "visitor", _placeTown, null, _store.LastGameMin, 0, false, out skipped, true);
+                    if (not != null)
+                    {
+                        notNow.Add("the night visitor: " + not);
+                        return false;
+                    }
+                    if (!EncounterRoll("the night visitor", _cfg.NightVisitorChance))
+                        return false;
+                    StartVisitor(now);   // Pacing notes it once it's really out (VisitorSpawn)
+                    return true;
+                case 4:
+                    if (!_cfg.Travellers || _traveller != null)
+                        return false;
+                    not = TravellerNotNow() ?? Pacing.WhyNot(_store.Pace, "traveller", null, null, _store.LastGameMin, 0, false, out skipped, true);
+                    if (not != null)
+                    {
+                        notNow.Add("a traveller: " + not);
+                        return false;
+                    }
+                    if (!EncounterRoll("a traveller asking the way", _cfg.TravellerChance))
+                        return false;
+                    StartTraveller(now);   // Pacing notes it once he's on the road (TravellerSpawn)
+                    return true;
+                default:
+                    if (!_cfg.Gatherings || _gathering != null)
+                        return false;
+                    not = GatherNotNow();
+                    if (not != null)
+                    {
+                        notNow.Add("a gathering: " + not);
+                        return false;
+                    }
+                    return EncounterRoll("a gathering", _cfg.GatheringChance) && StartGathering(now);
+            }
+        }
+
+        /// How many are going on: the encounters, a hermit only while he's taken up with you, and the stalker.
+        private int EncountersLive
+        {
+            get
+            {
+                return (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
+                       (_traveller != null ? 1 : 0) + (_stalker != null ? 1 : 0);
+            }
+        }
+
+        private bool EncountersFull { get { return EncountersLive >= _cfg.EncountersAtOnce; } }
+
+        private bool EncounterKindLive(string kind)
+        {
+            switch (kind)
+            {
+                case "execution": return _exec != null;
+                case "crying": return _crying != null;
+                case "hermit": return _hermit != null;
+                case "visitor": return _visitor != null;
+                case "traveller": return _traveller != null;
+                case "gathering": return _gathering != null;
+                default: return false;
+            }
         }
 
         /// The Testing page's key or row for an encounter: asked for now, or why not. What to say back.
@@ -211,8 +261,10 @@ namespace EnrageWestworld.InGame
                 : _cfg.Gatherings ? null : "Gatherings are off ([Encounters] Gatherings; they need West World on too).";
             if (off != null)
                 return off;
-            if (EncounterLive || _execRequested || _encounterRequested != null)
+            if (EncounterKindLive(kind) || _execRequested || _encounterRequested != null)
                 return "One is going on already" + (EncounterWhat != null ? " (" + EncounterWhat + ")" : string.Empty) + ". Let it finish first.";   // a second press used to queue another
+            if (EncountersFull)
+                return EncountersLive + " encounters are going on already (at most " + _cfg.EncountersAtOnce + ", [Encounters] EncountersAtOnce). Let one finish first.";
             if (kind == "execution")
                 _execRequested = true;
             else
@@ -319,8 +371,6 @@ namespace EnrageWestworld.InGame
             string b = StalkBlocker();
             if (b != null)
                 return b;
-            if (_stalker != null)
-                return "a stalker is out";
             if (_director.Busy || _wedding != null || _plea != null || _theft != null)
                 return "something else is going on";
             if (Game.Player.Character.IsDead)
@@ -685,7 +735,15 @@ namespace EnrageWestworld.InGame
             if (!_cfg.Encounters)
                 return "off";
             int now = Game.GameTime;
-            string live = _crying != null ? "the crying woman (" + _crying.Phase + ")" : _exec != null ? "an execution (" + _exec.Phase + ")" : _hermit != null ? "a hermit (" + _hermit.Phase + ")" : _gathering != null ? "a gathering (" + _gathering.Phase + ")" : "none";
+            List<string> on = new List<string>();
+            if (_crying != null) on.Add("the crying woman (" + _crying.Phase + ")");
+            if (_exec != null) on.Add("an execution (" + _exec.Phase + ")");
+            if (_hermit != null) on.Add("a hermit (" + _hermit.Phase + (HermitWithYou() ? ", with you" : ", at his fire") + ")");
+            if (_gathering != null) on.Add("a gathering (" + _gathering.Phase + ")");
+            if (_visitor != null) on.Add("the night visitor");
+            if (_traveller != null) on.Add("a traveller");
+            if (_stalker != null) on.Add("a stalker");
+            string live = (on.Count > 0 ? string.Join(", ", on) : "none") + " (" + EncountersLive + " counted, at most " + _cfg.EncountersAtOnce + ")";
             return "live: " + live + ", next roll in " + Math.Max(0, (_nextEncounterRoll - now) / 1000) + " s every " + _cfg.EncounterEveryMinutes + " min" +
                    ", crying woman " + (_cfg.CryingWoman ? _cfg.CryingWomanChance + "% (10 pm - 4 am, the wilds)" + (DoneToday("crying") ? ", done today" : "") : "off") +
                    ", executions " + ExecutionsStatus() +

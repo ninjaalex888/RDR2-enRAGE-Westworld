@@ -185,8 +185,8 @@ namespace EnrageWestworld.InGame
                 return "you're in the water";
             if (!Spawner.SafeToSpawn())
                 return "the screen is going dark or loading";
-            if (_crying != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || HermitWithYou())
-                return EncounterWhat;
+            if (EncountersFull)
+                return EncountersLive + " encounters are going on already (at most " + _cfg.EncountersAtOnce + ", [Encounters] EncountersAtOnce)";   // a stalker and the encounters share the count (Lex, 2026-10-27: up to 5 at once); before, any encounter kept a stalker away and the other way round
             return null;
         }
 
