@@ -233,14 +233,19 @@ namespace EnrageWestworld.InGame
                 {
                     testing.Rows.Add(new Row { Heading = "Now" });
                     testing.Rows.Add(new Row { Action = "stage-execution", ActionLabel = "Stage an execution nearby",
+                                               Help = "A man from a nearby town held on his knees at gunpoint, out of sight near you, with a mark on the map. Enter, then Enter again.",
                                                ActionAsk = "Put a man on his knees at gunpoint somewhere near you, out of sight, to see the scene? Press Enter again to stage it; any other key doesn't." });
                     testing.Rows.Add(new Row { Action = "stage-crying", ActionLabel = "Bring out the crying woman",
+                                               Help = "A woman crying in the dark somewhere near you, out of sight, whatever the hour. Enter, then Enter again.",
                                                ActionAsk = "Put a woman crying in the dark somewhere near you, out of sight, whatever the hour? Press Enter again; any other key doesn't." });
                     testing.Rows.Add(new Row { Action = "stage-hermit", ActionLabel = "Make a hermit's camp nearby",
+                                               Help = "A camp near you, out of sight, for someone who woke and walked out of town. Not in a town: camps stay. Enter, then Enter again.",
                                                ActionAsk = "Make a camp near you, out of sight, for someone who woke and walked out of town? It stays, like any camp. Press Enter again; any other key doesn't." });
                     testing.Rows.Add(new Row { Action = "stage-gathering", ActionLabel = "Stand a gathering nearby",
+                                               Help = "The awake standing in a silent ring somewhere near you, out of sight, whatever the hour. Enter, then Enter again.",
                                                ActionAsk = "Stand the awake in a silent ring somewhere near you, out of sight, whatever the hour? Press Enter again; any other key doesn't." });
                     testing.Rows.Add(new Row { Action = "wipe-memories", ActionLabel = "Wipe every NPC's memory",
+                                               Help = "Forget everything RealNPCs keeps of the people in this world, for this character. A copy of the save is kept; enRAGE's memory stays. Enter, then Enter again.",
                                                ActionAsk = "Wipe everything RealNPCs remembers of the people in this world (who they are, what they know and feel about you, their ties, their deaths)? enRAGE's own memory stays. A copy of the save is kept. Press Enter again to wipe; any other key keeps it all." });
                 }
                 // CasualHookups' settings with ours on romance, when it's installed
@@ -980,7 +985,10 @@ namespace EnrageWestworld.InGame
             Row chosen = page.Rows[Selectable(page, _row)];
             string offWhy = OffBecause(chosen);
             string section = chosen.Theirs ? "enRAGE [" + chosen.E.Section + "]. " : chosen.Hookups ? "CasualHookups, another mod; it may only read this when the game starts. " : string.Empty;
-            string help = section + (offWhy != null ? offWhy + " " : string.Empty) + (chosen.Help ?? (string.IsNullOrEmpty(chosen.E.Help) ? "No description." : chosen.E.Help));
+            // an action row has no line of the ini behind it (E is null): its own words, or how to run it
+            string own = chosen.Help ?? (chosen.E == null ? (chosen.Action != null ? "Enter, then Enter again, to do it." : string.Empty)
+                : string.IsNullOrEmpty(chosen.E.Help) ? "No description." : chosen.E.Help);
+            string help = section + (offWhy != null ? offWhy + " " : string.Empty) + own;
             float helpH = Draw.LineHeight(SmallScale) * 1.08f;
             foreach (string line in Draw.Wrap(help, SmallScale, W - 0.05f).Take(3))
             {
