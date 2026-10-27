@@ -44,10 +44,13 @@ namespace EnrageWestworld.InGame
         private List<Candidate> ReasonCandidates(Ped me, int now, bool test = false)
         {
             var list = new List<Candidate>();
+            Vector3 at = me.Position;
             foreach (Ped p in World.GetAllPeds())
             {
                 int h = p.Handle;
-                if (!Natives.Bystander(p, me.Handle, IsRecord(h)) || p.Position.DistanceTo(me.Position) > ReasonRange || Spawner.IsOurs(h) ||
+                if (p.Position.DistanceTo(at) > ReasonRange)
+                    continue;   // the distance first: IsRecord is a reflection call into enRAGE, too dear for every ped in the world
+                if (!Natives.Bystander(p, me.Handle, IsRecord(h)) || Spawner.IsOurs(h) ||
                     MayDirectWhyNot(p) != null ||   // never the story's own people, grown-ups only; enRAGE's people unless it has them busy
                     PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) || _wakeActs.Any(w => w.Handle == h) || IsAcknowledging(h) || InTalk(h) ||
                     PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h))
