@@ -44,7 +44,7 @@ namespace EnrageWestworld.Core
             if (at < 0)
                 return false;
             bool rough = s.Kind == "rough";
-            string a = N(c, 0, seed), b = N(c, 1, seed), cn = N(c, 2, seed);
+            string a = N(c, 0, seed), b = NThird(c, 1, seed), cn = N(c, 2, seed);   // B is spoken of to A, so a stranger is "the man" or "the lady"
             var add = new List<Beat>();
             if (far)
                 add.Add(new Beat(2, null, null, "approach"));

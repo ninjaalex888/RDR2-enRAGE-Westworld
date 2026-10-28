@@ -439,6 +439,56 @@ namespace EnrageWestworld.InGame
             return r != null ? ShownName(p.Handle, r.Name) : null;
         }
 
+        /// Whether the others in a scene know each person by name: a tie between them, or the same home town (a resident
+        /// of this town to another, one of enRAGE's townsfolk of this town to another). Someone nobody knows is spoken to
+        /// as "mister" or "ma'am" (night 2026-10-28, item 10). A cast of one known person is nobody's stranger.
+        private bool[] CastKnows(Ped a, Ped b, Ped crowd)
+        {
+            var peds = new[] { a, b, crowd };
+            var ids = new string[3];
+            var homes = new string[3];
+            for (int i = 0; i < 3; i++)
+            {
+                if (peds[i] == null || !peds[i].Exists())
+                    continue;
+                string id, name;
+                if (LastingId(peds[i], out id, out name))
+                    ids[i] = id;
+                homes[i] = CastHome(peds[i]);
+            }
+            var knows = new bool[3];
+            for (int i = 0; i < 3; i++)
+            {
+                if (peds[i] == null)
+                    continue;
+                for (int j = 0; j < 3 && !knows[i]; j++)
+                {
+                    if (j == i || peds[j] == null)
+                        continue;
+                    if (homes[i] != null && homes[i] == homes[j])
+                        knows[i] = true;
+                    else if (ids[i] != null && ids[j] != null)
+                        foreach (SceneTie t in _store.Ties)
+                            if (t.Has(ids[i]) && t.Has(ids[j]))
+                            {
+                                knows[i] = true;
+                                break;
+                            }
+                }
+            }
+            return knows;
+        }
+
+        /// The town someone is of: a bound resident's, or one of enRAGE's townsfolk's; null for a record or a stranger.
+        private string CastHome(Ped p)
+        {
+            ResBind rb;
+            if (_resBind.TryGetValue(p.Handle, out rb) && rb.R != null && !rb.R.Dead)
+                return rb.R.Town;
+            Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+            return ac != null ? ac.Town : null;
+        }
+
         /// Everything a scene might use about these people and this place.
         private SceneCast BuildCast(Ped a, Ped b, Ped crowd, bool saloon, Ped me, int now, string seed)
         {
@@ -451,6 +501,7 @@ namespace EnrageWestworld.InGame
                 Names = SceneNames(a, b, crowd),
                 Tempers = new[] { CastTemper(a), CastTemper(b), crowd != null ? CastTemper(crowd) : null }
             };
+            cast.Knows = CastKnows(a, b, crowd);
             if (!saloon || _cfg.SaloonGossip)
                 cast.Rumours.AddRange(_engine.RumourPool(_placeTown, 4));
             // guns come out in a standoff only when both carry them and no lawman is close enough to start shooting

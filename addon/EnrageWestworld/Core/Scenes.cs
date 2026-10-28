@@ -67,6 +67,7 @@ namespace EnrageWestworld.Core
         public bool DeadWoman, DeadSeen, DeadWillReturn;
         public HashSet<string> Off = new HashSet<string>(); // kinds switched off in the ini
         public string[] Names = new string[3];              // the names A, B and C really go by (enRAGE's, or a resident's own); null: made up
+        public bool[] Knows;                                // whether the others know A, B and C by name (a tie, or the same home town); null: everyone (the tests); a stranger is "mister" or "ma'am" (night 2026-10-28, item 10)
         public string[] Tempers = new string[3];            // A, B and C's temperaments (Reactions.Listener); null: none known
     }
 
@@ -156,11 +157,22 @@ namespace EnrageWestworld.Core
         // lines say the same name as the label over them; else one made up from the seed (as the director does)
         internal static string N(SceneCast c, int who, string seed)
         {
+            bool woman = who == 0 ? c.AWoman : who == 1 ? c.BWoman : c.CWoman;
+            if (c.Knows != null && who < c.Knows.Length && !c.Knows[who])
+                return woman ? "ma'am" : "mister";   // strangers weren't on first-name terms in 1899 (item 10)
             string real = c.Names != null && who < c.Names.Length ? c.Names[who] : null;
             if (!string.IsNullOrEmpty(real))
                 return real;
-            bool woman = who == 0 ? c.AWoman : who == 1 ? c.BWoman : c.CWoman;
             return FirstName(woman, seed + who);
+        }
+
+        /// The same person spoken of to a third ("leave the lady be"): the name when known, else by their sex.
+        internal static string NThird(SceneCast c, int who, string seed)
+        {
+            bool woman = who == 0 ? c.AWoman : who == 1 ? c.BWoman : c.CWoman;
+            if (c.Knows != null && who < c.Knows.Length && !c.Knows[who])
+                return woman ? "the lady" : "the man";
+            return N(c, who, seed);
         }
 
         public static Scene Flirt(SceneCast c, string seed)
