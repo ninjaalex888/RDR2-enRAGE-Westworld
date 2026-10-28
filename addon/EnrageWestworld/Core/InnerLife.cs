@@ -96,25 +96,29 @@ namespace EnrageWestworld.Core
         private static readonly string[] Dawn =
         {
             "Early light on the rooftops. Quiet enough to hear my own coffee.", "Rooster's shouting at nobody. Rooster's been shouting since four.", "Cold this early. Joints complaining before I've stood up.",
-            "Mist on the road. Never trust the first hour. It's too pretty.", "Smell of woodsmoke and horse. Mornings are honest at least."
+            "Mist on the road. Never trust the first hour. It's too pretty.", "Smell of woodsmoke and horse. Mornings are honest at least.",
+            "Frost on the trough. Broke it with my elbow. Cold goes up the arm and stays.", "First wagon of the day. Wheels sound louder before the town's awake.", "Light comes up grey, then gold. Same as yesterday. Still worth a look."
         };
 
         private static readonly string[] Day =
         {
             "Sun's high. Shade's a luxury.", "Dust everywhere. In my teeth, in my tea.", "Noon bell. Everyone pretending they're not hungry.",
-            "Heat sits on the street like a hat. Nobody wants to move.", "Long day and not half over."
+            "Heat sits on the street like a hat. Nobody wants to move.", "Long day and not half over.",
+            "Flies at the horse's eyes. Flies at mine. We're both too hot to fight them.", "Shadows gone small under the boardwalk. Nowhere to stand that isn't baking.", "Middle of the day and the street's gone still. Even the dogs have given up."
         };
 
         private static readonly string[] Evening =
         {
             "Light's going gold. Nice for a minute, then it's work again.", "Supper smells drift up the street. Somebody has bacon.", "Lamps being lit down the row. First one's always the saloon.",
-            "Cooler now. Now a man can think.", "Dogs bark, children called indoors. Evening, same as every one."
+            "Cooler now. Now a man can think.", "Dogs bark, children called indoors. Evening, same as every one.",
+            "Bats out over the livery. They keep better hours than I do.", "Shutters going closed down the row. The store first, the saloon never.", "Smoke from every chimney at once. Town smells like supper and wet wood."
         };
 
         private static readonly string[] Night =
         {
             "Too dark to see my hand. Too quiet to hear my own thoughts.", "Piano's still going at the saloon. Tune never changes.", "Moon's up. Wolves are, too.",
-            "Should be home by now. Should be a lot of things.", "Something about night makes the town look like a stage set after the play."
+            "Should be home by now. Should be a lot of things.", "Something about night makes the town look like a stage set after the play.",
+            "Stars thick as spilled salt. Too many to be looking down at me.", "One lamp lit at the far end of the street. Somebody can't sleep either.", "Owl in the cottonwoods. Says the same thing every night and I still listen."
         };
 
         // ---- temperament, faith ---------------------------------------------------------------------
@@ -159,7 +163,8 @@ namespace EnrageWestworld.Core
         {
             "Blister on the left heel, hot as a coin. Boots weren't made for this road.", "Stomach folded in on itself. Last real meal was Tuesday. Or Monday.",
             "Craving tobacco. Fingers keep patting the empty pocket.", "Wind straight through the coat. Bones aching like a bad tooth.", "Sweat down the spine. Collar like a wet rope.",
-            "Eyes gritty from the dust. Can't think when they didn't sting.", "Back's one long knot. Slept on a floor again.", "Tongue stuck to the roof of my mouth. Water. Water."
+            "Eyes gritty from the dust. Can't think when they didn't sting.", "Back's one long knot. Slept on a floor again.", "Tongue stuck to the roof of my mouth. Water. Water.",
+            "Tooth at the back throbbing with my heartbeat. Dentist's a day's ride. Whiskey's nearer.", "Hands cracked at the knuckles. Cold and lye soap. They bleed when I make a fist.", "Head pounding behind the eyes. Too much sun or too little sleep. Both.", "Knee locks on the stairs. Thirty-odd years of stairs, and it's keeping count."
         };
 
         /// How they think they look to everyone else.
@@ -168,7 +173,8 @@ namespace EnrageWestworld.Core
             "Saw how the grocer looked at my sleeve. Frayed. He noticed. They always notice.", "Straighten up. Hat square. Let them think I own something.",
             "Laughed at the banker's joke a beat too late. Did they see?", "Wearing the good coat in this heat. The good coat says somebody.",
             "They go quiet when I pass. Respect or pity. Can't tell which is worse.", "Walk like there's somewhere to be. Nobody asks a busy man for a favour.",
-            "That man's boots cost more than my horse. Doesn't mean he can ride."
+            "That man's boots cost more than my horse. Doesn't mean he can ride.",
+            "Took my hat off to the lady and my hair stood up. Could feel her not laughing.", "Patched the elbow myself. From across the street it passes. Up close it's a patch.", "Speak slower in the store. Slow sounds like a man with money.", "Caught my face in the window. Older than I carry it.", "Boots blacked this morning. Let them look at the boots and not the rest."
         };
 
         /// Fear of losing, the eye that finds the threat first, the comfort of thinking the poor earned it.
@@ -177,7 +183,8 @@ namespace EnrageWestworld.Core
             "Count the coins twice. Once more. Still short.", "One sneer on Tuesday. Still tasting it. The compliment? Gone by supper.",
             "That beggar's young enough to work. Nobody handed me anything. Why him?", "Lose the horse, lose the job. Lose the job, lose the room. Lose the",
             "Every stranger's a tax collector until proven otherwise.", "Prices up a penny. Nobody says a word. I'll say it later, to the dog.",
-            "Folks are poor for a reason. Say it often enough, it holds."
+            "Folks are poor for a reason. Say it often enough, it holds.",
+            "A hundred good days and the one bad one is the one I'd swear by.", "Stranger smiled at me. Wanted something. They always want something.", "Kept the dollar back from the collection. The Lord has plenty. I've a dollar."
         };
 
         /// The age pressing in: smoke, disease, the law, the bank.
@@ -186,14 +193,16 @@ namespace EnrageWestworld.Core
             "Smoke from the new railhead. Takes a little more sky every year.", "Heard the Pinkertons are asking questions again.",
             "Cough in the next room all night. Consumption, they say. Nobody says it loud.", "Cholera down the river. Boil the water. Boil everything.",
             "Telegraph poles marching in from the east. Soon there won't be a place left to hide.", "Mills, mines, machines. Hands like mine aren't worth what they were.",
-            "Bank wants the note by spring. Spring is a hungry word.", "The law's got faster horses and longer arms now. Don't like where the wire leads."
+            "Bank wants the note by spring. Spring is a hungry word.", "The law's got faster horses and longer arms now. Don't like where the wire leads.",
+            "New bridge going up downriver. Iron, not timber. Nothing's built to be fixed any more.", "Paper says motor carriages in Saint Denis. Horses laughed at them, I expect. So did I."
         };
 
         /// What they show and what they feel.
         private static readonly string[] Mask =
         {
             "Smile. Nod. Wish he'd choke on his own coin.", "Polite as pie to the preacher. Thinking about his sister-in-law, God forgive me.", "Voice steady. Hands shaking in my pockets.",
-            "Telling a joke to the table. Thinking about the letter in my coat.", "Everyone says I'm calm. I'm counting the exits.", "Tough face for the street. Terrified of the doctor on Thursday."
+            "Telling a joke to the table. Thinking about the letter in my coat.", "Everyone says I'm calm. I'm counting the exits.", "Tough face for the street. Terrified of the doctor on Thursday.",
+            "Shook his hand and counted the fingers after. Pleasant as you please.", "Laughed at the story. Second time I've heard it. He tells it worse each time.", "Asked after her health like I cared. Wrote it down in my head: ask again Tuesday.", "Steady voice at the counter. Walked out and leaned on the wall till it passed."
         };
 
         // ---- the stranger on the road ------------------------------------------------------------------
@@ -215,23 +224,27 @@ namespace EnrageWestworld.Core
             "Back in {town}, is he. I'd started to think I dreamed him.",
             "That stranger again. Nodded at me last time. Will he this time?",
             "I know that face. Know it from here. Every time, from right here.",
-            "Third time, or fourth. I've stopped pretending I don't notice him."
+            "Third time, or fourth. I've stopped pretending I don't notice him.",
+            "Back again, that one. The town's got used to him. I haven't.", "That stranger, and still a stranger. Some men stay one on purpose."
         };
 
         private static readonly string[] SeenArmed =
         {
-            "Gun hand never far from the gun. Not for show. For use.", "Holster's worn smooth at the edge. That's years of drawing.", "Doesn't lift the gun. Doesn't need to. The weight shows in how he stands."
+            "Gun hand never far from the gun. Not for show. For use.", "Holster's worn smooth at the edge. That's years of drawing.", "Doesn't lift the gun. Doesn't need to. The weight shows in how he stands.",
+            "Two guns. One's for show, or he's twice as dangerous as he looks.", "Rifle on the saddle, pistol on the hip. Prepared for weather I can't see.", "Coat cut away from the holster. Somebody tailored that on purpose."
         };
 
         private static readonly string[] SeenMounted =
         {
-            "Sits that horse like a chair. Never been afraid of it, or never shows.", "Horse is better fed than half this street.", "Horse is watching me. Rider isn't. Somehow that's worse."
+            "Sits that horse like a chair. Never been afraid of it, or never shows.", "Horse is better fed than half this street.", "Horse is watching me. Rider isn't. Somehow that's worse.",
+            "Reins loose in one hand. The horse does the thinking and he lets it.", "Rides a horse that's been somewhere. Scars on the chest, calm in the eye.", "Looks down from the saddle like the street's a map he's already read."
         };
 
         private static readonly string[] Seen =
         {
             "Doesn't blink enough.", "Carries his weight low, like a man ready to move.", "Smells of woodsmoke and horse.", "Eyes don't rest on one thing. Counts the exits like I do.",
-            "Dust on him from three days' road, not three miles.", "Quiet. The kind of quiet that's decided something."
+            "Dust on him from three days' road, not three miles.", "Quiet. The kind of quiet that's decided something.",
+            "Boots he's walked the soles off. Not a man who rides everywhere.", "Keeps his hat low and his eyes up. Opposite of most.", "Stands where he can see the door. Habit, that. A bad one or a good one.", "Hands still when he talks. Still hands are the ones to watch."
         };
 
         // ---- putting it together ------------------------------------------------------------------
