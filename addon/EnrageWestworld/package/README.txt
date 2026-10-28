@@ -35,7 +35,9 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   card's "would:"): a meal, the work, the saloon of an evening, church on Sunday, a word with a
   friend, stepping clear of a foe. Nobody is moved by it yet. And what each believes: the log
   says when a belief flips (MIND believes: "now that stranger is a dangerous man"). Nothing acts
-  on it yet.
+  on it yet. [Mind] MindLevels (off, in testing) spreads the mind's work by distance and a
+  budget a frame: the people in view every look, the town around now and then, everyone saved
+  elsewhere once a game day.
 
 NEW IN 0.6.3
 ------------

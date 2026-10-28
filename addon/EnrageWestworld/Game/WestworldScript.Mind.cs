@@ -8,6 +8,7 @@
 // cached by handle; the card and F7 read only that cache.
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using EnrageWestworld.Core;
 using NemesisSystem;
@@ -72,6 +73,11 @@ namespace EnrageWestworld.InGame
         {
             if (_mindEngine != _engine || _engine.Shadow.Generation != _mindGen)
                 MindShadowForget();   // a new save, or an older one loaded: what was worked out goes
+            if (_cfg.MindLevels)
+            {
+                MindLevelsTick(now);   // the same work, handed out by the levels scheduler within a budget a frame (item 7)
+                return;
+            }
             if (now >= _mindNextScan)
             {
                 _mindNextScan = now + 1000;
@@ -87,6 +93,237 @@ namespace EnrageWestworld.InGame
         }
 
         private Action _aMindChoose;
+
+        // ---- the levels of detail and the frame budget (step 7, night 2026-10-28; Core/Levels.cs; [Mind] MindLevels) ----
+
+        private Levels _mindLevels;
+        private readonly List<string> _mindAwayTowns = new List<string>();
+        private readonly Dictionary<string, int> _mindAwayOld = new Dictionary<string, int>();   // id -> ties older than a week, built once a town pass
+        private readonly List<int> _mindWhoDrop = new List<int>();
+        private string _mindAwayTown, _mindAwayLast;
+        private int _mindAwayCursor, _mindAwayPeople, _mindAwayWorries, _mindAwayTies, _mindAwayLife, _mindAwayPasses, _mindAwayTownCursor, _mindAwayPollAt;
+        private long _mindAwayDay = -1, _mindScanMicros, _mindScanPeak;
+        private const int AwayPeopleAFrame = 20;
+
+        private static long Micros(long since)
+        {
+            return (Stopwatch.GetTimestamp() - since) * 1000000L / Stopwatch.Frequency;
+        }
+
+        /// The shadow's frame with the scheduler: the scan places everyone within 130 m (once a second, on screen or
+        /// not; timed, reported in F7), then each frame hands out the work that's due, longest-waiting first, until the
+        /// frame's share of time (200 microseconds) is spent: the near ring's looks (who they are, traits, needs, the
+        /// MIND traits line) every 750 ms, the appraisal and the choosing as before (level 0's work, ahead of the
+        /// rings' below), the about ring's looks every 10-30 s each, then the away pass (the people saved elsewhere, a
+        /// town a game day, counted only). The rest waits for the next frame.
+        private void MindLevelsTick(int now)
+        {
+            if (_mindLevels == null)
+                _mindLevels = new Levels();
+            if (now >= _mindNextScan)
+            {
+                _mindNextScan = now + 1000;
+                long ts = Stopwatch.GetTimestamp();
+                MindScanLevels(now);
+                _mindScanMicros = Micros(ts);
+                if (_mindScanMicros > _mindScanPeak)
+                    _mindScanPeak = _mindScanMicros;
+                return;   // the scan's frame does nothing else
+            }
+            _mindLevels.BeginFrame();
+            LevelEntry e;
+            long t0;
+            while ((e = _mindLevels.Next(Levels.Near, now)) != null)
+            {
+                t0 = Stopwatch.GetTimestamp();
+                MindLook(e.Handle, now);
+                MindNoteWho(e);
+                _mindLevels.Spend(Micros(t0));
+            }
+            if (_mindLevels.FrameHasRoom)
+            {
+                t0 = Stopwatch.GetTimestamp();
+                MindAppraiseStep(now);
+                _mindLevels.Spend(Micros(t0));
+            }
+            if (_mindLevels.FrameHasRoom)
+            {
+                t0 = Stopwatch.GetTimestamp();
+                if (_aMindChoose == null)
+                    _aMindChoose = () => MindChooseStep(_now);
+                Safe("mind choosing", _aMindChoose);
+                _mindLevels.Spend(Micros(t0));
+            }
+            while ((e = _mindLevels.Next(Levels.About, now)) != null)
+            {
+                t0 = Stopwatch.GetTimestamp();
+                MindAbout(e, now);
+                _mindLevels.Spend(Micros(t0));
+            }
+            if (_mindLevels.FrameHasRoom)
+            {
+                t0 = Stopwatch.GetTimestamp();
+                MindAwayStep(now);
+                _mindLevels.Spend(Micros(t0));
+            }
+        }
+
+        /// The entry learns who its body is (or that it's nobody, visited half as often); a reused handle is re-read.
+        private void MindNoteWho(LevelEntry e)
+        {
+            MindWho w;
+            if (_mindWho.TryGetValue(e.Handle, out w))
+            {
+                e.Id = w.Id;
+                e.Nobody = w.Id == null;
+            }
+        }
+
+        /// The scan under the scheduler: everyone human and alive within the about ring and a little past it, placed by
+        /// distance and (within the near ring and its margin) whether they're on screen (the screen test alone, as the
+        /// cards use; walls aren't checked); everyone within 20 m, on screen or not, becomes _mindNear, nearest first,
+        /// so the appraisal, the choosing, F7 and the cards read it as the old scan gave it. The cache of who is who
+        /// is pruned of handles not seen for a minute, never wiped (a wipe threw away every choice and need).
+        private void MindScanLevels(int now)
+        {
+            Ped me = Game.Player.Character;
+            _mindNear.Clear();
+            _mindCursor = 0;
+            if (me == null || !me.Exists())
+                return;
+            Vector3 at = me.Position;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                int h = p.Handle;
+                if (h == me.Handle)
+                    continue;
+                float d = p.Position.DistanceTo(at);
+                if (d > Levels.AboutMetres + 10f || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
+                    continue;
+                bool inView = d <= Levels.NearMetres + Levels.Hysteresis && ENTITY.IS_ENTITY_ON_SCREEN(h);
+                _mindLevels.Place(h, d, inView, now);
+            }
+            _mindLevels.Settle(now);
+            List<LevelEntry> near = _mindLevels.NearAll;
+            for (int i = 0; i < near.Count; i++)
+                _mindNear.Add(near[i].Handle);
+            if (_mindWho.Count > 400)
+            {
+                _mindWhoDrop.Clear();
+                foreach (KeyValuePair<int, MindWho> kv in _mindWho)
+                    if (_mindLevels.Of(kv.Key) == null && (now - kv.Value.CheckedAt > 60000 || now < kv.Value.CheckedAt))
+                        _mindWhoDrop.Add(kv.Key);
+                foreach (int h in _mindWhoDrop)
+                    _mindWho.Remove(h);
+                if (_mindWho.Count > 1500)
+                    _mindWho.Clear();   // never in practice: a safety stop
+            }
+        }
+
+        /// The about ring: who they are and their needs and mood, no line (level 1: the town around). A nobody is
+        /// visited half as often (the ring is mostly the game's own walkers).
+        private void MindAbout(LevelEntry e, int now)
+        {
+            MindWho w = ENTITY.DOES_ENTITY_EXIST(e.Handle) ? MindKnown(e.Handle, now) : null;
+            e.Id = w != null ? w.Id : null;
+            e.Nobody = w == null || w.Id == null;
+            if (w == null || w.Id == null)
+                return;
+            Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
+            if (t == null)
+                return;
+            if (w.Needs == null || now - w.NeedsAt >= NeedsMs || now < w.NeedsAt)
+                MindNeeds(w, e.Handle, now);
+        }
+
+        /// The away pass (level 2): one time a game day a town, the residents saved for it, a few a frame: a worry ended,
+        /// ties older than a week cooled, a life event, all worked out from id and day and only counted; one MIND away
+        /// line a town a day, nothing written.
+        private void MindAwayStep(int now)
+        {
+            long g = _store.LastGameMin;
+            if (g <= 0 || _store.Residents == null)
+                return;
+            long day = g / 1440;
+            if (_mindAwayTown == null)
+            {
+                if (now - _mindAwayPollAt < 1000 && now >= _mindAwayPollAt)
+                    return;   // which town is due is asked once a second, not every frame
+                _mindAwayPollAt = now;
+                if (day != _mindAwayDay)
+                {
+                    // the towns of the saved residents, listed afresh each game day
+                    _mindAwayDay = day;
+                    _mindAwayTowns.Clear();
+                    _mindAwayTownCursor = 0;
+                    foreach (Resident r in _store.Residents)
+                        if (r != null && r.Town != null && !r.Dead && !_mindAwayTowns.Contains(r.Town))
+                            _mindAwayTowns.Add(r.Town);
+                }
+                if (_mindAwayTowns.Count == 0 || _mindAwayTownCursor >= _mindAwayTowns.Count)
+                    return;   // every town's pass is done for the day
+                string town = _mindAwayTowns[_mindAwayTownCursor++];
+                if (!_mindLevels.AwayDue(town, g))
+                    return;
+                _mindAwayTown = town;
+                _mindAwayCursor = 0;
+                _mindAwayPeople = _mindAwayWorries = _mindAwayTies = _mindAwayLife = 0;
+                // the ties older than a week, counted per person in one walk (not a walk of the ties per resident)
+                _mindAwayOld.Clear();
+                foreach (SceneTie t in _store.Ties)
+                {
+                    if (t == null || g - t.At <= 7 * 1440)
+                        continue;
+                    int n;
+                    if (t.A != null)
+                        _mindAwayOld[t.A] = _mindAwayOld.TryGetValue(t.A, out n) ? n + 1 : 1;
+                    if (t.B != null)
+                        _mindAwayOld[t.B] = _mindAwayOld.TryGetValue(t.B, out n) ? n + 1 : 1;
+                }
+                return;
+            }
+            int done = 0;
+            List<Resident> rs = _store.Residents;
+            while (_mindAwayCursor < rs.Count && done < AwayPeopleAFrame)
+            {
+                Resident r = rs[_mindAwayCursor++];
+                if (r == null || r.Dead || r.Town != _mindAwayTown || r.Id == null)
+                    continue;
+                done++;
+                _mindAwayPeople++;
+                int old;
+                _mindAwayOld.TryGetValue(r.Id, out old);
+                Levels.AwayDay(r.Id, day, old, ref _mindAwayWorries, ref _mindAwayTies, ref _mindAwayLife);
+            }
+            if (_mindAwayCursor >= rs.Count)
+            {
+                _mindAwayPasses++;
+                _mindAwayLast = _mindAwayTown + ", " + _mindAwayPeople + " people: " + _mindAwayWorries + " worries ended, " + _mindAwayTies + " ties cooled, " + _mindAwayLife + " life events; nothing written";
+                if (_mindAwayPeople > 0)
+                    MindLog(now, "MIND away: " + _mindAwayLast);
+                _mindAwayTown = null;
+            }
+        }
+
+        /// F7: the scheduler and its budget.
+        private string MindLevelsStatus()
+        {
+            try
+            {
+                if (_cfg == null || !_cfg.MindShadow)
+                    return "off ([Mind] MindShadow)";
+                if (!_cfg.MindLevels || _mindLevels == null)
+                    return "off ([Mind] MindLevels; the scan as before: everyone within " + (int)MindMetres + " m, two looks a frame)";
+                Levels l = _mindLevels;
+                return "on; " + l.Count + " placed, near " + l.NearCount + " (on screen within " + (int)Levels.NearMetres + " m, at most " + Levels.NearMax + "; " + l.NearAll.Count + " within 20 m in all), about " + l.AboutCount + " (within " + (int)Levels.AboutMetres + " m); " +
+                       l.Ran + " visits, " + l.Deferred + " put off, " + l.Starved + " late, " + l.Changes + " level changes, " + l.Capped + " kept out of a full ring; budget " + l.BudgetMicros + " us a working frame, used " + (l.Frames > 0 ? l.Spent / l.Frames : 0) + " us on average, peak " + l.PeakMicros + "; the scan " + _mindScanMicros + " us (peak " + _mindScanPeak + ")" +
+                       "; away passes " + _mindAwayPasses + (_mindAwayLast != null ? ", last: " + _mindAwayLast : "") + (_mindAwayTown != null ? ", now " + _mindAwayTown + " (" + _mindAwayCursor + " of " + (_store.Residents != null ? _store.Residents.Count : 0) + " read)" : "");
+            }
+            catch (Exception ex)
+            {
+                return "couldn't say (" + ex.Message + ")";
+            }
+        }
 
         /// Choosing what to do, in shadow (the mind design's step 6; Core/Choosing.cs): for one person near a frame, once
         /// a minute each, every action open to them now scored against their needs, nature, mood and any feeling still
@@ -445,6 +682,11 @@ namespace EnrageWestworld.InGame
             _mindGen = _engine.Shadow.Generation;
             _mindWho.Clear();
             _mindNear.Clear();
+            if (_mindLevels != null)
+                _mindLevels.Clear();
+            _mindAwayTown = null;
+            _mindAwayTowns.Clear();
+            _mindAwayDay = -1;
             _mindTraitsTold.Clear();
             _mindCursor = 0;
             _mindEv = null;
