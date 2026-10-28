@@ -417,7 +417,7 @@ namespace EnrageWestworld.InGame
                              (w.Needs != null ? ", " + w.Needs.Words() : "") + (w.Concerns != null ? ", " + Needs.Words(w.Concerns) : ""));
                 }
                 return "on, " + (_cfg.MindLive ? "LIVE (sore and glad from the mind)" : "reporting only") + "; " + _mindNear.Count + " people within " + (int)MindMetres + " m, " + _mindLooks + " looks, traits worked out for " +
-                       (_engine != null ? _engine.Shadow.TraitsMade + " (" + _engine.Shadow.Count + " kept)" : "nobody") + ", " + _mindLogged + " MIND lines, " + _mindLogHeld + " held back by the 20 a minute; events appraised " + _mindFelt + " feelings from " + _engine.Shadow.EventsQueued + " happenings (" + _engine.Shadow.Waiting + " waiting, " + _engine.Shadow.EventsDropped + " dropped from a full queue, " + _mindEvStale + " too old by their turn), last: " + (_mindLastFelt ?? "none") +
+                       (_engine != null ? _engine.Shadow.TraitsMade + " (" + _engine.Shadow.Count + " kept)" : "nobody") + ", " + _mindLogged + " MIND lines, " + _mindLogHeld + " held back by the 20 a minute; events appraised " + _mindFelt + " feelings from " + _engine.Shadow.EventsQueued + " happenings (" + _engine.Shadow.Waiting + " waiting, " + _engine.Shadow.EventsDropped + " dropped from a full queue, " + _mindEvStale + " too old by their turn), last: " + (_mindLastFelt ?? "none") + "; memories told on " + _engine.MemoriesTold + ", placed " + _engine.MemoriesPlaced + ", drifted readings " + _engine.MemoriesDrifted +
                        (near.Count > 0 ? "; near: " + string.Join("; ", near) : "; nobody near it knows");
             }
             catch (Exception ex)

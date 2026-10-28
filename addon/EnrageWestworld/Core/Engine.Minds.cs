@@ -35,6 +35,19 @@ namespace EnrageWestworld.Core
             e.At = Store.LastGameMin;
             WorldEvents.Note(Store.WorldLog, e);
             Detail("EVENT " + WorldEvents.Describe(e));
+            if (Cfg.MindLive)
+            {
+                try
+                {
+                    FillSpots(e);   // the memories written of it a moment ago get its spot (Minds.Memory.cs; a fault here never costs the event)
+                }
+                catch (Exception ex)
+                {
+                    if (!_spotFailed)
+                        Log("MIND placing a memory failed: " + ex.Message);
+                    _spotFailed = true;
+                }
+            }
             if (Cfg.MindShadow)
             {
                 try
@@ -151,7 +164,7 @@ namespace EnrageWestworld.Core
                     continue;
                 // they can only hold it against him if they know it was him: they saw him do violence lately, or the
                 // town's talk of that killing has started and names nobody unseen (Knowing.cs); and they know his face
-                bool saw = st.Mind.Any(x => x.Kind == "deed:violence" && Minds.AboutYou(x) && now - x.At >= 0 && now - x.At < days * 1440L);
+                bool saw = st.Mind.Any(x => x.Kind == "deed:violence" && Minds.AboutYou(x) && x.From == null && now - x.At >= 0 && now - x.At < days * 1440L);
                 bool told = Store.Deeds.Any(x => x.VictimId == m.Who[0] && x.Known);
                 if (!(saw || told) || !(Knowing.Met(st) || saw))
                     continue;
@@ -177,13 +190,13 @@ namespace EnrageWestworld.Core
         }
 
         /// This person remembers seeing the player do violence in the last `days` game days (a killing, an assault).
-        public bool SawYouViolent(string id, int days)
+        public bool SawYouViolent(string id, int days)   // (a deed only told of doesn't count: From must be null)
         {
             PersonState st = id != null ? Store.Find(id) : null;
             if (st == null || st.Mind == null)
                 return false;
             long now = Store.LastGameMin;
-            return st.Mind.Any(m => m.Kind == "deed:violence" && Minds.AboutYou(m) && now - m.At >= 0 && now - m.At < days * 1440L);
+            return st.Mind.Any(m => m.Kind == "deed:violence" && Minds.AboutYou(m) && m.From == null && now - m.At >= 0 && now - m.At < days * 1440L);
         }
 
         /// One of enRAGE's records on the ticker (Minds and RecordMinds on): our memories of what they lived through,
@@ -240,8 +253,113 @@ namespace EnrageWestworld.Core
             return c != null ? c.Text : null;
         }
 
+        // ---- memory v1 (night 2026-10-28; Minds.Memory.cs), behind MindLive ---------------------------------
+
+        public int MemoriesTold { get; private set; }     // told on between people who talked
+        public int MemoriesPlaced { get; private set; }   // given the spot they happened at
+        public int MemoriesDrifted { get; private set; }  // read as drifted or gone to gist (a thought from one)
+        private readonly HashSet<string> _toldSet = new HashSet<string>();   // teller>listener>key: nothing told twice to the same person
+        private readonly List<MindMemory> _here = new List<MindMemory>();
+
+        /// The memories of everyone in a happening or who saw it get its spot, when they were written in the same minute.
+        private void FillSpots(Happening e)
+        {
+            if (e == null)
+                return;
+            if (e.DoerId != null && e.DoerId != "player")
+                FillSpotOf(e.DoerId, e);
+            if (e.TargetId != null && e.TargetId != "player")
+                FillSpotOf(e.TargetId, e);
+            if (e.Witnesses != null)
+                foreach (EventWitness w in e.Witnesses)
+                    if (w.Id != null && w.Id != "player")
+                        FillSpotOf(w.Id, e);
+        }
+
+        private void FillSpotOf(string id, Happening e)
+        {
+            PersonState st = Store.Find(id);   // only someone who already has a state: nobody is made for it
+            if (st != null && st.Mind != null)
+                MemoriesPlaced += Minds.FillSpot(st.Mind, e, id);
+        }
+
+        /// After a talk between two people: the thing most worth telling passes from each to the other as a memory heard
+        /// from them (Minds.WorthTelling, Minds.Retold). Only between people who already have a state (Store.Find); never
+        /// through NoteEvent or the saved events log; nothing told twice to the same person (an in-memory set, capped).
+        private void Retell(Minds.Party teller, Minds.Party listener, long now)
+        {
+            if (teller == null || listener == null || teller.Id == null || listener.Id == null || teller.Id == listener.Id)
+                return;
+            PersonState ts = Store.Find(teller.Id), ls = Store.Find(listener.Id);
+            if (ts == null || ls == null || ts.Mind == null || ls.Mind == null)
+                return;
+            string head = teller.Id + ">" + listener.Id + ">";
+            MindMemory m = Minds.WorthTelling(ts.Mind, ls.Mind, listener.Id, now, x => _toldSet.Contains(head + x.Key), id => ListenerKnows(listener.Id, id));
+            if (m == null)
+                return;
+            MindMemory r = Minds.Note(ls.Mind, Minds.Retold(m, teller.Id, Person.FirstOf(teller.Name ?? "somebody"), now), now);
+            if (!ls.Mind.Contains(r))
+                return;   // it didn't stay (a full mind, and a told thing goes first): nothing was told, as far as anyone will know
+            if (_toldSet.Count > 20000)
+                _toldSet.Clear();
+            _toldSet.Add(head + m.Key);
+            m.Told++;
+            MemoriesTold++;
+            Detail("MIND told: " + (teller.Name ?? teller.Id) + " tells " + (listener.Name ?? listener.Id) + " of " + Minds.DescribeMemory(r, now, Person.FirstOf(teller.Name ?? "somebody")));
+        }
+
+        /// Someone whose name a memory never loses: a tie of this person's, or one of the dead.
+        private bool KnownId(string id)
+        {
+            if (id == null)
+                return false;
+            foreach (SceneTie t in Store.Ties)
+                if (t.Has(id))
+                    return true;
+            return HasDied(id);
+        }
+
+        /// Someone this person already holds against (a hostile tie): their id and first name, or null: the man a told
+        /// story's unnamed doer drifts toward.
+        private string[] FoeOf(string readerId)
+        {
+            if (readerId == null)
+                return null;
+            foreach (SceneTie t in Store.Ties)
+                if (t.Warmth < 0 && t.Has(readerId))
+                {
+                    string other = t.A == readerId ? t.BName : t.AName, otherId = t.OtherId(readerId);
+                    if (other == null || otherId == null || HasDied(otherId))
+                        continue;   // a dead man isn't named as a fresh doer
+                    return new[] { otherId, Person.FirstOf(other) };
+                }
+            return null;
+        }
+
+        /// Whether the listener has a tie with someone: news of them is worth more to the listener.
+        private bool ListenerKnows(string listenerId, string id)
+        {
+            foreach (SceneTie t in Store.Ties)
+                if (t.Has(listenerId) && t.Has(id))
+                    return true;
+            return false;
+        }
+
+        /// The teller's first name for a told memory's words.
+        private string TellerName(MindMemory m)
+        {
+            if (m == null || m.From == null)
+                return null;
+            PersonState st = Store.Find(m.From);
+            if (st != null && st.Name != null)
+                return Person.FirstOf(st.Name);
+            Resident r = Store.FindResident(m.From);
+            return r != null && r.Name != null ? Person.FirstOf(r.Name) : null;
+        }
+
         /// A scene between a and b (a first, as the scene was built: the one who did it in a one-sided scene): each
-        /// remembers being in it, and whoever was watching remembers seeing it.
+        /// remembers being in it, and whoever was watching remembers seeing it. After a talk (MindLive on), each tells the
+        /// other the thing most worth telling (memory v1).
         public void RememberScene(string kind, Minds.Party a, Minds.Party b, IList<Minds.Party> watchers, string town, string place)
         {
             if (!Cfg.Minds || a == null || b == null)
@@ -254,6 +372,20 @@ namespace EnrageWestworld.Core
             string key = kind + ":" + (a.Id ?? a.Name) + ":" + (b.Id ?? b.Name) + ":" + now / 30;
             RememberDid(a, b, kind, group, oneSided ? "doer" : null, town, place, now, key);
             RememberDid(b, a, kind, group, oneSided ? "done" : null, town, place, now, key);
+            if (Cfg.MindLive && Minds.TalkKind(kind))
+            {
+                try
+                {
+                    Retell(a, b, now);
+                    Retell(b, a, now);
+                }
+                catch (Exception ex)
+                {
+                    if (!_retellFailed)
+                        Log("MIND retelling failed: " + ex);
+                    _retellFailed = true;
+                }
+            }
             if (watchers == null || kind == "lift")
                 return;   // nobody saw the lift
             foreach (Minds.Party w in watchers)
@@ -434,7 +566,7 @@ namespace EnrageWestworld.Core
             }
         }
 
-        private bool _thinkFailed;
+        private bool _thinkFailed, _retellFailed, _spotFailed;
         private long _thinkClock = -1;   // the latest game minute thought at: earlier means an older save was loaded
 
         /// An older save was loaded (or the clock stepped back): what was thought after it hasn't happened either.
@@ -444,6 +576,7 @@ namespace EnrageWestworld.Core
             _today.Clear();
             _worryWear.Clear();
             _dossierWear.Clear();
+            _toldSet.Clear();
             Shadow.Clear();
         }
 
@@ -519,9 +652,20 @@ namespace EnrageWestworld.Core
                         continue;   // word of it hasn't reached them yet
                     MindMemory mm = m;
                     bool deed = Minds.AboutYou(m), youNear = look != null && look.Near;
+                    // memory v1 (MindLive): the memory as they have it now (drifted, gone to gist), and a thing told in its own words
+                    if (Cfg.MindLive)
+                    {
+                        MindMemory dr = Minds.Drifted(m, p.Id, now, KnownId, FoeOf);
+                        if (!ReferenceEquals(dr, m))
+                        {
+                            mm = dr;
+                            MemoriesDrifted++;
+                        }
+                    }
                     // saved from an execution: its own words (Executions.After), for the three days they last; the
                     // player's deeds: him as they know him
                     Func<string> make = m.Kind == "rescued" ? (Func<string>)(() => AfterRescue(st, seed + "|" + mm.Times))
+                        : Cfg.MindLive && m.From != null ? () => Minds.ToldLine(mm, p, seed, deed ? Voice.YouPrivate(p, Talk.RefFor(p, st, Player), true) : null, TellerName(m)) ?? Minds.Line(mm, p, now, day, seed)
                         : deed ? () => Minds.Line(mm, p, now, day, seed, Voice.YouPrivate(p, Talk.RefFor(p, st, Player), true), youNear)
                         : (Func<string>)(() => Minds.Line(mm, p, now, day, seed));
                     c.Add(new Minds.Candidate
@@ -530,6 +674,18 @@ namespace EnrageWestworld.Core
                         Pull = Minds.Pull(m, now, day, p.Personality) + (deed && youNear ? 20 : 0), M = m, Make = make
                     });
                 }
+            // standing where something happened (memory v1, MindLive): the nearest memory with a spot within 15 m of the
+            // player (whoever is thinking is near him) comes back with its "here" words
+            if (Cfg.MindLive && st != null && st.Mind != null && (PlayerX != 0f || PlayerY != 0f))
+            {
+                Minds.NearHere(st.Mind, PlayerX, PlayerY, PlayerZ, _here);
+                if (_here.Count > 0)
+                {
+                    MindMemory hm = _here[0], hd = Minds.Drifted(hm, p.Id, now, KnownId, FoeOf);
+                    if (hm.DueAt <= now)
+                        c.Add(new Minds.Candidate { Source = "memory:here", Pull = Minds.Pull(hm, now, day, p.Personality) + 15, M = hm, Make = () => Minds.HereLine(hd, p, seed, null) });
+                }
+            }
             // the worry they're living through
             string wk;
             int ws;

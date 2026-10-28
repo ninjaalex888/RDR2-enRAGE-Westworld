@@ -30,6 +30,16 @@ namespace EnrageWestworld.Core
         [DataMember(Name = "l", EmitDefaultValue = false)] public long LastAt;          // when last thought about (game minute; 0 never)
         [DataMember(Name = "y", EmitDefaultValue = false)] public string Key;           // the same thing noted twice is one memory
         [DataMember(Name = "u", EmitDefaultValue = false)] public long DueAt;           // heard of: not on their mind until word reaches them (0: at once)
+        // memory v1 (night 2026-10-28; Minds.Memory.cs): optional, left out when default, so an old save loads without them
+        // and an old reader passes over them
+        [DataMember(Name = "td", EmitDefaultValue = false)] public int Told;            // times this person told it on
+        [DataMember(Name = "fr", EmitDefaultValue = false)] public string From;         // who told them (an id), for a memory that came by telling
+        [DataMember(Name = "rm", EmitDefaultValue = false)] public int Removes;         // tellings away from someone who saw it (0: saw or heard it themselves)
+        [DataMember(Name = "ln", EmitDefaultValue = false)] public long LearnedAt;      // when they came to know it, for a told memory (0: At)
+        [DataMember(Name = "px", EmitDefaultValue = false)] public float PX;            // the spot it happened at (all 0: unknown; old memories have none)
+        [DataMember(Name = "py", EmitDefaultValue = false)] public float PY;
+        [DataMember(Name = "pz", EmitDefaultValue = false)] public float PZ;
+        public bool Many;                                                                 // not saved: a drifted reading where two became three (Minds.Drifted)
 
         public string WhoAt(int i)
         {
@@ -226,7 +236,7 @@ namespace EnrageWestworld.Core
         /// What a memory is worth keeping: its strength as time has worn it.
         private static double Keep(MindMemory m, long now)
         {
-            return m.Strength * Math.Pow(0.5, Math.Max(0, now - m.At) / HalfLife(m));
+            return m.Strength * Math.Pow(0.5, Math.Max(0, now - m.At) / HalfLife(m)) * (m.From != null ? 0.6 : 1.0);   // a thing only told counts for less, and goes first (night 2026-10-28)
         }
 
         // ---- attention ------------------------------------------------------------------------------------
@@ -235,7 +245,7 @@ namespace EnrageWestworld.Core
         /// same kind of place, near the hour it happened), weighed by temperament, less the times it's been thought.
         public static double Pull(MindMemory m, long now, InnerLife.Context day, string temper)
         {
-            double age = Math.Max(0, now - m.At);   // never from the future: that would weigh more than now
+            double age = Math.Max(0, now - LearnedAt(m));   // never from the future: that would weigh more than now; a thing told ages from the telling (news is news when heard)
             double p = m.Strength * Math.Pow(0.5, age / HalfLife(m));
             if (InSight(m, day))
                 p += 20;
@@ -395,6 +405,8 @@ namespace EnrageWestworld.Core
         public static string Fill(string raw, MindMemory m, Person p, string you = null)
         {
             string who = m.NameAt(0) ?? "somebody", a = m.NameAt(0) ?? "somebody", b = m.NameAt(1) ?? "somebody";
+            if (m.Many)
+                raw = raw.Replace("{a} and {b}", "{a}, {b} and another");   // two became three in the telling (Minds.Drifted)
             string s = raw.Replace("{who}", who).Replace("{a}", a).Replace("{b}", b).Replace("{you}", you ?? "that stranger")
                           .Replace("{town}", string.IsNullOrEmpty(m.Town ?? p.Home) ? "this town" : m.Town ?? p.Home);
             return Sentences(s);

@@ -149,7 +149,7 @@ namespace EnrageWestworld.Core
             {
                 n += st.Heard.RemoveAll(h => h.At > cut);
                 n += st.Diary.RemoveAll(d => d.At > cut);
-                n += st.Mind.RemoveAll(m => m.At > cut);
+                n += st.Mind.RemoveAll(m => m.At > cut || m.LearnedAt > cut);   // a thing told after the cut wasn't told (night 2026-10-28)
                 foreach (MindMemory m in st.Mind)
                     if (m.LastAt > cut)
                         m.LastAt = cut;   // thought about after the cut: that hasn't happened either (the times stay)
