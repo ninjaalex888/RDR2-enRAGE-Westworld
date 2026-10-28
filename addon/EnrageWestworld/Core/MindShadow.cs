@@ -7,6 +7,14 @@ using System.Collections.Generic;
 
 namespace EnrageWestworld.Core
 {
+    /// One person's beliefs in the shadow: what has moved them and which held at the last look (night 2026-10-28, item 6).
+    public sealed class BeliefState
+    {
+        public readonly float[] Moved = new float[Beliefs.Count];
+        public int Held;        // bits (Beliefs.HeldBits) at the last look
+        public bool Seen;       // looked at once (the first look sets Held and can't flip anything)
+    }
+
     public sealed class MindShadow
     {
         public const int Cap = 600;
@@ -150,6 +158,44 @@ namespace EnrageWestworld.Core
             get { return _felt.Count; }
         }
 
+        // ---- beliefs (step 10, night 2026-10-28) ----------------------------------------------------------
+
+        // id -> what appraisals have moved each belief by (deltas on Beliefs.Baseline) and which held at the last look, in memory only
+        private readonly Dictionary<string, BeliefState> _beliefs = new Dictionary<string, BeliefState>();
+        private readonly Queue<string> _beliefOrder = new Queue<string>();
+        public int BeliefsMoved { get; private set; }
+
+        /// This person's belief state (made on first ask; capped at Cap people, the first to believe going first).
+        public BeliefState BeliefsOf(string id)
+        {
+            BeliefState d;
+            if (id == null)
+                return new BeliefState();
+            if (_beliefs.TryGetValue(id, out d))
+                return d;
+            if (_beliefs.Count >= Cap && _beliefOrder.Count > 0)
+                _beliefs.Remove(_beliefOrder.Dequeue());
+            _beliefs[id] = d = new BeliefState();
+            _beliefOrder.Enqueue(id);
+            return d;
+        }
+
+        /// A feeling moves what they believe (Beliefs.Move), in memory; true when anything moved.
+        public bool Believe(string id, Feeling f, AppraisalEvent e, Traits t, float[] baseline)
+        {
+            if (id == null || f == null || f.Kind == "none" || e == null)
+                return false;
+            if (!Beliefs.Move(BeliefsOf(id).Moved, f, e, t, baseline))
+                return false;
+            BeliefsMoved++;
+            return true;
+        }
+
+        public int PeopleBelieving
+        {
+            get { return _beliefs.Count; }
+        }
+
         /// Everything forgotten (an older save loaded, the clock stepped back, a new save).
         public void Clear()
         {
@@ -157,6 +203,8 @@ namespace EnrageWestworld.Core
             _felt.Clear();
             _feltOrder.Clear();
             _events.Clear();
+            _beliefs.Clear();
+            _beliefOrder.Clear();
             Generation++;
             Cleared++;
         }

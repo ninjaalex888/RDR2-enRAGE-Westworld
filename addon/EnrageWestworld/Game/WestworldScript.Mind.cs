@@ -33,6 +33,7 @@ namespace EnrageWestworld.InGame
             public List<Concern> Concerns;
             public int NeedsAt;
             // the shadow's choosing (night 2026-10-28, item 5): what they'd do now, worked out once a minute, never acted on
+            public string TradeGroup;       // InnerLife.TradeGroup(P.Trade), worked out once (the night review: it allocates)
             public string Choice, ChoiceWhy, ChoiceNext, ChoiceHeld;
             public RecentActs Recent;       // the last three brief things and when (a brief thing done lately serves less)
             public bool ChoiceTold;         // its MIND would line is written (a held one is written on the next look while the choice stands)
@@ -107,7 +108,7 @@ namespace EnrageWestworld.InGame
                 return;
             w.ChoseAt = now;
             long g = _store.LastGameMin;
-            string tg = InnerLife.TradeGroup(w.P.Trade);
+            string tg = w.TradeGroup ?? (w.TradeGroup = InnerLife.TradeGroup(w.P.Trade));
             if (w.Recent == null)
                 w.Recent = new RecentActs();
             var c = new ChoiceContext
@@ -189,6 +190,98 @@ namespace EnrageWestworld.InGame
                 w.ChoiceTold = true;
                 _mindChoiceMinuteCount++;
                 _mindChoiceLines++;
+            }
+        }
+
+        // ---- beliefs and the self (step 10, night 2026-10-28; Core/Beliefs.cs): shadow, read-only against the Awakening and Regard ----
+
+        private int _mindBeliefLines, _mindBeliefFlips, _mindBeliefHeld;
+        private string _mindLastBelief, _mindBeliefFailed;
+        private readonly float[] _mindBaseline = new float[Beliefs.Count];
+        private readonly BeliefContext _mindBeliefCtx = new BeliefContext();
+
+        /// The appraisal moves this person's beliefs (in memory); a belief that flips since the last look (by the move, or
+        /// by the baseline: a memory come or gone, the Awakening) gets a MIND believes line (inside the 20), with where it
+        /// disagrees with the Awakening's stage and with Regard, and the road they'd take with a memory against it.
+        /// Nothing drives the Awakening or Regard from it. The first look sets what holds and can't flip anything.
+        private void MindBelieve(MindWho w, string id, Feeling f, AppraisalEvent ae, int now)
+        {
+            try
+            {
+                PersonState st = _store.Find(id);
+                if (w.TradeGroup == null)
+                    w.TradeGroup = InnerLife.TradeGroup(w.P.Trade);
+                _mindBeliefCtx.WakeStage = st != null ? st.WakeStage : 0;
+                _mindBeliefCtx.Memories = st != null ? st.Mind : null;
+                _mindBeliefCtx.Standing = Beliefs.StandingOf(w.TradeGroup);
+                Beliefs.Fill(_mindBaseline, w.P, w.Traits, _mindBeliefCtx);
+                BeliefState bs = _engine.Shadow.BeliefsOf(id);
+                if (!bs.Seen)
+                {
+                    bs.Held = Beliefs.HeldBits(_mindBaseline, bs.Moved);
+                    bs.Seen = true;
+                }
+                bool moved = _engine.Shadow.Believe(id, f, ae, w.Traits, _mindBaseline);
+                int held = Beliefs.HeldBits(_mindBaseline, bs.Moved);
+                if (held == bs.Held)
+                    return;
+                int was = bs.Held;
+                bs.Held = held;
+                _mindBeliefFlips++;
+                string flipped = Beliefs.Flips(was, held);
+                _mindLastBelief = w.Name + ": " + flipped;
+                if (!MindLogRoom(now))
+                {
+                    _mindBeliefHeld++;
+                    return;
+                }
+                string regard = st != null ? Regard.OfPerson(w.P, st, false) : null;
+                string dis = Beliefs.Disagreements(_mindBaseline, bs.Moved, _mindBeliefCtx.WakeStage, regard);
+                if (MindLog(now, "MIND believes: " + w.Name + " (" + (w.Src.Temper ?? "plain") + "): " + flipped + " <- " + (moved ? f.Kind + " at " + ae.Kind : "a memory or the Awakening (the baseline moved)") +
+                            "; " + Beliefs.Describe(_mindBaseline, bs.Moved) + (dis != null ? "; disagrees: " + dis : "") + "; a memory against it they'd " + Beliefs.Road(w.Traits) + " (nothing drives the Awakening or Regard from this)"))
+                    _mindBeliefLines++;
+            }
+            catch (Exception ex)
+            {
+                if (_mindBeliefFailed == null)
+                {
+                    _mindBeliefFailed = ex.Message;
+                    Log.Write("MIND believes failed: " + ex.Message);   // once; F7 says so
+                }
+            }
+        }
+
+        /// F7: the shadow's beliefs, for the nearest three it knows.
+        private string MindBeliefsStatus()
+        {
+            try
+            {
+                if (_cfg == null || !_cfg.MindShadow)
+                    return "off ([Mind] MindShadow)";
+                var near = new List<string>();
+                foreach (int h in _mindNear)
+                {
+                    if (near.Count >= 3)
+                        break;
+                    MindWho w;
+                    if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.Traits == null || w.P == null)
+                        continue;
+                    PersonState st = _store.Find(w.Id);
+                    if (w.TradeGroup == null)
+                        w.TradeGroup = InnerLife.TradeGroup(w.P.Trade);
+                    var ctx = new BeliefContext { WakeStage = st != null ? st.WakeStage : 0, Memories = st != null ? st.Mind : null, Standing = Beliefs.StandingOf(w.TradeGroup) };
+                    float[] baseline = Beliefs.Baseline(w.P, w.Traits, ctx);
+                    BeliefState bs = _engine.Shadow.BeliefsOf(w.Id);
+                    string regard = st != null ? Regard.OfPerson(w.P, st, false) : null;
+                    string dis = Beliefs.Disagreements(baseline, bs.Moved, ctx.WakeStage, regard);
+                    near.Add(w.Name + " " + Beliefs.Describe(baseline, bs.Moved) + (dis != null ? " (disagrees: " + dis + ")" : "") + (w.Kind == "folk" ? " (enRAGE's townsperson: no trade, Regard reads their card only)" : ""));
+                }
+                return "shadow only; " + _engine.Shadow.BeliefsMoved + " moves for " + _engine.Shadow.PeopleBelieving + " people, " + _mindBeliefFlips + " flips, " + _mindBeliefLines + " MIND believes lines, " + _mindBeliefHeld + " held back by the 20 a minute" +
+                       (_mindBeliefFailed != null ? "; FAILED once: " + _mindBeliefFailed : "") + "; last: " + (_mindLastBelief ?? "none") + (near.Count > 0 ? "; near: " + string.Join("; ", near) : "");
+            }
+            catch (Exception ex)
+            {
+                return "couldn't say (" + ex.Message + ")";
             }
         }
 
@@ -308,6 +401,7 @@ namespace EnrageWestworld.InGame
             if (!MindLogRoom(now))
             {
                 _mindLogHeld++;
+                MindBelieve(w, id, f, ae, now);   // what they believe moves whether or not the line is written
                 return;
             }
             long g = _store.LastGameMin;
@@ -316,6 +410,7 @@ namespace EnrageWestworld.InGame
             MindLog(now, "MIND " + w.Name + " (" + (w.Src.Temper ?? "plain") + "): " + f.Kind + " (" + f.Strength + ")" + (about != null ? " at " + about : "") + ", urge " + f.Urge + ", shows " + f.Shows + " (" + MindCanShow(f, w) + ")" +
                          " <- " + ev.Kind + " (" + ae.Role + (heardOnly ? ", only heard it" : "") + ", " + ae.Witnesses + " saw); mood " + Mood.Words(m, b) +
                          (!_cfg.MindLive && old != mind ? "; the old mood says " + (old ?? "nothing") + ", the mind's " + (mind ?? "nothing") : ""));
+            MindBelieve(w, id, f, ae, now);   // and what they believe moves a little (step 10, shadow), after the feeling's own line
         }
 
         /// What the game is proven able to show of it (Core/Catalogue.cs), its first entry by name, or "the thought alone".
@@ -358,6 +453,10 @@ namespace EnrageWestworld.InGame
             _mindLastFelt = null;   // nothing from a rewound future in F7
             _mindChooseCursor = 0;
             _mindLastChoice = null;
+            _mindLastBelief = null;   // nor a flip from one
+            _mindBeliefFlips = 0;
+            _mindBeliefLines = 0;
+            _mindBeliefHeld = 0;
         }
 
         /// The living people within MindMetres, nearest first (reused lists; the world's ped array is the one allocation).
@@ -501,6 +600,7 @@ namespace EnrageWestworld.InGame
                 w.Recent = was.Recent;
                 w.ChoseAt = was.ChoseAt;
                 w.AteAt = was.AteAt;
+                w.TradeGroup = was.TradeGroup;
             }
             return w;
         }
