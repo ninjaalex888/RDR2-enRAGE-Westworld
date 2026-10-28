@@ -53,20 +53,33 @@ namespace EnrageWestworld.InGame
             }
             List<Candidate> people = ReasonCandidates(me, now, test);
             string ignored;
-            Candidate preacher = people.Where(c => c.Who.P != null && (test || Scenes.WouldPreach(c.Who.P.Devotion, c.Who.Id + "|" + g / 1440)) && NodInView(me, c.Ped) &&
-                                                   !PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) &&
-                                                   (test || Pacing.WhyNot(_store.Pace, "preacher", null, c.Who.Id, g, 0, false, out ignored) == null))
-                                       .OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).FirstOrDefault();
-            if (preacher == null)
+            // the devout first, then a churchgoer who would, then (a test) anyone, nearest first within each; the first of
+            // them with someone near to hear it (Lex, 2026-10-28: a test took whoever was nearest, never the test cast's
+            // devout preacher, and kept to one man with nobody near him)
+            List<Candidate> preachers = people.Where(c => c.Who.P != null && (test || Scenes.WouldPreach(c.Who.P.Devotion, c.Who.Id + "|" + g / 1440)) && NodInView(me, c.Ped) &&
+                                                          !PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) &&
+                                                          (test || Pacing.WhyNot(_store.Pace, "preacher", null, c.Who.Id, g, 0, false, out ignored) == null))
+                                              .OrderBy(c => c.Who.P.Devotion == "Devout" ? 0 : Scenes.WouldPreach(c.Who.P.Devotion, c.Who.Id + "|" + g / 1440) ? 1 : 2)
+                                              .ThenBy(c => c.Ped.Position.DistanceTo(me.Position)).ToList();
+            if (preachers.Count == 0)
             {
                 why = _preacherWhyNot = "nobody devout out in the street" + (test ? TestCastHint("a preacher and a listener") : "");
                 return false;
             }
-            Candidate b = people.Where(c => c != preacher && c.Who.Id != preacher.Who.Id && c.Ped.Position.DistanceTo(preacher.Ped.Position) < 8f && TieWarmth(c.Who.Id, preacher.Who) >= 0)
-                                .OrderBy(c => c.Ped.Position.DistanceTo(preacher.Ped.Position)).FirstOrDefault();
-            if (b == null)
+            Candidate preacher = null, b = null;
+            foreach (Candidate p in preachers)
             {
-                why = _preacherWhyNot = "nobody near " + preacher.Who.Name + " to hear it";
+                b = people.Where(c => c != p && c.Who.Id != p.Who.Id && c.Ped.Position.DistanceTo(p.Ped.Position) < 8f && TieWarmth(c.Who.Id, p.Who) >= 0)
+                          .OrderBy(c => c.Ped.Position.DistanceTo(p.Ped.Position)).FirstOrDefault();
+                if (b != null)
+                {
+                    preacher = p;
+                    break;
+                }
+            }
+            if (preacher == null)
+            {
+                why = _preacherWhyNot = "nobody near " + preachers[0].Who.Name + (preachers.Count > 1 ? " or the " + (preachers.Count - 1) + " others who'd preach" : "") + " to hear it";
                 return false;
             }
             string seed = preacher.Who.Id + "|preach|" + g / 1440;

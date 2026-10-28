@@ -21,6 +21,7 @@
 ### The street preacher
 
 - A devout townsperson may preach in the street on any day now, between nine and six, not only on Sunday afternoons (Lex). It's a tenth as likely on a weekday as on a Sunday afternoon, still once a town a day at most, and the same person no more than every two days. On a weekday the sermon doesn't mention the Sabbath.
+- The one who preaches is the devout first, then a churchgoer who would, nearest first, and the first of them with someone near enough to hear; on the Testing page anyone may, but in the same order, so the test cast's devout preacher is the one when he's about (Lex: a test took whoever was nearest, and kept refusing on one man nobody stood near).
 
 ### Despair's voice
 
