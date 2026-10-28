@@ -16,6 +16,18 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 Story Mode only. Don't run script mods in Red Dead Online.
 
 
+NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
+------------
+- Fixes: a controller binding of "+" alone no longer stops RealNPCs starting; the test cast fit
+  their parts for the mind too; the supper invitation's host wanders off when nobody comes, and a
+  fault in the dark no longer says your pockets were turned out; Show minds' cards cost less in a
+  crowd; a talk cut short isn't remembered as small talk.
+- The mind in shadow goes on: the man you assault judges it himself (his MIND line in the log),
+  an execution on the road counts as a killing seen, the night visitor as the uncanny. With
+  [Mind] MindLive on, people's thoughts from their feelings have twelve lines each instead of
+  three, say the mask when the face hides the feeling, and a hungry farmhand doesn't sound like a
+  hungry clerk. Off (as it comes), thoughts are exactly as in 0.6.3.
+
 NEW IN 0.6.3
 ------------
 - A livelier street. People deal with each other around you far more often: brawls between

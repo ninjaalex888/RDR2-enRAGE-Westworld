@@ -1,5 +1,23 @@
 # Changelog
 
+## Unreleased
+
+Built in the night run of 2026-10-28 (Lex's brief), on the 0.6.3 release; nothing here has been seen in game yet. The mind stays in shadow: everything new that would change what people think, say or do sits behind `[Mind] MindLive` (off), and with it off every path runs as it did in 0.6.3.
+
+### Fixes from a review of the day's work
+
+- A hand-edited controller binding of `+` alone stopped RealNPCs starting (nothing in the log); it's refused with a reason now, and no bad setting can stop the start.
+- The test cast fit their parts for the tests but not for the mind (a cached person kept the age, faith and temper from before the fitting), and a member whose build never streamed in was kept in the save beside the new one for good.
+- Show minds in a crowd allocated memory every frame while placing the cards; the mind's resident lookup could take a stranger for a bound resident for a few seconds after a handle was reused.
+- The supper invitation: a fault before the money step no longer tells you your pockets were turned out, and a host nobody came to wanders off instead of standing rooted.
+- A lawman standing by hushes anger and contempt on people's faces (the rule was written but never read); F7's supper, test cast and controller lines can't cost the lines after them.
+- A real-voice talk cut short was remembered as small talk had; only one that ran its course is.
+
+### The mind in shadow (continued)
+
+- The man you assault appraises it himself: an assault's victim (the person you hurt last, when RealNPCs already knows him) is on the deed and its record, so his `MIND` line shows his own anger or fear; being robbed raises someone's wariness as well as their money worry. An execution on the road is a killing seen for whoever watched it (and a rescue for the captive you saved); the night visitor is the uncanny for anyone who saw it.
+- Thoughts from feelings, filled out (behind `[Mind] MindLive`): twelve lines for each feeling and whom it's about (was three), in different forms (an observation, a judgment, self-talk, a question, a plan, a regret, one thing bringing back another); when the face hides the feeling the thought says the mask too ("Smile. Let him think it didn't land."); a pressing need in the words of the trade and temper where it tells (a farmhand's hunger isn't a clerk's; a coward's fear for himself isn't a bold man's), ten lines each. 609 lines in all, every one checked for period words.
+
 ## 0.6.3
 
 Built on 2026-10-26, overnight and through the day and night of 2026-10-27 (Lex's briefs), with play-tests between. Seen working in game by the release: the execution on the road, the Testing page and its test cast, the street scenes (the brawl with real punches, someone standing up to a bully, the fall and a hand up, the lost child, the old days, the preacher, the round's words), the mind cards, despair's farewell, the stalker, the awake running at a wall, the wake stages over heads. Not yet seen in game: the controller buttons, the supper invitation (off by default), the callout, the Sabbath, the bell, the night visitor's and the traveller's newest changes, and from 2026-10-26 the "Hook up" prompt, the CasualHookups fallback and the body-watch witness.
