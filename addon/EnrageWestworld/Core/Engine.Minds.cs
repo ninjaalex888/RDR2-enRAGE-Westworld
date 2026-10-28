@@ -256,6 +256,7 @@ namespace EnrageWestworld.Core
         // ---- memory v1 (night 2026-10-28; Minds.Memory.cs), behind MindLive ---------------------------------
 
         public int MemoriesTold { get; private set; }     // told on between people who talked
+        public int MemoriesToldInPassing { get; private set; }   // of those, told with a word in passing (a nod with a greeting; after item 14)
         public int MemoriesPlaced { get; private set; }   // given the spot they happened at
         public int MemoriesDrifted { get; private set; }  // read as drifted or gone to gist (a thought from one)
         private readonly HashSet<string> _toldSet = new HashSet<string>();   // teller>listener>key: nothing told twice to the same person
@@ -286,7 +287,7 @@ namespace EnrageWestworld.Core
         /// After a talk between two people: the thing most worth telling passes from each to the other as a memory heard
         /// from them (Minds.WorthTelling, Minds.Retold). Only between people who already have a state (Store.Find); never
         /// through NoteEvent or the saved events log; nothing told twice to the same person (an in-memory set, capped).
-        private void Retell(Minds.Party teller, Minds.Party listener, long now)
+        private void Retell(Minds.Party teller, Minds.Party listener, long now, string how = null)
         {
             if (teller == null || listener == null || teller.Id == null || listener.Id == null || teller.Id == listener.Id)
                 return;
@@ -305,7 +306,28 @@ namespace EnrageWestworld.Core
             _toldSet.Add(head + m.Key);
             m.Told++;
             MemoriesTold++;
-            Detail("MIND told: " + (teller.Name ?? teller.Id) + " tells " + (listener.Name ?? listener.Id) + " of " + Minds.DescribeMemory(r, now, Person.FirstOf(teller.Name ?? "somebody")));
+            if (how != null)
+                MemoriesToldInPassing++;
+            Detail("MIND told" + (how != null ? " " + how : string.Empty) + ": " + (teller.Name ?? teller.Id) + " tells " + (listener.Name ?? listener.Id) + " of " + Minds.DescribeMemory(r, now, Person.FirstOf(teller.Name ?? "somebody")));
+        }
+
+        /// A word in passing (memory v1's telling at a nod, after item 14; MindLive): the one who greets tells the other
+        /// the freshest thing worth telling, one way only (a greeting in passing is no talk: the other only nods back),
+        /// by the same rules as a talk's retelling. Nothing with MindLive off.
+        public void RememberPassing(Minds.Party speaker, Minds.Party other)
+        {
+            if (!Cfg.Minds || !Cfg.MindLive || speaker == null || other == null)
+                return;
+            try
+            {
+                Retell(speaker, other, Store.LastGameMin, "in passing");
+            }
+            catch (Exception ex)
+            {
+                if (!_retellFailed)
+                    Log("MIND retelling failed: " + ex);
+                _retellFailed = true;
+            }
         }
 
         /// Someone whose name a memory never loses: a tie of this person's, or one of the dead.

@@ -36,6 +36,7 @@ namespace EnrageWestworld.InGame
             public Passing.Act Act;
             public int At, Step;
             public string Seed, Said;
+            public bool Test;               // the Testing row's nod: nothing told on (after item 14)
         }
 
         private readonly Dictionary<int, NodWho> _nodWho = new Dictionary<int, NodWho>();
@@ -289,6 +290,25 @@ namespace EnrageWestworld.InGame
             return ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, p.Handle, 17);
         }
 
+        /// The greeting's word in passing, for the memories (Engine.RememberPassing: MindLive only, one way, the speaker's). Its
+        /// own catch: a fault here never costs the nod.
+        private void NodWord(NodRun r)
+        {
+            try
+            {
+                if (_engine == null || r.AId == null || r.BId == null)
+                    return;
+                _engine.RememberPassing(new Minds.Party { Id = r.AId, Name = r.AName }, new Minds.Party { Id = r.BId, Name = r.BName });
+            }
+            catch (Exception ex)
+            {
+                if (!_nodWordFailed)
+                    Log.Write("NOD the word in passing failed: " + ex.Message);
+                _nodWordFailed = true;
+            }
+        }
+        private bool _nodWordFailed;
+
         private void NodStart(NodRun run, int now, bool test)
         {
             // the handles are who we think they are (a handle the game reused within the cache's 10 s isn't)
@@ -302,6 +322,7 @@ namespace EnrageWestworld.InGame
             }
             run.At = now;
             run.Step = 0;
+            run.Test = test;
             _nod = run;
             _nextNod = now + NodGapMs;
             Pacing.Note(_store.Pace, "nod", null, run.Pair, _store.LastGameMin);   // a test too: the pair rests either way
@@ -353,6 +374,8 @@ namespace EnrageWestworld.InGame
                         int take;
                         bool spoke = Speech.PlayFirst(r.A.Handle, Passing.Greeting(CLOCK.GET_CLOCK_HOURS()), bHere ? r.B.Handle : 0, out line, out take, out words);
                         Log.Detail("NOD " + r.AName + (spoke ? " says " + line + (take > 0 ? " take " + take : "") : ": the greeting didn't play"));
+                        if (spoke && bHere && !r.Test)
+                            NodWord(r);   // a word in passing tells the freshest thing worth telling (memory v1, MindLive; the engine says nothing with it off)
                     }
                     r.Step = 2;
                     break;
