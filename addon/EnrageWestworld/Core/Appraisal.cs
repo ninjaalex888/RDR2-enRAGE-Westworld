@@ -143,7 +143,26 @@ namespace EnrageWestworld.Core
                 target = h.DoerId;
             }
             if (id == doer && !mutual)
-                return null;   // the doer's own side is the scenes' business
+            {
+                // the doer's own side, where the appraisal has a kind for it (after item 14, night 2026-10-28): the one with
+                // the good news (a cheer: A has it, B is glad with him), the man who stood the round (praised by the room),
+                // the one a beggar asked (charity or scorn: pity or contempt, by their nature); the rest is the scenes' business
+                string own = k == "cheer" ? "goodnews" : k == "round" ? "praised" : k == "charity" || k == "scorn" ? "beg" : null;
+                if (own == null || heardOnly)
+                    return null;
+                string other = target;
+                int toOther = other != null && other != id && warmth != null ? warmth(id, other) : 0;
+                bool asked = own == "beg";
+                return new AppraisalEvent
+                {
+                    Kind = own, Role = "self", Doer = !asked ? "self" : other == "player" ? "player" : toOther != 0 ? "known" : "stranger",
+                    WarmDoer = asked ? toOther : 0, WarmTarget = 0, Place = h.Place ?? "street", Woman = woman, WomenPresent = true,
+                    Company = home != null && home == h.Town ? "neighbours" : "strangers", Witnesses = sawCount >= 0 ? sawCount : h.Witnesses != null ? h.Witnesses.Count : 0,
+                    Armed = false, Doers = 1,
+                    DoerName = asked ? (other == h.DoerId ? h.DoerName : h.TargetName) : null, TargetName = id == h.DoerId ? h.DoerName : h.TargetName,
+                    DoerId = asked ? other : null, TargetId = id
+                };
+            }
             if (h.Kind == "death" && id == target)
                 return null;   // the dead feel nothing
             switch (k)
@@ -151,9 +170,16 @@ namespace EnrageWestworld.Core
                 case "rough": case "deed:assault": kind = "shove"; break;
                 case "brawl": case "standoff": case "drunk": kind = id == target ? "challenge" : "brawl"; break;
                 case "pickpocket": case "deed:theft": case "deed:robbery": case "deed:looting": case "deed:horsetheft": kind = "theft"; break;
-                case "argue": case "x:quarrel": case "snap": case "x:snap": case "brushoff": case "passby": case "faced": kind = "slight"; break;
+                case "argue": case "x:quarrel": case "snap": case "x:snap": case "brushoff": case "faced": kind = "slight"; break;
+                case "passby": kind = id == target ? "pratfall" : "slight"; break;   // the one who fell feels the fall before the street (after item 14); whoever saw him stepped round, the slight
                 case "scorn": kind = id == target ? "refused" : "slight"; break;
-                case "charity": case "help": case "comfort": case "cheer": case "round": case "settled": case "apology": case "defend": kind = "kindness"; break;
+                case "charity": case "help": case "comfort": case "round": case "settled": case "apology": case "defend": kind = "kindness"; break;
+                case "cheer":
+                    // good news shared: the news is A's (the one who speaks first); whoever is glad with him feels it through how much they care for him (after item 14)
+                    kind = "goodnews";
+                    target = doer;
+                    doer = null;
+                    break;
                 case "debt": case "x:debt": kind = "debtcall"; break;
                 case "death": kind = h.DoerId != null && h.DoerId != h.TargetId ? "killing" : "death"; break;
                 case "encounter:execution":
@@ -187,16 +213,16 @@ namespace EnrageWestworld.Core
             }
             int toTarget = id != target && target != null && warmth != null ? warmth(id, target) : 0, toDoer = id != doer && doer != null && warmth != null ? warmth(id, doer) : 0;
             string role = id == target ? "self" : toTarget > 0 ? "friend" : "onlooker";
-            if (kind == "kindness" && role != "self" || kind == "refused" && role != "self" || kind == "debtcall" && role != "self")
-                return null;   // someone else's kindness or trouble: nothing the appraisal names for an onlooker yet
+            if (kind == "kindness" && role != "self" || kind == "refused" && role != "self" || kind == "debtcall" && role != "self" || kind == "goodnews" && role == "onlooker" || kind == "pratfall" && role != "self")
+                return null;   // someone else's kindness or trouble: nothing the appraisal names for an onlooker yet; another's good news only for those who care for him
             return new AppraisalEvent
             {
-                Kind = kind, Role = role, Doer = doer == "player" ? "player" : toDoer != 0 ? "known" : doer == null ? "nobody" : "stranger",
+                Kind = kind, Role = role, Doer = kind == "pratfall" ? "self" : doer == "player" ? "player" : toDoer != 0 ? "known" : doer == null ? "nobody" : "stranger",
                 WarmDoer = toDoer, WarmTarget = toTarget, Place = h.Place ?? "street", Woman = woman, WomenPresent = true,
                 Company = home != null && home == h.Town ? "neighbours" : "strangers", Witnesses = sawCount >= 0 ? sawCount : h.Witnesses != null ? h.Witnesses.Count : 0,
                 Armed = kind == "killing" || k == "standoff" || doer == "player", DoerDrunk = k == "drunk" && id == target, Doers = 1,
-                DoerName = doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName,
-                DoerId = doer, TargetId = target
+                DoerName = kind == "pratfall" ? null : doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName,
+                DoerId = kind == "pratfall" ? null : doer, TargetId = target
             };
         }
 
