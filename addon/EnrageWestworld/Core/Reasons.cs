@@ -55,6 +55,13 @@ namespace EnrageWestworld.Core
             public bool Saloon, Night, Rumours, DeedsHere;
             public bool Courting;   // [Romance] NpcFlirting: people make eyes at each other
             public bool SameSex;    // [Romance] SameSexRomance
+            public float Trouble = 1f;   // [Scenes] TroubleWeight: every chance of blows or a quarrel scaled by it (Lex, 2026-10-28)
+        }
+
+        /// A percent chance scaled by the trouble weight, 0-100.
+        public static int Weighted(int pct, float weight)
+        {
+            return Math.Max(0, Math.Min(100, (int)Math.Round(pct * weight)));
         }
 
         /// The strongest reason between these two, either way round; null if they have none (or had their scene
@@ -176,7 +183,7 @@ namespace EnrageWestworld.Core
             {
                 bool hot = Hot(x);
                 // a hot man at the worst of it snaps at a man who won't take it: it comes to blows
-                if (hot && twoMen && Hot(y) && Voice.Chance(x.Id + gameDay + "snapblows", 35))   // was 20 (Lex, 2026-10-28: brawls often)
+                if (hot && twoMen && Hot(y) && Voice.Chance(x.Id + gameDay + "snapblows", Weighted(35, where.Trouble)))   // was 20 (Lex, 2026-10-28: brawls often)
                     all.Add(new Reason { Kind = "brawl", Strength = 56, Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
                 else
                     all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
@@ -203,9 +210,10 @@ namespace EnrageWestworld.Core
             // a drunk in a saloon at night calls a man out, and falls down before a blow is struck
             if (x.Drunk && twoMen && where.Saloon && where.Night && x.Temper != "Coward")
                 all.Add(new Reason { Kind = "drunk", Strength = 44, Why = x.Name + " is drunk and spoiling for a fight" });
-            // drink and temper in a saloon at night: two men, one of them hot, one of them drunk, come to blows (a coward
-            // only gets words); now and then the hot one does it rough
-            if (twoMen && where.Saloon && where.Night && Hot(x) && (x.Drunk || y.Drunk) && Voice.Chance(x.Id + gameDay + "drinktemper", DrinkTemperChance))
+            // drink and temper in a saloon, any hour (at night only until Lex asked for saloon fights by day too, 2026-10-28):
+            // two men, one of them hot, one of them drunk, come to blows (a coward only gets words); now and then the hot
+            // one does it rough
+            if (twoMen && where.Saloon && Hot(x) && (x.Drunk || y.Drunk) && Voice.Chance(x.Id + gameDay + "drinktemper", Weighted(DrinkTemperChance, where.Trouble)))
             {
                 if (y.Temper == "Coward")
                     all.Add(new Reason { Kind = "argue", Strength = 46, Why = x.Name + " has drink and temper in him, and " + y.Name + " won't stand up to it" });
@@ -214,16 +222,22 @@ namespace EnrageWestworld.Core
                 else
                     all.Add(new Reason { Kind = "brawl", Strength = 56, Why = x.Name + " has drink and temper in him, and " + y.Name + " answers it" });
             }
-            else if (x.Temper == "Hothead" && twoMen && where.Saloon)
+            else if (x.Temper == "Hothead" && twoMen && where.Saloon && where.Trouble > 0f)
             {
                 // now and then a hothead with drink in him doesn't stop at words with whoever is in his way; at night he
                 // wins the turn over most things (Lex: fights were too rare to see)
                 int night = where.Night ? 14 : 0;
-                if (Voice.Hash(x.Id + gameDay + "srough") % 100 < StrangerRoughChance)
+                if (Voice.Hash(x.Id + gameDay + "srough") % 100 < Weighted(StrangerRoughChance, where.Trouble))
                     all.Add(new Reason { Kind = "rough", Fallback = "argue", Strength = 32 + night, Why = x.Name + " is a hothead with drink in him, and " + y.Name + " is in his way" });
                 else
                     all.Add(new Reason { Kind = "argue", Strength = 30 + night, Why = x.Name + " is a hothead with drink in him" });
             }
+            // two hot-blooded men in each other's way come to blows now and then, by day or night (Lex, 2026-10-28: brawls
+            // weren't happening; a reason always came first, so the chance meeting's brawl seldom got a turn). A roll per
+            // pair and day, until the minds choose it themselves; strong enough to come before a snap or gossip
+            if (twoMen && Hot(x) && (Hot(y) || y.Temper == "Cold") && x.Temper != "Coward" &&
+                Voice.Chance(PairKey(x, y) + gameDay + "hotblood", Weighted(where.Saloon ? HotBloodSaloonChance : HotBloodStreetChance, where.Trouble)))
+                all.Add(new Reason { Kind = "brawl", Strength = where.Saloon ? 50 : 47, Why = x.Name + " and " + y.Name + " are both hot-blooded, and neither will give way" });
             // someone free and taken with the one beside them makes eyes at them; the answer is the other's own
             Reason court = Courtship(x, y, gameDay, where);
             if (court != null)
@@ -288,6 +302,8 @@ namespace EnrageWestworld.Core
         }
         /// Percent of a saloon hothead's run-ins with a stranger that go that far.
         public const int StrangerRoughChance = 15;
+        /// Percent of a day's meetings between two hot-blooded men that come to blows (2026-10-28).
+        public const int HotBloodSaloonChance = 35, HotBloodStreetChance = 15;
 
         /// A temper that grabs a man and uses the furniture on him.
         public static bool Rough(string temper)
