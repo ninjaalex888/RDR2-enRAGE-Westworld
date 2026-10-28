@@ -728,8 +728,10 @@ Y         wake the person you are facing one stage (the Awakening, for testing; 
 Shift+F7  two people near you talk in their real voices (TestTalkKey)
 Shift+F9  one man near you puts another's face into the bar (TestRoughKey)
 Shift+F2  the subtitle line in each font, to find the game's (TestFontKey)
-          These six (], [, Y and the three Shift keys) are the Testing page's; the rest of its rows
-          have no key as they come.
+Ctrl+F2   Show minds on or off for this session: the card over people near you (TestShowMindsKey;
+          the settings panel's Testing page has the switch that's saved)
+          These seven (], [, Y, Ctrl+F2 and the three Shift keys) are the Testing page's; the rest of its
+          rows have no key as they come.
 T         the next line on the ticker now (on a long line, its next part first; TickerNextKey).
           T is enRAGE's telegraph key too: near a telegraph clerk, both happen.
 None of the others are used by enRAGE (F11, Alt+F11, Ctrl+F10, I, T, Insert), Script Hook .NET's

@@ -102,7 +102,7 @@ namespace EnrageWestworld.Core
             new Entry("scene:x:feud", "Street scenes", "A feud flares", "TestFeudKey", needs: "two named people within 16 m"),
             new Entry("scene:x:courting", "Street scenes", "A courting worry, face to face", "TestCourtingKey", needs: "a named man and woman within 16 m"),
             // ---- tools ---------------------------------------------------------------------------------------------
-            new Entry("showminds", "Tools", "Show minds (a card over people near you)", "TestShowMindsKey"),
+            new Entry("showminds", "Tools", "Show minds (a card over people near you)", "TestShowMindsKey", "Ctrl+F2"),   // on and off for the session (Lex, 2026-10-27)
             new Entry("wakestages", "Tools", "Show wake stages (a tag over the waking)", "TestWakeStagesKey"),
             new Entry("replay", "Tools", "Fire the last test again", "TestReplayKey"),
         };

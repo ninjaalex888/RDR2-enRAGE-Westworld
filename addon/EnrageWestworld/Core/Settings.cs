@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 82;
+        public const int CurrentVersion = 83;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -378,6 +378,17 @@ namespace EnrageWestworld.Core
                 // your own is kept)
                 s.TickerNearbyMetres = 20f;
                 raised.Add("TickerNearbyMetres 30 -> 20");
+            }
+            if (s.SettingsVersion < 83)
+            {
+                // Show minds has a key of its own since version 83 (Lex, 2026-10-27: on as it comes, with a key to turn
+                // it off and on); an ini's "None" was the old default, a key of your own is kept
+                string k;
+                if (!s.TestKeyMap.TryGetValue("TestShowMindsKey", out k) || string.IsNullOrEmpty(k) || KeyIs(k, "None"))
+                {
+                    s.TestKeyMap["TestShowMindsKey"] = "Ctrl+F2";
+                    raised.Add("TestShowMindsKey None -> Ctrl+F2");
+                }
             }
             if (s.SettingsVersion == 81 && s.SupperInvitation)
             {
