@@ -699,7 +699,9 @@ in the file. The new ones:
                 plays (the game's own Subtitles option has to be on too)
             TestKey (F7), FlirtKey (F2), WakeKey (Y), ReaderKey (N), ReloadIni (true),
             ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel (enRAGE 0.9.5.3 only),
-            SettingsKey (Ctrl+F7) and SettingsKey2 (Alt+F) open and close it with any enRAGE version
+            SettingsKey (Ctrl+F7) and SettingsKey2 (Alt+F) open and close it with any enRAGE version,
+            PanelSlowsTime (true), PanelTimeScale (0.25): the world slows to a quarter speed while the
+            panel is open, as it does for the weapon wheel (never in a story mission)
 All the older options are still there and work the same.
 
 

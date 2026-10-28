@@ -171,6 +171,7 @@ namespace EnrageWestworld.InGame
 
         private void Shutdown04()
         {
+            PanelTimeRestore("the add-on stopped");
             PassingAbort();
             WanderLaterClear();
             SightsReset("shutdown");

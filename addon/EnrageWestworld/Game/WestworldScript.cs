@@ -202,6 +202,7 @@ namespace EnrageWestworld.InGame
 					{
 						SupperEmergencyLight();   // never left dark or without controls once nothing steps the dark any more
 						TrystAbort();
+						PanelTimeRestore("the add-on switched itself off");
 					}
 					catch
 					{
@@ -225,6 +226,7 @@ namespace EnrageWestworld.InGame
 
 		private void Step()
 		{
+			PanelTimeStep();   // the world slowed while the settings panel is open, and back the moment it isn't (WestworldScript.PanelTime.cs)
 			if (!InWorld())
 			{
 				TrystInTheDark();

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 83;
+        public const int CurrentVersion = 84;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -203,6 +203,8 @@ namespace EnrageWestworld.Core
         public bool ReplaceEnrageSettings = true;
         public string SettingsKey = "Ctrl+F7";
         public string SettingsKey2 = "Alt+F";
+        public bool PanelSlowsTime = true;    // the world slows while the settings panel is open, as it does for the game's wheels (Lex, 2026-10-27; settings version 84)
+        public float PanelTimeScale = 0.25f;
         public bool DebugLog;
         public bool PerfMeter = true;
 
@@ -541,6 +543,7 @@ namespace EnrageWestworld.Core
             TickerWidth = Math.Max(0.2f, Math.Min(1f, TickerWidth));
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             ThoughtsOverHeadScale = Math.Max(0.12f, Math.Min(0.6f, ThoughtsOverHeadScale));
+            PanelTimeScale = Math.Max(0.05f, Math.Min(1f, PanelTimeScale));
             WillingSingle = Math.Max(0, Math.Min(100, WillingSingle));
             WillingTaken = Math.Max(0, Math.Min(100, WillingTaken));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
@@ -751,6 +754,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("ReplaceEnrageSettings = " + B(ReplaceEnrageSettings) + "   ; Alt+F11 opens the larger RealNPCs settings panel (RealNPCs, West World, Stalkers and every enRAGE section) instead of enRAGE's own (enRAGE 0.9.5.3 only)");
             b.AppendLine("SettingsKey = " + SettingsKey + "   ; opens the RealNPCs settings panel (with any enRAGE version), and closes it again");
             b.AppendLine("SettingsKey2 = " + SettingsKey2 + "   ; a second key that does the same (None: no second key)");
+            b.AppendLine("PanelSlowsTime = " + B(PanelSlowsTime) + "   ; the world slows while the settings panel is open, as it does while the game's weapon wheel or satchel is open (never in a story mission)");
+            b.AppendLine("PanelTimeScale = " + F(PanelTimeScale) + "   ; how slow: 1 is normal speed, 0.25 a quarter (0.05-1)");
             b.AppendLine("DebugLog = " + B(DebugLog));
             b.AppendLine("PerfMeter = " + B(PerfMeter) + "   ; times every part of RealNPCs each frame: F7 writes the costliest (TEST perf), and the log says when the add-on goes over 1 ms a frame for 10 s or one frame over 4 ms (PERF)");
             b.AppendLine();
