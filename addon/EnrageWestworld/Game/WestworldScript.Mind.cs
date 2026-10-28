@@ -944,6 +944,19 @@ namespace EnrageWestworld.InGame
         private string MindRequestFire(int now, out string said)
         {
             said = null;
+            try
+            {
+                return MindRequestFireImpl(now, out said);
+            }
+            catch (Exception ex)
+            {
+                return "the request failed: " + ex.Message;   // its own catch (the review): a fault here costs the keypress, not the Testing page
+            }
+        }
+
+        private string MindRequestFireImpl(int now, out string said)
+        {
+            said = null;
             if (_cfg == null || !_cfg.MindShadow || _engine == null)
                 return "[Mind] MindShadow is off";
             MindWho w = null;
@@ -974,16 +987,29 @@ namespace EnrageWestworld.InGame
             _mindBeliefCtx.Memories = st != null ? st.Mind : null;
             _mindBeliefCtx.Standing = Beliefs.StandingOf(w.TradeGroup);
             Beliefs.Fill(_mindBaseline, w.P, w.Traits, _mindBeliefCtx);
-            BeliefState bs = _engine.Shadow.BeliefsOf(w.Id);
+            BeliefState bs = _engine.Shadow.BeliefsPeek(w.Id);   // a peek: a read-only row makes nothing (the review)
             var held = new float[_mindBaseline.Length];
             for (int i = 0; i < held.Length; i++)
-                held[i] = Beliefs.Of(_mindBaseline, bs.Moved, i);
-            // the first names in sight, theirs left out
+                held[i] = Beliefs.Of(_mindBaseline, bs != null ? bs.Moved : null, i);
+            // the first names in sight: looked up afresh (a reused handle's old name never goes in), never their own under
+            // another handle, and only faces they'd call by name, a tie or the same home town (a stranger is "mister": item 10)
             var near = new List<string>();
             foreach (int h in _mindNear)
             {
-                MindWho k;
-                if (h == handle || !_mindWho.TryGetValue(h, out k) || k.Id == null || k.Name == null)
+                if (h == handle || !ENTITY.DOES_ENTITY_EXIST(h))
+                    continue;
+                MindWho k = MindKnown(h, now);
+                if (k == null || k.Id == null || k.Id == w.Id || k.Name == null || k.P == null)
+                    continue;
+                bool sameTown = !string.IsNullOrEmpty(k.P.Home) && k.P.Home == w.P.Home, tied = false;
+                if (!sameTown)
+                    foreach (SceneTie t in _store.Ties)
+                        if (t.Has(w.Id) && t.Has(k.Id))
+                        {
+                            tied = true;
+                            break;
+                        }
+                if (!sameTown && !tied)
                     continue;
                 near.Add(Person.FirstOf(k.Name));
                 if (near.Count >= Language.NamesInRequest)

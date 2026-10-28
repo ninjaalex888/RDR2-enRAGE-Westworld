@@ -298,7 +298,10 @@ namespace EnrageWestworld.Core
             MindMemory m = Minds.WorthTelling(ts.Mind, ls.Mind, listener.Id, now, x => _toldSet.Contains(head + x.Key), id => ListenerKnows(listener.Id, id));
             if (m == null)
                 return;
-            MindMemory r = Minds.Note(ls.Mind, Minds.Retold(m, teller.Id, Person.FirstOf(teller.Name ?? "somebody"), now), now);
+            MindMemory told = Minds.Retold(m, teller.Id, Person.FirstOf(teller.Name ?? "somebody"), now);
+            if (how != null)
+                told.Strength = Math.Max(10, told.Strength * 7 / 10);   // a word in passing is half-heard: weaker again than a talk's telling
+            MindMemory r = Minds.Note(ls.Mind, told, now);
             if (!ls.Mind.Contains(r))
                 return;   // it didn't stay (a full mind, and a told thing goes first): nothing was told, as far as anyone will know
             if (_toldSet.Count > 20000)
@@ -316,17 +319,24 @@ namespace EnrageWestworld.Core
         /// by the same rules as a talk's retelling. Nothing with MindLive off.
         public void RememberPassing(Minds.Party speaker, Minds.Party other)
         {
-            if (!Cfg.Minds || !Cfg.MindLive || speaker == null || other == null)
+            if (!Cfg.Minds || !Cfg.MindLive || speaker == null || other == null || speaker.Id == null || other.Id == null)
                 return;
             try
             {
-                Retell(speaker, other, Store.LastGameMin, "in passing");
+                // a greeting in passing carries news only some of the time (the review's psychologist: a 1.3 s "Morning" isn't a
+                // talk): a warm tie stops for a word one time in two, an acquaintance one in five; and what's heard is half-heard
+                long now = Store.LastGameMin;
+                SceneTie t = TieBetween(speaker.Id, other.Id, Store.Ties);
+                int chance = t != null && t.Warmth >= 2 ? 50 : 20;
+                if (!Voice.Chance(speaker.Id + "|" + other.Id + "|passing|" + now / 60, chance))
+                    return;
+                Retell(speaker, other, now, "in passing");
             }
             catch (Exception ex)
             {
-                if (!_retellFailed)
-                    Log("MIND retelling failed: " + ex);
-                _retellFailed = true;
+                if (!_passingFailed)
+                    Log("MIND the word in passing failed: " + ex);
+                _passingFailed = true;
             }
         }
 
@@ -588,7 +598,7 @@ namespace EnrageWestworld.Core
             }
         }
 
-        private bool _thinkFailed, _retellFailed, _spotFailed;
+        private bool _thinkFailed, _retellFailed, _spotFailed, _passingFailed;
         private long _thinkClock = -1;   // the latest game minute thought at: earlier means an older save was loaded
 
         /// An older save was loaded (or the clock stepped back): what was thought after it hasn't happened either.

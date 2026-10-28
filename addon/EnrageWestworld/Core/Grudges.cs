@@ -18,8 +18,8 @@ namespace EnrageWestworld.Core
         {
             { "rough", new[] { "You smashed {b}'s face in. I heard all about it.", "{b} can't chew for the teeth you loosened.", "You put {b}'s face on the bar and walked off laughing. I was told the laughing.", "Half the town saw what you did to {b}. Now I've come to see you." } },
             { "pickpocket", new[] { "Hand in {b}'s coat, they say. In broad day.", "You robbed {b}. Everybody knows it.", "You were caught at {b}'s pocket. Try mine.", "{b}'s purse. In the street. I heard it from three mouths." } },
-            { "scorn", new[] { "{b} asked you for a nickel and you treated them like a dog.", "Heard how you sent {b} off. Proud of that?", "{b} asked for a crust and you gave a sermon.", "You turned {b} away like a stray. I don't forget that in a man." } },
-            { "passby", new[] { "{b} was lying in the street and you stepped round them.", "You walked past {b} like a dropped hat.", "{b} was on the ground and you had somewhere better to be.", "You stepped over {b} in the road. Say it wasn't so." } },
+            { "scorn", new[] { "{b} asked you for a nickel and you treated {him} like a dog.", "Heard how you sent {b} off. Proud of that?", "{b} asked for a crust and you gave a sermon.", "You turned {b} away like a stray. I don't forget that in anybody." } },
+            { "passby", new[] { "{b} was lying in the street and you stepped round {him}.", "You walked past {b} like a dropped hat.", "{b} was on the ground and you had somewhere better to be.", "You stepped over {b} in the road. Say it wasn't so." } },
         };
         // not "faced": that tie is someone standing up to a bully, no wrong for the bully's friend to take up
 
@@ -49,7 +49,8 @@ namespace EnrageWestworld.Core
             string[] said;
             if (!Wrongs.TryGetValue(wrong, out said))
                 said = Wrongs["rough"];
-            string opener = Voice.Pick(seed + "go", said).Replace("{b}", victim);
+            string first = Person.FirstOf(victim ?? string.Empty);
+            string opener = Ties.Pronouns(Voice.Pick(seed + "go", said), Residents.IsWomansName(first) || Scenes.IsWomansName(first)).Replace("{b}", victim);   // he or she of the one wronged, by the name (item 10)
             Scene s = new Scene { Kind = "argue", Summary = "someone had it out with a man over what he did to their friend" };
             s.Add(0, b + ". A word.", "angry", "face")
              .Add(0, opener, "angry");

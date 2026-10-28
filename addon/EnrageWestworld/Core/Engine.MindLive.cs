@@ -76,14 +76,14 @@ namespace EnrageWestworld.Core
             }
         }
 
-        private KeyValuePair<string, string> MindSay(Person p, int hour, string seed, InnerLife.Context day, long now, bool roll, out float pull)
+        private KeyValuePair<string, string> MindSay(Person p, int hour, string seed, InnerLife.Context day, long now, bool roll, out float pull, bool request = false)
         {
             pull = 0f;
             if (Cfg == null || !Cfg.MindLive || p == null || p.Id == null)
                 return default(KeyValuePair<string, string>);
             try
             {
-                return MindSayImpl(p, hour, seed, day, now, roll, out pull);
+                return MindSayImpl(p, hour, seed, day, now, roll, out pull, request);
             }
             catch (Exception ex)
             {
@@ -95,7 +95,7 @@ namespace EnrageWestworld.Core
             }
         }
 
-        private KeyValuePair<string, string> MindSayImpl(Person p, int hour, string seed, InnerLife.Context day, long now, bool roll, out float pull)
+        private KeyValuePair<string, string> MindSayImpl(Person p, int hour, string seed, InnerLife.Context day, long now, bool roll, out float pull, bool request = false)
         {
             pull = 0f;
             HashSet<string> said = SaidToday(p.Id, now);
@@ -127,8 +127,8 @@ namespace EnrageWestworld.Core
                     }
                 }
             }
-            // a pressing need, some of the time
-            if (!Voice.Chance(seed + "|mindneed", 25))
+            // a pressing need, some of the time (a language request asks for the line itself, no roll: the review)
+            if (!request && !Voice.Chance(seed + "|mindneed", 25))
                 return default(KeyValuePair<string, string>);
             Traits tr = Shadow.TraitsOf(TraitSource.From(p, p.Facets != null && p.Facets.Count > 0 ? "record" : p.Id.StartsWith("folk:", StringComparison.Ordinal) ? "folk" : "resident"));
             PersonState ps = Store.Find(p.Id);
@@ -175,13 +175,14 @@ namespace EnrageWestworld.Core
             {
                 string kind = Feeling.Kinds[best.Kind], whom, who;
                 WhomOf(p, best, kind, null, out whom, out who, out you);
-                about = whom == "you" ? "you" : whom == "tie" ? who : "a stranger";
+                string other = best.AboutId ?? best.DoerId;
+                about = whom == "you" ? "you" : whom == "tie" ? who : other != null && other != p.Id ? "a stranger" : null;   // one's own shame or the uncanny is about nobody (the review)
                 feeling = best;
             }
             else
                 left = 0f;
             float pull;
-            KeyValuePair<string, string> say = MindSay(p, hour, p.Id + "|request|" + now / 45, null, now, false, out pull);
+            KeyValuePair<string, string> say = MindSay(p, hour, p.Id + "|request|" + now / 45, null, now, false, out pull, true);   // the line the fallback would give: the need's too, without its roll
             return Language.RequestFor(p, t, Shadow.MoodOf(p.Id, t, now), feeling, left, about, you, needs, concerns, st != null ? st.Mind : null, nearFirstNames,
                                        town, place, hour, year, weather, now, say.Key, beliefs);
         }

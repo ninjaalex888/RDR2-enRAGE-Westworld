@@ -55,10 +55,10 @@ namespace EnrageWestworld.Core
                 "Lightning showed the whole street white. Then black. Then every dog in town." } },
             { "snow", new[] {
                 "Can't feel my toes. Haven't for an hour. That's bad, isn't it.", "Snow muffles everything. Town sounds like it's holding its breath.",
-                "Breath freezing in the beard. Old man's beard, at my age.",
+                "Breath freezing on the scarf. Stiff as a board by the second street.",
                 "Snow on the hat brim, snow down the neck. Same snow, different complaints." } },
             { "dust", new[] {
-                "Grit in my teeth, grit in my eyes. I'll be spitting dirt till Tuesday.", "Can't see the end of the street. Nor the man standing in it.",
+                "Grit in my teeth, grit in my eyes. I'll be tasting dirt till Tuesday.", "Can't see the end of the street. Nor the man standing in it.",
                 "Wind's carrying half of somebody's field. Hope it wasn't mine.",
                 "Tied a kerchief over my mouth. Still taste the road." } },
             { "fog", new[] {
@@ -67,11 +67,11 @@ namespace EnrageWestworld.Core
                 "Lamp lit at noon. Can't see the end of my own arm." } },
             { "sun", new[] {
                 "Sun on the back of my neck like a warm hand.", "Squinting so long my face'll stay this way.",
-                "Good drying weather. Ought to be hanging washing instead of standing here.",
+                "Good drying weather. Washing on every line in town, flapping like flags.",
                 "Hot enough to fry an egg on the hitching rail. Somebody ought to try." } },
             { "grey", new[] {
                 "Sky the colour of dishwater. Can't make up its mind.", "Grey day. Grey mood. One follows the other like a dog.",
-                "Not raining. Not not raining. Sky can't decide and neither can I.",
+                "Can't make up its mind to rain. Can't make up mine to work.",
                 "Low cloud sitting on the roofs like a hen on eggs." } }
         };
 
@@ -101,7 +101,7 @@ namespace EnrageWestworld.Core
                 "Barber knows everything that happens in town a day before it happens.",
                 "Hair on the floor. Some of it mine, some grey. More grey than I thought." } },
             { "bath", new[] {
-                "Hot water. Real hot water. Could weep.", "Third man in the same bathwater. Don't think about it. Don't think about it.",
+                "Hot water. Real hot water. Could weep.", "Third in the same bathwater. Don't think about it. Don't think about it.",
                 "Water was hot once today. For somebody.",
                 "Two bits for a tub and a towel that's seen a war." } },
             { "photo", new[] {
@@ -111,7 +111,7 @@ namespace EnrageWestworld.Core
             { "fence", new[] {
                 "Don't ask where any of it came from. That's the rule in here.", "Every watch in that case stopped at the minute somebody lost it.",
                 "Half the town's lost property on one shelf. Priced by the ounce.",
-                "Man behind the counter never asks a name. That's the service." } },
+                "Man behind the counter never asks a name. That's the trade." } },
             { "bank", new[] {
                 "Banker smiles like he's counting your teeth for gold.", "Every coin in that vault was somebody's sweat. Never the banker's.",
                 "Vault door thick as a church wall. Mine's the only money in there that worries.",
@@ -133,7 +133,7 @@ namespace EnrageWestworld.Core
                 "Mucking out is honest work. Smells honest, too.",
                 "Horses know when you're in a hurry. They slow down for it." } },
             { "tailor", new[] {
-                "A good coat makes a man taller. I'll need a very good coat.", "Measured for a suit I can't afford. Tailor's tape around my middle like a judgement.",
+                "A good coat makes a man taller. I'll need a very good coat.", "Measured for clothes I can't afford. Tailor's tape around my middle like a judgement.",
                 "Pins in his mouth and opinions behind them.",
                 "Fine cloth. Finer than anything that'll ever touch my back." } },
             { "gunsmith", new[] {
@@ -141,7 +141,7 @@ namespace EnrageWestworld.Core
                 "Smell of oil and the quiet of men being careful.",
                 "He hands over a pistol the way a preacher hands over a Bible." } },
             { "theatre", new[] {
-                "Paid a nickel to watch other folks pretend. Do it for free all week.", "The villain had the best lines. The villain always has the best lines.",
+                "Paid a dime to watch other folks pretend. Do it for free all week.", "The villain had the best lines. The villain always has the best lines.",
                 "Painted sea on the backcloth. Nearest I'll get to the real one.",
                 "Woman next to me cried at the ending. I'd have cried at the price." } }
         };
@@ -366,13 +366,13 @@ namespace EnrageWestworld.Core
         {
             { "Proud", new[] { "Look at {name}, preening. Some folks were born to be looked at, and know it.", "{name} talks like a man who's never been told no.",
                                "{name} nodded at me like a king to a stable boy. I'll remember the nod.",
-                "{name} wears that coat like it was cut for a better man. It wasn't." } },
+                "{name} wears that coat like it was cut for somebody grander. It wasn't." } },
             { "Loyal", new[] { "{name} looks done in. Ought to ask after {name}.", "Haven't seen {name} smile in a week. Something's wrong at home.",
                                "If {name} needs a hand with that roof, I'll go Saturday. Nobody asked. Doesn't matter.",
                 "{name}'s boots want mending. Ought to say. Ought to just do it." } },
             { "Drifter", new[] { "{name} will be standing right there when I'm long gone. Rooted like a fence post.", "Wonder if {name} ever wanted to just walk away.",
                                  "{name} knows every name in this town. I know the names of three roads out.",
-                "{name} has never slept under a sky in {name}'s life. Can see it from here." } },
+                "{name} has never slept under the open sky. Can see it from here." } },
             { "Cold", new[] { "{name} talks too much. Always has.", "{name} wants something. Folks only smile like that when they want something.",
                               "{name} cried at a funeral last month. Didn't know the man. Some folks just like to be seen.",
                 "{name} says good morning to everybody. Costs nothing, means nothing." } },
@@ -469,7 +469,7 @@ namespace EnrageWestworld.Core
             if (others != null && others.Count > 0)
             {
                 Nearby n = others[Voice.Hash(seed + "nb") % others.Count];
-                options.Add(() => Pick(Regard(p, n), p, seed + "nb2", told).Replace("{name}", n.Name));
+                options.Add(() => Ties.Pronouns(Pick(Regard(p, n), p, seed + "nb2", told), n.Woman).Replace("{name}", n.Name));   // {he}/{him}/{his} of the one in sight (the review)
                 names.Add("nearby");
             }
             string mood = MoodOf(p, day, seed);

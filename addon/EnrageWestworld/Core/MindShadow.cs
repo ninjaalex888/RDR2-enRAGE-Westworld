@@ -166,6 +166,13 @@ namespace EnrageWestworld.Core
         public int BeliefsMoved { get; private set; }
 
         /// This person's belief state (made on first ask; capped at Cap people, the first to believe going first).
+        /// The belief deltas kept for this person, or null: nothing made, nothing evicted (for a read-only look, the review).
+        public BeliefState BeliefsPeek(string id)
+        {
+            BeliefState d;
+            return id != null && _beliefs.TryGetValue(id, out d) ? d : null;
+        }
+
         public BeliefState BeliefsOf(string id)
         {
             BeliefState d;
