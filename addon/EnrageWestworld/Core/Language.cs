@@ -32,6 +32,7 @@ namespace EnrageWestworld.Core
         public string Worry;                 // Needs.Words of the first concern, or null
         public List<string> Memories = new List<string>();   // one or two, in plain words (Episodes.Describe)
         public List<string> Near = new List<string>();       // first names of those in sight
+        public List<string> Beliefs = new List<string>();    // what they hold, in their own words (Beliefs.Words: "that stranger is a dangerous man"), up to three (after item 14)
         public string AvoidLine;             // the written line the fallback would give (the model must not copy it)
 
         /// Every name the answer may use: their own, whom it's about, those near, the town, any in the memories.
@@ -98,6 +99,7 @@ namespace EnrageWestworld.Core
             if (!string.IsNullOrEmpty(r.Need)) b.Append("The body: ").Append(r.Need).Append(".\n");
             if (!string.IsNullOrEmpty(r.Worry)) b.Append("On their mind: ").Append(r.Worry).Append(".\n");
             foreach (string m in r.Memories.Take(2)) b.Append("Remembers: ").Append(m).Append(".\n");
+            if (r.Beliefs.Count > 0) b.Append("Holds: ").Append(string.Join("; ", r.Beliefs.Take(3))).Append(".\n");
             if (r.Near.Count > 0) b.Append("In sight: ").Append(string.Join(", ", r.Near.Take(4))).Append(".\n");
             b.Append("Write the thought.");
             return b.ToString();

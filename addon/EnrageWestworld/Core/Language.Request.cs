@@ -18,7 +18,7 @@ namespace EnrageWestworld.Core
         /// the game minute; `avoidLine` the written line the fallback would give.
         public static LanguageRequest RequestFor(Person p, Traits t, PadMood mood, FeltAt? feeling, float left, string about, string youAs,
                                                  NeedState needs, List<Concern> concerns, List<MindMemory> memories, IEnumerable<string> nearFirstNames,
-                                                 string town, string place, int hour, int year, string weather, long now, string avoidLine)
+                                                 string town, string place, int hour, int year, string weather, long now, string avoidLine, float[] beliefs = null)
         {
             var r = new LanguageRequest
             {
@@ -86,6 +86,24 @@ namespace EnrageWestworld.Core
                     if (!string.IsNullOrEmpty(d))
                         r.Memories.Add(d);
                 }
+            }
+            // what they hold (Beliefs.Of for each, 0..1): about the player when the thought is about him, and the self and the
+            // world when held or doubted hard; three at most, the surest first
+            if (beliefs != null && beliefs.Length >= Beliefs.Count)
+            {
+                var held = new List<KeyValuePair<float, string>>();
+                for (int i = 0; i < Beliefs.Count; i++)
+                {
+                    float v = beliefs[i];
+                    bool player = i >= Beliefs.Dangerous && i <= Beliefs.Liar;
+                    if (player ? r.About == "you" && v >= 0.6f : v >= 0.8f)
+                        held.Add(new KeyValuePair<float, string>(v, Beliefs.Words[i]));
+                    else if (!player && v <= 0.25f)
+                        held.Add(new KeyValuePair<float, string>(1f - v, "no longer sure " + Beliefs.Words[i]));
+                }
+                held.Sort((x, y) => y.Key.CompareTo(x.Key));
+                for (int i = 0; i < held.Count && i < 3; i++)
+                    r.Beliefs.Add(held[i].Value);
             }
             if (nearFirstNames != null)
                 foreach (string n in nearFirstNames)
