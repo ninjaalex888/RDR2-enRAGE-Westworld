@@ -51,19 +51,28 @@ namespace EnrageWestworld.Core
                 "Smell of wet dog and wet wool. Every soul in town smells the same today.", "Should've brought the oilskin. Said that this morning, too." } },
             { "storm", new[] {
                 "Thunder like that, my mother used to cover the mirrors.", "Counted between the flash and the boom. Getting closer.",
-                "Horses don't like it. Can't say I do." } },
+                "Horses don't like it. Can't say I do.",
+                "Lightning showed the whole street white. Then black. Then every dog in town." } },
             { "snow", new[] {
                 "Can't feel my toes. Haven't for an hour. That's bad, isn't it.", "Snow muffles everything. Town sounds like it's holding its breath.",
-                "Breath freezing in the beard. Old man's beard, at my age." } },
+                "Breath freezing in the beard. Old man's beard, at my age.",
+                "Snow on the hat brim, snow down the neck. Same snow, different complaints." } },
             { "dust", new[] {
-                "Grit in my teeth, grit in my eyes. I'll be spitting dirt till Tuesday.", "Can't see the end of the street. Nor the man standing in it." } },
+                "Grit in my teeth, grit in my eyes. I'll be spitting dirt till Tuesday.", "Can't see the end of the street. Nor the man standing in it.",
+                "Wind's carrying half of somebody's field. Hope it wasn't mine.",
+                "Tied a kerchief over my mouth. Still taste the road." } },
             { "fog", new[] {
-                "Fog this thick, a man could walk right past his own brother.", "Everything wet and grey and close. Like being inside a cloud's pocket." } },
+                "Fog this thick, a man could walk right past his own brother.", "Everything wet and grey and close. Like being inside a cloud's pocket.",
+                "Hoofbeats and no horse. Fog does that. I don't care for it.",
+                "Lamp lit at noon. Can't see the end of my own arm." } },
             { "sun", new[] {
                 "Sun on the back of my neck like a warm hand.", "Squinting so long my face'll stay this way.",
-                "Good drying weather. Ought to be hanging washing instead of standing here." } },
+                "Good drying weather. Ought to be hanging washing instead of standing here.",
+                "Hot enough to fry an egg on the hitching rail. Somebody ought to try." } },
             { "grey", new[] {
-                "Sky the colour of dishwater. Can't make up its mind.", "Grey day. Grey mood. One follows the other like a dog." } }
+                "Sky the colour of dishwater. Can't make up its mind.", "Grey day. Grey mood. One follows the other like a dog.",
+                "Not raining. Not not raining. Sky can't decide and neither can I.",
+                "Low cloud sitting on the roofs like a hen on eggs." } }
         };
 
         private static readonly Dictionary<string, string[]> ByPlace = new Dictionary<string, string[]>
@@ -73,39 +82,68 @@ namespace EnrageWestworld.Core
                 "Sawdust on the floor to soak up what nobody wants to look at.", "Every man in here is telling a story bigger than his life." } },
             { "church", new[] {
                 "Lord, I don't ask much. Just a little less than I've been getting.", "The pew creaks every time I shift. Like it's keeping count.",
-                "Preacher's looking right at me. Or I feel like he is. Same thing." } },
+                "Preacher's looking right at me. Or I feel like he is. Same thing.",
+                "Hymn's one I know. Mouth the words. Nobody's listening to me, least of all Him." } },
             { "store", new[] {
                 "Prices up again. Molasses costs like medicine now.", "Write it in the book, I'll say. The book is getting long.",
-                "Shopkeeper weighs with his thumb. Everybody knows. Nobody says." } },
+                "Shopkeeper weighs with his thumb. Everybody knows. Nobody says.",
+                "Shopkeeper's got the good flour behind the counter. Always has. Never for me." } },
             { "genstore", new[] {
-                "Prices up again. Molasses costs like medicine now.", "Coffee, flour, lamp oil. Coffee, flour, lamp oil. Don't forget the lamp oil." } },
+                "Prices up again. Molasses costs like medicine now.", "Coffee, flour, lamp oil. Coffee, flour, lamp oil. Don't forget the lamp oil.",
+                "Nails by the pound, and the pound gets lighter every year.",
+                "Lamp oil's gone up again. Dark is free, at least." } },
             { "hotel", new[] {
                 "Paid for a bed and got a lumpy argument with a mattress.", "Walls thin enough to hear a man think next door.",
-                "Clerk looks at your boots before your face. Decides the price by the boots." } },
+                "Clerk looks at your boots before your face. Decides the price by the boots.",
+                "Bed's been slept in by every drummer in the state. You can tell." } },
             { "barber", new[] {
-                "Sit still. Man with a razor at your neck, you sit still and agree with him.", "Smells of bay rum and other men's gossip in here." } },
+                "Sit still. Man with a razor at your neck, you sit still and agree with him.", "Smells of bay rum and other men's gossip in here.",
+                "Barber knows everything that happens in town a day before it happens.",
+                "Hair on the floor. Some of it mine, some grey. More grey than I thought." } },
             { "bath", new[] {
-                "Hot water. Real hot water. Could weep.", "Third man in the same bathwater. Don't think about it. Don't think about it." } },
+                "Hot water. Real hot water. Could weep.", "Third man in the same bathwater. Don't think about it. Don't think about it.",
+                "Water was hot once today. For somebody.",
+                "Two bits for a tub and a towel that's seen a war." } },
             { "photo", new[] {
-                "Hold still for the camera, he says. I've held still my whole life.", "Folks pay to have their faces kept. Wonder who'd want to keep mine." } },
+                "Hold still for the camera, he says. I've held still my whole life.", "Folks pay to have their faces kept. Wonder who'd want to keep mine.",
+                "Face on a card for ever. Mine's no face for ever.",
+                "The fellow under the cloth says don't breathe. Hard not to." } },
             { "fence", new[] {
-                "Don't ask where any of it came from. That's the rule in here.", "Every watch in that case stopped at the minute somebody lost it." } },
+                "Don't ask where any of it came from. That's the rule in here.", "Every watch in that case stopped at the minute somebody lost it.",
+                "Half the town's lost property on one shelf. Priced by the ounce.",
+                "Man behind the counter never asks a name. That's the service." } },
             { "bank", new[] {
-                "Banker smiles like he's counting your teeth for gold.", "Every coin in that vault was somebody's sweat. Never the banker's." } },
+                "Banker smiles like he's counting your teeth for gold.", "Every coin in that vault was somebody's sweat. Never the banker's.",
+                "Vault door thick as a church wall. Mine's the only money in there that worries.",
+                "Clerk counts slow so you can watch your money leave." } },
             { "doctor", new[] {
-                "Smells of carbolic and bad news in here.", "Doctor says rest. Rest doesn't plough a field." } },
+                "Smells of carbolic and bad news in here.", "Doctor says rest. Rest doesn't plough a field.",
+                "Everybody in this room is pretending it's nothing. Including the doctor.",
+                "Jar of something on the shelf. Don't want to know what." } },
             { "sheriff", new[] {
-                "Never stood in a lawman's office without feeling guilty of something.", "Wanted posters. Looking at the faces, half of them could be me." } },
+                "Never stood in a lawman's office without feeling guilty of something.", "Wanted posters. Looking at the faces, half of them could be me.",
+                "Cell door's open. Still don't like standing this near it.",
+                "Sheriff's boots on the desk. The law at its ease." } },
             { "station", new[] {
-                "Train's late. Train's always late, and always worth the wait, they say. They lie.", "Every train out of here is somebody's second chance." } },
+                "Train's late. Train's always late, and always worth the wait, they say. They lie.", "Every train out of here is somebody's second chance.",
+                "Smell of coal smoke and leaving.",
+                "Watched the train pull out. Wasn't on it. Never am." } },
             { "stable", new[] {
-                "Horse smell and hay. Better company than most people.", "That grey mare watches me like she knows what I owe." } },
+                "Horse smell and hay. Better company than most people.", "That grey mare watches me like she knows what I owe.",
+                "Mucking out is honest work. Smells honest, too.",
+                "Horses know when you're in a hurry. They slow down for it." } },
             { "tailor", new[] {
-                "A good coat makes a man taller. I'll need a very good coat.", "Measured for a suit I can't afford. Tailor's tape around my middle like a judgement." } },
+                "A good coat makes a man taller. I'll need a very good coat.", "Measured for a suit I can't afford. Tailor's tape around my middle like a judgement.",
+                "Pins in his mouth and opinions behind them.",
+                "Fine cloth. Finer than anything that'll ever touch my back." } },
             { "gunsmith", new[] {
-                "Rows of guns, all oiled and waiting. Waiting for what, I wonder.", "Man ahead of me bought shells for a rifle he doesn't own. Odd." } },
+                "Rows of guns, all oiled and waiting. Waiting for what, I wonder.", "Man ahead of me bought shells for a rifle he doesn't own. Odd.",
+                "Smell of oil and the quiet of men being careful.",
+                "He hands over a pistol the way a preacher hands over a Bible." } },
             { "theatre", new[] {
-                "Paid a nickel to watch other folks pretend. Do it for free all week.", "The villain had the best lines. The villain always has the best lines." } }
+                "Paid a nickel to watch other folks pretend. Do it for free all week.", "The villain had the best lines. The villain always has the best lines.",
+                "Painted sea on the backcloth. Nearest I'll get to the real one.",
+                "Woman next to me cried at the ending. I'd have cried at the price." } }
         };
 
         // a scene that just played out in front of them, by kind ({a} started it, {b} had it done to him)
@@ -216,7 +254,10 @@ namespace EnrageWestworld.Core
                 "Gossip'll have {a} and {b} married by Sunday.",
                 "Envy {a} a little. Just a little." } },
             { "propose", new[] {
-                "{a} went down on one knee to {b}, right there. Never seen the like." } },
+                "{a} went down on one knee to {b}, right there. Never seen the like.",
+                "{a} asked {b} in the open street. Half the town held its breath.",
+                "{a} on one knee in the dirt, hat in hand. Never seen {a} so pale.",
+                "Saw {a} ask {b}. Whatever the answer, that took nerve." } },
             { "snap", new[] {
                 "{a} bit {b}'s head clean off. Something's eating at {a}.",
                 "{a} bit {b}'s head off for no cause I could see.",
@@ -246,7 +287,10 @@ namespace EnrageWestworld.Core
                 "Cards are the devil's prayer book, Ma said. {a} proved her right.",
                 "Glad I lost early and went to the bar." } },
             { "jealous", new[] {
-                "Jealous men and loaded tempers. Saw the whole thing, and wished I hadn't." } },
+                "Jealous men and loaded tempers. Saw the whole thing, and wished I hadn't.",
+                "Green-eyed and loud about it. Jealousy makes a fool fast.",
+                "Two men and one sweetheart and a street full of ears. Never ends well.",
+                "Two men at each other over a girl. Old as Adam, and no wiser for it." } },
             { "debt", new[] {
                 "{a} calling in money from {b}, out in the open. That's a shame on both of them.",
                 "{a} calling in money from {b} in front of half the street.",
@@ -321,17 +365,22 @@ namespace EnrageWestworld.Core
         private static readonly Dictionary<string, string[]> Watching = new Dictionary<string, string[]>
         {
             { "Proud", new[] { "Look at {name}, preening. Some folks were born to be looked at, and know it.", "{name} talks like a man who's never been told no.",
-                               "{name} nodded at me like a king to a stable boy. I'll remember the nod." } },
+                               "{name} nodded at me like a king to a stable boy. I'll remember the nod.",
+                "{name} wears that coat like it was cut for a better man. It wasn't." } },
             { "Loyal", new[] { "{name} looks done in. Ought to ask after {name}.", "Haven't seen {name} smile in a week. Something's wrong at home.",
-                               "If {name} needs a hand with that roof, I'll go Saturday. Nobody asked. Doesn't matter." } },
+                               "If {name} needs a hand with that roof, I'll go Saturday. Nobody asked. Doesn't matter.",
+                "{name}'s boots want mending. Ought to say. Ought to just do it." } },
             { "Drifter", new[] { "{name} will be standing right there when I'm long gone. Rooted like a fence post.", "Wonder if {name} ever wanted to just walk away.",
-                                 "{name} knows every name in this town. I know the names of three roads out." } },
+                                 "{name} knows every name in this town. I know the names of three roads out.",
+                "{name} has never slept under a sky in {name}'s life. Can see it from here." } },
             { "Cold", new[] { "{name} talks too much. Always has.", "{name} wants something. Folks only smile like that when they want something.",
-                              "{name} cried at a funeral last month. Didn't know the man. Some folks just like to be seen." } },
-            { "Hothead", new[] { "{name} keeps looking over here. Let {name} look. See what it gets.", "{name} laughed just now. At me? Better not have been at me." } },
+                              "{name} cried at a funeral last month. Didn't know the man. Some folks just like to be seen.",
+                "{name} says good morning to everybody. Costs nothing, means nothing." } },
+            { "Hothead", new[] { "{name} keeps looking over here. Let {name} look. See what it gets.", "{name} laughed just now. At me? Better not have been at me.", "{name} stood in my way just now. Didn't mean to, likely. Likely.", "If {name} says my name in that voice once more there'll be words." } },
             { "Greedy", new[] { "{name} owes somebody money. You can tell by the shoes.", "{name} would sell a sick mule as a racehorse. I'd know.",
-                                "Wonder what {name} paid for that hat. Too much. Folks like {name} always pay too much." } },
-            { "Coward", new[] { "{name} keeps looking at me. Did I do something? I didn't do anything.", "Stand behind {name} if trouble starts. {name} is wider than me." } },
+                                "Wonder what {name} paid for that hat. Too much. Folks like {name} always pay too much.",
+                "{name}'s wearing new boots. Who paid for those, I wonder." } },
+            { "Coward", new[] { "{name} keeps looking at me. Did I do something? I didn't do anything.", "Stand behind {name} if trouble starts. {name} is wider than me.", "{name} looks like trouble waiting on a reason. Keep walking.", "Smiled at {name}. Can't hurt to be on {name}'s good side." } },
             { "", new[] { "Wonder what {name} does all day. Never once seen {name} in a hurry.", "{name} laughs at everything. Wish I had the knack.",
                          "{name} looks like {name}'s mother. Same chin. Same scowl.", "{name} has a new way of walking. Somebody's in love, or in debt.",
                          "{name} said good morning yesterday. Didn't today. What changed?" } }
