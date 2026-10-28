@@ -226,6 +226,7 @@ namespace EnrageWestworld.Core
         public bool TestKeys = true;
         public bool ShowMinds = true;   // on since settings version 77 (Lex, 2026-10-27)
         public bool ShowWakeStages;   // [Testing] a tag over each person who has begun to wake (2026-10-27)
+        public bool TestCastReturns = true;   // [Testing] the test cast kept in the save come back by themselves when you come to their town (night 2026-10-28; settings version 90)
         public Dictionary<string, string> TestKeyMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// The key text a Testing action is set to: its field, its line in [Testing], or its default.
@@ -814,6 +815,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TestKeys = " + B(TestKeys) + "   ; master switch for the keys below (the settings panel's Testing page fires them with it off too)");
             b.AppendLine("ShowMinds = " + B(ShowMinds) + "   ; a small card over named people within 11 m: temper, mood, worry, ties and what is on their mind");
             b.AppendLine("ShowWakeStages = " + B(ShowWakeStages) + "   ; a tag over each person within 25 m who has begun to wake: stirring, questioning, unravelling or awake, and what holds them back (riding, a counter, had their chance)");
+            b.AppendLine("TestCastReturns = " + B(TestCastReturns) + "   ; the Testing page's test cast, once made and kept in the save, come back by themselves (out of sight) when you come to their town");
             foreach (TestActions.Entry e in TestActions.All)
                 b.AppendLine(e.KeySetting + " = " + TestKeyOf(e) + "   ; " + e.Label + (e.Needs != null ? " (" + e.Needs + ")" : string.Empty) + "; None: no key");
             return b.ToString();

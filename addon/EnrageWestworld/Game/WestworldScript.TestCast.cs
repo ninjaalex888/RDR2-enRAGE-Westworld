@@ -52,14 +52,66 @@ namespace EnrageWestworld.InGame
         private void TestCastStep(int now)
         {
             if (_testCastRun == null && _testCast.Count == 0)
+            {
+                TestCastReturnStep(now);   // the cast kept in the save come back by themselves in their town
                 return;
+            }
             if (_aTestCast == null)
                 _aTestCast = () => TestCastTick(_now);
             Safe("test cast", _aTestCast);
         }
 
+        private int _testCastReturnLookAt, _testCastReturns;
+        private string _testCastReturnTown;
+        private Action _aTestCastReturn;
+
+        /// Every 20 s with nobody of the cast about: in a town with living cast members in the save (made there by a
+        /// bring), once per visit to that town, they're brought back out of sight the way the Testing row brings them
+        /// (only those in the save: nobody is made anew). Roadmap 32's "made again by themselves when you come back".
+        private void TestCastReturnStep(int now)
+        {
+            if (_cfg == null || !_cfg.TestCastReturns || _store == null)
+                return;
+            if (_placeTown == null)
+            {
+                _testCastReturnTown = null;   // leaving the town: next time counts as a new visit
+                return;
+            }
+            if (_placeTown == _testCastReturnTown || (now - _testCastReturnLookAt < 20000 && now >= _testCastReturnLookAt))
+                return;
+            _testCastReturnLookAt = now;
+            if (_aTestCastReturn == null)
+                _aTestCastReturn = TestCastReturnImpl;
+            Safe("test cast", _aTestCastReturn);
+        }
+
+        private void TestCastReturnImpl()
+        {
+            int now = _now;
+            if (_interiorType != 0 || MISC.GET_MISSION_FLAG())
+                return;
+            string town = _placeTown;
+            int living = _store.Residents.Count(x => x.Cast != null && !x.Dead && x.Town == town);
+            if (living == 0)
+            {
+                _testCastReturnTown = town;   // nothing to bring here: not again this visit
+                return;
+            }
+            Ped me = Game.Player.Character;
+            string said;
+            string why = TestCastBring(me, now, out said, true);
+            if (why != null)
+            {
+                Log.Detail("TESTCAST not back by themselves in " + town + ": " + why);
+                return;   // tried again in 20 s (nowhere hidden, for one)
+            }
+            _testCastReturnTown = town;
+            _testCastReturns++;
+            Log.Write("TESTCAST back by themselves in " + town + ": " + living + " of the cast live here");
+        }
+
         /// The Testing row: the test cast brought near you (made, or brought back from the save). Null when it started.
-        private string TestCastBring(Ped me, int now, out string said)
+        private string TestCastBring(Ped me, int now, out string said, bool onlySaved = false)
         {
             said = null;
             if (_testCastRun != null)
@@ -91,8 +143,12 @@ namespace EnrageWestworld.InGame
                 }
                 if (b != null)
                     TestCastDrop(b, "brought again elsewhere");
+                if (onlySaved && !_store.Residents.Any(x => x.Cast == part.Id && !x.Dead && x.Town == _placeTown))
+                    continue;   // coming back by themselves: only those who live here, nobody made anew
                 run.Due.Add(part);
             }
+            if (run.Due.Count == 0 && run.Here == 0)
+                return "nobody of the cast lives here";
             _testCastHome = home;
             _testCastRun = run;
             said = "The test cast is coming: " + TestCast.Parts.Length + " people, " + (int)home.DistanceTo(me.Position) + " m " + Compass(me.Position, home) + " of you.";
@@ -333,7 +389,7 @@ namespace EnrageWestworld.InGame
                        (TestCast.WhyNotFit(b.R, b.Part) is string bad ? "; doesn't fit: " + bad : "");
             }));
             return "brought " + _testCastBrought + " time" + (_testCastBrought == 1 ? "" : "s") + " this session" + (_testCastLast != null ? " (last: " + _testCastLast + ")" : "") +
-                   (_testCastRun != null ? "; on the way: " + _testCastRun.Due.Count + " to make" : "") + "; " + saved + " in the save" + (died > 0 ? ", " + died + " died" : "") +
+                   (_testCastRun != null ? "; on the way: " + _testCastRun.Due.Count + " to make" : "") + "; " + saved + " in the save" + (died > 0 ? ", " + died + " died" : "") + (_cfg != null && _cfg.TestCastReturns ? " (they come back by themselves in their town: " + _testCastReturns + " times this session)" : " (they stay away until brought: [Testing] TestCastReturns off)") +
                    "; here: " + (here.Length > 0 ? here : "nobody");
         }
     }
