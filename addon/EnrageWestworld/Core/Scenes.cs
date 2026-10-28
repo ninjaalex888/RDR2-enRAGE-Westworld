@@ -68,6 +68,19 @@ namespace EnrageWestworld.Core
         public HashSet<string> Off = new HashSet<string>(); // kinds switched off in the ini
         public string[] Names = new string[3];              // the names A, B and C really go by (enRAGE's, or a resident's own); null: made up
         public bool[] Knows;                                // whether the others know A, B and C by name (a tie, or the same home town); null: everyone (the tests); a stranger is "mister" or "ma'am" (night 2026-10-28, item 10)
+        public int[] Warmth;                                // the tie's warmth between A and B, A and C, B and C (-3..3; 0 none), for the reactions' appraisal (after item 14); null: unknown
+        public bool[] Tied;                                 // whether A and B, A and C, B and C have a tie at all
+
+        /// The warmth between two of the cast (0 when unknown), and whether they have a tie.
+        public int WarmthBetween(int i, int j, out bool tied)
+        {
+            tied = false;
+            if (Warmth == null || i == j)
+                return 0;
+            int k = (i == 0 && j == 1 || i == 1 && j == 0) ? 0 : (i == 0 && j == 2 || i == 2 && j == 0) ? 1 : 2;
+            tied = Tied != null && k < Tied.Length && Tied[k];
+            return k < Warmth.Length ? Warmth[k] : 0;
+        }
         public string[] Tempers = new string[3];            // A, B and C's temperaments (Reactions.Listener); null: none known
     }
 

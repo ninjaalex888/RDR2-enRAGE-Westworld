@@ -57,6 +57,8 @@ namespace EnrageWestworld.InGame
             public Ped By, To;
             public string Tone, Temper, ByName, ToName, Seed;
             public bool Woman;
+            public bool Known;      // the two have a tie (the speaker is no stranger to the one reacting)
+            public int Warm;        // the tie's warmth, -3..3 (0 none)
         }
 
         internal static readonly uint Crouch = Natives.Hash("WORLD_HUMAN_CROUCH_INSPECT");   // the crouch over something on the ground (also the night visitor's)
@@ -382,8 +384,14 @@ namespace EnrageWestworld.InGame
                 Beat next = l.Index < l.Scene.Beats.Count ? l.Scene.Beats[l.Index] : null;
                 bool theirTurn = next != null && next.Who == by && (next.Line != null || next.Act != null) && l.NextAt - now < 1000;
                 if (React != null && !theirTurn && !l.Fighting && l.MeetUntil == 0 && !(l.Downed && by == 0))
+                {
+                    bool tied = false;
+                    int warm = l.Info != null ? l.Info.WarmthBetween(by, l.ReactTo, out tied) : 0;
+                    if (l.Info == null)
+                        tied = false;
                     React(new Reaction { By = l.Cast[by], To = l.Cast[l.ReactTo], Tone = l.ReactTone, Temper = Temper(l, by), Woman = l.Women[by],
-                                         ByName = l.Names[by], ToName = l.Names[l.ReactTo], Seed = l.Seed + l.Index });
+                                         ByName = l.Names[by], ToName = l.Names[l.ReactTo], Seed = l.Seed + l.Index, Known = tied, Warm = warm });
+                }
             }
             if (now < l.NextAt)
                 return;

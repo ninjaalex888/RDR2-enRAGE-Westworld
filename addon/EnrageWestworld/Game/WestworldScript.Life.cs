@@ -482,6 +482,35 @@ namespace EnrageWestworld.InGame
             return knows;
         }
 
+        /// The ties' warmth between the cast (A and B, A and C, B and C), read once from the store for the reactions' appraisal.
+        private void CastWarmth(Ped a, Ped b, Ped crowd, SceneCast cast)
+        {
+            var peds = new[] { a, b, crowd };
+            var ids = new string[3];
+            for (int i = 0; i < 3; i++)
+            {
+                string id, name;
+                if (peds[i] != null && peds[i].Exists() && LastingId(peds[i], out id, out name))
+                    ids[i] = id;
+            }
+            cast.Warmth = new int[3];
+            cast.Tied = new bool[3];
+            int[][] pairs = { new[] { 0, 1 }, new[] { 0, 2 }, new[] { 1, 2 } };
+            for (int k = 0; k < 3; k++)
+            {
+                string x = ids[pairs[k][0]], y = ids[pairs[k][1]];
+                if (x == null || y == null)
+                    continue;
+                foreach (SceneTie t in _store.Ties)
+                    if (t.Has(x) && t.Has(y))
+                    {
+                        cast.Warmth[k] = t.Warmth;
+                        cast.Tied[k] = true;
+                        break;
+                    }
+            }
+        }
+
         /// The town someone is of: a bound resident's, or one of enRAGE's townsfolk's; null for a record or a stranger.
         private string CastHome(Ped p)
         {
@@ -505,6 +534,7 @@ namespace EnrageWestworld.InGame
                 Tempers = new[] { CastTemper(a), CastTemper(b), crowd != null ? CastTemper(crowd) : null }
             };
             cast.Knows = CastKnows(a, b, crowd);
+            CastWarmth(a, b, crowd, cast);
             if (!saloon || _cfg.SaloonGossip)
                 cast.Rumours.AddRange(_engine.RumourPool(_placeTown, 4));
             // guns come out in a standoff only when both carry them and no lawman is close enough to start shooting

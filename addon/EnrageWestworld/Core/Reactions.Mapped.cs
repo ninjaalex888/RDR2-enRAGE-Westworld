@@ -17,6 +17,14 @@ namespace EnrageWestworld.Core
         public static string Mapped(string tone, Traits t, bool woman, string place, int witnesses, bool neighbours, bool law, bool drunk, int wakeStage, string seed,
                                     out Feeling feeling, out string shows)
         {
+            return Mapped(tone, t, woman, place, witnesses, neighbours, law, drunk, wakeStage, false, 0, seed, out feeling, out shows);
+        }
+
+        /// The same, with the pair's tie: `known` whether they have one, `warm` its warmth (a neighbour's jeer is taken
+        /// differently from a stranger's: a woman cuts a stranger and talks of a neighbour; blame falls lighter on a friend).
+        public static string Mapped(string tone, Traits t, bool woman, string place, int witnesses, bool neighbours, bool law, bool drunk, int wakeStage, bool known, int warm, string seed,
+                                    out Feeling feeling, out string shows)
+        {
             feeling = null;
             shows = null;
             if (tone == null)
@@ -24,6 +32,11 @@ namespace EnrageWestworld.Core
             if (tone == HurtTone)
                 return "hurt";   // a face into the bar: the body answers before the mind does
             AppraisalEvent e = EventOf(tone, woman, place, witnesses, neighbours, law, drunk, wakeStage);
+            if (e != null && known)
+            {
+                e.Doer = "known";
+                e.WarmDoer = warm;
+            }
             if (e == null)
                 return null;
             feeling = Appraisal.Of(e, t);
@@ -38,8 +51,8 @@ namespace EnrageWestworld.Core
             return shows == "softened" ? Softened(kind, feeling.Kind) : kind;
         }
 
-        /// A line's tone as an event the appraisal knows: the speaker is a stranger of the scene (the scene's pair may
-        /// have a tie, but the Director's reaction doesn't carry it: For Lex); whoever is spoken to is the one it's done to.
+        /// A line's tone as an event the appraisal knows: the speaker is a stranger of the scene unless the caller says
+        /// they're known (Mapped's `known`); whoever is spoken to is the one it's done to.
         public static AppraisalEvent EventOf(string tone, bool woman, string place, int witnesses, bool neighbours, bool law, bool drunk, int wakeStage)
         {
             string kind;

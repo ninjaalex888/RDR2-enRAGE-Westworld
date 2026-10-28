@@ -56,7 +56,13 @@ namespace EnrageWestworld.InGame
             if (kind == null)
             {
                 if (mind != null)
-                    Log.Detail("REACT " + r.ByName + " keeps it off their face at " + r.ToName + "'s " + r.Tone + " line (the mind: " + mind + ")");
+                {
+                    // masked: the feeling is there and the face holds it; the body holds still for the look's length, so
+                    // the swallow is seen (the item 13 review: a street scene has no other channel)
+                    if (!hurt && ENTITY.GET_ENTITY_SPEED(h) < 0.5f)
+                        TASK.TASK_STAND_STILL(h, 3000);
+                    Log.Detail("REACT " + r.ByName + " keeps it off their face at " + r.ToName + "'s " + r.Tone + " line, and holds still (the mind: " + mind + ")");
+                }
                 return;
             }
             string dict, clip;
@@ -103,10 +109,10 @@ namespace EnrageWestworld.InGame
                 string shows;
                 bool neighbours = _placeTown != null && w.P.Home == _placeTown;
                 kind = Reactions.Mapped(r.Tone, w.Traits, r.Woman, _engine.NowIndoors ? _engine.NowPlace : null, Math.Max(0, _mindNear.Count - 1), neighbours, LawmanNear(r.By, 25f),
-                                        InHisCups(r.By, w.P), st != null ? st.WakeStage : 0, r.Seed, out f, out shows);
+                                        InHisCups(r.By, w.P), st != null ? st.WakeStage : 0, r.Known, r.Warm, r.Seed, out f, out shows);
                 if (f == null)
                     return false;   // a tone the mind doesn't name (the everyday, the odd): the table's shrug, nod or puzzled look
-                mind = f.Kind + " (" + f.Strength + ", urge " + f.Urge + "), shows " + shows;
+                mind = f.Kind + " (" + f.Strength + ", urge " + f.Urge + "), shows " + shows + (r.Known ? "; a " + (r.Warm > 0 ? "friend" : r.Warm < 0 ? "foe" : "known face") : "");
                 return true;
             }
             catch (Exception ex)
