@@ -700,7 +700,7 @@ namespace EnrageWestworld.Core
                 string first = Person.FirstOf(who);
                 line = Ties.Pronouns(line, Residents.IsWomansName(first) || Scenes.IsWomansName(first)).Replace("{who}", who);
             }
-            return line.Length > 0 && char.IsLower(line[0]) ? char.ToUpperInvariant(line[0]) + line.Substring(1) : line;
+            return Minds.Sentences(line);   // a capital at every sentence, so a slot that opens one ("... {you} ...") reads right (the late review)
         }
 
         /// Every pool with its key, for the tests (the feeling pools, then need|group, then wet, drink, cards).
