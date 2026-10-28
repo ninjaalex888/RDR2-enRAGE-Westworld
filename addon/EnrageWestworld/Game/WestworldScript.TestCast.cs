@@ -96,7 +96,7 @@ namespace EnrageWestworld.InGame
             _testCastHome = home;
             _testCastRun = run;
             said = "The test cast is coming: " + TestCast.Parts.Length + " people, " + (int)home.DistanceTo(me.Position) + " m " + Compass(me.Position, home) + " of you.";
-            Log.Write("CAST bring: " + run.Due.Count + " to make or bring back from the save, " + run.Here + " here already; their spot " + (int)home.DistanceTo(me.Position) + " m " +
+            Log.Write("TESTCAST bring: " + run.Due.Count + " to make or bring back from the save, " + run.Here + " here already; their spot " + (int)home.DistanceTo(me.Position) + " m " +
                       Compass(me.Position, home) + " of you in " + _placeTown + (inSight ? " (nowhere hidden from you: in sight)" : ""));
             return null;
         }
@@ -126,19 +126,27 @@ namespace EnrageWestworld.InGame
             if (busy != null)
                 return busy.R.Name + " is in a scene or a test (let it finish)";
             int n = _testCast.Count;
-            TestCastClear("let go from the Testing page");
+            TestCastClear("let go from the Testing page", false);
             said = "The test cast is gone (" + n + "); they're kept in the save for next time.";
             return null;
         }
 
-        /// Every body taken away, the identities kept: a mission start, a load, the wipe, shutdown, or the Testing row.
-        private void TestCastClear(string why)
+        /// Every body taken away, the identities kept: a mission start, a load, the wipe, shutdown (all of them, in sight
+        /// or not: one left walking off after a reload looked like the cast and wasn't, Lex 2026-10-28), or the Testing row
+        /// (those in sight walk off).
+        private void TestCastClear(string why, bool vanish = true)
         {
             if (_testCastRun != null)
-                Log.Write("CAST bring stopped: " + why);
+                Log.Write("TESTCAST bring stopped: " + why);
             _testCastRun = null;
             foreach (TestCastBody b in _testCast.Values.ToList())
-                TestCastDrop(b, why);
+                TestCastDrop(b, why, vanish);
+        }
+
+        /// For a test's refusal: the cast would bring who it lacked, when they're not about.
+        private string TestCastHint(string who)
+        {
+            return _testCast.Values.Any(TestCastAlive) ? "" : "; the Testing page's \"Bring the test cast here\" brings " + who;
         }
 
         private static bool TestCastAlive(TestCastBody b)
@@ -148,7 +156,7 @@ namespace EnrageWestworld.InGame
 
         /// One body gone: deleted unseen; in sight, they walk off and the game takes them over; dead, they lie where
         /// they fell (the people ledger notes the death from the binding, which stays until it has).
-        private void TestCastDrop(TestCastBody b, string why)
+        private void TestCastDrop(TestCastBody b, string why, bool vanish = false)
         {
             _testCast.Remove(b.Part.Id);
             Ped p = b.Ped;
@@ -158,14 +166,14 @@ namespace EnrageWestworld.InGame
                 return;
             }
             int h = p.Handle;
-            bool dead = p.IsDead, seen = ENTITY.IS_ENTITY_ON_SCREEN(h);
+            bool dead = p.IsDead, seen = !vanish && ENTITY.IS_ENTITY_ON_SCREEN(h);
             ResBind rb;
             if (!dead && _resBind.TryGetValue(h, out rb) && rb.R == b.R)
                 _resBind.Remove(h);   // the same person may be made again elsewhere: never two bodies with one name
             if (!dead && seen && Spawner.IsCast(h) && !Spawner.IsBorrowed(h))
                 TASK.TASK_WANDER_STANDARD(h, 10f, 10);
             Spawner.ReleaseCast(p, !dead && !seen);
-            Log.Write("CAST " + b.R.Name + " (" + b.Part.Id + "): " + why + (dead ? ", died" : seen ? ", walks off" : ", taken away unseen"));
+            Log.Write("TESTCAST " + b.R.Name + " (" + b.Part.Id + "): " + why + (dead ? ", died" : seen ? ", walks off" : ", taken away unseen"));
         }
 
         private void TestCastRoamAt(TestCastBody b, Vector3 home, int now)
@@ -276,7 +284,7 @@ namespace EnrageWestworld.InGame
             else
                 run.Made++;
             string fit = TestCast.WhyNotFit(res, part);
-            Log.Write("CAST " + (back ? "back" : "new") + ": " + res.Name + ", " + part.What + "; " + res.Trade + ", " + (Voice.NowYear - res.BornYear) + ", " + (res.Personality ?? "plain") +
+            Log.Write("TESTCAST " + (back ? "back" : "new") + ": " + res.Name + ", " + part.What + "; " + res.Trade + ", " + (Voice.NowYear - res.BornYear) + ", " + (res.Personality ?? "plain") +
                       ", " + res.Devotion + ", outfit " + res.Outfit + ", " + (int)at.DistanceTo(me.Position) + " m from you" + (fit != null ? "; DOESN'T FIT THE PART: " + fit : ""));
             run.Due.RemoveAt(0);
             run.ModelTry = 0;
@@ -289,7 +297,7 @@ namespace EnrageWestworld.InGame
             _testCastBrought++;
             run.Failed.AddRange(run.Due.Select(x => x.Id + " (not made in time)"));
             _testCastLast = run.Made + " new, " + run.Back + " back from the save, " + run.Here + " here already" + (run.Failed.Count > 0 ? "; not made: " + string.Join(", ", run.Failed) : "");
-            Log.Write("CAST brought: " + _testCastLast);
+            Log.Write("TESTCAST brought: " + _testCastLast);
             int until = Game.GameTime + 60000;
             foreach (TestCastBody b in _testCast.Values)
             {

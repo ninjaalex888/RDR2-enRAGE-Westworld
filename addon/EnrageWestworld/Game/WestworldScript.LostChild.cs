@@ -62,7 +62,7 @@ namespace EnrageWestworld.InGame
                                                                    : "asked lately")
                                                         .GroupBy(r => r).OrderByDescending(gr => gr.Count()).Select(gr => gr.Count() + " " + gr.Key));
                 why = _lostWhyNot = "no woman out in the street near you" + (women.Count > 0 ? " (" + women.Count + " named women near: " + counted + ")" : " (no named women free near you)") +
-                                    (test ? "; everyone within 25 m: " + CrowdCounted(me, 25f) : "");
+                                    (test ? "; everyone within 25 m: " + CrowdCounted(me, 25f) + TestCastHint("a woman of a mother's age") : "");
                 return false;
             }
             string seed = mother.Who.Id + "|lost|" + g / 1440;

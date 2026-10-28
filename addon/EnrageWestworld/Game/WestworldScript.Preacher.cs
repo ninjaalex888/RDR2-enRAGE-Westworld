@@ -59,7 +59,7 @@ namespace EnrageWestworld.InGame
                                        .OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).FirstOrDefault();
             if (preacher == null)
             {
-                why = _preacherWhyNot = "nobody devout out in the street";
+                why = _preacherWhyNot = "nobody devout out in the street" + (test ? TestCastHint("a preacher and a listener") : "");
                 return false;
             }
             Candidate b = people.Where(c => c != preacher && c.Who.Id != preacher.Who.Id && c.Ped.Position.DistanceTo(preacher.Ped.Position) < 8f && TieWarmth(c.Who.Id, preacher.Who) >= 0)
@@ -108,7 +108,7 @@ namespace EnrageWestworld.InGame
                     Log.Write("OLD DAYS " + old[i].Who.Name + " & " + old[j].Who.Name + ": " + s.Beats[0].Line + " (a test)");
                     return null;
                 }
-            return old.Count < 2 ? "fewer than two named old men near you" : "the old men near you are too far apart";
+            return (old.Count < 2 ? "fewer than two named old men near you" : "the old men near you are too far apart") + TestCastHint("two old men");
         }
 
         private string PreacherStatus()
