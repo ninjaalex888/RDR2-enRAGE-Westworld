@@ -60,7 +60,11 @@ namespace EnrageWestworld.InGame
                                      .OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).FirstOrDefault();   // not right at your feet
             if (faller == null)
             {
-                why = _fallWhyNot = "nobody walking on level ground in view within " + FallFromYou + " m" + (people.Count > 0 ? " (" + people.Count + " named people near)" : "");
+                // what stood in the way, counted (Lex, 2026-10-27: "uneven ground" said for even ground; the old message
+                // named only the ground whatever it was)
+                string counted = string.Join(", ", people.Select(c => c.Ped.Position.DistanceTo(me.Position) < 3f ? "at your feet" : FallCant(c.Ped, me, test))
+                                                         .GroupBy(r => r).OrderByDescending(gr => gr.Count()).Select(gr => gr.Count() + " " + gr.Key));
+                why = _fallWhyNot = "nobody fits within " + FallFromYou + " m" + (people.Count > 0 ? " (" + people.Count + " named people near: " + counted + ")" : " (no named people free near you)");
                 return false;
             }
             Candidate by = people.Where(c => c != faller && c.Who.Id != faller.Who.Id && c.Ped.Position.DistanceTo(faller.Ped.Position) < FallSeen &&
@@ -110,7 +114,8 @@ namespace EnrageWestworld.InGame
         }
 
         /// Why this person can't take a fall here and now, or null: walking (any pace short of a run), in your view within
-        /// 14 m, outdoors, on level ground (no stairs, steps or slopes: the ground within 0.7 m all round within 25 cm),
+        /// 14 m, outdoors, on level enough ground (no stairs or slopes: the ground 0.7 m round them within 40 cm at three of
+        /// four points, so a boardwalk's edge passes; Lex, 2026-10-27: 25 cm at all four turned down even streets),
         /// not in water or a scenario, not one of enRAGE's records (enRAGE runs them), and grown.
         private string FallCant(Ped p, Ped me, bool test)
         {
@@ -120,19 +125,24 @@ namespace EnrageWestworld.InGame
                 return "not walking";
             if (p.Position.DistanceTo(me.Position) > FallFromYou || !NodInView(me, p))
                 return "out of view";
-            if (IsRecord(h) || PED.IS_PED_USING_ANY_SCENARIO(h) || ENTITY.IS_ENTITY_IN_WATER(h) || INTERIOR.GET_INTERIOR_FROM_ENTITY(h) != 0 || !IsGrownUp(p))
-                return "not here";
+            if (IsRecord(h))
+                return "one of enRAGE's records";
+            if (PED.IS_PED_USING_ANY_SCENARIO(h))
+                return "sitting, leaning or at work";
+            if (ENTITY.IS_ENTITY_IN_WATER(h) || INTERIOR.GET_INTERIOR_FROM_ENTITY(h) != 0 || !IsGrownUp(p))
+                return "indoors or in water";
             Vector3 pos = p.Position;
             float mid = GroundBelow(pos.X, pos.Y, pos.Z + 0.5f);
             if (mid < -500f || pos.Z - mid > 1.4f)
                 return "no ground under them";
+            int off = 0;
             foreach (float[] d in new[] { new[] { 0.7f, 0f }, new[] { -0.7f, 0f }, new[] { 0f, 0.7f }, new[] { 0f, -0.7f } })
             {
                 float z = GroundBelow(pos.X + d[0], pos.Y + d[1], pos.Z + 0.5f);
-                if (z < -500f || Math.Abs(z - mid) > 0.25f)
-                    return "not level ground";
+                if (z < -500f || Math.Abs(z - mid) > 0.4f)
+                    off++;
             }
-            return null;
+            return off > 1 ? "on stairs or a slope" : null;
         }
 
         /// The ground height just below a point (from a little above it, so a roof or an awning overhead doesn't count),
