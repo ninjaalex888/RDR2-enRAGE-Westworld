@@ -48,15 +48,18 @@ namespace EnrageWestworld.Core
                     "Took the long way round to miss {who}'s porch. Third time this week." },
                 Crisis = new[] {
                     "{who} wants it by Saturday. Said it plain, with a hand on my shoulder.",
-                    "Could sell the saddle. Could ask my brother. Could leave town by night. Saturday's close." },
+                    "Could sell the saddle. Could ask my brother. Could leave town by night. Saturday's close.",
+                    "Walked past the bank twice. Walked past {who}'s porch once. Neither is an answer." },
                 Good = new[] {
                     "Paid {who} in full. Walked out lighter. Bought a cigar I can't afford.",
-                    "Square with {who}. Slept the whole night. First time since spring." },
+                    "Square with {who}. Slept the whole night. First time since spring.",
+                    "Counted it into {who}'s hand on the step. Eleven dollars. Felt like a hundred." },
                 Bad = new[] {
                     "Couldn't pay. {who} took the mule instead. Stood in the yard and watched it go.",
-                    "{who} has my watch now. Keep reaching for it. Pocket's empty." },
-                AfterGood = new[] { "Don't owe a soul in this town. Say it out loud sometimes, to hear it." },
-                AfterBad = new[] { "Still see my mule in {who}'s field. He works it harder than I did." }
+                    "{who} has my watch now. Keep reaching for it. Pocket's empty.",
+                    "{who} was civil about it. Took the saddle and said he was sorry. Civil is worse." },
+                AfterGood = new[] { "Don't owe a soul in this town. Say it out loud sometimes, to hear it.", "Pass {who}'s porch now and tip my hat. Just a hat. Nothing attached to it.", "Jar's filling again. Slowly. Mine this time, every penny." },
+                AfterBad = new[] { "Still see my mule in {who}'s field. He works it harder than I did.", "Walk to the field now. The mule would've carried me. {who} knows it.", "Owed and paid in kind. Folk still say it kindly. Kindly is the part that lasts." }
             },
             new WorryKind
             {
@@ -71,19 +74,24 @@ namespace EnrageWestworld.Core
                     "Doctor wants two dollars to ride out. Two dollars." },
                 Crisis = new[] {
                     "Doctor came. Looked a long time. Said tonight will tell.",
-                    "Prayed over {who}'s bed. Bargained, really. Offered everything I've got." },
+                    "Prayed over {who}'s bed. Bargained, really. Offered everything I've got.",
+                    "Cold cloth, warm cloth, cold cloth. {who}'s eyes keep finding mine. Don't let them see." },
                 Good = new[] {
                     "Fever broke at first light. {who} asked for eggs. I laughed like a fool.",
-                    "{who}'s up and about. Thin as a rail and loud as ever. Thank God." },
+                    "{who}'s up and about. Thin as a rail and loud as ever. Thank God.",
+                    "{who} slept through the night. A whole night. I sat and watched the breathing like a show." },
                 Bad = new[] {
                     "Buried {who} on the rise behind the house. Ground was hard. Dug anyway.",
-                    "Small coffin. Smaller than you'd think. Carpenter wouldn't take money." },
+                    "Small coffin. Smaller than you'd think. Carpenter wouldn't take money.",
+                    "Folded {who}'s things into the chest. Didn't fold them well. Couldn't see to." },
                 AfterGood = new[] {
                     "Still feel {who}'s forehead every night. Habit now. Can't stop.",
-                    "Heard {who} cough in the yard and my heart stopped. Just the dust. Just the dust." },
+                    "Heard {who} cough in the yard and my heart stopped. Just the dust. Just the dust.",
+                    "{who} ran the length of the yard today. Ran. Had to turn away a moment." },
                 AfterBad = new[] {
                     "Set one plate too many again. Caught myself with it in my hand.",
-                    "Somebody's child laughed in the street. Had to stop and hold the rail." }
+                    "Somebody's child laughed in the street. Had to stop and hold the rail.",
+                    "The doctor nods to me in the street. Kindly. I'd rather he crossed over." }
             },
             new WorryKind
             {
@@ -98,15 +106,18 @@ namespace EnrageWestworld.Core
                     "Postmaster knows my face now. Says nothing today before I open my mouth." },
                 Crisis = new[] {
                     "Dreamed {who} was knocking at the door. Woke, and the door was open.",
-                    "If {who} were dead, somebody would write. Wouldn't they write?" },
+                    "If {who} were dead, somebody would write. Wouldn't they write?",
+                    "Asked the stage driver had he carried anything with my name on it. Asked him twice. He was patient." },
                 Good = new[] {
                     "Letter from {who}! Well and fat. Three pages about a dog. Read it four times.",
-                    "{who} wrote at last. Moved twice, never thought to say. Don't care. Alive." },
+                    "{who} wrote at last. Moved twice, never thought to say. Don't care. Alive.",
+                    "Pipe smoke on {who}'s letter. Stood in the post office breathing it in. Clerk looked away." },
                 Bad = new[] {
                     "Letter came. Black edge on the envelope. Didn't need to open it. Opened it anyway.",
-                    "Stranger's hand on the envelope. {who} passed in the winter. They waited till now to say." },
-                AfterGood = new[] { "Keep {who}'s letter in my coat. Paper's going soft at the folds." },
-                AfterBad = new[] { "Still walk past the post office. Nothing coming. Walk past anyway." }
+                    "Stranger's hand on the envelope. {who} passed in the winter. They waited till now to say.",
+                    "Read it standing in the road. Folded it. Walked home. Don't recall the walk." },
+                AfterGood = new[] { "Keep {who}'s letter in my coat. Paper's going soft at the folds.", "Wrote back the same night. Three pages. Said nothing worth a stamp, and sent it anyway.", "Postmaster smiled at me today. He knows the letter came. Whole town does." },
+                AfterBad = new[] { "Still walk past the post office. Nothing coming. Walk past anyway.", "Keep the black-edged one in the drawer with the others. Can't read it. Can't burn it.", "Somebody said {who}'s name at the store, meaning somebody else. Had to go out." }
             },
             new WorryKind
             {
@@ -121,15 +132,18 @@ namespace EnrageWestworld.Core
                     "Neighbour's well went dry. He came asking. I said no. Hated myself by supper." },
                 Crisis = new[] {
                     "Dig the well deeper or sell the cow. Can't do both. Can't do neither.",
-                    "Lay awake listening for rain. Heard a horse. Heard my own heart. No rain." },
+                    "Lay awake listening for rain. Heard a horse. Heard my own heart. No rain.",
+                    "Sky white as a plate at noon. Walked the rows and the corn whispered at me. Dry whispering." },
                 Good = new[] {
                     "Rain! Stood in it with my hat off like a fool. Mud to the ankles. Best day this year.",
-                    "Dug six feet more and hit sweet water. Drank till my belly hurt." },
+                    "Dug six feet more and hit sweet water. Drank till my belly hurt.",
+                    "Creek's running again. Stood on the bank and listened to it like a sermon." },
                 Bad = new[] {
                     "Sold the cow to a man from {town}. Didn't haggle. Couldn't look at her.",
-                    "Corn's dead. Walked the rows anyway. Like visiting a grave." },
-                AfterGood = new[] { "Every cloud, I look up. Can't help it now." },
-                AfterBad = new[] { "Field's bare where the corn was. Wind takes a little more topsoil every day." }
+                    "Corn's dead. Walked the rows anyway. Like visiting a grave.",
+                    "Bank of the creek is cracked like old china. Cow's gone. Corn's gone. The cracks stay." },
+                AfterGood = new[] { "Every cloud, I look up. Can't help it now.", "Rain barrel's full and I still check it mornings. Can't trust a full barrel.", "Planted the whole field this year. Half of me said don't. Planted it anyway." },
+                AfterBad = new[] { "Field's bare where the corn was. Wind takes a little more topsoil every day.", "Neighbour's corn is up to his waist. Can see it from the porch. Moved the chair.", "Bought milk at the store this morning. Paid for it. Said nothing." }
             },
             new WorryKind
             {
@@ -144,15 +158,18 @@ namespace EnrageWestworld.Core
                     "Dreamed {who} was small again, in the creek, calling me. Woke in a sweat." },
                 Crisis = new[] {
                     "Asked a man off the stage if he knew {who}. He didn't. Looked at me with pity. Pity's free.",
-                    "Writing to {place} again. Third letter. Pressed so hard the pen tore the paper." },
+                    "Writing to {place} again. Third letter. Pressed so hard the pen tore the paper.",
+                    "Took {who}'s chair out to the barn. Couldn't look at it. Brought it back by supper." },
                 Good = new[] {
                     "{who}'s home! Taller. Broader. Smells of smoke and tobacco. Ate like three men.",
-                    "{who} sent five dollars from {place}, and a note: don't fret. I fretted." },
+                    "{who} sent five dollars from {place}, and a note: don't fret. I fretted.",
+                    "{who} came in the door like the house had been waiting for him. It had." },
                 Bad = new[] {
                     "{who} came home on a cart. Leg's gone below the knee. Smiled at me anyway.",
-                    "Man from {place} brought {who}'s things in a sack. Boots. A comb. My letters, unopened." },
-                AfterGood = new[] { "{who} sleeps till noon now. Let him. He earned it." },
-                AfterBad = new[] { "Keep {who}'s comb on the shelf. Dust it Sundays." }
+                    "Man from {place} brought {who}'s things in a sack. Boots. A comb. My letters, unopened.",
+                    "Put {who}'s boots by the door. His good boots. Somebody else wore them home." },
+                AfterGood = new[] { "{who} sleeps till noon now. Let him. He earned it.", "{who} snores through the wall. Never thought I'd lie awake glad of a snore.", "{who} talks of {place} like it was nothing. Lets me think it was nothing." },
+                AfterBad = new[] { "Keep {who}'s comb on the shelf. Dust it Sundays.", "Folk stop asking after {who}. That's kindness, I know. It lands like the other thing.", "Still set the kettle for two some mornings. The hands know before the head does." }
             },
             new WorryKind
             {
@@ -167,15 +184,18 @@ namespace EnrageWestworld.Core
                     "Somebody with good teeth was talking to {who} after church. Hate them already." },
                 Crisis = new[] {
                     "Going to ask {who} to walk out Sunday. Practised on the horse. Horse said nothing.",
-                    "Wrote {who} a letter. Burned it. Wrote it again. It's in my pocket, burning there." },
+                    "Wrote {who} a letter. Burned it. Wrote it again. It's in my pocket, burning there.",
+                    "Bought a new collar for Sunday. Stiff as a board. {who} won't notice. I'll notice {who} not noticing." },
                 Good = new[] {
                     "{who} said yes. Yes! Took the long way home so nobody'd see me grinning.",
-                    "Walked out with {who} by the river. Didn't say one clever thing. Didn't need to." },
+                    "Walked out with {who} by the river. Didn't say one clever thing. Didn't need to.",
+                    "{who} took my arm in the street. In the street. Whole town looking, and let them look." },
                 Bad = new[] {
                     "{who} is promised to somebody from {town}. Heard it at the store, between the flour and the lamp oil.",
-                    "Asked {who}. Got a kind no. The kind ones are the worst kind." },
-                AfterGood = new[] { "{who} pressed a flower into my hand. Keep it flat in the Bible." },
-                AfterBad = new[] { "Saw {who} in town with that other one. Nodded. Felt my face burn." }
+                    "Asked {who}. Got a kind no. The kind ones are the worst kind.",
+                    "{who} looked past me at the dance. Through me. Walked home the long way in the dark." },
+                AfterGood = new[] { "{who} pressed a flower into my hand. Keep it flat in the Bible.", "{who} laughed at something I said. Can't recall what. Working on saying it again.", "Sundays have a shape now. {who} is the shape of them." },
+                AfterBad = new[] { "Saw {who} in town with that other one. Nodded. Felt my face burn.", "Saw {who}'s wedding things in the store window. Fine lace. Crossed the street.", "Somebody said I'd get over {who}. Got over the fence instead and walked a long way." }
             },
             new WorryKind
             {
@@ -190,15 +210,18 @@ namespace EnrageWestworld.Core
                     "Moved the post back in the night. Felt like a thief on my own land." },
                 Crisis = new[] {
                     "{who} stood in the road with his arms folded. I stood with mine. Sun went down on us both.",
-                    "Next word from {who} gets answered with my hands. Mother would weep. Let her." },
+                    "Next word from {who} gets answered with my hands. Mother would weep. Let her.",
+                    "{who}'s dog on my side of the line again. Didn't shoot it. Thought about it a long while." },
                 Good = new[] {
                     "Shook hands with {who}. Neither of us said sorry. Shook anyway.",
-                    "{who}'s boy fell in the creek. I pulled him out. {who} brought a pie. That's that, then." },
+                    "{who}'s boy fell in the creek. I pulled him out. {who} brought a pie. That's that, then.",
+                    "Mended the fence with {who}. Neither of us mentioned which side the post belongs on." },
                 Bad = new[] {
                     "Not speaking to {who}. Won't again. Buy my nails in another town to miss his face.",
-                    "Sheriff came about the fence. {who} lied. I lied better. Neither of us won." },
-                AfterGood = new[] { "Lent {who} my saw. Got it back sharper. Strange world." },
-                AfterBad = new[] { "{who}'s chimney smoke drifts over my roof. Even that galls me." }
+                    "Sheriff came about the fence. {who} lied. I lied better. Neither of us won.",
+                    "{who} spat in the road when I passed. Spat back. Two grown men. The children were watching." },
+                AfterGood = new[] { "Lent {who} my saw. Got it back sharper. Strange world.", "{who} nodded at church. Nodded back. Neither of us fell over.", "Hens are laying again. Maybe {who}'s dog has found religion." },
+                AfterBad = new[] { "{who}'s chimney smoke drifts over my roof. Even that galls me.", "Built the fence a foot higher. Not for the hens. For the looking.", "Buy my nails in {town} now. Dearer, and worth every cent not to see {who}." }
             },
             new WorryKind
             {
@@ -213,15 +236,18 @@ namespace EnrageWestworld.Core
                     "Banker shakes my hand like he's weighing it." },
                 Crisis = new[] {
                     "Notice nailed to the door. Read it three times. The words don't change.",
-                    "Banker gave me to the end of the month. I thanked him. Thanked him. Fool." },
+                    "Banker gave me to the end of the month. I thanked him. Thanked him. Fool.",
+                    "Counted the silver on the table. Counted the windows. Counted the years. None of it comes to enough." },
                 Good = new[] {
                     "Bank gave me another year. Walked out into the sun and couldn't feel my feet.",
-                    "Paid the note. Banker looked disappointed. Best face I've seen all year." },
+                    "Paid the note. Banker looked disappointed. Best face I've seen all year.",
+                    "Banker said another year. Walked out. Walked back in to hear him say it again." },
                 Bad = new[] {
                     "Bank has the house. Carried the stove out myself. Wouldn't let them touch it.",
-                    "Strangers in my kitchen window. Bank sold it before the ink was dry." },
-                AfterGood = new[] { "Keep the bank's receipt in my boot. Nowhere else is safe." },
-                AfterBad = new[] { "Renting a room over the store. Ceiling's low. Hit my head every morning. Deserve it." }
+                    "Strangers in my kitchen window. Bank sold it before the ink was dry.",
+                    "Took the door key off the ring. Handed it over. Hand didn't want to open." },
+                AfterGood = new[] { "Keep the bank's receipt in my boot. Nowhere else is safe.", "Pass the bank now and don't look at it. Takes some doing, not looking.", "Paid this year's early. Just to see the banker's face. Worth the interest." },
+                AfterBad = new[] { "Renting a room over the store. Ceiling's low. Hit my head every morning. Deserve it.", "New folk have my old gate. Painted it green. It was never green.", "Walk past the house some evenings. Lamp in the window. Somebody else's lamp." }
             },
             new WorryKind
             {
@@ -236,15 +262,18 @@ namespace EnrageWestworld.Core
                     "Keep my hands in my pockets. They give me away." },
                 Crisis = new[] {
                     "One drink. One. A man can have one. That's what I said last time.",
-                    "Bottle under the floorboard. Know which board. Haven't touched it. Haven't stopped thinking of it." },
+                    "Bottle under the floorboard. Know which board. Haven't touched it. Haven't stopped thinking of it.",
+                    "Stood at the saloon door with my hand on it. Barkeep saw me. Nodded. Didn't go in. Didn't." },
                 Good = new[] {
                     "Thirty days dry. Traded the bottle under the floor for a sack of coffee.",
-                    "Clear head in the morning. Forgot what that was like. Sky looks bluer. Probably isn't." },
+                    "Clear head in the morning. Forgot what that was like. Sky looks bluer. Probably isn't.",
+                    "Sixty days dry. The whiskey money went on a hat. Ten years since I had one new." },
                 Bad = new[] {
                     "Back at it. Woke in the alley with straw in my hair and somebody else's coat.",
-                    "Drank the week's money in one night. Can't remember which night." },
-                AfterGood = new[] { "Saloon piano going. Still know every song. Don't go in." },
-                AfterBad = new[] { "Hair of the dog. Then the whole dog. Same as ever." }
+                    "Drank the week's money in one night. Can't remember which night.",
+                    "Woke with my coat buttoned wrong and no memory of buttoning it. Day one. Again." },
+                AfterGood = new[] { "Saloon piano going. Still know every song. Don't go in.", "Coffee tastes of coffee now. Took a year to find that out.", "Men still offer me a drink. Say no. The second no is easier than the first." },
+                AfterBad = new[] { "Hair of the dog. Then the whole dog. Same as ever.", "Barkeep keeps my tab on a nail. Longest nail in the place.", "Children cross the street from me now. Can't say they're wrong to." }
             },
             new WorryKind
             {
@@ -260,15 +289,18 @@ namespace EnrageWestworld.Core
                     "Sold my good boots for a stake. Feet know it." },
                 Crisis = new[] {
                     "Rent's three days late. Mrs. {who} has a nephew. Big lad. Bigger every day.",
-                    "Last dollar on the table tonight. Win, and I sleep indoors." },
+                    "Last dollar on the table tonight. Win, and I sleep indoors.",
+                    "Rent in one pocket, a stake in the other. Both hands in my pockets all the way to the saloon." },
                 Good = new[] {
                     "Drew to an inside straight. Paid Mrs. {who} in silver and she smiled. Once.",
-                    "Quit the table while I was ahead. First time in my life. Rent's paid." },
+                    "Quit the table while I was ahead. First time in my life. Rent's paid.",
+                    "Full house against three kings. Paid Mrs. {who} a week early. She looked for the catch." },
                 Bad = new[] {
                     "Mrs. {who} put my things out in the street. Hat on top, like a joke.",
-                    "My room's let to a drummer from Ohio. I'm sleeping at the livery." },
-                AfterGood = new[] { "Deck of cards on the bar. Didn't touch it. Didn't." },
-                AfterBad = new[] { "Livery loft's not so bad. Horses don't cheat at cards." }
+                    "My room's let to a drummer from Ohio. I'm sleeping at the livery.",
+                    "Lost the boots as well as the rent. Walked to the livery in my socks. Mrs. {who} watched from the window." },
+                AfterGood = new[] { "Deck of cards on the bar. Didn't touch it. Didn't.", "Mrs. {who} sets a plate for me now. The rent did that. Keep it paid.", "Walked past the back room. Heard the chips. Kept walking. Mostly." },
+                AfterBad = new[] { "Livery loft's not so bad. Horses don't cheat at cards.", "Mrs. {who} nods to me in the street like I'm somebody she once knew. I am.", "A drummer has my old window. Sees the street I used to see. Hope the bed's lumpy." }
             },
             new WorryKind
             {
@@ -283,15 +315,18 @@ namespace EnrageWestworld.Core
                     "Halfway to {place}. Halfway's the hardest. Can't go back. Can't go on." },
                 Crisis = new[] {
                     "Enough in the can for the ticket. Or the doctor. Or the rent. Pick one.",
-                    "Ticket agent asked one way, and I couldn't answer him." },
+                    "Ticket agent asked one way, and I couldn't answer him.",
+                    "Took the can out and put it back three times tonight. Lid's worn smooth." },
                 Good = new[] {
                     "Bought the ticket. {place}. Holding it like it's warm.",
-                    "Counted the last dollar into the can. It's enough. It's actually enough." },
+                    "Counted the last dollar into the can. It's enough. It's actually enough.",
+                    "Showed the ticket to nobody. Nobody to show. Showed it to the mirror." },
                 Bad = new[] {
                     "Can's empty. Lid's on the floor. Whoever it was, they knew.",
-                    "Spent the ticket money on the doctor. {place} will still be there. Will I?" },
-                AfterGood = new[] { "Ticket's in my coat. Haven't gone yet. Can't say why." },
-                AfterBad = new[] { "Started a new can. Same bed. Same dream. Smaller can." }
+                    "Spent the ticket money on the doctor. {place} will still be there. Will I?",
+                    "Can's under the bed, empty. Kept it there. A reminder, or a habit. Can't tell." },
+                AfterGood = new[] { "Ticket's in my coat. Haven't gone yet. Can't say why.", "Train leaves Tuesdays. Been three Tuesdays. The ticket's patient. I'm not sure I am.", "Said {place} out loud at the store. Clerk didn't look up. It's just a word to him." },
+                AfterBad = new[] { "Started a new can. Same bed. Same dream. Smaller can.", "Found a dime in the road. Put it in the new can. Laughed at myself. Did it anyway.", "A man off the train said {place} is nothing special. Wanted to hit him. Thanked him instead." }
             },
             new WorryKind
             {
@@ -306,15 +341,18 @@ namespace EnrageWestworld.Core
                     "Barber pulls teeth for a dollar. Seen him do it. Wouldn't let him trim a hedge." },
                 Crisis = new[] {
                     "Tomorrow the barber, the pliers and the bottle. Tonight just the bottle.",
-                    "Tied a string to the doorknob. Looked at it an hour. Untied it." },
+                    "Tied a string to the doorknob. Looked at it an hour. Untied it.",
+                    "Can't chew. Can't sleep. Can't think of anything but the barber's pliers on the shelf." },
                 Good = new[] {
                     "Barber pulled it clean. Spat blood and laughed. Pain's gone. A gap's a fine thing.",
-                    "Swelling's down. Ate a whole steak on the left side out of spite." },
+                    "Swelling's down. Ate a whole steak on the left side out of spite.",
+                    "Gap's healing clean. Drank cold water on that side just to feel nothing." },
                 Bad = new[] {
                     "Barber broke it. Took him three tries. I took the bottle.",
-                    "Lost the tooth and half my nerve. Jaw still aches when the weather turns." },
-                AfterGood = new[] { "Tongue keeps finding the gap. Like a dog at a hole in the fence." },
-                AfterBad = new[] { "Whistle through the gap when I talk. Children laugh. Let them." }
+                    "Lost the tooth and half my nerve. Jaw still aches when the weather turns.",
+                    "Barber says the root's still in there. Says it like he's proud of it." },
+                AfterGood = new[] { "Tongue keeps finding the gap. Like a dog at a hole in the fence.", "Smile with my mouth shut now. Folk think I've turned serious.", "Barber waves at me in the street. Waves. Like we're friends. We're not." },
+                AfterBad = new[] { "Whistle through the gap when I talk. Children laugh. Let them.", "Chew on one side still. Jaw's learned a lean to it.", "Hear a man groan at the barber's and my hand goes to my own jaw." }
             },
             new WorryKind
             {
@@ -329,15 +367,18 @@ namespace EnrageWestworld.Core
                     "Signed my old name on a receipt by mistake. Scratched it out till the paper tore." },
                 Crisis = new[] {
                     "Man at the station asked had I ever lived in Missouri. Said no. Said it too fast.",
-                    "Could tell them myself before somebody else does. Could. Won't." },
+                    "Could tell them myself before somebody else does. Could. Won't.",
+                    "Lay awake making up a story for when they ask. Made up three. All of them bad." },
                 Good = new[] {
                     "Put the money back. Nobody knows. Nobody will. Slept like a stone.",
-                    "The man from my old town rode on. Didn't know me. God bless bad eyes." },
+                    "The man from my old town rode on. Didn't know me. God bless bad eyes.",
+                    "Signed the new name without thinking today. First time. It fit." },
                 Bad = new[] {
                     "They know. Heard it in how the preacher said good morning.",
-                    "Lost my place over it. Didn't argue. Had no argument to make." },
-                AfterGood = new[] { "Every stranger off the stage, I look at the face first. Every one." },
-                AfterBad = new[] { "Folks are polite now. Polite and careful, like I'm a horse that kicked once." }
+                    "Lost my place over it. Didn't argue. Had no argument to make.",
+                    "Storekeeper served me last and counted my change slow. Everybody in the place watching the count." },
+                AfterGood = new[] { "Every stranger off the stage, I look at the face first. Every one.", "Stage came in today. Didn't look at the faces. Nearly didn't.", "Said my old name in my head to see if it still sounded like me. It didn't. Good." },
+                AfterBad = new[] { "Folks are polite now. Polite and careful, like I'm a horse that kicked once.", "Preacher shook my hand Sunday. Held it a second long. Everybody saw the second.", "Could move on. Have the money for the stage. Keep not buying the ticket." }
             },
             new WorryKind
             {
@@ -352,15 +393,18 @@ namespace EnrageWestworld.Core
                     "Moved the saddlebags by the back door. Just in case. Just in case is a full-time job." },
                 Crisis = new[] {
                     "Horse saddled behind the stable. Could ride tonight. Could ride every night.",
-                    "New poster up. Better drawing. Somebody's been talking." },
+                    "New poster up. Better drawing. Somebody's been talking.",
+                    "Two riders at the livery asking the same questions. Good boots, both of them." },
                 Good = new[] {
                     "Pinkerton left on the morning train. Watched him go from under my hat.",
-                    "Poster's been papered over with a circus bill. Long live the circus." },
+                    "Poster's been papered over with a circus bill. Long live the circus.",
+                    "Sheriff rode out to the county seat. A week, they say. A week of breathing." },
                 Bad = new[] {
                     "Night in the sheriff's cell. Let me go. Wrote my name down. Wrote my face down too.",
-                    "My old name on a poster by the church. Somebody knows. Somebody knows." },
-                AfterGood = new[] { "Took my boots off to sleep last night. First time in a year. Didn't sleep anyway." },
-                AfterBad = new[] { "Everybody's looking. Maybe nobody is. That's the trouble. Can't tell anymore." }
+                    "My old name on a poster by the church. Somebody knows. Somebody knows.",
+                    "Deputy follows me down the street now. Not hiding it. Wants me to know he's there." },
+                AfterGood = new[] { "Took my boots off to sleep last night. First time in a year. Didn't sleep anyway.", "New poster on the wall. Somebody else's face. Stood and looked at it a long while, grateful.", "Took the saddlebags off the back door hook. Put them back by evening." },
+                AfterBad = new[] { "Everybody's looking. Maybe nobody is. That's the trouble. Can't tell anymore.", "Sheriff says good morning now. Says it like a man checking a horse is still in the stall.", "Sleep in the barn some nights. Closer to the road. Closer to leaving." }
             }
         };
 
