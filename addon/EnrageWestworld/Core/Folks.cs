@@ -28,7 +28,14 @@ namespace EnrageWestworld.Core
                 case "fond":
                     return Voice.Pick(seed, "Good to see " + who + " back in town.", "Always tips his hat, that one.");
                 case "met":
-                    return Voice.Pick(seed, "I've talked to " + who + " before. Can't decide what I make of him.", "Him. We've spoken.");
+                    // enRAGE knows its townsfolk by their look and passes "met" between bodies that share one, so a stranger in
+                    // another man's clothes is "met" the moment he's seen (Lex's players, 2026-10-28: "Him. I've spoken to them
+                    // before" on a first meeting); only a talk of our own says spoken, the rest only that the face seems known
+                    return st.Talks > 0
+                        ? Voice.Pick(seed, "I've talked to " + who + " before. Can't decide what I make of him.", "Him. We've spoken.",
+                            "Passed a word with " + who + " once. Civil enough.", "Spoke to " + who + " once. He didn't say much.")
+                        : Voice.Pick(seed, "Seen " + who + " before, or someone the spit of him.", "That face again. Or one like it.",
+                            "Him. Seen him about, I think.", "I've seen that one in town before. Couldn't say where.");
                 default:
                     return null;
             }

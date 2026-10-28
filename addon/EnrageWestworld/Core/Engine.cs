@@ -165,7 +165,7 @@ namespace EnrageWestworld.Core
 					continue;
 				}
 				Person p = Find(a.PersonId);
-				if (p == null || !p.IsAlive)
+				if (p == null || !p.IsAlive || TellsNothing(p.Id))   // enRAGE's flag, or our own ledger when its sync missed the death
 				{
 					Log("LATER " + (p != null ? p.Name : a.PersonId) + " didn't live to " + (a.Kind == "diary" ? "write of" : "tell") + " \"" + a.Text + "\"");
 					continue;
@@ -353,6 +353,12 @@ namespace EnrageWestworld.Core
 				if (item.How == "death")
 				{
 					DeliverDeath(item, now);
+				}
+				else if (item.FromId != null && TellsNothing(item.FromId))
+				{
+					// the dead tell nothing and write no letters: a telling in flight when they died is lost with them
+					// (Lex's players, 2026-10-28: an interrogated man killed afterwards went on "talking about how he was questioned")
+					Log("WORD dropped: " + item.FromName + " is dead and tells nothing (" + item.How + ", hop " + item.Hops + "): " + item.Text);
 				}
 				else if (item.ToId != null)
 				{

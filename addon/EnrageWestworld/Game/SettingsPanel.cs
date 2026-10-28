@@ -70,7 +70,7 @@ namespace EnrageWestworld.InGame
         {
             { "FlirtPrompt", "Romance" }, { "Trysts", "Romance" }, { "CasualHookupsDecides", "Trysts" }, { "WillingSingle", "Romance" }, { "WillingTaken", "Romance" }, { "NpcFlirting", "Drama" }, { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
-            { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
+            { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "AvengersAtOnce", "Avengers" }, { "AvengerGapHours", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
             { "CryingWomanChance", "CryingWoman" }, { "ExecutionChance", "Executions" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
             { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" },
             { "FeelingBarsMetres", "FeelingBars" }, { "FeelingBarsShowEmpty", "FeelingBars" }, { "RealVoiceTalkSeconds", "RealVoiceTalk" }, { "CrudeTalk", "RealVoiceTalk" }, { "Reactions", "Drama" }, { "EnragePeopleJoinIn", "Drama" }, { "ThoughtsOverHeadScale", "ThoughtsOverHeads" }, { "RoughHandling", "Drama" }, { "NpcThieves", "Drama" }, { "DrunkChallenges", "Drama" }        };

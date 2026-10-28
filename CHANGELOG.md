@@ -4,6 +4,12 @@
 
 Built in the night run of 2026-10-28 (Lex's brief), on the 0.6.3 release; nothing here has been seen in game yet. The mind stays in shadow: everything new that would change what people think, say or do sits behind `[Mind] MindLive` (off), and with it off every path runs as it did in 0.6.3.
 
+### Two players' reports (Lex, 2026-10-28)
+
+- The dead tell nothing. A man interrogated and then killed went on "talking about how he was questioned" for hours in the RealNPCs box, and his kin came after you for it, as if he were alive: enRAGE's people sync had missed the death (the player rode off a second later), so on its books he lived, and the word of mouth he had set going was still in flight. A rumour or a letter is now dropped at delivery when its teller is dead on RealNPCs' own ledger as well as on enRAGE's books (`WORD dropped:` in the log), and a telling or a diary entry due from such a man never starts. His kin's grief and any avenger were real: he died by your hand.
+- Avengers come one at a time. `[World] AvengersAtOnce` (2) caps how many of RealNPCs' avengers are riding, arrived, or still alive on enRAGE's roster, and `AvengerGapHours` (48) keeps that many game hours between one arrival and the next; past the cap the relative grieves at home (`AVENGER held:` in the log). Settings version 91. The "somebody wants revenge every 30 seconds" notices are mostly enRAGE's own: it tells every kin and friend on its roster of a death you caused, each with a grudge notice, and the angry and the loyal among them set out to avenge it; a gang's men are each other's friends, so a camp cleared is a dozen notices. Those are enRAGE's to settle.
+- "Him. I've spoken to them before" on a first meeting: enRAGE knows its townsfolk by their look and passes "met" between bodies that share one, so a stranger in another man's clothes was "met" the moment he was seen. A townsperson met by look alone now says only that the face seems known ("Seen him before, or someone the spit of him."); the spoken lines wait for a talk of your own. And a town regular counts as met again only after six game hours away: before, a new body for the same regular in the same visit, or a look a few minutes later, counted as another meeting, so "I know that face" came in the first hour.
+
 ### Fixes from a review of the day's work
 
 - A hand-edited controller binding of `+` alone stopped RealNPCs starting (nothing in the log); it's refused with a reason now, and no bad setting can stop the start.

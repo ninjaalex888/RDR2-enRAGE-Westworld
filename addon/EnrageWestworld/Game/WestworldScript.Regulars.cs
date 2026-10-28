@@ -150,15 +150,23 @@ namespace EnrageWestworld.InGame
             return n;
         }
 
+        private const long RegularMeetGapMin = 360;   // game hours apart before the same regular counts as met again
+
         /// The player is close to a regular: counted once each time they're met (for "him again" thoughts and the log).
+        /// A meeting is one stay near them: a new body for the same regular in the same visit, or a look after a few
+        /// minutes, doesn't count again, only coming back after six game hours away (Lex's players, 2026-10-28:
+        /// "I know that face" on what was a first meeting).
         private int NoteRegularMet(Resident r, int handle, Person p)
         {
             PersonState st = _store.Get(p);
-            if (_metThisTime.Add(r.Id + "|" + handle))
+            long now = Bridge.Now();
+            bool away = st.LastSeenAt == 0 || now - st.LastSeenAt >= RegularMeetGapMin || now < st.LastSeenAt;
+            if (_metThisTime.Add(r.Id + "|" + handle) && away)
             {
                 st.Sightings++;
-                _engine.KeepResident(r, Bridge.Now());
+                _engine.KeepResident(r, now);
             }
+            st.LastSeenAt = now;
             return st.Sightings;
         }
 

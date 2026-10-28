@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 90;
+        public const int CurrentVersion = 91;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -145,6 +145,8 @@ namespace EnrageWestworld.Core
         public bool FindDiaries = true;
         public bool Avengers = true;
         public int AvengerChance = 35;
+        public int AvengersAtOnce = 2;      // riding, here or still alive on enRAGE's roster (Lex's players, 2026-10-28)
+        public int AvengerGapHours = 48;    // game hours between one avenger's arrival and the next's
         public bool CastRelatives = true;
         public bool Drama = true;
         public int DramaGapSeconds = 90;   // 150 until settings version 87 (Lex, 2026-10-28: the world lively)
@@ -564,6 +566,8 @@ namespace EnrageWestworld.Core
             RegularsPerTown = Math.Max(5, Math.Min(80, RegularsPerTown));            StalkerChance = Math.Max(0, Math.Min(100, StalkerChance));
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
+            AvengersAtOnce = Math.Max(1, Math.Min(10, AvengersAtOnce));
+            AvengerGapHours = Math.Max(0, Math.Min(720, AvengerGapHours));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
             TroubleWeight = Math.Max(0f, Math.Min(5f, TroubleWeight));
             TickerSeconds = Math.Max(4, Math.Min(120, TickerSeconds));
@@ -733,6 +737,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("FindDiaries = " + B(FindDiaries) + "   ; loot a body and you may find the diary they kept");
             b.AppendLine("Avengers = " + B(Avengers) + "   ; kin you never met may ride in to settle accounts");
             b.AppendLine("AvengerChance = " + AvengerChance + "   ; percent chance a grieving relative comes for you");
+            b.AppendLine("AvengersAtOnce = " + AvengersAtOnce + "   ; at most this many avengers riding, arrived or still alive at a time (1-10); the rest grieve at home");
+            b.AppendLine("AvengerGapHours = " + AvengerGapHours + "   ; game hours between one avenger's arrival and the next's (0-720)");
             b.AppendLine("CastRelatives = " + B(CastRelatives) + "   ; in their town, folk on the street turn out to be someone's relative");
             b.AppendLine("Drama = " + B(Drama) + "   ; strangers argue, flirt, brawl, propose and gossip around you");
             b.AppendLine("DramaGapSeconds = " + DramaGapSeconds + "   ; at most one scene this often");

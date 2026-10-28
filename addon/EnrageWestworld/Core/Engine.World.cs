@@ -166,12 +166,18 @@ namespace EnrageWestworld.Core
                 // someone else's doing: grief, and no one rides west after him for it
                 reaction = Voice.Pick(rel.Name + dead.Id, (rel.Woman ? "She" : "He") + " sat a long time without saying anything.", (rel.Woman ? "She" : "He") + " wants the body sent home.");
             }
-            else if (Cfg.Avengers && can && _rng.Next(100) < Cfg.AvengerChance)
+            else if (Cfg.Avengers && can && _rng.Next(100) < Cfg.AvengerChance && AvengerRoom(rel, dead))
             {
+                // one rider at a time past the last one's arrival (Lex's players, 2026-10-28: "every 30 seconds somebody wants
+                // revenge"; most of that is enRAGE's own kin and friends, but ours keep a gap between arrivals too)
+                long due = now + (far ? 4320 + _rng.Next(4320) : 720 + _rng.Next(1440));
+                long last = Store.Avengers.Where(x => x.Stage <= 2).Select(x => x.DueAt).DefaultIfEmpty(0).Max();
+                if (last > 0 && due < last + Cfg.AvengerGapHours * 60L)
+                    due = last + Cfg.AvengerGapHours * 60L + _rng.Next(360);
                 Avenger a = new Avenger
                 {
                     Id = Ids.New(), Name = rel.Name, Relation = rel.Relation, Woman = rel.Woman, Town = rel.Town, DeadId = dead.Id, DeadName = dead.Name, DeadWoman = dead.Woman,
-                    Stage = 1, DueAt = now + (far ? 4320 + _rng.Next(4320) : 720 + _rng.Next(1440))
+                    Stage = 1, DueAt = due
                 };
                 Store.Avengers.Add(a);
                 reaction = (rel.Woman ? "She" : "He") + "'s coming west to settle it " + (rel.Woman ? "herself" : "himself") + ".";
@@ -193,6 +199,28 @@ namespace EnrageWestworld.Core
                     Text = rel.Name + " got a telegram: " + (rel.Woman ? "her" : "his") + " " + relTo + " " + dead.FirstName + " is dead. " + reaction
                 });
             Log("WORD of " + dead.Name + "'s death reaches " + rel.Name + " (" + rel.Relation + ", " + rel.Town + ")");
+        }
+
+        /// Whether another avenger may set out: fewer than AvengersAtOnce are riding (stage 1), here (2) or on enRAGE's
+        /// roster and still alive (3 with a living record). Over the cap, the relative grieves at home (logged).
+        private bool AvengerRoom(Relative rel, Person dead)
+        {
+            int riding = 0;
+            foreach (Avenger a in Store.Avengers)
+            {
+                if (a.Stage == 1 || a.Stage == 2)
+                    riding++;
+                else if (a.Stage == 3 && a.RecordId != null)
+                {
+                    Person rec = Find(a.RecordId);
+                    if (rec != null && rec.IsAlive)
+                        riding++;
+                }
+            }
+            if (riding < Cfg.AvengersAtOnce)
+                return true;
+            Log("AVENGER held: " + riding + " already riding or here (AvengersAtOnce " + Cfg.AvengersAtOnce + "); " + rel.Name + " (" + rel.Relation + " of " + dead.Name + ") grieves at home");
+            return false;
         }
 
         private void WakeTick(long now)
@@ -1151,6 +1179,23 @@ namespace EnrageWestworld.Core
             }
             Person p;
             return _byId.TryGetValue(id, out p) && !p.IsAlive;
+        }
+
+        /// Whether this person can tell anyone anything now. Dead by HasDied, or dead on our own ledger (a death enRAGE's
+        /// people sync missed when the player rode off a second later, as Pope McCrae's; a record's death the ledger saw),
+        /// unless they woke since (a reverie). Lex's players, 2026-10-28: a man interrogated and then killed went on "talking
+        /// about how he was questioned" for hours, because enRAGE still had him alive and his word of mouth was in flight.
+        public bool TellsNothing(string id)
+        {
+            if (id == null)
+                return false;
+            if (HasDied(id))
+                return true;
+            DeathEntry e = Store.DeathOf(id);
+            if (e == null)
+                return false;
+            Reverie r;
+            return !(Store.Reveries.TryGetValue(id, out r) && r.Woke && r.WokeAt >= e.At);
         }
 
         /// Every death RealNPCs records comes through here: our own record (Deaths.cs), and a resident marked dead.

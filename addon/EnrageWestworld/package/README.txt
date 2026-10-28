@@ -711,7 +711,7 @@ in the file. The new ones:
             he lets you go
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
             Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
-            AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
+            AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
             SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true),
