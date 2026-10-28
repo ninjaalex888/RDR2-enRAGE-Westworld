@@ -48,102 +48,126 @@ namespace EnrageWestworld.Core
         {
             { "rain", new[] {
                 "Rain finds the one gap in a collar. Every time, the one gap.", "Boots full of water. Squelch, squelch, all the way home.",
-                "Smell of wet dog and wet wool. Every soul in town smells the same today.", "Should've brought the oilskin. Said that this morning, too." } },
+                "Smell of wet dog and wet wool. Every soul in town smells the same today.", "Should've brought the oilskin. Said that this morning, too.",
+                "Rain on the tin roof like a drummer who's lost the tune.", "Puddles the width of the street. Everybody's a tightrope walker today." } },
             { "storm", new[] {
                 "Thunder like that, my mother used to cover the mirrors.", "Counted between the flash and the boom. Getting closer.",
                 "Horses don't like it. Can't say I do.",
-                "Lightning showed the whole street white. Then black. Then every dog in town." } },
+                "Lightning showed the whole street white. Then black. Then every dog in town.",
+                "Hail now. Hail on the hat like somebody throwing gravel.", "Shutters banging down the row. Somebody's barn door is going to go." } },
             { "snow", new[] {
                 "Can't feel my toes. Haven't for an hour. That's bad, isn't it.", "Snow muffles everything. Town sounds like it's holding its breath.",
                 "Breath freezing on the scarf. Stiff as a board by the second street.",
-                "Snow on the hat brim, snow down the neck. Same snow, different complaints." } },
+                "Snow on the hat brim, snow down the neck. Same snow, different complaints.",
+                "Snow squeaks under the boot. Means it's colder than it looks.", "Drifts up to the sill. The door opens inward, thank God." } },
             { "dust", new[] {
                 "Grit in my teeth, grit in my eyes. I'll be tasting dirt till Tuesday.", "Can't see the end of the street. Nor the man standing in it.",
                 "Wind's carrying half of somebody's field. Hope it wasn't mine.",
-                "Tied a kerchief over my mouth. Still taste the road." } },
+                "Tied a kerchief over my mouth. Still taste the road.",
+                "Shut my eyes and the dust finds a way in anyhow.", "Every hat in the street held on with one hand." } },
             { "fog", new[] {
                 "Fog this thick, a man could walk right past his own brother.", "Everything wet and grey and close. Like being inside a cloud's pocket.",
                 "Hoofbeats and no horse. Fog does that. I don't care for it.",
-                "Lamp lit at noon. Can't see the end of my own arm." } },
+                "Lamp lit at noon. Can't see the end of my own arm.",
+                "Church bell somewhere in the white. Can't say which way.", "Fog stays in the coat an hour after it's lifted." } },
             { "sun", new[] {
                 "Sun on the back of my neck like a warm hand.", "Squinting so long my face'll stay this way.",
                 "Good drying weather. Washing on every line in town, flapping like flags.",
-                "Hot enough to fry an egg on the hitching rail. Somebody ought to try." } },
+                "Hot enough to fry an egg on the hitching rail. Somebody ought to try.",
+                "Glare off the river like a struck match. Hat brim's no use.", "Horses standing in whatever shade a post makes." } },
             { "grey", new[] {
                 "Sky the colour of dishwater. Can't make up its mind.", "Grey day. Grey mood. One follows the other like a dog.",
                 "Can't make up its mind to rain. Can't make up mine to work.",
-                "Low cloud sitting on the roofs like a hen on eggs." } }
+                "Low cloud sitting on the roofs like a hen on eggs.",
+                "Grey since dawn. Grey till dark, I'd wager. A day for mending harness.", "Not a shadow in the street. Everything looks the same age." } }
         };
 
         private static readonly Dictionary<string, string[]> ByPlace = new Dictionary<string, string[]>
         {
             { "saloon", new[] {
                 "One drink. Then home. Said that two drinks ago.", "Piano's half a note out. Nobody minds after the third glass.",
-                "Sawdust on the floor to soak up what nobody wants to look at.", "Every man in here is telling a story bigger than his life." } },
+                "Sawdust on the floor to soak up what nobody wants to look at.", "Every man in here is telling a story bigger than his life.",
+                "Spittoon's been missed more than hit tonight.", "Same four men at the same table. They were there when I came in last year." } },
             { "church", new[] {
                 "Lord, I don't ask much. Just a little less than I've been getting.", "The pew creaks every time I shift. Like it's keeping count.",
                 "Preacher's looking right at me. Or I feel like he is. Same thing.",
-                "Hymn's one I know. Mouth the words. Nobody's listening to me, least of all Him." } },
+                "Hymn's one I know. Mouth the words. Nobody's listening to me, least of all Him.",
+                "Collection plate coming. Hand's in the pocket already, weighing which coin.", "A hat in the pew ahead the width of a wagon wheel. The sermon comes through it, worse luck." } },
             { "store", new[] {
                 "Prices up again. Molasses costs like medicine now.", "Write it in the book, I'll say. The book is getting long.",
                 "Shopkeeper weighs with his thumb. Everybody knows. Nobody says.",
-                "Shopkeeper's got the good flour behind the counter. Always has. Never for me." } },
+                "Shopkeeper's got the good flour behind the counter. Always has. Never for me.",
+                "Jar of peppermints by the till. For children, he says. Looks at me when he says it.", "Cloth by the yard, and the yard's shorter than it was." } },
             { "genstore", new[] {
                 "Prices up again. Molasses costs like medicine now.", "Coffee, flour, lamp oil. Coffee, flour, lamp oil. Don't forget the lamp oil.",
                 "Nails by the pound, and the pound gets lighter every year.",
-                "Lamp oil's gone up again. Dark is free, at least." } },
+                "Lamp oil's gone up again. Dark is free, at least.",
+                "Smell of coffee beans and rope. Could stand here all day. Can't afford to.", "He's out of the one thing I came for. He's always out of the one thing." } },
             { "hotel", new[] {
                 "Paid for a bed and got a lumpy argument with a mattress.", "Walls thin enough to hear a man think next door.",
                 "Clerk looks at your boots before your face. Decides the price by the boots.",
-                "Bed's been slept in by every drummer in the state. You can tell." } },
+                "Bed's been slept in by every drummer in the state. You can tell.",
+                "Stairs creak a different note on every step. Somebody could play a tune.", "Spittoon in the lobby, polished, and nobody uses it. That's how you know it's a good hotel." } },
             { "barber", new[] {
                 "Sit still. Man with a razor at your neck, you sit still and agree with him.", "Smells of bay rum and other men's gossip in here.",
                 "Barber knows everything that happens in town a day before it happens.",
-                "Hair on the floor. Some of it mine, some grey. More grey than I thought." } },
+                "Hair on the floor. Some of it mine, some grey. More grey than I thought.",
+                "Razor strop going like a whip. Soothing, somehow.", "Hair from three heads on the floor and nobody has swept since noon." } },
             { "bath", new[] {
                 "Hot water. Real hot water. Could weep.", "Third in the same bathwater. Don't think about it. Don't think about it.",
                 "Water was hot once today. For somebody.",
-                "Two bits for a tub and a towel that's seen a war." } },
+                "Two bits for a tub and a towel that's seen a war.",
+                "Steam on the window and the street going by outside, not knowing.", "Soap the size of a biscuit and worn to a sliver before it's mine." } },
             { "photo", new[] {
                 "Hold still for the camera, he says. I've held still my whole life.", "Folks pay to have their faces kept. Wonder who'd want to keep mine.",
                 "Face on a card for ever. Mine's no face for ever.",
-                "The fellow under the cloth says don't breathe. Hard not to." } },
+                "The fellow under the cloth says don't breathe. Hard not to.",
+                "Stiff collar, stiffer smile. The card will show a stranger.", "He says the picture lasts a hundred years. Which of us will know." } },
             { "fence", new[] {
                 "Don't ask where any of it came from. That's the rule in here.", "Every watch in that case stopped at the minute somebody lost it.",
                 "Half the town's lost property on one shelf. Priced by the ounce.",
-                "Man behind the counter never asks a name. That's the trade." } },
+                "Man behind the counter never asks a name. That's the trade.",
+                "Ring on the tray I'd swear I saw on a hand at church last spring.", "Nobody in here asks where a thing came from. That's the trade." } },
             { "bank", new[] {
                 "Banker smiles like he's counting your teeth for gold.", "Every coin in that vault was somebody's sweat. Never the banker's.",
                 "Vault door thick as a church wall. Mine's the only money in there that worries.",
-                "Clerk counts slow so you can watch your money leave." } },
+                "Clerk counts slow so you can watch your money leave.",
+                "Marble floor. Marble, and the town's mud on it.", "Teller's cage. Which side of the bars is the prisoner on." } },
             { "doctor", new[] {
                 "Smells of carbolic and bad news in here.", "Doctor says rest. Rest doesn't plough a field.",
                 "Everybody in this room is pretending it's nothing. Including the doctor.",
-                "Jar of something on the shelf. Don't want to know what." } },
+                "Jar of something on the shelf. Don't want to know what.",
+                "The chair where everybody waits. The dent in it's from worse news than mine.", "Doctor's hands smell of soap. Mine smell of what I do." } },
             { "sheriff", new[] {
                 "Never stood in a lawman's office without feeling guilty of something.", "Wanted posters. Looking at the faces, half of them could be me.",
                 "Cell door's open. Still don't like standing this near it.",
-                "Sheriff's boots on the desk. The law at its ease." } },
+                "Sheriff's boots on the desk. The law at its ease.",
+                "Keys on a ring the size of a dinner plate.", "Rifle rack behind the desk. Every one of them clean. Every one loaded, I expect." } },
             { "station", new[] {
                 "Train's late. Train's always late, and always worth the wait, they say. They lie.", "Every train out of here is somebody's second chance.",
                 "Smell of coal smoke and leaving.",
-                "Watched the train pull out. Wasn't on it. Never am." } },
+                "Watched the train pull out. Wasn't on it. Never am.",
+                "Clock on the wall runs the railroad's time, not the town's. Nobody's told the clock.", "Trunks stacked for somewhere. A whole life in each, strapped shut." } },
             { "stable", new[] {
                 "Horse smell and hay. Better company than most people.", "That grey mare watches me like she knows what I owe.",
                 "Mucking out is honest work. Smells honest, too.",
-                "Horses know when you're in a hurry. They slow down for it." } },
+                "Horses know when you're in a hurry. They slow down for it.",
+                "The grey in the end stall kicks the boards when a stranger comes. Kicked for me.", "Bran mash cooking. Horses eat better than the boarding house." } },
             { "tailor", new[] {
                 "A good coat makes a man taller. I'll need a very good coat.", "Measured for clothes I can't afford. Tailor's tape around my middle like a judgement.",
                 "Pins in his mouth and opinions behind them.",
-                "Fine cloth. Finer than anything that'll ever touch my back." } },
+                "Fine cloth. Finer than anything that'll ever touch my back.",
+                "Chalk marks on the cloth like a map of a man who's not finished.", "A coat's a year's wages here. A year, hung on a nail." } },
             { "gunsmith", new[] {
                 "Rows of guns, all oiled and waiting. Waiting for what, I wonder.", "Man ahead of me bought shells for a rifle he doesn't own. Odd.",
                 "Smell of oil and the quiet of men being careful.",
-                "He hands over a pistol the way a preacher hands over a Bible." } },
+                "He hands over a pistol the way a preacher hands over a Bible.",
+                "Click of a hammer being tried. Everybody in the room stops to hear whether it fires.", "Boxes of shells in rows like a church choir." } },
             { "theatre", new[] {
                 "Paid a dime to watch other folks pretend. Do it for free all week.", "The villain had the best lines. The villain always has the best lines.",
                 "Painted sea on the backcloth. Nearest I'll get to the real one.",
-                "Woman next to me cried at the ending. I'd have cried at the price." } }
+                "Woman next to me cried at the ending. I'd have cried at the price.",
+                "Tobacco ground into the plush. Somebody sat out a long second act here.", "The girl in the front row knows the words. Mouths them. Every one." } }
         };
 
         // a scene that just played out in front of them, by kind ({a} started it, {b} had it done to him)
