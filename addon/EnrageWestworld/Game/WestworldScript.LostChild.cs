@@ -47,12 +47,22 @@ namespace EnrageWestworld.InGame
             List<Candidate> people = ReasonCandidates(me, now, test);
             string ignored;
             Candidate mother = people.Where(c => c.Who.Woman && c.Who.P != null && LostChild.CouldBeMother(c.Who.P) && !Director.OldModel(c.Ped) && c.Ped.Position.DistanceTo(me.Position) < 25f && NodInView(me, c.Ped) &&
-                                                 !PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) &&
+                                                 (!PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) || test && !PED.IS_PED_SITTING(c.Ped.Handle)) &&   // a test may ask a woman standing about (Lex, 2026-10-27)
                                                  (test || Pacing.WhyNot(_store.Pace, "lostchild", null, c.Who.Id, g, 0, false, out ignored) == null))
                                      .OrderBy(c => c.Ped.Position.DistanceTo(me.Position)).FirstOrDefault();
             if (mother == null)
             {
-                why = _lostWhyNot = "no woman out in the street near you";
+                // what stood in the way, counted, as the fall's test does (Lex, 2026-10-27: she couldn't find a woman)
+                var women = people.Where(c => c.Who.Woman).ToList();
+                string counted = string.Join(", ", women.Select(c => c.Who.P == null || !LostChild.CouldBeMother(c.Who.P) || Director.OldModel(c.Ped) ? "not of a mother's age or trade"
+                                                                   : c.Ped.Position.DistanceTo(me.Position) >= 25f ? "further than 25 m"
+                                                                   : !NodInView(me, c.Ped) ? "out of view"
+                                                                   : PED.IS_PED_SITTING(c.Ped.Handle) ? "sitting"
+                                                                   : PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) ? "standing in one spot"
+                                                                   : "asked lately")
+                                                        .GroupBy(r => r).OrderByDescending(gr => gr.Count()).Select(gr => gr.Count() + " " + gr.Key));
+                why = _lostWhyNot = "no woman out in the street near you" + (women.Count > 0 ? " (" + women.Count + " named women near: " + counted + ")" : " (no named women free near you)") +
+                                    (test ? "; everyone within 25 m: " + CrowdCounted(me, 25f) : "");
                 return false;
             }
             string seed = mother.Who.Id + "|lost|" + g / 1440;
@@ -61,6 +71,8 @@ namespace EnrageWestworld.InGame
             int h = mother.Ped.Handle;
             bool you = mother.Ped.Position.DistanceTo(me.Position) < LostAskYou && !PED.IS_PED_ON_MOUNT(me.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false);
             string asked;
+            if (test && PED.IS_PED_USING_ANY_SCENARIO(h))
+                TASK.CLEAR_PED_TASKS(h, false, false);   // a test's woman standing about leaves what she was doing to ask
             if (you)
             {
                 // she turns to you and asks; she isn't held, so she goes back to her own way once she's said it
