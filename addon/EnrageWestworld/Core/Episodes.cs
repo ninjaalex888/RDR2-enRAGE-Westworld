@@ -3,10 +3,13 @@
 // mattered and get retold between people who know each other, losing sureness and details on the way. In memory only,
 // capped, never saved (a mind's live state; cleared with the rest on a rewind). Plain C#, no game.
 //
-// What's grounded where: forgetting by an exponential curve whose half-life grows with how strongly it was felt (the
-// emotional enhancement of memory: arousing events are kept longer); retelling as serial reproduction (Bartlett 1932;
-// Allport and Postman 1947: told on, a story gets shorter and loses names and particulars, keeps its gist, and is
-// believed a little less at each remove).
+// What's grounded where: forgetting as two traces (Lex's choice, 2026-10-27): a fast one with a half-life that grows
+// with how strongly it was felt, and a lasting one twenty times slower whose share grows with the feeling squared (the
+// emotional enhancement of memory: arousing events are consolidated and kept), halved for something only heard and
+// quartered for something told; the two together give forgetting's long tail (fast at first, then slower and slower)
+// without a floor. Each telling rehearses it (what people talk about is what they keep). Retelling as serial
+// reproduction (Bartlett 1932; Allport and Postman 1947: told on, a story gets shorter and loses names and particulars,
+// keeps its gist, and is believed a little less at each remove).
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,6 +32,7 @@ namespace EnrageWestworld.Core
         public int Removes;           // how many tellings away from someone who saw it (0: saw or heard it themselves)
         public float Felt;            // how strongly it was felt when it came to them (0..1)
         public float Sure;            // how sure they are it happened as they have it (0..1)
+        public float Kept;            // the lasting trace's share (0..0.9): the feeling squared, how they came by it, each telling
         public List<string> ToldTo = new List<string>();   // ids they've told it to (never twice to the same person)
     }
 
@@ -45,18 +49,34 @@ namespace EnrageWestworld.Core
             return ownPart ? h * 2 : h;
         }
 
-        /// How much of it is left now (0..1): how strongly it came to them, faded since they learned it, by how sure.
+        public const double SlowTimes = 20;   // the lasting trace's half-life against the fast one's
+        public const float KeptMost = 0.9f;
+
+        /// The lasting trace's share when it comes to them: 0.05 + 0.45 x the feeling squared; half for something only
+        /// heard, a quarter for something told.
+        public static float KeptOf(float felt, string how)
+        {
+            float k = 0.05f + 0.45f * felt * felt;
+            return how == "saw" ? k : how == "heard" ? k * 0.5f : k * 0.25f;
+        }
+
+        /// How much of it is left now (0..1): how strongly it came to them, the fast trace and the lasting one faded since
+        /// they learned it, by how sure.
         public static float Strength(Episode e, long now, string selfId = null)
         {
             if (e == null || now < e.Learned)
                 return 0f;
-            bool own = selfId != null && (e.DoerId == selfId || e.TargetId == selfId);
-            double age = now - e.Learned;
-            double left = (0.35 + 0.65 * e.Felt) * Math.Pow(0.5, age / HalfLife(e, own));
-            float s = (float)(left * (0.5 + 0.5 * e.Sure));
-            // what they saw and felt hard isn't lost the way the rest is: forgetting slows in the tail (consolidation), so
-            // it stays just above forgetting, a memory that can still come back
-            return e.How == "saw" && e.Felt >= 0.8f ? Math.Max(s, Forgotten + 0.01f) : s;
+            bool own = selfId != null && (e.WhoDid == selfId || e.WhoTo == selfId);
+            double age = now - e.Learned, fast = HalfLife(e, own), k = Math.Max(0f, Math.Min(KeptMost, e.Kept));
+            double left = (0.35 + 0.65 * e.Felt) * ((1 - k) * Math.Pow(0.5, age / fast) + k * Math.Pow(0.5, age / (fast * SlowTimes)));
+            return (float)(left * (0.5 + 0.5 * e.Sure));
+        }
+
+        /// Thought of or told again: the lasting trace's share grows (rehearsal; what people talk about is what they keep).
+        public static void Rehearse(Episode e)
+        {
+            if (e != null)
+                e.Kept = Math.Min(KeptMost, e.Kept + 0.05f);
         }
 
         /// The episode for someone who saw or heard a happening (how: saw | heard), with how strongly they felt it.
@@ -72,7 +92,7 @@ namespace EnrageWestworld.Core
             {
                 Key = KeyOf(h), Kind = h.Kind, Doer = saw ? h.DoerName : null, Target = saw ? h.TargetName : null, DoerId = saw ? h.DoerId : null, TargetId = saw ? h.TargetId : null,
                 WhoDid = h.DoerId, WhoTo = h.TargetId, Town = h.Town, Place = h.Place, At = h.At, Learned = h.At, How = saw ? "saw" : "heard", Removes = 0,
-                Felt = Math.Max(0f, Math.Min(1f, felt)), Sure = saw ? 1f : 0.7f
+                Felt = Math.Max(0f, Math.Min(1f, felt)), Sure = saw ? 1f : 0.7f, Kept = KeptOf(Math.Max(0f, Math.Min(1f, felt)), saw ? "saw" : "heard")
             };
         }
 
@@ -94,6 +114,7 @@ namespace EnrageWestworld.Core
                 Place = e.Place, At = e.At, Learned = now, How = "told", From = tellerFirstName, Removes = e.Removes + 1,
                 Felt = listenerFelt >= 0f && !float.IsNaN(listenerFelt) ? Math.Min(1f, listenerFelt) : e.Felt * 0.6f, Sure = e.Sure * 0.8f
             };
+            r.Kept = KeptOf(r.Felt, "told");
             if (r.Doer != null && roll < 25 + 10 * e.Removes)
             {
                 r.Doer = Voice.Hash(seed + "|rs") % 2 == 0 ? "a stranger" : null;   // "somebody", or the outsider, by the second or third telling
@@ -222,6 +243,7 @@ namespace EnrageWestworld.Core
                 if (_told.Count > 20000)
                     _told.Clear();   // capped; a week-old telling forgotten is no harm
                 e.ToldTo.Add(listener);
+                Rehearse(e);   // telling it keeps it
                 return Add(listener, Retold(e, tellerFirstName, now, teller + "|" + listener + "|" + e.Key), now);
             }
 

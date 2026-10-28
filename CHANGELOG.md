@@ -24,7 +24,7 @@
 
 ### Groundwork for memory (nothing in game yet)
 
-- How people will remember what they saw and pass it on: a memory fades by how much it mattered (a scuffle seen is gone in a couple of days, a killing stays for weeks), and when friends meet the strongest news is told on, a little less sure and with names lost at each telling, until "Earl Platt knocked Hollis down" becomes "somebody knocked Hollis down".
+- How people will remember what they saw and pass it on: a memory fades by how much it mattered, fast at first and then slower and slower (a scuffle seen is gone in about three days; a killing seen is still there, faintly, a year on, and longer if people keep talking about it), and when friends meet the strongest news is told on, a little less sure and with names lost at each telling, until "Earl Platt knocked Hollis down" becomes "somebody knocked Hollis down".
 
 ### Groundwork for the language layer (nothing in game yet)
 
