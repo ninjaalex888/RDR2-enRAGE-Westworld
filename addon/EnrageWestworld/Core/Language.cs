@@ -50,7 +50,7 @@ namespace EnrageWestworld.Core
         }
     }
 
-    public static class Language
+    public static partial class Language
     {
         public const int MaxChars = 110, MaxSentences = 4;
 
