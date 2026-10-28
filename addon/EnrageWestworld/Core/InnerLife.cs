@@ -164,7 +164,8 @@ namespace EnrageWestworld.Core
             "Blister on the left heel, hot as a coin. Boots weren't made for this road.", "Stomach folded in on itself. Last real meal was Tuesday. Or Monday.",
             "Craving tobacco. Fingers keep patting the empty pocket.", "Wind straight through the coat. Bones aching like a bad tooth.", "Sweat down the spine. Collar like a wet rope.",
             "Eyes gritty from the dust. Can't think when they didn't sting.", "Back's one long knot. Slept on a floor again.", "Tongue stuck to the roof of my mouth. Water. Water.",
-            "Tooth at the back throbbing with my heartbeat. Dentist's a day's ride. Whiskey's nearer.", "Hands cracked at the knuckles. Cold and lye soap. They bleed when I make a fist.", "Head pounding behind the eyes. Too much sun or too little sleep. Both.", "Knee locks on the stairs. Thirty-odd years of stairs, and it's keeping count."
+            "Tooth at the back throbbing with my heartbeat. Dentist's a day's ride. Whiskey's nearer.", "Hands cracked at the knuckles. Cold and lye soap. They bleed when I make a fist.", "Head pounding behind the eyes. Too much sun or too little sleep. Both.", "Knee locks on the stairs. Thirty-odd years of stairs, and it's keeping count.",
+            "Ears ringing since the thunder yesterday. Hear it in bed. Hear it in church.", "Wool itching at the shoulders. Can't reach it, can't leave it alone.", "Hungry enough to eat the horse's oats. Looked at them twice.", "Chilblains on every finger. Can't do up a button before noon."
         };
 
         /// How they think they look to everyone else.
@@ -225,26 +226,30 @@ namespace EnrageWestworld.Core
             "That stranger again. Nodded at me last time. Will he this time?",
             "I know that face. Know it from here. Every time, from right here.",
             "Third time, or fourth. I've stopped pretending I don't notice him.",
-            "Back again, that one. The town's got used to him. I haven't.", "That stranger, and still a stranger. Some men stay one on purpose."
+            "Back again, that one. The town's got used to him. I haven't.", "That stranger, and still a stranger. Some men stay one on purpose.",
+            "Him again. The dog knows him now. The dog's a better judge than me.", "Back once more. Every time he comes the paper has something new in it.", "That one again. I'd give a dollar to know what he's after in this town.", "Seen him so often now I'd miss him if he stopped coming. Odd thing to think."
         };
 
         private static readonly string[] SeenArmed =
         {
             "Gun hand never far from the gun. Not for show. For use.", "Holster's worn smooth at the edge. That's years of drawing.", "Doesn't lift the gun. Doesn't need to. The weight shows in how he stands.",
-            "Two guns. One's for show, or he's twice as dangerous as he looks.", "Rifle on the saddle, pistol on the hip. Prepared for weather I can't see.", "Coat cut away from the holster. Somebody tailored that on purpose."
+            "Two guns. One's for show, or he's twice as dangerous as he looks.", "Rifle on the saddle, pistol on the hip. Prepared for weather I can't see.", "Coat cut away from the holster. Somebody tailored that on purpose.",
+            "Gun's clean and the rest of him isn't. Says what he looks after.", "Thumb sits on the hammer while he stands and looks about. Doesn't seem to know it's there.", "Wears it high on the belt, butt forward, cavalry fashion. Not a farmer's way of carrying it."
         };
 
         private static readonly string[] SeenMounted =
         {
             "Sits that horse like a chair. Never been afraid of it, or never shows.", "Horse is better fed than half this street.", "Horse is watching me. Rider isn't. Somehow that's worse.",
-            "Reins loose in one hand. The horse does the thinking and he lets it.", "Rides a horse that's been somewhere. Scars on the chest, calm in the eye.", "Looks down from the saddle like the street's a map he's already read."
+            "Reins loose in one hand. The horse does the thinking and he lets it.", "Rides a horse that's been somewhere. Scars on the chest, calm in the eye.", "Looks down from the saddle like the street's a map he's already read.",
+            "Horse stands square while he looks about. Well broke, or well frightened.", "Dismounts on the far side from me. Keeps the horse between us. Careful man.", "Saddle's worth more than the horse. Or he stole one of them."
         };
 
         private static readonly string[] Seen =
         {
             "Doesn't blink enough.", "Carries his weight low, like a man ready to move.", "Smells of woodsmoke and horse.", "Eyes don't rest on one thing. Counts the exits like I do.",
             "Dust on him from three days' road, not three miles.", "Quiet. The kind of quiet that's decided something.",
-            "Boots he's walked the soles off. Not a man who rides everywhere.", "Keeps his hat low and his eyes up. Opposite of most.", "Stands where he can see the door. Habit, that. A bad one or a good one.", "Hands still when he talks. Still hands are the ones to watch."
+            "Boots he's walked the soles off. Not a man who rides everywhere.", "Keeps his hat low and his eyes up. Opposite of most.", "Stands where he can see the door. Habit, that. A bad one or a good one.", "Hands still when he talks. Still hands are the ones to watch.",
+            "Spurs that have seen use. Most spurs in town are for the look of them.", "Looks at a man's hands before his face. Learned that somewhere hard.", "Walks the middle of the street, not the boards. Wants room.", "Clean-shaven under all that dust. Takes trouble over something, then."
         };
 
         // ---- putting it together ------------------------------------------------------------------
