@@ -48,7 +48,7 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] Monday = { "Monday. Back aches just knowing it.", "Wash day. Lye on the hands, steam in the face." };
 
-        private static readonly string[] Friday = { "Rent's due tomorrow. Counting it again doesn't make it more." };
+        private static readonly string[] Friday = { "Rent's due tomorrow. Counting it again doesn't make it more.", "Friday. Wages tonight, if the foreman's sober. Rent tomorrow, whether or not.", "End of the week and the jar's lighter than the week was long." };
 
         private static readonly string[] Saturday =
         {
@@ -121,7 +121,9 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] TalkHorse =
         {
-            "Horse stolen off the rail. Man walked home crying. Grown man. Horse was all he had."
+            "Horse stolen off the rail. Man walked home crying. Grown man. Horse was all he had.",
+            "Horse thief in the county, they say. Checked my mare twice before breakfast.",
+            "A man came through asking after a bay with a white sock. Lost or stolen, he wouldn't say."
         };
 
         private static readonly string[] TalkAssault =

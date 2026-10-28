@@ -319,19 +319,19 @@ namespace EnrageWestworld.Core
         // A sentence-shaped thought ("I broke my arm breaking a colt") gets these instead.
         private static readonly Dictionary<string, string[]> MoodSentenceFrames = new Dictionary<string, string[]>
         {
-            { "Sick", new[] { "{S}. Still ain't right." } },
-            { "Hurting", new[] { "{S}. Still hurts." } },
+            { "Sick", new[] { "{S}. Still ain't right.", "{S}. Can't shake it off.", "{S}. Don't come too near." } },
+            { "Hurting", new[] { "{S}. Still hurts.", "{S}. It'll mend. Slowly.", "{S}. Whiskey takes the edge off." } },
             { "Shaken", new[] { "{S}. Can't shake it.", "{S}. Still see it when I close my eyes." } },
-            { "Humiliated", new[] { "{S}. Don't laugh." } },
-            { "Proud", new[] { "{S}. Not bad, eh?" } },
-            { "Flush", new[] { "{S}. Good week." } },
-            { "Bitter", new[] { "{S}. Still sticks in my craw." } },
-            { "Steady", new[] { "{S}." } },
-            { "Joyful", new[] { "{S}. Life ain't so bad." } },
-            { "Grieving", new[] { "{S}. Can't think of much else." } },
-            { "Drunk", new[] { "{S}. Hah." } },
-            { "Jailed", new[] { "{S}. Never again." } },
-            { "Homesick", new[] { "{S}. Wish I was home." } }
+            { "Humiliated", new[] { "{S}. Don't laugh.", "{S}. Folks won't let it lie.", "{S}. Don't bring it up." } },
+            { "Proud", new[] { "{S}. Not bad, eh?", "{S}. I'll say that much.", "{S}. Ask anybody." } },
+            { "Flush", new[] { "{S}. Good week.", "{S}. Purse has some weight to it this week.", "{S}. Might even stand a round." } },
+            { "Bitter", new[] { "{S}. Still sticks in my craw.", "{S}. I ain't forgot.", "{S}. I keep a list, and that's on it." } },
+            { "Steady", new[] { "{S}.", "{S}. That's about the size of it.", "{S}. Nothing much else to tell." } },
+            { "Joyful", new[] { "{S}. Life ain't so bad.", "{S}. Best day in a month.", "{S}. Can't complain." } },
+            { "Grieving", new[] { "{S}. Can't think of much else.", "{S}. House is too quiet.", "{S}. Sorry. Poor company today." } },
+            { "Drunk", new[] { "{S}. Hah.", "{S}. Or was that last night.", "{S}. No sermons, friend." } },
+            { "Jailed", new[] { "{S}. Never again.", "{S}. The law and me never did agree.", "{S}. A week on the county's bread." } },
+            { "Homesick", new[] { "{S}. Wish I was home.", "{S}. Wish I was home.", "{S}. Home's a long way off tonight." } }
         };
 
         // Thoughts about the player ("your face", "killing you") need their own frames when said to his face.

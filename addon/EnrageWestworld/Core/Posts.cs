@@ -416,7 +416,9 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] ShooterCold =
         {
-            "He shot me once. Still a paying customer. The business holds no grudges. I do."
+            "He shot me once. Still a paying customer. The business holds no grudges. I do.",
+            "Took a bullet off that one. Took his money since, too. We're square, near enough.",
+            "Shot me, bought a hat, tipped it. There's a kind of honesty in that."
         };
 
         /// The town hears that someone shot down at their counter is back at it. Null if nothing to say.

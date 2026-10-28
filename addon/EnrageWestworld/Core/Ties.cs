@@ -751,7 +751,9 @@ namespace EnrageWestworld.Core
         };
         private static readonly string[] DeadKnown =
         {
-            "Talked with {other} only the other day. Now {other}'s gone. That's how quick it is."
+            "Talked with {other} only the other day. Now {other}'s gone. That's how quick it is.",
+            "{other} nodded to me every morning for years. The street's a nod short now.",
+            "Heard {other} was buried Tuesday. Didn't know {other} well. Still took my hat off."
         };
 
         /// A thought about someone they had a scene with lately, by first name; about their death if they've died since.
@@ -859,7 +861,9 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] TownMadeUp =
         {
-            "{a} and {b} made it up, would you credit it. Shook on it outside the store."
+            "{a} and {b} made it up, would you credit it. Shook on it outside the store.",
+            "{a} and {b} are on speaking terms again. Town's lost a good quarrel.",
+            "Saw {a} and {b} share a bench outside the store. A month ago they'd have shared a cell."
         };
 
         // one of the two has died since: {a} is the one left, {b} the dead ({af}, {bf}: first names, said again)
@@ -870,11 +874,15 @@ namespace EnrageWestworld.Core
         };
         private static readonly string[] TownDeadWarm =
         {
-            "{a} was sweet on {b}, and now {bf}'s gone. Somebody ought to look in on {af}."
+            "{a} was sweet on {b}, and now {bf}'s gone. Somebody ought to look in on {af}.",
+            "{a} and {b} were walking out, and now {bf}'s in the churchyard. {af} hasn't been seen since the burying.",
+            "Folk were picking a wedding hat for {a} and {b}. Now it's a black one, for {bf}."
         };
         private static readonly string[] TownDeadMended =
         {
-            "{a} and {b} only just made it up, and now {bf}'s gone. Glad they got to, I suppose."
+            "{a} and {b} only just made it up, and now {bf}'s gone. Glad they got to, I suppose.",
+            "{a} and {b} shook hands at last, and a week later {bf} was gone. The handshake's what {af} has left.",
+            "{a} buried {b} a friend. Six months back they weren't speaking. Strange, the timing."
         };
 
         /// The town's talk about a tie between two others, with both their full names; deadA/deadB: that one has died since.

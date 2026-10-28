@@ -339,15 +339,21 @@ namespace EnrageWestworld.Core
         private static readonly string[] Envy =
         {
             "{name}'s coat cost more than my year. Wears it like it's nothing.", "Look at {name}. Never done an honest day's work and fed better than me.",
-            "{name} has new boots. Where does {name} find the money? Not from working."
+            "{name} has new boots. Where does {name} find the money? Not from working.",
+            "{name} eats meat on a Tuesday. Meat. On a Tuesday.",
+            "{name}'s hands are soft as a baby's. Mine could sand a floor."
         };
         private static readonly string[] Pity =
         {
-            "{name} is in the bottle again. Somebody ought to walk {name} home.", "Poor {name}. Drink gets its hooks in, and it never lets go."
+            "{name} is in the bottle again. Somebody ought to walk {name} home.", "Poor {name}. Drink gets its hooks in, and it never lets go.",
+            "{name} was a fine hand once. The bottle took the hands first.",
+            "Somebody should feed {name} before the whiskey does."
         };
         private static readonly string[] Wary =
         {
-            "Keep clear of {name}. Got that look again.", "{name} is spoiling for something. Not me. Not today."
+            "Keep clear of {name}. Got that look again.", "{name} is spoiling for something. Not me. Not today.",
+            "{name}'s been drinking since noon and looking for a reason. Don't be the reason.",
+            "Give {name} the width of the street today."
         };
         // what the town knows of them lately: the one who put a man's face in the bar, the one caught with a hand in a coat
         private static readonly string[] KnownBully =
@@ -356,7 +362,9 @@ namespace EnrageWestworld.Core
         };
         private static readonly string[] KnownBullyHot =
         {
-            "So that's {name}. Let {name} try that with me. Just let {name} try."
+            "So that's {name}. Let {name} try that with me. Just let {name} try.",
+            "{name}, the one who put a man's face in the bar. {name} wants a bar of {name}'s own some day.",
+            "There's {name}, walking like the street's {name}'s. Somebody ought to teach {name} different. Somebody might."
         };
         private static readonly string[] KnownThief =
         {
