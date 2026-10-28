@@ -40,7 +40,11 @@ namespace EnrageWestworld.Core
                 "Smile. Let him think it didn't land.",
                 "Nod at him. Nod and keep the hands at my sides.",
                 "Face says nothing. Teeth say plenty, behind the lips.",
-                "Pleasant as Sunday. Inside, a dog on a chain." } },
+                "Pleasant as Sunday. Inside, a dog on a chain.",
+                "Nod to him, civil. The hand at my side wants other work.",
+                "Answer civil. Count to ten in my head. Count to twenty.",
+                "Smile for the street. Not here. Later, maybe. Later.",
+                "A smile for him like a coat I put on. It doesn't fit." } },
             { "anger|stranger", new[] {
                 "Don't know the name. I'll know the face.",
                 "Hands shaking. Not from fear. Let it pass.",
@@ -58,7 +62,11 @@ namespace EnrageWestworld.Core
                 "Nod, smile, walk on. Nobody need know what I'd like to do.",
                 "Face like a shut door. Keep it shut.",
                 "Easy. Easy. Let the face lie for me.",
-                "Pleasant word for him. The other words stay down." } },
+                "Pleasant word for him. The other words stay down.",
+                "Breathe through the nose. Keep the jaw loose. Nobody sees the jaw.",
+                "Say good day the way the preacher would. Think what the devil would.",
+                "Still hands. Still face. The fist stays in the pocket where it lives.",
+                "Look past him, not at him. Looking at him would start it." } },
             { "anger|tie", new[] {
                 "{who}, of all people. Hand's shaking on the counter.",
                 "I stood up for {who} once. Never again.",
@@ -73,10 +81,14 @@ namespace EnrageWestworld.Core
                 "Ears hot. Hands cold. {who}.",
                 "Thought better of {who}. More fool me." } },
             { "anger|tie|masked", new[] {
-                "Smile at {who}. Let him think it went by me.",
+                "Smile at {who}. Let {him} think it went by me.",
                 "Pass {who} the salt like nothing happened. Nothing happened.",
                 "Civil to {who}. Civil as a church. Inside, a wasp in a jar.",
-                "Keep my face. {who} doesn't get the pleasure of mine." } },
+                "Keep my face. {who} doesn't get the pleasure of mine.",
+                "Good morning to {who}, and mean every word of the weather.",
+                "Help {who} with the gate. Hands on the gate, not on {him}.",
+                "Keep the voice low for {who}. Low voice, red face. {who} won't look up.",
+                "{who} talks and I nod. The nod costs more than {he}'ll ever know." } },
             { "fear|you", new[] {
                 "Don't look at {you}. Look at your boots.",
                 "That iron on his hip. Don't give him a reason.",
@@ -94,7 +106,11 @@ namespace EnrageWestworld.Core
                 "Steady voice. Steady hands. He mustn't see them shake.",
                 "Laugh along. Laugh and edge toward the door.",
                 "Chin up and say good day. Inside, running already.",
-                "Bluster. Puff up. He's the kind that smells fear." } },
+                "Bluster. Puff up. He's the kind that smells fear.",
+                "Joke with him. Folk who joke aren't afraid. Keep joking.",
+                "Busy with the hands. Busy folk aren't watched. Stay busy.",
+                "Steady look at him, one moment. Enough to pass for nerve.",
+                "Feet want the door. Feet can wait. Face first." } },
             { "fear|stranger", new[] {
                 "Something's wrong over there. Feet want to run before I know why.",
                 "Mouth's gone dry as chalk.",
@@ -112,12 +128,16 @@ namespace EnrageWestworld.Core
                 "Keep the face still. Nobody sees a thing.",
                 "Whistle. Men who whistle aren't afraid. Whistle.",
                 "Stand like a man who means to stay. Then leave.",
-                "Light another one. Hands busy, hands steady." } },
+                "Light another one. Hands busy, hands steady.",
+                "Lean on the post like it's any afternoon. Knees say otherwise.",
+                "Count the coins in the pocket. Something to do with the hands.",
+                "Talk about the weather to whoever's nearest. Loud. Steady.",
+                "Say good evening like the road's empty. Listen to it like it isn't." } },
             { "fear|tie", new[] {
                 "{who}'s capable of anything now. I've seen it.",
-                "Keep clear of {who}. Skin crawls when he's near.",
+                "Keep clear of {who}. Skin crawls when {he}'s near.",
                 "Door bolted twice tonight. {who} knows where I sleep.",
-                "What's got into {who}? What's he become?",
+                "What's got into {who}? What's {he} become?",
                 "Around by the church, not past {who}'s place. Longer, safer.",
                 "Should have seen it in {who} years back. The signs were there.",
                 "{who}'s voice just now. Like a dog before it bites.",
@@ -143,7 +163,11 @@ namespace EnrageWestworld.Core
                 "Smile. Let him think it didn't sting.",
                 "Brush the coat. Slow. Like a man who meant to sit down.",
                 "Laugh it off. Laugh loud. Inside, something's crawling.",
-                "Chin up and say nothing. The face can lie if the gut can't." } },
+                "Chin up and say nothing. The face can lie if the gut can't.",
+                "Nod to him like it was nothing. It was everything. Nod anyhow.",
+                "Tidy the collar. A tidy collar never had its face in the dirt.",
+                "Say something about the price of flour. Anything. Fill the quiet.",
+                "Pass him at a walk. The legs want a gallop." } },
             { "shame|stranger", new[] {
                 "Everybody saw. Everybody.",
                 "Brush off the coat. Brush off the rest of it.",
@@ -161,7 +185,11 @@ namespace EnrageWestworld.Core
                 "Smile like it was a joke. It was a joke. Say it was.",
                 "Straighten the hat. Steady. Nothing happened to anybody.",
                 "Walk slow. Running is what shame looks like.",
-                "Pleasant face. Burning ears. Nobody looks at ears." } },
+                "Pleasant face. Burning ears. Nobody looks at ears.",
+                "Look at the sky like there's weather coming. Let them look up too.",
+                "Busy with the horse. Somebody with a horse to see to can't be laughed at.",
+                "Hum a hymn. Nobody laughs at a body humming a hymn.",
+                "Say good day to the next one along. Ordinary. Ordinary. Ordinary." } },
             { "shame|tie", new[] {
                 "{who} did it loud, so the whole store would hear. It heard.",
                 "Can't go in the store till {who}'s forgotten it.",
@@ -179,7 +207,11 @@ namespace EnrageWestworld.Core
                 "Smile at {who}. Say good day. Die a little.",
                 "Steady hands for {who}. Shaking ones in the pockets.",
                 "Laugh with {who}. Inside, the floor's gone.",
-                "Face says all's well. {who} mustn't see otherwise." } },
+                "Face says all's well. {who} mustn't see otherwise.",
+                "Ask {who} after the family. Talk of children covers anything.",
+                "Nod at {who}'s story and hear none of it. The ears are burning too loud.",
+                "Keep the hat on for {who}. A hat hides half a face.",
+                "Pour {who} a cup. A hand that's pouring isn't seen to shake." } },
             { "guilt|you", new[] {
                 "{you} trusted me with it. Trusted me.",
                 "Took from {you} what wasn't mine. Hands won't keep still.",
@@ -236,7 +268,11 @@ namespace EnrageWestworld.Core
                 "Dry eyes for the street. Wet ones for later.",
                 "Nod at the news. Nod. Fall apart at home.",
                 "Say the right words about {who}. The real ones won't come.",
-                "Work. Work the hands and the rest keeps quiet." } },
+                "Work. Work the hands and the rest keeps quiet.",
+                "Tell them {who} is in a better place. Tell it steady. Steady.",
+                "Pour for the mourners. Steady hand on the pot. {who} liked it strong.",
+                "Nod when they say how sudden. Sudden. The word sits like a stone.",
+                "Laugh at the joke at the counter. {who} would have laughed. Laugh for both." } },
             { "pride|you", new[] {
                 "{you} saw that. Good.",
                 "Let him remember it. Hand's steady as a rail.",
@@ -268,7 +304,7 @@ namespace EnrageWestworld.Core
                 "Bet {who} didn't think I had it in me.",
                 "Put that in your pipe, {who}.",
                 "What's {who} saying about me now? Something new.",
-                "Stand {who} a drink. Let him see the hand that did it.",
+                "Stand {who} a drink. Let {him} see the hand that did it.",
                 "Years of {who} looking down at me. Over.",
                 "Mother always said {who} would see one day. Today.",
                 "Warm in the chest. Warm as a stove.",
@@ -345,7 +381,11 @@ namespace EnrageWestworld.Core
                 "Nod and say how fine. Mean it about as far as the teeth.",
                 "Smile for the lucky. Grit the back teeth for me.",
                 "Good for them. Say it twice. Third time might take.",
-                "Pleasant face. Sour heart. The face wins today." } },
+                "Pleasant face. Sour heart. The face wins today.",
+                "Admire the horse out loud. Price it in my head. Price myself after.",
+                "Congratulate. Shake the hand. Hold it a breath too long, wanting what's in it.",
+                "Ask where they got it, friendly. Ask like I could get one too.",
+                "Smile at the luck. Chew it over at supper like gristle." } },
             { "envy|tie", new[] {
                 "{who} again. Always {who}.",
                 "What's {who} got that I haven't? Luck. Just luck.",
@@ -363,7 +403,11 @@ namespace EnrageWestworld.Core
                 "Clap {who} on the back. Mean about half of it.",
                 "Say well done to {who}. Say it with the teeth together.",
                 "Smile for {who}. The eyes do what they like.",
-                "Shake {who}'s hand. Hold the other one behind my back." } },
+                "Shake {who}'s hand. Hold the other one behind my back.",
+                "Tell {who} nobody deserved it more. Name three who did, in my head.",
+                "Ask {who} how it feels. Listen. Hate the listening.",
+                "Raise a glass to {who}. Drink the glass down fast.",
+                "Nod along at {who}'s good fortune. The nod's worn out by evening." } },
             { "pity|stranger", new[] {
                 "Poor soul. Poor soul. Cheekbones like a starved dog's.",
                 "Could be me, a bad winter from now.",
@@ -386,7 +430,7 @@ namespace EnrageWestworld.Core
                 "Should have looked in on {who} last week. Knew things were bad.",
                 "{who} used to laugh the loudest of any of us.",
                 "Throat tight, watching {who}.",
-                "{who} would never ask. So don't make him.",
+                "{who} would never ask. So don't make {him}.",
                 "Hard to watch {who} like that.",
                 "Lord, go easy on {who}.",
                 "Sit with {who} a while. Nobody should carry that alone." } },
@@ -407,7 +451,11 @@ namespace EnrageWestworld.Core
                 "Good day to him. Civil as you like. Not an ounce more.",
                 "Keep the lip still. He'd take the curl for fear.",
                 "Polite. Polite costs nothing. He costs nothing too.",
-                "Nod like he's a man. Know better." } },
+                "Nod like he's a man. Know better.",
+                "Say yes sir to him. The sir is for the street, not for him.",
+                "Let him talk. Smile at the right places. Hear none of it.",
+                "Good day and a nod. It's what you give any man. He'll take it for the real thing.",
+                "Ask after his health like I'd mind the answer." } },
             { "contempt|stranger", new[] {
                 "Trash. Pure trash.",
                 "Some folk aren't worth the spit.",
@@ -424,10 +472,10 @@ namespace EnrageWestworld.Core
             { "contempt|tie", new[] {
                 "{who} always was a fool.",
                 "Done with {who}. Done.",
-                "{who}. Same as ever. Still can't abide the smell of him.",
+                "{who}. Same as ever. Still can't abide the smell of {him}.",
                 "What did I ever see in {who}?",
                 "Cross the street next time. Save the breath.",
-                "Should have known {who} for what he is years back.",
+                "Should have known {who} for what {he} is years back.",
                 "{who}'s father was the same. Apple and tree.",
                 "Lip curls at {who}'s name now.",
                 "{who} doesn't know a thing and says it twice.",
@@ -511,7 +559,7 @@ namespace EnrageWestworld.Core
                 "{who}'s laugh. Best sound in this town.",
                 "Luck's not all bad with {who} in it.",
                 "Grinning like a fool. {who}'s fault.",
-                "Tell {who} what he means. One of these days. Why not today." } },
+                "Tell {who} what {he} means. One of these days. Why not today." } },
         };
 
         // what a pressing need sounds like (NeedState's order: hunger, rest, warmth, money, safety, company, standing,
@@ -648,7 +696,9 @@ namespace EnrageWestworld.Core
             {
                 if (string.IsNullOrEmpty(who))
                     return null;
-                line = line.Replace("{who}", who);
+                // he or she of the one named, by the first name (item 10's rule; the slots {he} {him} {his}), as Minds.Fill has it
+                string first = Person.FirstOf(who);
+                line = Ties.Pronouns(line, Residents.IsWomansName(first) || Scenes.IsWomansName(first)).Replace("{who}", who);
             }
             return line.Length > 0 && char.IsLower(line[0]) ? char.ToUpperInvariant(line[0]) + line.Substring(1) : line;
         }
