@@ -76,6 +76,11 @@ namespace EnrageWestworld.Core
                 why = "'" + t + "' has more than two buttons (hold one, press another)";
                 return false;
             }
+            if (parts.Length == 0)
+            {
+                why = "'" + t + "' names no button";   // "+" alone (night 2026-10-28: it indexed parts[-1] and the add-on never started)
+                return false;
+            }
             string last = Canon(parts[parts.Length - 1]);
             if (last == null)
             {

@@ -488,7 +488,14 @@ namespace EnrageWestworld.Core
                 log?.Invoke("Settings: couldn't read " + path + ": " + ex.Message);
                 return s;
             }
-            s.Clamp();
+            try
+            {
+                s.Clamp();   // a value Clamp can't take (night 2026-10-28: the controller's "+") must not escape the script's constructor
+            }
+            catch (Exception ex)
+            {
+                log?.Invoke("Settings: couldn't clamp " + path + ": " + ex.Message);
+            }
             bool testMissing = false;
             foreach (TestActions.Entry te in TestActions.All)
                 testMissing |= !testSeen.Contains(te.KeySetting);
