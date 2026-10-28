@@ -95,6 +95,7 @@ namespace EnrageWestworld.Core
             { "praised", new Meaning { Gain = 0.6f, Self = true } },
             { "beg", new Meaning { DoerNeed = 0.55f, Harm = 0.05f } },
             { "heard", new Meaning { Threat = 0.55f } },   // a shot or a shout nearby, nothing seen: fright only
+            { "uncanny", new Meaning { Threat = 0.45f, Uncanny = 1f } },   // the night visitor seen: a pale figure over a body, gone when looked at (night 2026-10-28)
         };
 
         /// The kinds of event it knows.
@@ -154,6 +155,14 @@ namespace EnrageWestworld.Core
                 case "charity": case "help": case "comfort": case "cheer": case "round": case "settled": case "apology": case "defend": kind = "kindness"; break;
                 case "debt": case "x:debt": kind = "debtcall"; break;
                 case "death": kind = h.DoerId != null && h.DoerId != h.TargetId ? "killing" : "death"; break;
+                case "encounter:execution":
+                    // the men who hanged a man on the road: a killing seen when the captive died, nothing otherwise (saved
+                    // by the player, he feels the rescue; the record's outcome says which: night 2026-10-28)
+                    kind = ExecutionKind(h.Outcome, id == target);
+                    break;
+                case "encounter:visitor":
+                    kind = id != "player" ? "uncanny" : null;   // whoever saw the figure over the body (the visitor's record names the player as its target)
+                    break;
                 default:
                     if (h.Kind.StartsWith("scene:court:") && h.Kind.Contains(":no"))
                         kind = id == target ? "refused" : null;
@@ -170,6 +179,11 @@ namespace EnrageWestworld.Core
                     return null;
                 return new AppraisalEvent { Kind = "heard", Role = "onlooker", Doer = "nobody", Place = h.Place ?? "street", Woman = woman, Company = "strangers", Witnesses = Math.Max(0, sawCount), Armed = kind == "killing" || k == "standoff" };
             }
+            if (kind == "uncanny")
+            {
+                doer = null;
+                target = null;   // nobody did it to anybody: every witness is an onlooker of it
+            }
             int toTarget = id != target && target != null && warmth != null ? warmth(id, target) : 0, toDoer = id != doer && doer != null && warmth != null ? warmth(id, doer) : 0;
             string role = id == target ? "self" : toTarget > 0 ? "friend" : "onlooker";
             if (kind == "kindness" && role != "self" || kind == "refused" && role != "self" || kind == "debtcall" && role != "self")
@@ -183,6 +197,20 @@ namespace EnrageWestworld.Core
                 DoerName = doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName,
                 DoerId = doer, TargetId = target
             };
+        }
+
+        /// What an execution on the road is to someone by how it ended: "killing" when the captive died (the outcome
+        /// names the death), "rescued" for the captive himself when the player saved him, else nothing. The dead feel nothing.
+        public static string ExecutionKind(string outcome, bool captive)
+        {
+            if (outcome == null)
+                return null;
+            string o = outcome.ToLowerInvariant();
+            bool died = o.Contains("died") || o.Contains("dead") || o.Contains("hanged") || o.Contains("shot") || o.Contains("killed") || o.Contains("drop");
+            if (died)
+                return captive ? null : "killing";
+            bool saved = o.Contains("saved") || o.Contains("freed") || o.Contains("cut") || o.Contains("rescued") || o.Contains("drove");
+            return saved && captive ? "rescued" : null;
         }
 
         /// How this person takes what happened. `t` may be null (a middling person).
@@ -329,7 +357,7 @@ namespace EnrageWestworld.Core
                 case "fear":
                     if (role == "doer")
                         return "hide";   // a wrong of their own that might come out
-                    return strong && (e.Armed && (e.Kind == "robbed" || e.Kind == "killing" || e.Kind == "lawgrab") || e.Kind == "revived") || e.Kind == "robbed" ? "freeze" : "avoid";
+                    return strong && (e.Armed && (e.Kind == "robbed" || e.Kind == "killing" || e.Kind == "lawgrab") || e.Kind == "revived" || e.Kind == "uncanny") || e.Kind == "robbed" ? "freeze" : "avoid";
                 case "shame":
                     if (m.Money > 0 && Z(Traits.Order) < -0.5f && Z(Traits.Deference) < -0.5f)
                         return "avoid";   // real trouble: the rootless leave town

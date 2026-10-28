@@ -489,8 +489,12 @@ namespace EnrageWestworld.InGame
             if (e == null)
                 return;
             if (e.Captive != null && e.Captive.Exists() && e.Phase != "spawn")
+            {
+                // the outcome says how it ended for him, so the mind can take it as a killing seen or, for him, a rescue (night 2026-10-28)
+                string outcome = e.Captive.IsDead ? "he died; " + why : e.Phase == "saved" || e.Phase == "leaving" ? "saved; " + why : why;
                 Safe("world events", () => RecordEvent("encounter:execution", e.BossR != null ? e.BossR.Id : null, e.Plan != null ? e.Plan.Boss ?? "two men" : "two men", e.R.Id, e.R.Name,
-                                                       e.Captive.Position, e.Captive.Handle, e.Captive.Handle, 0, why));
+                                                       e.Captive.Position, e.Captive.Handle, e.Captive.Handle, 0, outcome));
+            }
             Ped me = Game.Player.Character;
             try
             {
