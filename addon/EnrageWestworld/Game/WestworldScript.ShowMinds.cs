@@ -58,9 +58,20 @@ namespace EnrageWestworld.InGame
                 if (!ENTITY.DOES_ENTITY_EXIST(c.Handle) || ENTITY.IS_ENTITY_DEAD(c.Handle) || !ENTITY.IS_ENTITY_ON_SCREEN(c.Handle))
                     continue;
                 Vector3 head = PED.GET_PED_BONE_COORDS(c.Handle, 21030, 0f, 0f, 0f);
-                float x, y;
+                float x, y, tx, ty;
                 if (!ScreenAt(head + new Vector3(0f, 0f, MindCardAbove), out x, out y))
                     continue;
+                // clear above their thought (Lex, 2026-10-27: the card's last line sat on a two-line thought): room for
+                // two of its lines over the wake tag always, so the card holds still as thoughts come and go, and higher
+                // still while a longer one is showing over this head
+                if (_cfg.ThoughtsOverHeads && ScreenAt(head + new Vector3(0f, 0f, ThoughtAboveHead), out tx, out ty))
+                {
+                    float ts = _cfg.ThoughtsOverHeadScale * Math.Max(0.75f, Feelings.SizeAt(head.DistanceTo(Game.Player.Character.Position)));
+                    float thoughtTop = ty - WakeTagLift(c.Handle) - Draw.LineHeight(ts) * 2f - 0.003f;
+                    if (_overHeadTopHandle == c.Handle && _overHeadTopAt == now)
+                        thoughtTop = Math.Min(thoughtTop, _overHeadTopY);
+                    y = Math.Min(y, thoughtTop - 0.008f - pad);
+                }
                 float top = y - lineH * c.Lines.Length;
                 Draw.Rect(x - c.Width / 2f - pad, top - pad, c.Width + pad * 2f, lineH * c.Lines.Length + pad * 2f, 8, 12, 18, 170);
                 Draw.Rect(x - c.Width / 2f - pad, top - pad, c.Width + pad * 2f, 0.0015f, 120, 170, 210, 200);   // blue, not the thought's gold

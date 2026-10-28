@@ -21,6 +21,7 @@
 ### Show minds
 
 - Ctrl+F2 turns the cards over people near you off and on for the session (`[Testing] TestShowMindsKey`; an ini with no key for it gets Ctrl+F2; settings version 83). The settings panel's Testing page has the switch that's saved. On as it comes.
+- The card sits clear above the thought over the same head (it could cover the thought's first line): it keeps room for a two-line thought always, so it doesn't jump as thoughts come and go, and rises above a longer one while it shows.
 
 ### Groundwork for choosing what to do (nothing in game yet)
 

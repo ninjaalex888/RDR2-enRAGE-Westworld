@@ -28,6 +28,8 @@ namespace EnrageWestworld.InGame
         private TickerLine _overHeadWaiting;
         private string _overHeadLast;
         private bool _overHeadDrawn;
+        private int _overHeadTopHandle, _overHeadTopAt = -1;   // whose thought box was drawn this frame, and its top (screen),
+        private float _overHeadTopY;                            // so the Show minds card can sit clear above it
         private Action _aOverHead;
 
         /// Draws the ticker's line over its thinker's head. False when it can't be (not one person's thought, the
@@ -71,6 +73,9 @@ namespace EnrageWestworld.InGame
             Draw.Rect(x - w / 2f - padX, top - padY, w + padX * 2f, 0.0015f, 222, 182, 96, 200 * a / 255);   // the gold edge the bar has
             for (int i = 0; i < _overHeadParts.Count; i++)
                 Draw.Text(_overHeadParts[i], x - Draw.Width(_overHeadParts[i], scale) / 2f, top + i * lineH, scale, 244, 238, 222, a);
+            _overHeadTopHandle = h;
+            _overHeadTopY = top - padY;
+            _overHeadTopAt = now;
             _overHeadWaiting = null;   // in view again: a later wait starts afresh
             CountOverHead(line, true);
             return true;
