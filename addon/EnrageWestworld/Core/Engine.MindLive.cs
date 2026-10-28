@@ -155,6 +155,37 @@ namespace EnrageWestworld.Core
 
         /// Whose words: "you" (the player, as this person sees him), "tie" (someone they have a scene tie with, by id; a
         /// first name), else "stranger". A feeling about oneself (shame, guilt, pride) is by whoever did it, if anyone.
+        /// The language request for this person now, from the shadow's state (Language.RequestFor; nothing asks a model
+        /// yet: the Testing row "mind:request" and the tests; after item 14): the feeling with most left in it and whom
+        /// it's about, as the live thought has them, else the pressing need; the mind's own written line as the one the
+        /// fallback would give (MindLive on; off, none, since the old thought isn't worked out here). `beliefs`: what they
+        /// hold now (Beliefs.Of for each), or null. Reads only.
+        public LanguageRequest LanguageRequestFor(Person p, Traits t, NeedState needs, List<Concern> concerns, IEnumerable<string> nearFirstNames,
+                                                  string town, string place, int hour, int year, string weather, float[] beliefs)
+        {
+            if (p == null || p.Id == null || t == null)
+                return null;
+            long now = Store.LastGameMin;
+            PersonState st = Store.Find(p.Id);
+            FeltAt best;
+            float left;
+            FeltAt? feeling = null;
+            string about = null, you = null;
+            if (Shadow.Strongest(p.Id, now, out best, out left) && left >= Appraisal.Felt)
+            {
+                string kind = Feeling.Kinds[best.Kind], whom, who;
+                WhomOf(p, best, kind, null, out whom, out who, out you);
+                about = whom == "you" ? "you" : whom == "tie" ? who : "a stranger";
+                feeling = best;
+            }
+            else
+                left = 0f;
+            float pull;
+            KeyValuePair<string, string> say = MindSay(p, hour, p.Id + "|request|" + now / 45, null, now, false, out pull);
+            return Language.RequestFor(p, t, Shadow.MoodOf(p.Id, t, now), feeling, left, about, you, needs, concerns, st != null ? st.Mind : null, nearFirstNames,
+                                       town, place, hour, year, weather, now, say.Key, beliefs);
+        }
+
         private void WhomOf(Person p, FeltAt f, string kind, InnerLife.Context day, out string whom, out string who, out string you)
         {
             whom = "stranger";

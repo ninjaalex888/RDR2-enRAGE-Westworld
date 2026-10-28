@@ -63,6 +63,7 @@ namespace EnrageWestworld.Core
             new Entry("below", "People", "The voice below the saloon floor (West World)", "TestBelowKey", needs: "West World on, in a saloon with the town's barkeep within 14 m; then stand by the bar"),
             new Entry("bell", "People", "The bell at three (only the awake hear it)", "TestBellKey", needs: "West World on, out of doors in a town with a church, someone awake (stage 2+) within 30 m in view"),
             new Entry("sabbath", "People", "Someone kneels by the church (Sunday mornings)", "TestSabbathKey", needs: "within 60 m of a town's church, a named person within 25 m in view"),
+            new Entry("mind:request", "People", "The language request for the nearest known person (log)", "TestMindRequestKey", needs: "[Mind] MindShadow on, someone RealNPCs knows within 20 m; nothing is asked of any model"),
             new Entry("patient", "People", "Someone walks to the doctor for a child's fever", "TestPatientKey", needs: "Valentine or Rhodes with the doctor at his post within 90 m; a named person within 16 m in view (one with the fever worry on, else the worry is supplied)"),
             new Entry("lostchild", "People", "A mother asks around for her lost child", "TestLostChildKey", needs: "a town street, a named woman within 25 m in view (within 7 m she asks you)"),
             new Entry("callout", "People", "A man calls another out at noon", "TestCalloutKey", needs: "a town street, two named men with bad blood 2-14 m apart"),

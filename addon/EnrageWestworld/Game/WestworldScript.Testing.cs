@@ -249,6 +249,9 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"preacher\")";
                         return PreacherScene(Game.Player.Character, now, true, out pw) ? null : pw;
                     }
+                case "mind:request":
+                    skipped = "nothing: it reads the shadow's state and writes the request to the log";
+                    return MindRequestFire(now, out said);   // WestworldScript.Mind.cs
                 case "below":
                     {
                         string bsaid;

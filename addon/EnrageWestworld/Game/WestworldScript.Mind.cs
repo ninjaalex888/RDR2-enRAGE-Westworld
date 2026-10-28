@@ -906,6 +906,75 @@ namespace EnrageWestworld.InGame
         }
 
         /// F7: what the shadow has done, and the nearest three it knows, in words (from its cache; never throws).
+        // the Testing row "mind:request" (after item 14; the language layer's offline half): the request the model would
+        // get for the nearest known person, written to the log line by line as LANGUAGE lines (not MIND: the 20 a minute
+        // are the shadow's own); nothing is asked of any model, nothing is kept
+        private int _mindRequests;
+        private string _mindRequestLast;
+
+        private string MindRequestFire(int now, out string said)
+        {
+            said = null;
+            if (_cfg == null || !_cfg.MindShadow || _engine == null)
+                return "[Mind] MindShadow is off";
+            MindWho w = null;
+            int handle = 0;
+            foreach (int h in _mindNear)
+            {
+                MindWho k = ENTITY.DOES_ENTITY_EXIST(h) ? MindKnown(h, now) : null;
+                if (k != null && k.Id != null && k.P != null)
+                {
+                    w = k;
+                    handle = h;
+                    break;
+                }
+            }
+            if (w == null)
+                return "nobody RealNPCs knows within " + (int)MindMetres + " m";
+            if (w.Traits == null)
+                w.Traits = _engine.Shadow.TraitsOf(w.Src);
+            if (w.Traits == null)
+                return w.Name + "'s traits couldn't be worked out";
+            if (w.Needs == null || now - w.NeedsAt >= NeedsMs || now < w.NeedsAt)
+                MindNeeds(w, handle, now);
+            // what they hold now: the baseline from who they are and what they remember, plus what the appraisals moved
+            PersonState st = _store.Find(w.Id);
+            if (w.TradeGroup == null)
+                w.TradeGroup = InnerLife.TradeGroup(w.P.Trade);
+            _mindBeliefCtx.WakeStage = st != null ? st.WakeStage : 0;
+            _mindBeliefCtx.Memories = st != null ? st.Mind : null;
+            _mindBeliefCtx.Standing = Beliefs.StandingOf(w.TradeGroup);
+            Beliefs.Fill(_mindBaseline, w.P, w.Traits, _mindBeliefCtx);
+            BeliefState bs = _engine.Shadow.BeliefsOf(w.Id);
+            var held = new float[_mindBaseline.Length];
+            for (int i = 0; i < held.Length; i++)
+                held[i] = Beliefs.Of(_mindBaseline, bs.Moved, i);
+            // the first names in sight, theirs left out
+            var near = new List<string>();
+            foreach (int h in _mindNear)
+            {
+                MindWho k;
+                if (h == handle || !_mindWho.TryGetValue(h, out k) || k.Id == null || k.Name == null)
+                    continue;
+                near.Add(Person.FirstOf(k.Name));
+                if (near.Count >= Language.NamesInRequest)
+                    break;
+            }
+            LanguageRequest r = _engine.LanguageRequestFor(w.P, w.Traits, w.Needs, w.Concerns, near, _bridge.TownOnly(Game.Player.Character.Position), _engine.NowPlace,
+                                                           CLOCK.GET_CLOCK_HOURS(), CLOCK.GET_CLOCK_YEAR(), _engine.NowWeather, held);
+            if (r == null)
+                return "no request could be built for " + w.Name;
+            Log.Write("LANGUAGE request for " + w.Name + " (key " + Language.CacheKey(r) + "):");
+            foreach (string line in Language.Prompt(r).Split('\n'))
+                if (line.Trim().Length > 0)
+                    Log.Write("LANGUAGE   " + line.TrimEnd('\r'));
+            Log.Write("LANGUAGE   the written fallback: " + (r.AvoidLine ?? "(none: with MindLive off the old thought stands, and it isn't worked out here)"));
+            _mindRequests++;
+            _mindRequestLast = w.Name;
+            said = "the language request for " + w.Name + " is in the log (LANGUAGE lines)";
+            return null;
+        }
+
         private string MindShadowStatus()
         {
             try
@@ -926,7 +995,8 @@ namespace EnrageWestworld.InGame
                 }
                 return "on, " + (_cfg.MindLive ? "LIVE (sore and glad from the mind)" : "reporting only") + "; " + _mindNear.Count + " people within " + (int)MindMetres + " m, " + _mindLooks + " looks, traits worked out for " +
                        (_engine != null ? _engine.Shadow.TraitsMade + " (" + _engine.Shadow.Count + " kept)" : "nobody") + ", " + _mindLogged + " MIND lines, " + _mindLogHeld + " held back by the 20 a minute; events appraised " + _mindFelt + " feelings from " + _engine.Shadow.EventsQueued + " happenings (" + _engine.Shadow.Waiting + " waiting, " + _engine.Shadow.EventsDropped + " dropped from a full queue, " + _mindEvStale + " too old by their turn), last: " + (_mindLastFelt ?? "none") + "; memories told on " + _engine.MemoriesTold + " (" + _engine.MemoriesToldInPassing + " in passing), placed " + _engine.MemoriesPlaced + ", drifted readings " + _engine.MemoriesDrifted + ", slanted readings " + _engine.MemoriesSlanted +
-                       (near.Count > 0 ? "; near: " + string.Join("; ", near) : "; nobody near it knows");
+                       (near.Count > 0 ? "; near: " + string.Join("; ", near) : "; nobody near it knows") +
+                       "; language requests written " + _mindRequests + (_mindRequestLast != null ? " (last " + _mindRequestLast + ")" : string.Empty);
             }
             catch (Exception ex)
             {
