@@ -30,6 +30,7 @@ namespace EnrageWestworld.InGame
             public int FightUntil;               // until blows start (FightStartMs), then the fight's own length from then
             public bool FightOn;                 // they're at it
             public int FightA, FightB, FightAskedAt, FightOrderedAt, FightMs;
+            public Dictionary<int, bool[]> FightAttrs;   // each fighter's own combat attributes, put back at the end
             public int[] StartHealth;
             public string Seed;
             public Action Done;
@@ -225,6 +226,11 @@ namespace EnrageWestworld.InGame
             if ((l.Scene.Kind == "help" || l.Scene.Kind == "passby") && l.Cast.Length > 1 && l.Cast[1] != null && l.Cast[1].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[1].Handle) &&
                 !PED.IS_PED_USING_ANY_SCENARIO(l.Cast[1].Handle))
                 TASK.TASK_WANDER_STANDARD(l.Cast[1].Handle, 10f, 10);
+            if (l.FightAttrs != null)
+                foreach (KeyValuePair<int, bool[]> fa in l.FightAttrs)
+                    if (ENTITY.DOES_ENTITY_EXIST(fa.Key))
+                        for (int a = 0; a < FightAttrIds.Length; a++)
+                            PED.SET_PED_COMBAT_ATTRIBUTES(fa.Key, FightAttrIds[a], fa.Value[a]);   // their own again
             for (int i = 0; i < l.Cast.Length; i++)
             {
                 Ped p = l.Cast[i];
@@ -333,7 +339,8 @@ namespace EnrageWestworld.InGame
                     KeepFists(l.Cast[i]);
                 if (!l.FightOn)
                 {
-                    if (PED.IS_PED_IN_MELEE_COMBAT(l.FightA) || PED.IS_PED_IN_MELEE_COMBAT(l.FightB) || PED.IS_PED_IN_COMBAT(l.FightA, l.FightB) || PED.IS_PED_IN_COMBAT(l.FightB, l.FightA))
+                    // at it: in melee, or a blow landed (the combat flag alone came the moment they were told, with no blows)
+                    if (PED.IS_PED_IN_MELEE_COMBAT(l.FightA) || PED.IS_PED_IN_MELEE_COMBAT(l.FightB) || Health(l, 0) < 0.97f || Health(l, 1) < 0.97f)
                     {
                         l.FightOn = true;
                         l.FightUntil = now + l.FightMs;
@@ -342,7 +349,8 @@ namespace EnrageWestworld.InGame
                     else if (now >= l.FightUntil)
                     {
                         Abort("they never came to blows in " + FightStartMs / 1000 + " s (" +
-                              (PED.IS_PED_USING_ANY_SCENARIO(l.FightA) || PED.IS_PED_USING_ANY_SCENARIO(l.FightB) ? "still sat or leaning" : "ordered, never in combat") + ")");
+                              (PED.IS_PED_USING_ANY_SCENARIO(l.FightA) || PED.IS_PED_USING_ANY_SCENARIO(l.FightB) ? "still sat or leaning"
+                               : PED.IS_PED_IN_COMBAT(l.FightA, l.FightB) || PED.IS_PED_IN_COMBAT(l.FightB, l.FightA) ? "in combat, never in melee" : "ordered, never in combat") + ")");
                         return;
                     }
                     else
@@ -555,6 +563,16 @@ namespace EnrageWestworld.InGame
                     l.FightOrderedAt = 0;
                     l.FightMs = Math.Max(5000, ms);
                     l.FightUntil = Game.GameTime + FightStartMs;
+                    // made to fight with their fists, as enRAGE makes its people (Lex, 2026-10-28: ordered to fight, two
+                    // townsmen stood off in "combat" and never swung): fight unarmed (5), always fight (46), never flee
+                    // the fight (58); their own put back when the scene ends
+                    l.FightAttrs = new Dictionary<int, bool[]>();
+                    foreach (int p in new[] { h, t })
+                    {
+                        l.FightAttrs[p] = FightAttrIds.Select(id => PED._GET_PED_COMBAT_ATTRIBUTE(p, id)).ToArray();
+                        foreach (int id in FightAttrIds)
+                            PED.SET_PED_COMBAT_ATTRIBUTES(p, id, true);
+                    }
                     FightOrder(l);
                     return 1000;
                 case "endfight":
@@ -711,6 +729,7 @@ namespace EnrageWestworld.InGame
 
         /// A brawl stays a brawl: if a fighter reaches for a gun or a knife, it goes back in the holster.
         private const int FightStartMs = 12000;
+        private static readonly int[] FightAttrIds = { 5, 46, 58 };   // fight unarmed, always fight, never flee the fight
 
         /// The order to fight, once both are on their feet: a man sat or leaning is told to stop (the clear lets him get
         /// up) and, still in it after 3 s, taken out of it at once. Given again every 2 s until they're at it.
