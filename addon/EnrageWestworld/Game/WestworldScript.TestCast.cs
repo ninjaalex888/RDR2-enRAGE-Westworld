@@ -265,6 +265,8 @@ namespace EnrageWestworld.InGame
             {
                 string seed = "cast|" + part.Id + "|" + h + "|" + Game.GameTime;
                 res = _engine.MeetResident(model, woman, run.Town, ResidentTrade(p, woman), seed, gameNow);
+                if (saved != null && !saved.Dead && saved.Cast == part.Id)
+                    saved.Cast = null;   // a living member whose build never streamed in: an ordinary resident now, not a second one of the part kept for good (the night review)
                 int outfits = PED.GET_NUM_META_PED_OUTFITS(h);
                 res.Outfit = outfits > 0 ? (int)(Voice.Hash(seed + "|o") % outfits) : 0;
                 TestCast.Fit(res, part, Voice.NowYear);
