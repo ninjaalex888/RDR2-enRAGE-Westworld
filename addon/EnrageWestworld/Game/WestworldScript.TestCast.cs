@@ -1,10 +1,10 @@
 // The test cast in the game (Lex, 2026-10-27, roadmap 32; the parts and their fitting in Core/TestCast.cs). The Testing
 // page's "Bring the test cast here" makes the people the tests need out of your sight, 14-26 m behind you, and they
-// stroll about that spot (TASK_WANDER_IN_AREA, 7 m); "Let the test cast go" takes them away. They're kept in the save:
+// stroll about that spot (TASK_WANDER_IN_AREA, 3.5 m: the preacher's listener must be within 8 m of him, the old men within 10 m of each other); "Let the test cast go" takes them away. They're kept in the save:
 // the same people come each time (their saved build, outfit and identity), and one who died is replaced. Their bodies
 // are mission entities, so the game keeps them while you're about, but nobody holds them (Spawner.SpawnCast): every
 // feature may take them as it would a townsperson, by its own MayDirect checks, and once it has let them go and they've
-// strayed 15 m they're walked back to their spot. Bodies go when you're 250 m off (unseen), at a mission start, a load,
+// strayed 10 m they're walked back to their spot. Bodies go when you're 250 m off (unseen), at a mission start, a load,
 // the wipe and shutdown; the identities stay. Not built: the cast made again by themselves when you come back to town.
 using System;
 using System.Collections.Generic;
@@ -40,7 +40,7 @@ namespace EnrageWestworld.InGame
 
         // old men's builds the game has (from the API's model list; the first that streams in is used, in this order)
         private static readonly string[] TestCastOldMen = { "a_m_o_sdupperclass_01", "a_m_o_blwupperclass_01", "a_m_o_lagtownfolk_01", "a_m_o_btchillbilly_01" };
-        private const float TestCastRoam = 7f, TestCastStray = 15f, TestCastGone = 250f;
+        private const float TestCastRoam = 3.5f, TestCastStray = 10f, TestCastGone = 250f;
 
         private readonly Dictionary<string, TestCastBody> _testCast = new Dictionary<string, TestCastBody>();   // by part
         private TestCastRun _testCastRun;
