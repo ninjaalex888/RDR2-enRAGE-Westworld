@@ -429,7 +429,8 @@ namespace EnrageWestworld.InGame
                 w.ChoiceTold = false;
                 w.ChoiceHeld = null;
                 _mindChoiceChanges++;
-                _mindLastChoice = w.Name + " -> " + Choosing.WordsOf(ch.Key);
+                if (!quiet)
+                    _mindLastChoice = w.Name + " -> " + Choosing.WordsOf(ch.Key);   // F7's last choice is someone near, not the about ring's
             }
             if (quiet)
             {

@@ -221,7 +221,7 @@ namespace EnrageWestworld.Core
                 WarmDoer = toDoer, WarmTarget = toTarget, Place = h.Place ?? "street", Woman = woman, WomenPresent = true,
                 Company = home != null && home == h.Town ? "neighbours" : "strangers", Witnesses = sawCount >= 0 ? sawCount : h.Witnesses != null ? h.Witnesses.Count : 0,
                 Armed = kind == "killing" || k == "standoff" || doer == "player", DoerDrunk = k == "drunk" && id == target, Doers = 1,
-                DoerName = kind == "pratfall" ? null : doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName,
+                DoerName = kind == "pratfall" || doer == null ? null : doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName,
                 DoerId = kind == "pratfall" ? null : doer, TargetId = target
             };
         }
@@ -342,8 +342,11 @@ namespace EnrageWestworld.Core
                 }
             f.Kind = best < 0 ? "none" : Feeling.Kinds[best];
             f.Intensity = best < 0 ? 0f : a[best];
-            f.About = f.Kind == "grief" || f.Kind == "pity" || f.Kind == "relief" ? e.TargetName : f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride" ? null : e.DoerName;
-            f.AboutId = f.Kind == "grief" || f.Kind == "pity" || f.Kind == "relief" ? e.TargetId : f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride" ? null : e.DoerId;
+            // whom it's about: grief, pity and relief the one it happened to; shame, guilt and pride oneself; joy at another's luck
+            // the one it happened to too (a friend's good news, after item 14), joy at one's own the one who brought it; the rest whoever did it
+            bool joyFor = f.Kind == "joy" && e.Role != "self";
+            f.About = f.Kind == "grief" || f.Kind == "pity" || f.Kind == "relief" || joyFor ? e.TargetName : f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride" ? null : e.DoerName;
+            f.AboutId = f.Kind == "grief" || f.Kind == "pity" || f.Kind == "relief" || joyFor ? e.TargetId : f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride" ? null : e.DoerId;
             f.DoerId = e.DoerId;
             f.Urge = UrgeOf(f, e, m, role, standing, t);
             return f;
