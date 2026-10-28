@@ -792,6 +792,7 @@ namespace EnrageWestworld.InGame
             RecordFatesStep(now);   // a record's death RealNPCs caused, written into its record (WestworldScript.Directing.cs)
             TrystWatchdog(now);   // never left dark (outside the trysts' own guard)
             TrystStep(now);       // runs with the player's controls off while it's dark
+            SupperInTheDark();    // so does the supper invitation's dark, and its watchdog (WestworldScript.Supper.cs)
             HookupsStep(now);     // CasualHookups' scene may take the controls too (WestworldScript.Hookups.cs)
             if (!PLAYER.IS_PLAYER_CONTROL_ON(Game.Player.Handle))
                 return;

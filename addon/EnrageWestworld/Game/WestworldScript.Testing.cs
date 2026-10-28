@@ -177,6 +177,7 @@ namespace EnrageWestworld.InGame
                 case "gathering":
                 case "visitor":
                 case "traveller":
+                case "supper":
                     said = RequestEncounter(a.Id, how, out asked);
                     if (!asked)
                         return said;
@@ -185,6 +186,7 @@ namespace EnrageWestworld.InGame
                             : a.Id == "hermit" ? "once a day, the roll (not the town rule: camps stay)"
                             : a.Id == "visitor" ? "the hour (midnight to 04:00), once a night, the roll (it still needs a town, out of doors, no lawman near)"
                             : a.Id == "traveller" ? "the hour (07:00-19:00), being on a road, once a day, the roll (not the towns)"
+                            : a.Id == "supper" ? "the hour (17:30-21:00), being on a road, once a day, the lawman rule, the roll (not the towns or the ticker); it takes no money, moves no clock and saves nothing"
                             : "the hour (midnight to 03:30), the wilds, once a night, the roll";
                     return null;
                 case "stalker":

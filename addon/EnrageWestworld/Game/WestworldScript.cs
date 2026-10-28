@@ -200,6 +200,14 @@ namespace EnrageWestworld.InGame
 					Log.Write("Too many errors in a minute - the add-on switched itself off until the game restarts. Details above.");
 					try
 					{
+						SupperEmergencyLight();   // never left dark or without controls once nothing steps the dark any more
+						TrystAbort();
+					}
+					catch
+					{
+					}
+					try
+					{
 						Save();
 						return;
 					}
@@ -220,6 +228,7 @@ namespace EnrageWestworld.InGame
 			if (!InWorld())
 			{
 				TrystInTheDark();
+				SupperInTheDark();   // the supper invitation's dark, likewise (WestworldScript.Supper.cs)
 				if (_recordFates.Count > 0 && Game.IsLoading)
 					RecordFatesLoading();   // a save may be loading: no pending record death is booked after it (WestworldScript.Directing.cs)
 				SaveStep(QuietWhy());   // nobody can see a slow frame now: the time to save (WestworldScript.Saving.cs)
@@ -1438,6 +1447,10 @@ namespace EnrageWestworld.InGame
 					if (TravellerGreeted(key, false))
 					{
 						continue;   // antagonizing the traveller asking the way: he backs off
+					}
+					if (SupperGreeted(key, false))
+					{
+						continue;   // antagonizing the man with supper on: he lets you go
 					}
 					if (_cfg.Romance && ENTITY.DOES_ENTITY_EXIST(key) && !ENTITY.IS_ENTITY_DEAD(key))
 					{

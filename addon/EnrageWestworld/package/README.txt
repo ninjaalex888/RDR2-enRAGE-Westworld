@@ -628,6 +628,10 @@ in the file. The new ones:
             Travellers (true), TravellerChance (20): by day on the roads, a man on foot asks you the way to
             the nearest town; greet him or stop a moment and he finds his way (one in three is
             snakebit and asks for help instead; one in five is being robbed, and you can step in)
+            SupperInvitation (true), SupperChance (12): at dusk on the roads, a too-friendly man asks
+            you to supper at his place; follow him there on foot and you wake in a ditch at first
+            light with most of your cash gone ($250 at most, and it can't be undone); ride on and
+            he lets you go
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
             Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
             AvengerChance (35), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,

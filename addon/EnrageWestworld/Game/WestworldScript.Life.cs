@@ -976,6 +976,8 @@ namespace EnrageWestworld.InGame
         {
             if (TravellerGreeted(handle, true))
                 return true;   // the traveller asking the way: a greeting is an answer (WestworldScript.Travellers.cs)
+            if (SupperGreeted(handle, true))
+                return true;   // the man with supper on: a greeting is a yes (WestworldScript.Supper.cs)
             if (_stalker != null && _stalker.Handle == handle)
             {
                 StalkerSay(_stalker.Label, _stalker.Revenant != null ? Hosts.RevenantAloud(_stalker.Revenant, _engine.Player, _stalker.Revenant.Id + "g")

@@ -36,6 +36,7 @@ namespace EnrageWestworld.Core
             new Entry("execution", "Encounters", "An execution on the road", "ExecutionKey", "[", needs: "a town with regulars", field: true),
             new Entry("hermit", "Encounters", "A hermit's camp", "HermitKey", needs: "outside a town; the camp stays", field: true),
             new Entry("traveller", "Encounters", "A traveller asking the way", "TestTravellerKey", needs: "out of the towns; best on a road"),
+            new Entry("supper", "Encounters", "The supper invitation (a test takes no money)", "TestSupperKey", needs: "out of the towns, the ticker on; best on a road; takes no money and leaves the clock alone"),
             new Entry("visitor", "Encounters", "The night visitor", "TestVisitorKey", needs: "in a town, out of doors, no lawman within 60 m"),
             new Entry("gathering", "Encounters", "A gathering of the awake", "GatheringKey", field: true),
             new Entry("stalker", "Encounters", "A stalker now", "StalkerKey", "]", needs: "outdoors", field: true),
