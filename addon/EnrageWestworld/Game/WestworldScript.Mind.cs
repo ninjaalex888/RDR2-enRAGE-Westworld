@@ -373,8 +373,9 @@ namespace EnrageWestworld.InGame
                 w.Recent = new RecentActs();
             var c = new ChoiceContext
             {
-                Hour = CLOCK.GET_CLOCK_HOURS(), Weekday = InnerLife.Weekday, Place = _engine.NowIndoors ? _engine.NowPlace : null, Indoors = _engine.NowIndoors,
-                InTown = _placeTown != null, Weather = _engine.NowWeather, Others = Math.Max(0, _mindNear.Count - 1), PlayerFeared = _engine.SawYouViolent(w.Id, 3),
+                // the about ring (quiet) is scored out of doors with nobody by: the player's room and crowd aren't theirs 120 m off (the late review)
+                Hour = CLOCK.GET_CLOCK_HOURS(), Weekday = InnerLife.Weekday, Place = !quiet && _engine.NowIndoors ? _engine.NowPlace : null, Indoors = !quiet && _engine.NowIndoors,
+                InTown = _placeTown != null, Weather = _engine.NowWeather, Others = quiet ? 0 : Math.Max(0, _mindNear.Count - 1), PlayerFeared = _engine.SawYouViolent(w.Id, 3),
                 Last = w.Choice, Recent = w.Recent, Now = g, TradeGroup = tg, Works = tg != "gentry" && !(w.P.Woman && tg == "town"), WorkPlace = tg == "girl" ? "saloon" : null, Woman = w.P.Woman, SaloonGirl = tg == "girl"
             };
             FeltAt best;

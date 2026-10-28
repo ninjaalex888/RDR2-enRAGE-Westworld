@@ -127,10 +127,25 @@ namespace EnrageWestworld.Core
             string doer = h.DoerId, target = h.TargetId;
             if (oneSided)
             {
+                // the scenes whose cast fixes who did what carry no doer on their tie (the late review): a cheer is A's news
+                // (Exchanges' x:goodnews); a comfort and an apology are B's doing (B comforts A after bad news, B says sorry)
+                if (doerId == null && k == "cheer")
+                    doerId = h.DoerId;
+                else if (doerId == null && (k == "comfort" || k == "apology"))
+                    doerId = h.TargetId;
                 if (doerId == null || doerId != h.DoerId && doerId != h.TargetId)
                     return null;   // who did it to whom unknown: nothing rather than the wrong way round
                 doer = doerId;
                 target = doerId == h.DoerId ? h.TargetId : h.DoerId;
+                if (k == "charity" || k == "scorn")
+                {
+                    // the tie's doer is the beggar (the asking is his doing: Ties.Trouble); what's appraised is the answer, so
+                    // the appraisal's doer is the one who answered and the beggar the one it was done to (the late review:
+                    // the sides ran backwards, the giver feeling gratitude and the refuser feeling refused)
+                    string asker = doer;
+                    doer = target;
+                    target = asker;
+                }
             }
             else if (mutual && (id == h.DoerId || id == h.TargetId))
             {
@@ -221,7 +236,7 @@ namespace EnrageWestworld.Core
                 WarmDoer = toDoer, WarmTarget = toTarget, Place = h.Place ?? "street", Woman = woman, WomenPresent = true,
                 Company = home != null && home == h.Town ? "neighbours" : "strangers", Witnesses = sawCount >= 0 ? sawCount : h.Witnesses != null ? h.Witnesses.Count : 0,
                 Armed = kind == "killing" || k == "standoff" || doer == "player", DoerDrunk = k == "drunk" && id == target, Doers = 1,
-                DoerName = kind == "pratfall" || doer == null ? null : doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName,
+                DoerName = kind == "pratfall" || doer == null && kind != "uncanny" ? null : doer == h.DoerId ? h.DoerName : h.TargetName, TargetName = target == h.TargetId ? h.TargetName : h.DoerName,   // the uncanny keeps its whom ("a pale figure over a body")
                 DoerId = kind == "pratfall" ? null : doer, TargetId = target
             };
         }
@@ -344,9 +359,12 @@ namespace EnrageWestworld.Core
             f.Intensity = best < 0 ? 0f : a[best];
             // whom it's about: grief, pity and relief the one it happened to; shame, guilt and pride oneself; joy at another's luck
             // the one it happened to too (a friend's good news, after item 14), joy at one's own the one who brought it; the rest whoever did it
-            bool joyFor = f.Kind == "joy" && e.Role != "self";
-            f.About = f.Kind == "grief" || f.Kind == "pity" || f.Kind == "relief" || joyFor ? e.TargetName : f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride" ? null : e.DoerName;
-            f.AboutId = f.Kind == "grief" || f.Kind == "pity" || f.Kind == "relief" || joyFor ? e.TargetId : f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride" ? null : e.DoerId;
+            // (one's own part: pity is for the one who asked and relief for the one who brought it, the rescuer, or nobody; never oneself: the late review)
+            bool selfRole = e.Role == "self", joyFor = f.Kind == "joy" && !selfRole;
+            bool toTarget = f.Kind == "grief" || joyFor || (f.Kind == "pity" || f.Kind == "relief") && !selfRole;
+            bool toNobody = f.Kind == "shame" || f.Kind == "guilt" || f.Kind == "pride";
+            f.About = toTarget ? e.TargetName : toNobody ? null : e.DoerName;
+            f.AboutId = toTarget ? e.TargetId : toNobody ? null : e.DoerId;
             f.DoerId = e.DoerId;
             f.Urge = UrgeOf(f, e, m, role, standing, t);
             return f;
