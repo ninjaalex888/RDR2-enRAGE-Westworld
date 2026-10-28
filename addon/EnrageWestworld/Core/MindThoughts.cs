@@ -29,7 +29,7 @@ namespace EnrageWestworld.Core
             { "guilt|you", new[] { "He knows. Or he will. Same thing.", "Owe {you} something now. Don't know what.", "Did that in front of {you}. God help me." } },
             { "guilt|stranger", new[] { "Gave my word on that money. My word.", "Can't wash it off. Tried.", "Put it right. Somehow. Soon." } },
             { "guilt|tie", new[] { "{who} deserved better from me.", "Next time I see {who}, I'll make it right.", "Gave {who} my word. Broke it." } },
-            { "grief|tie", new[] { "{who}. Gone. Just like that.", "{who} was just here. Just here.", "Last thing I said to {who} was about the weather." } },
+            { "grief|tie", new[] { "{who}. Gone. Just like that.", "{who} was just here. Just here.", "Never got round to telling {who}. Now I can't." } },
             { "pride|you", new[] { "{you} saw that. Good.", "Let him remember it.", "Stood my ground. Right under his nose, too." } },
             { "pride|stranger", new[] { "Not bad. Not bad at all.", "Walk a little taller today.", "Let them talk about that for a change." } },
             { "pride|tie", new[] { "{who} saw. Good.", "Bet {who} didn't think I had it in me.", "Put that in your pipe, {who}." } },

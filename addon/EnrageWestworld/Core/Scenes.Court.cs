@@ -26,7 +26,7 @@ namespace EnrageWestworld.Core
                 {
                     case "money": reply = Voice.Pick(seed + "cy", "Well, now. A " + (c.AWoman ? "woman" : "man") + " who dresses like that can stand me anything.", "You're doing well for yourself, " + a + ". I noticed."); break;
                     case "danger": reply = Voice.Pick(seed + "cy", "Folks say to steer clear of you, " + a + ". I never did like being told."); break;
-                    case "restless": reply = Voice.Pick(seed + "cy", "You've got the look of somewhere else about you, " + a + ". Show me."); break;
+                    case "restless": reply = Voice.Pick(seed + "cy", "Always on your way somewhere, " + a + ". Where to, then?"); break;
                     case "lonely": reply = Voice.Pick(seed + "cy", "Nobody's asked me anything in a long while, " + a + ". Go on, then."); break;
                     case "tipsy": reply = Voice.Pick(seed + "cy", "One drink. Then we'll see about the rest."); break;
                     default: reply = Voice.Pick(seed + "cy", "Well. Good day yourself, " + a + ".", "Maybe you can. Maybe I'll let you.", "Took you long enough to ask, " + a + "."); break;

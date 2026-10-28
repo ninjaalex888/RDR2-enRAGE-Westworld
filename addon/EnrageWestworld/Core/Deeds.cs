@@ -144,7 +144,7 @@ namespace EnrageWestworld.Core
                 Remarks = new[] { "You let {detail} live. Folks noticed." } } },
             { "peace", new Kind { Weight = 16, Mood = "Steady", Rumour = "{who} broke up {detail} {place}",
                 Thoughts = new[] { "{Who} stepped between two men about to kill each other {place}. Brave, or touched in the head.", "Heard {who} broke up {detail} {place}. Blessed are the peacemakers." },
-                Remarks = new[] { "You're the one who broke up {detail}. Folks noticed.", "Blessed are the peacemakers, mister. Even the ones wearing a Colt." },
+                Remarks = new[] { "You're the one who broke up {detail}. Folks noticed.", "Took some nerve, stepping in like that. Most would've watched." },
                 Paper = "A stranger stepped into {detail} {place} and sent both men home without a shot fired." } },
             { "thiefcaught", new Kind { Weight = 22, Mood = "Steady", Rumour = "{who} ran down a pickpocket {place}",
                 Thoughts = new[] { "{Who} ran down a pickpocket {place} and gave the purse back. Didn't even keep a dollar.", "A thief got caught {place}. By {who}, of all people." },

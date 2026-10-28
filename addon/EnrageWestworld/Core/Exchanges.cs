@@ -83,7 +83,7 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] KindToGood = { "That's the best thing I've heard all week, {a}.", "Ha! Good. Good for you. You've earned it." };
         private static readonly string[] ColdToGood = { "Huh. Lucky.", "Mm. Well. That's something." };
-        private static readonly string[] SharpToGood = { "Some folks get all the luck.", "Must be nice." };
+        private static readonly string[] SharpToGood = { "Some folks get all the luck.", "Well. Ain't that grand." };
 
         private static readonly string[] KindToBad = { "I'm so sorry, {a}. Truly.", "Come by tonight. You shouldn't sit alone with that." };
         private static readonly string[] ColdToBad = { "That's hard. That's how it goes.", "Well. Life's like that." };

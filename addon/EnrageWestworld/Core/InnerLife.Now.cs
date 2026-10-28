@@ -332,7 +332,7 @@ namespace EnrageWestworld.Core
             { "Greedy", new[] { "{name} owes somebody money. You can tell by the shoes.", "{name} would sell a sick mule as a racehorse. I'd know.",
                                 "Wonder what {name} paid for that hat. Too much. Folks like {name} always pay too much." } },
             { "Coward", new[] { "{name} keeps looking at me. Did I do something? I didn't do anything.", "Stand behind {name} if trouble starts. {name} is wider than me." } },
-            { "", new[] { "Wonder what {name} does all day. Never once seen {name} in a hurry.", "{name} laughs at everything. Must be nice.",
+            { "", new[] { "Wonder what {name} does all day. Never once seen {name} in a hurry.", "{name} laughs at everything. Wish I had the knack.",
                          "{name} looks like {name}'s mother. Same chin. Same scowl.", "{name} has a new way of walking. Somebody's in love, or in debt.",
                          "{name} said good morning yesterday. Didn't today. What changed?" } }
         };
