@@ -124,7 +124,11 @@ namespace EnrageWestworld.InGame
                         Log.Write("SUPPER: he asks you to supper (" + (int)d + " m)");
                     }
                     else if (now - s.StartedAt > 4 * 60000)
+                    {
+                        if (s.Host != null && s.Host.Exists() && !s.Host.IsDead)
+                            TASK.TASK_WANDER_STANDARD(s.Host.Handle, 10f, 10);   // else he stood rooted for the rest of his stand-still (the night review)
                         EndSupper("you never came his way");
+                    }
                     return;
                 case "invited":
                     if (d < 4f && onFoot && ENTITY.GET_ENTITY_SPEED(me.Handle) < 0.4f && s.Thought)
