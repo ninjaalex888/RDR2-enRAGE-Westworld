@@ -123,7 +123,7 @@ Built on 2026-10-26, overnight and through the day and night of 2026-10-27 (Lex'
 
 ### Groundwork for quarrels that go further (nothing in game yet)
 
-- How a quarrel climbs or comes down, in code only: words, a shove, blows, a gun drawn, a shot, with the hotter of the two pushing up by his nature, his drink, what it's over, the crowd and the history between them, and the cooler bringing it down with an apology, a joke, a drink, by backing down or walking off, or a friend stepping in; the law at hand and a town's gun rule hold the law-abiding back from a gun; nobody draws what he doesn't carry. Over twenty thousand quarrels most end in words, a third in a fight, a gun comes out in two or three of a hundred and a shot in under one; drunk armed men with history in a saloon at night are the exception, as they were.
+- How a quarrel climbs or comes down, in code only: words, a shove, blows, a gun drawn, a shot, with the hotter of the two pushing up by his nature, his drink, what it's over, the crowd and the history between them, and the cooler bringing it down with an apology, a joke, a drink, by backing down or walking off, or a friend stepping in; the law at hand and a town's gun rule hold the law-abiding back from a gun; nobody draws what he doesn't carry. Over twenty thousand quarrels two in three end in words, one in seven in a fight, a gun comes out in under one of a hundred and a shot in one of four hundred; drunk armed men with history in a saloon at night come to a shot one time in twenty, as they did. Nobody draws on an unarmed man lightly, a woman's quarrel stops at the shove, the one wronged pushes harder, and the law in sight breaks up a fight.
 
 ### Groundwork for the language layer (nothing in game yet)
 
