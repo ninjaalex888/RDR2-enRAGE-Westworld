@@ -56,6 +56,7 @@ namespace EnrageWestworld.InGame
 				KilledYou = (r.TimesKilledPlayer > 0),
 				KilledByPlayer = r.KilledByPlayer,
 				PresumedDead = r.PresumedDead,
+				PresumedDeadAt = r.PresumedDeadAt,
 				Buried = r.Buried,
 				CheatedDeath = r.TimesCheatedDeath,
 				KillLocation = r.KillLocation,

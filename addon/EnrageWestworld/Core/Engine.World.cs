@@ -171,7 +171,7 @@ namespace EnrageWestworld.Core
                 // one rider at a time past the last one's arrival (Lex's players, 2026-10-28: "every 30 seconds somebody wants
                 // revenge"; most of that is enRAGE's own kin and friends, but ours keep a gap between arrivals too)
                 long due = now + (far ? 4320 + _rng.Next(4320) : 720 + _rng.Next(1440));
-                long last = Store.Avengers.Where(x => x.Stage <= 2).Select(x => x.DueAt).DefaultIfEmpty(0).Max();
+                long last = Store.Avengers.Select(x => x.DueAt).DefaultIfEmpty(0).Max();   // the latest arrival, due or past (stage 3 the moment one arrives)
                 if (last > 0 && due < last + Cfg.AvengerGapHours * 60L)
                     due = last + Cfg.AvengerGapHours * 60L + _rng.Next(360);
                 Avenger a = new Avenger
@@ -1193,6 +1193,11 @@ namespace EnrageWestworld.Core
                 return true;
             DeathEntry e = Store.DeathOf(id);
             if (e == null)
+                return false;
+            // enRAGE took the death up after our note and has him alive (presumed dead and due back, or back): his to say,
+            // as HasDied leaves it, since it brings some of its people back on purpose
+            Person p = Find(id);
+            if (p != null && p.IsAlive && p.PresumedDeadAt >= e.At)
                 return false;
             Reverie r;
             return !(Store.Reveries.TryGetValue(id, out r) && r.Woke && r.WokeAt >= e.At);

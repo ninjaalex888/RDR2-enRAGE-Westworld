@@ -48,6 +48,7 @@ namespace EnrageWestworld.Core
         public bool KilledYou;
         public bool KilledByPlayer;       // dead, and the player did it
         public bool PresumedDead;         // enRAGE thinks he's dead; he may turn up again
+        public long PresumedDeadAt;       // enRAGE's clock when it last presumed him dead (a come-back, its own or ours, is dated by it)
         public bool Buried;
         public int CheatedDeath;          // times he was left for dead and lived
         public string KillLocation;       // where enRAGE first met him / he fell
