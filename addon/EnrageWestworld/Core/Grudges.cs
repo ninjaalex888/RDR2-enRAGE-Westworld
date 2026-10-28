@@ -16,10 +16,10 @@ namespace EnrageWestworld.Core
         /// The wrongs a friend would take up, with how C names them to A's face (A did it to {b}).
         public static readonly Dictionary<string, string[]> Wrongs = new Dictionary<string, string[]>
         {
-            { "rough", new[] { "You smashed {b}'s face in. I heard all about it.", "{b} can't chew for the teeth you loosened." } },
-            { "pickpocket", new[] { "Hand in {b}'s coat, they say. In broad day.", "You robbed {b}. Everybody knows it." } },
-            { "scorn", new[] { "{b} asked you for a nickel and you treated them like a dog.", "Heard how you sent {b} off. Proud of that?" } },
-            { "passby", new[] { "{b} was lying in the street and you stepped round them.", "You walked past {b} like a dropped hat." } },
+            { "rough", new[] { "You smashed {b}'s face in. I heard all about it.", "{b} can't chew for the teeth you loosened.", "You put {b}'s face on the bar and walked off laughing. I was told the laughing.", "Half the town saw what you did to {b}. Now I've come to see you." } },
+            { "pickpocket", new[] { "Hand in {b}'s coat, they say. In broad day.", "You robbed {b}. Everybody knows it.", "You were caught at {b}'s pocket. Try mine.", "{b}'s purse. In the street. I heard it from three mouths." } },
+            { "scorn", new[] { "{b} asked you for a nickel and you treated them like a dog.", "Heard how you sent {b} off. Proud of that?", "{b} asked for a crust and you gave a sermon.", "You turned {b} away like a stray. I don't forget that in a man." } },
+            { "passby", new[] { "{b} was lying in the street and you stepped round them.", "You walked past {b} like a dropped hat.", "{b} was on the ground and you had somewhere better to be.", "You stepped over {b} in the road. Say it wasn't so." } },
         };
         // not "faced": that tie is someone standing up to a bully, no wrong for the bully's friend to take up
 
