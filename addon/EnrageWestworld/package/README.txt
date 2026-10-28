@@ -26,7 +26,11 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   an execution on the road counts as a killing seen, the night visitor as the uncanny. With
   [Mind] MindLive on, people's thoughts from their feelings have twelve lines each instead of
   three, say the mask when the face hides the feeling, and a hungry farmhand doesn't sound like a
-  hungry clerk. Off (as it comes), thoughts are exactly as in 0.6.3.
+  hungry clerk. Memory behaves like memory: after a talk one tells the other the freshest thing
+  worth telling, the hearer keeps it a little less surely, and what was heard drifts in the retelling
+  (the unnamed doer becomes someone the hearer dislikes, a slight grows, two men become three); what
+  someone saw never changes who did it, and what you did never drifts. Standing where something
+  happened brings it back. Off (as it comes), thoughts and memories are exactly as in 0.6.3.
 
 NEW IN 0.6.3
 ------------
