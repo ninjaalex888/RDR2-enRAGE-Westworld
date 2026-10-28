@@ -1,9 +1,5 @@
 # Changelog
 
-## Unreleased
-
-- Fights between strangers reach ordinary men too: two hot-blooded men at the full chance, one hot man at half, two ordinary men at a quarter (never a coward), all scaled by `TroubleWeight`. At the highest weight in a thin town Lex saw no fights: two hot men together were rare, so the weight had no pair to work on.
-
 ## 0.6.3
 
 Built on 2026-10-26, overnight and through the day and night of 2026-10-27 (Lex's briefs), with play-tests between. Seen working in game by the release: the execution on the road, the Testing page and its test cast, the street scenes (the brawl with real punches, someone standing up to a bully, the fall and a hand up, the lost child, the old days, the preacher, the round's words), the mind cards, despair's farewell, the stalker, the awake running at a wall, the wake stages over heads. Not yet seen in game: the controller buttons, the supper invitation (off by default), the callout, the Sabbath, the bell, the night visitor's and the traveller's newest changes, and from 2026-10-26 the "Hook up" prompt, the CasualHookups fallback and the body-watch witness.
@@ -54,6 +50,7 @@ Built on 2026-10-26, overnight and through the day and night of 2026-10-27 (Lex'
 ### A livelier street
 
 - Brawls between strangers: two hot-blooded men in each other's way (a hothead or a proud man, and another such or a cold one) come to blows now and then, 35% of their meetings in a saloon and 15% in the street, by day or night (before, a reason like a worry always came first, so the chance meeting's brawl seldom got a turn; Lex found no fights in half an hour). Drink and temper in a saloon come to blows at any hour, not only at night (Lex: tavern fights by day too).
+- Fights between strangers reach ordinary men too: two hot-blooded men at the full chance, one hot man at half, two ordinary men at a quarter (never a coward), all scaled by the weight below. Without that, at the highest weight in a thin town there were no fights: two hot men together were rare, so the weight had no pair to work on.
 - `[Scenes] TroubleWeight` (1 as built; 0-5; on the Street scenes page): how often people come to blows or quarrel. 2 is twice as often, 0.5 half, 0 never by chance. It scales the brawl's and the argument's share of a chance meeting, hot blood between strangers, drink and temper, a hothead's run-in with a stranger, and a snap that comes to blows. Over 1 it also shortens everyone's rest between scenes (two minutes, fifteen after a fight, divided by the weight), since in a thin town everyone near has just been in one. Later (roadmap 30) the minds will decide this themselves.
 
 - People deal with each other around you more often (Lex: brawls are exciting, and not far off the time). A street scene can come every minute and a half instead of every two and a half (`[World] DramaGapSeconds` 90; an ini still on the old 150 gets the new one, one of your own is kept; settings version 87). Brawls come up twice as often when two men meet by chance; a hothead at the worst of his trouble comes to blows more often, and so does drink and temper in a saloon at night. Someone stands up to a bully more often (a friend nearly always, a loyal or proud stranger half the time), with less rest between. Falls, rounds bought and grudges taken up come about twice as often. The rare moments keep their own pace (the lost child, the preacher, the noon callout, the Sabbath, the bell).
