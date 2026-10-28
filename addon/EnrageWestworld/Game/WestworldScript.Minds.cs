@@ -129,11 +129,28 @@ namespace EnrageWestworld.InGame
 
         /// One of the player's deeds: those around with a clear view of him remember it. For violence a few passers-by
         /// are kept as residents, as for a fight. `only`: just this one (someone who came upon the body and saw him).
-        private void NoteDeedMinds(Deed d, Vector3 pos, int except, Ped only = null)
+        private void NoteDeedMinds(Deed d, Vector3 pos, int except, Ped only = null, int victim = 0)
         {
-            // the plain record of it first, Minds or not (WorldEvents.cs); one who came upon the body adds no new event
+            // the plain record of it first, Minds or not (WorldEvents.cs); one who came upon the body adds no new event.
+            // `victim`: the living person it was done to, when the game knows (an assault): their id goes on the deed and
+            // the record, so the mind gives them their own part; never a witness of it
             if (d != null && only == null && !MISC.GET_MISSION_FLAG())
-                Safe("world events", () => RecordEvent("deed:" + d.Kind, "player", "you", null, d.Detail, pos, Game.Player.Character.Handle, except, 0, d.Unseen ? "unseen" : null));
+                Safe("world events", () =>
+                {
+                    string vid = null, vname = d.Detail;
+                    if (victim != 0 && ENTITY.DOES_ENTITY_EXIST(victim) && !ENTITY.IS_ENTITY_DEAD(victim))
+                    {
+                        string id, name;
+                        if (LastingId(new Ped(victim), out id, out name) && _engine.CanRemember(id))
+                        {
+                            vid = id;
+                            vname = name != null ? Person.FirstOf(name) : d.Detail;
+                            if (d.VictimId == null)
+                                d.VictimId = id;
+                        }
+                    }
+                    RecordEvent("deed:" + d.Kind, "player", "you", vid, vname, pos, Game.Player.Character.Handle, except, victim, d.Unseen ? "unseen" : null);
+                });
             if (!_cfg.Minds || d == null || Minds.DeedGroup(d.Kind) == null || MISC.GET_MISSION_FLAG())
                 return;   // not during a story mission: its people are the story's
             Safe("minds", () => NoteDeedMindsImpl(d, pos, except, only));

@@ -157,6 +157,8 @@ namespace EnrageWestworld.Core
                         case "deed:theft":
                             if (m.Role == "done" || m.Sub == "robbery")
                                 n.V[NeedState.Money] = Or(n.V[NeedState.Money], 0.3f * Half(hours, 24f));
+                            if (m.Sub == "robbery" && (m.Role == "done" || toThem))
+                                danger += 0.4f * Half(hours, 6f);   // held up at gunpoint: the door barred that night (the psychologist's review, 2026-10-28)
                             break;
                         case "slight":
                         case "quarrel":

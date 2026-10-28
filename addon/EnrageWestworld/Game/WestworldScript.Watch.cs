@@ -552,7 +552,26 @@ namespace EnrageWestworld.InGame
             string detail = kind == "robbery" ? (_placeKind != null ? "the " + PlaceName(_placeKind) : Voice.Pick(now.ToString(), "a traveller", "a farmer", "a townsman"))
                 : kind == "assault" || kind == "kidnap" ? "a stranger" : null;
             int seen = Math.Max(witness != 0 ? 1 : 0, CountPeopleNear(pos, 0, 35f));
-            NoteDeedEyes(_engine.OnDeed(Deeds.Make(kind, detail, _bridge.TownAt(pos), ZoneAt(pos), gameMin, pos.X, pos.Y, pos.Z, seen), WitnessesNear(pos, 0, 35f), gameMin), pos, 0);
+            int victim = kind == "assault" || kind == "kidnap" ? HurtVictim(pos, now) : 0;   // the one he laid hands on, when the game knows (the night review's leftover, 2026-10-28)
+            NoteDeedEyes(_engine.OnDeed(Deeds.Make(kind, detail, _bridge.TownAt(pos), ZoneAt(pos), gameMin, pos.X, pos.Y, pos.Z, seen), WitnessesNear(pos, 0, 35f), gameMin), pos, 0, victim);
+        }
+
+        /// The living person the player hurt most recently (within 15 s, 15 m of the crime): the victim of an assault,
+        /// so the mind's appraisal can give him his own part. 0 when nobody fits.
+        private int HurtVictim(Vector3 pos, int now)
+        {
+            int best = 0, bestAt = 0;
+            foreach (KeyValuePair<int, Hit> kv in _hits)
+            {
+                Hit x = kv.Value;
+                if (!x.Human || now - x.At > 15000 || x.At < bestAt || !ENTITY.DOES_ENTITY_EXIST(kv.Key) || ENTITY.IS_ENTITY_DEAD(kv.Key))
+                    continue;
+                if (new Ped(kv.Key).Position.DistanceTo(pos) > 15f)
+                    continue;
+                best = kv.Key;
+                bestAt = x.At;
+            }
+            return best;
         }
 
         private readonly Dictionary<string, long> _flirtNoted = new Dictionary<string, long>();
@@ -626,9 +645,9 @@ namespace EnrageWestworld.InGame
         private int _nextDeedEyes;
         private Action _aDeedEyes;
 
-        private void NoteDeedEyes(Deed d, Vector3 pos, int except)
+        private void NoteDeedEyes(Deed d, Vector3 pos, int except, int victim = 0)
         {
-            NoteDeedMinds(d, pos, except);   // whoever saw him do it remembers it (Minds)
+            NoteDeedMinds(d, pos, except, null, victim);   // whoever saw him do it remembers it (Minds)
             if (d == null || d.TalkAt <= 0)
                 return;
             if (d.Witnesses <= 0)
