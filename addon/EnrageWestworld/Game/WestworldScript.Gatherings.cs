@@ -67,7 +67,7 @@ namespace EnrageWestworld.InGame
             int n = Encounters.GatherSize(_rng.Next(100));
             Gathering g = new Gathering { Centre = centre, StartedAt = now, Test = test };
             // the awake first, as they looked when they were met; strangers make up the rest
-            List<Resident> awake = _store.Residents.Where(r => !r.Dead && r.PostId == null && (_hermit == null || _hermit.R != r) && _engine.StageOf(r.Id) >= Awakening.Unravelling)
+            List<Resident> awake = _store.Residents.Where(r => !r.Dead && r.PostId == null && r.Cast == null && (_hermit == null || _hermit.R != r) && _engine.StageOf(r.Id) >= Awakening.Unravelling)
                 .OrderBy(r => _rng.Next()).Take(n).ToList();
             for (int i = 0; i < n; i++)
             {

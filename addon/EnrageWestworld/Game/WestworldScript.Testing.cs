@@ -189,6 +189,11 @@ namespace EnrageWestworld.InGame
                             : a.Id == "supper" ? "the hour (17:30-21:00), being on a road, once a day, the lawman rule, the roll (not the towns or the ticker); it takes no money, moves no clock and saves nothing"
                             : "the hour (midnight to 03:30), the wilds, once a night, the roll";
                     return null;
+                case "cast":
+                    skipped = "nothing: it brings people, it starts nothing";
+                    return TestCastBring(Game.Player.Character, now, out said);   // WestworldScript.TestCast.cs
+                case "cast:go":
+                    return TestCastGo(out said);
                 case "stalker":
                     if (_stalker != null)
                         return "a stalker is out already";

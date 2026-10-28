@@ -26,13 +26,13 @@ namespace EnrageWestworld.Core
         /// Who gets the next camp: whoever fled longest ago and has none yet; null when nobody is waiting.
         public Resident Homeless()
         {
-            return Store.Residents.Where(x => x.Fled && !x.Dead && !x.HasCamp).OrderBy(x => x.FledAt).FirstOrDefault();
+            return Store.Residents.Where(x => x.Fled && !x.Dead && !x.HasCamp && x.Cast == null).OrderBy(x => x.FledAt).FirstOrDefault();
         }
 
         /// Living hermits with a camp.
         public List<Resident> Camps()
         {
-            return Store.Residents.Where(x => x.Fled && !x.Dead && x.HasCamp).ToList();
+            return Store.Residents.Where(x => x.Fled && !x.Dead && x.HasCamp && x.Cast == null).ToList();
         }
 
         /// Someone who woke and walked out of their town some days before the player came by.

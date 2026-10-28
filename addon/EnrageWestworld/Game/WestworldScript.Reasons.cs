@@ -79,7 +79,7 @@ namespace EnrageWestworld.InGame
                 return Heart(new Someone { Id = who.Id, Name = ShownName(h, who.Name), Woman = who.Woman, Temper = who.Personality, P = who, WakeStage = rs != null ? rs.WakeStage : 0,
                                      WellOff = WellOff(p), Drunk = InHisCups(p, who), Hurt = HurtLately(who.Id) });
             }
-            Acquaintance ac = _bridge.AcquaintanceAt(h);
+            Acquaintance ac = Spawner.IsCast(h) ? null : _bridge.AcquaintanceAt(h);   // the test cast are ours, whatever enRAGE has made of them
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
             {
                 Folk f = Snapshot.Of(ac);

@@ -445,6 +445,7 @@ namespace EnrageWestworld.InGame
 			PrejitCore();   // Core's first-run compiling, on a pool thread (WestworldScript.Prejit.cs)
 			_perfFrames = 0;   // loading the save is a long frame by nature (400 ms at Ready, 2026-10-27): the meter settles again from here
 			PassingAbort();
+			TestCastClear("a save loaded");
 			WanderLaterClear();
 			SightsReset("a save loaded");
 			VicesReset();
@@ -1132,6 +1133,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST supper: " + SupperStatus());
 			Log.Write("TEST preacher and old days: " + PreacherStatus());
 			Log.Write("TEST lost child: " + LostChildStatus());
+			Log.Write("TEST test cast: " + TestCastStatus());
 			Log.Write("TEST sabbath: " + SabbathStatus());
 			Log.Write("TEST bell: " + BellStatus());
 			Log.Write("TEST card cheats: " + _thrownOuts + " shown the door and thought of it outside this session");
@@ -1306,7 +1308,7 @@ namespace EnrageWestworld.InGame
 				ApplyEffects();
 				NoteFlirt(ped, folk.Name);
 			}
-			else if (!ENTITY.IS_ENTITY_A_MISSION_ENTITY(num))
+			else if (!Natives.OtherScripts(num))
 			{
 				// one of the add-on's own people: what they think of him decides it, as for enRAGE's (Regard, Interest)
 				Resident res = ResidentEligible(ped) ? ResidentOf(ped) : null;
@@ -1648,7 +1650,7 @@ namespace EnrageWestworld.InGame
 			{
 				return;
 			}
-			List<Ped> list4 = list.Where((Ped p) => ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.6f && IsGrownUp(p) && (!ENTITY.IS_ENTITY_A_MISSION_ENTITY(p.Handle) || _bridge.AcquaintanceAt(p.Handle) != null)).ToList();
+			List<Ped> list4 = list.Where((Ped p) => ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.6f && IsGrownUp(p) && (!Natives.OtherScripts(p.Handle) || _bridge.AcquaintanceAt(p.Handle) != null)).ToList();
 			for (int num = 0; num < list4.Count; num++)
 			{
 				for (int num2 = num + 1; num2 < list4.Count; num2++)

@@ -172,7 +172,7 @@ namespace EnrageWestworld.InGame
                     add("riding or in a wagon");
                 else if (PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h))
                     add("fighting or fleeing");
-                else if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) && !IsRecord(h))
+                else if (Natives.OtherScripts(h) && !IsRecord(h))
                     add("the game's own scripts' people");
                 else if (MayDirectWhyNot(p) != null)
                     add("busy (enRAGE's, a scene, a story)");

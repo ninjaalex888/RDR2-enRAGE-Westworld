@@ -192,8 +192,15 @@ namespace EnrageWestworld.InGame
             if (p == null || !p.Exists())
                 return false;
             int h = p.Handle;
-            return h != player && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_HUMAN(h) && (missionOk || !ENTITY.IS_ENTITY_A_MISSION_ENTITY(h)) && !PED.IS_PED_IN_COMBAT(h, 0) &&
+            return h != player && !ENTITY.IS_ENTITY_DEAD(h) && PED.IS_PED_HUMAN(h) && (missionOk || !OtherScripts(h)) && !PED.IS_PED_IN_COMBAT(h, 0) &&
                    !PED.IS_PED_A_PLAYER(h) && !PED.IS_PED_FLEEING(h) && !IsChild(p) && !IsLaw(p);
+        }
+
+        /// Another script's person (a mission's, the game's town scripts', enRAGE's): a mission entity that isn't one of
+        /// the test cast, whom RealNPCs keeps as mission entities only so the game doesn't clear them (Spawner.SpawnCast).
+        public static bool OtherScripts(int h)
+        {
+            return ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) && !Spawner.IsCast(h);
         }
 
         /// Story and unique characters (cutscene models, named strangers): never brought back as revenants.

@@ -2,6 +2,8 @@
 // requested and the spawn simply returns null until it has streamed in. Never during missions or fades.
 // Everything spawned is remembered and removed when the add-on stops. People already in the world who are taken
 // over for a while (a townsperson turned stalker) count as ours too, but are only ever handed back, never deleted.
+// The Testing page's test cast are spawned but never "ours": the game keeps them (mission entities), nobody holds
+// them, and any feature may take them as it would a townsperson (WestworldScript.TestCast.cs).
 using System.Collections.Generic;
 using System.Linq;
 using RDR2;
@@ -14,6 +16,7 @@ namespace EnrageWestworld.InGame
     {
         private static readonly HashSet<int> Ours = new HashSet<int>();
         private static readonly HashSet<int> Borrowed = new HashSet<int>();
+        private static readonly HashSet<int> Cast = new HashSet<int>();   // the test cast's bodies
 
         /// Takes over someone already in the world, so the game keeps them and nothing else of ours directs them.
         /// True if the game now treats them as ours (a mission entity).
@@ -70,8 +73,8 @@ namespace EnrageWestworld.InGame
             PED.SET_PED_KEEP_TASK(h, false);
             if (!ENTITY.IS_ENTITY_DEAD(h))
                 TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // going about their day, not left standing where we put them
-            if (light)
-                return;   // one of enRAGE's records: never "no longer needed" (that could let the game clear one enRAGE spawned)
+            if (light || Cast.Contains(h))
+                return;   // one of enRAGE's records: never "no longer needed" (that could let the game clear one enRAGE spawned); one of the test cast stays ours to keep
             ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
         }
 
@@ -108,6 +111,42 @@ namespace EnrageWestworld.InGame
         public static bool IsOurs(int handle)
         {
             return Ours.Contains(handle);
+        }
+
+        /// One of the test cast: spawned and kept as a mission entity, so the game never clears them while you're about,
+        /// but not ours: nobody holds them.
+        public static Ped SpawnCast(uint model, Vector3 pos, float heading)
+        {
+            Ped p = Spawn(model, pos, heading);
+            if (p == null)
+                return null;
+            Ours.Remove(p.Handle);
+            Cast.Add(p.Handle);
+            return p;
+        }
+
+        public static bool IsCast(int handle)
+        {
+            return Cast.Contains(handle);
+        }
+
+        /// A test cast member's body taken away: deleted unseen, or in sight handed over to the game's own people; their
+        /// identity stays.
+        public static unsafe void ReleaseCast(Ped p, bool delete)
+        {
+            if (p == null)
+                return;
+            int h = p.Handle;
+            Cast.Remove(h);
+            if (Borrowed.Contains(h) || !ENTITY.DOES_ENTITY_EXIST(h))
+                return;   // a feature holds them just now: its own hand-back lets them go
+            if (delete)
+            {
+                p.Delete();
+                return;
+            }
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            ENTITY.SET_PED_AS_NO_LONGER_NEEDED(&h);
         }
 
         /// Deletes the ped (when nobody can see it vanish) or hands it back to the game. Someone borrowed is always
@@ -163,6 +202,18 @@ namespace EnrageWestworld.InGame
             }
             Ours.Clear();
             Borrowed.Clear();
+            foreach (int h in Cast.ToList())
+            {
+                try
+                {
+                    if (ENTITY.DOES_ENTITY_EXIST(h))
+                        new Ped(h).Delete();   // the test cast's bodies; their identities stay in the save
+                }
+                catch
+                {
+                }
+            }
+            Cast.Clear();
         }
 
         // ---- choosing a model ----------------------------------------------------------------------

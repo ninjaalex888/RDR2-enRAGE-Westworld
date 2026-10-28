@@ -59,7 +59,7 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | ] | Make a stalker now: someone near you (someone with a history with you first), or a stranger if nobody near can be. The log says what it's waiting for |
 | [ | Stage an execution on the road near you, out of sight, to see one now (a mark on the map) |
 | Shift+F7, Shift+F9, Shift+F2 | For testing: two people talk in their real voices; a face into the bar; the subtitle line in each font |
-| (none) | Everything else RealNPCs can make happen near you now is a row on the settings panel's Testing page: Space fires it, Enter sets a key for it ([Testing] in the ini; a key another test has moves over) |
+| (none) | Everything else RealNPCs can make happen near you now is a row on the settings panel's Testing page: Space fires it, Enter sets a key for it ([Testing] in the ini; a key another test has moves over). "Bring the test cast here" brings eight people the tests need (a mother, two old men, a preacher and a listener, three men for a bully), kept in the save so the same people come each time |
 | Y | Wake the person you are facing one stage (West World), so you can see what each stage does |
 | T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
 

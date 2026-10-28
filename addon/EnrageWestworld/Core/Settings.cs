@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 84;
+        public const int CurrentVersion = 85;
 
         public int SettingsVersion = CurrentVersion;
 

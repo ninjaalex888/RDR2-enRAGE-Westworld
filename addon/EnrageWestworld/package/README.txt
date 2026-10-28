@@ -716,7 +716,10 @@ Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           them all off). Every street scene has a row (the nearest named pair that fits plays it),
           and so do pleading, arrivals, letters and the strange remarks. Show minds (on as it comes) puts a card over
           the people near you: their temper, mood, worry, ties and what is on their mind; Replay fires
-          the last test again. There is also a row that wipes every NPC's memory (Enter twice). Alt+F11 opens it as well, but
+          the last test again. "Bring the test cast here" brings eight people the tests need (a mother,
+          two old men, a preacher and a listener, three men for a bully) to stroll about a spot out of
+          your sight behind you; they're kept in the save, so the same people come each time, and
+          "Let the test cast go" takes them away. There is also a row that wipes every NPC's memory (Enter twice). Alt+F11 opens it as well, but
           only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
           About 15 seconds after loading, a notice says which key to use.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town

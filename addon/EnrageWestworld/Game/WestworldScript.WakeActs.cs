@@ -140,7 +140,7 @@ namespace EnrageWestworld.InGame
                 return "riding";
             if (PED.IS_PED_SWIMMING(h) || ENTITY.IS_ENTITY_IN_WATER(h))
                 return "in the water";
-            if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h))
+            if (Natives.OtherScripts(h))
                 return "a mission entity (another script's, or enRAGE's)";
             if (Spawner.IsOurs(h))
                 return "one of ours";
@@ -152,7 +152,7 @@ namespace EnrageWestworld.InGame
         {
             int h = ped.Handle;
             return !ENTITY.IS_ENTITY_DEAD(h) && !PED.IS_PED_IN_COMBAT(h, 0) && !PED.IS_PED_FLEEING(h) && !PED.IS_PED_RAGDOLL(h) && !PED.IS_PED_ON_MOUNT(h) &&
-                   !PED.IS_PED_IN_ANY_VEHICLE(h, false) && !PED.IS_PED_SWIMMING(h) && !ENTITY.IS_ENTITY_IN_WATER(h) && !ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) && !Spawner.IsOurs(h);
+                   !PED.IS_PED_IN_ANY_VEHICLE(h, false) && !PED.IS_PED_SWIMMING(h) && !ENTITY.IS_ENTITY_IN_WATER(h) && !Natives.OtherScripts(h) && !Spawner.IsOurs(h);
         }
 
         private bool LawBusy(Ped ped)
@@ -844,7 +844,7 @@ namespace EnrageWestworld.InGame
                 return "a story character, or not grown";
             if (MISC.GET_MISSION_FLAG())
                 return "a story mission";
-            if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) && despairRec == null)
+            if (Natives.OtherScripts(h) && despairRec == null)
                 return "a mission character";   // enRAGE marks its own people so; whether it has a hold on them is asked above
             if (dist < 3f)
                 return "you were " + dist.ToString("0.0") + " m off, near enough to stop them";

@@ -173,6 +173,7 @@ namespace EnrageWestworld.InGame
         {
             PanelTimeRestore("the add-on stopped");
             PassingAbort();
+            TestCastClear("the add-on stopped");
             WanderLaterClear();
             SightsReset("shutdown");
             try
@@ -741,6 +742,7 @@ namespace EnrageWestworld.InGame
             GunshotTestEnd("a mission started");
             TrystAbort();
             PassingAbort();
+            TestCastClear("a mission started");
             WanderLaterClear();
             SightsAbort();
             GrudgesAbort();
@@ -823,6 +825,7 @@ namespace EnrageWestworld.InGame
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
             MindShadowStep(now);   // the mind in shadow mode: traits, needs, feelings and mood, reported only (WestworldScript.Mind.cs)
+            TestCastStep(now);     // the Testing page's test cast, while they're about (WestworldScript.TestCast.cs)
             if (_drinkVoice != 0 || _drunkVoices.Count > 0)
                 Safe("vices", _aDrinkVoice ?? (_aDrinkVoice = () => { DrinkVoiceStep(_now); SoberVoices(false); }));   // a drinker's voice, and sober again at 4 (WestworldScript.Vices.cs)
             Safe("ceremonies", _aCeremony);

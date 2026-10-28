@@ -240,7 +240,7 @@ namespace EnrageWestworld.InGame
             return (_cfg.EnragePeopleJoinIn ? "they join in" : "they're left alone") + "; " + string.Join("; ", near.Select(p =>
             {
                 string why = MayDirectWhyNot(p);
-                return TalkName(p) + " (" + (int)p.Position.DistanceTo(me.Position) + " m, " + (ENTITY.IS_ENTITY_A_MISSION_ENTITY(p.Handle) ? "mission entity" : "not a mission entity") +
+                return TalkName(p) + " (" + (int)p.Position.DistanceTo(me.Position) + " m, " + (Natives.OtherScripts(p.Handle) ? "mission entity" : "not a mission entity") +
                        ", role " + (_bridge.RoleName(p.Handle) ?? "none") + "): " + (why == null ? "free" : why) + "; could: " + RecordCould(p);
             }));
         }

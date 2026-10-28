@@ -39,7 +39,7 @@ namespace EnrageWestworld.InGame
             Ped who = target != 0 && ENTITY.DOES_ENTITY_EXIST(target) && ENTITY.IS_ENTITY_A_PED(target) ? new Ped(target) : null;
             bool known = who != null && _bridge != null && (_bridge.RecordAt(target) != null || _bridge.AcquaintanceAt(target) != null);
             if (who == null || !FlirtPromptRule.Offer(_cfg.FlirtPrompt, _cfg.Romance, PED.IS_PED_HUMAN(target), PED.IS_PED_A_PLAYER(target), !ENTITY.IS_ENTITY_DEAD(target),
-                                                         IsGrownUp(who), Natives.StoryModel(who), ENTITY.IS_ENTITY_A_MISSION_ENTITY(target), known,
+                                                         IsGrownUp(who), Natives.StoryModel(who), Natives.OtherScripts(target), known,
                                                          who.Position.DistanceTo(me.Position), PED.IS_PED_IN_COMBAT(target, 0), MISC.GET_MISSION_FLAG(),
                                                          PED.IS_PED_MALE(target) == PED.IS_PED_MALE(me.Handle), _cfg.SameSexRomance))
             {

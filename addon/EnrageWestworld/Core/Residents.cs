@@ -44,7 +44,8 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool HasCamp;          // where they live in the wilds, chosen once
         [DataMember(EmitDefaultValue = false)] public float CampX, CampY, CampZ;
         [DataMember(EmitDefaultValue = false)] public bool Regular;          // one of their town's regulars (Regulars.cs): met again and again, kept
-        [DataMember(EmitDefaultValue = false)] public int Outfit;            // a regular's outfit preset, put on whenever they're cast (read only when Regular)
+        [DataMember(EmitDefaultValue = false)] public int Outfit;            // a regular's outfit preset, put on whenever they're cast (read only when Regular or Cast)
+        [DataMember(EmitDefaultValue = false)] public string Cast;           // one of the Testing page's test cast, by part (Core/TestCast.cs); null for everyone else
 
         public static bool IsResident(string id)
         {

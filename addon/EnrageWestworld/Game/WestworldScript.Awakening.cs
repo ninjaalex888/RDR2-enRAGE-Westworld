@@ -44,6 +44,7 @@ namespace EnrageWestworld.InGame
             int h = ped.Handle;
             if (Spawner.IsOurs(h)) return "one of the add-on's own";
             if (ENTITY.IS_ENTITY_DEAD(h)) return "dead";
+            if (Spawner.IsCast(h) && _resBind.ContainsKey(h)) return null;   // the test cast: ours, whatever enRAGE has made of them
             if (!PED.IS_PED_HUMAN(h)) return "not human";
             if (PED.IS_PED_A_PLAYER(h)) return "a player";
             if (Natives.IsChild(ped)) return "a child";
@@ -79,7 +80,7 @@ namespace EnrageWestworld.InGame
             // someone who woke here before, of the same build, may turn up again in this body (not a town regular: they
             // come back only unseen and in their own clothes, from the regulars' scan)
             Resident back = _rng.Next(100) < 35
-                ? _store.Residents.FirstOrDefault(x => !x.Dead && !x.Fled && !x.Regular && x.Model == model && x.Woman == woman && x.Town == where && _engine.StageOf(x.Id) > 0 && !_resBind.Values.Any(v => v.R == x))
+                ? _store.Residents.FirstOrDefault(x => !x.Dead && !x.Fled && !x.Regular && x.Cast == null && x.Model == model && x.Woman == woman && x.Town == where && _engine.StageOf(x.Id) > 0 && !_resBind.Values.Any(v => v.R == x))
                 : null;
             if (back != null)
             {
