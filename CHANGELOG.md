@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fights between strangers reach ordinary men too: two hot-blooded men at the full chance, one hot man at half, two ordinary men at a quarter (never a coward), all scaled by `TroubleWeight`. At the highest weight in a thin town Lex saw no fights: two hot men together were rare, so the weight had no pair to work on.
+
 ## 0.6.3
 
 Built on 2026-10-26, overnight and through the day and night of 2026-10-27 (Lex's briefs), with play-tests between. Seen working in game by the release: the execution on the road, the Testing page and its test cast, the street scenes (the brawl with real punches, someone standing up to a bully, the fall and a hand up, the lost child, the old days, the preacher, the round's words), the mind cards, despair's farewell, the stalker, the awake running at a wall, the wake stages over heads. Not yet seen in game: the controller buttons, the supper invitation (off by default), the callout, the Sabbath, the bell, the night visitor's and the traveller's newest changes, and from 2026-10-26 the "Hook up" prompt, the CasualHookups fallback and the body-watch witness.

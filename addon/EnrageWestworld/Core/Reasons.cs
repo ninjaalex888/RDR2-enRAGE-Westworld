@@ -235,9 +235,20 @@ namespace EnrageWestworld.Core
             // two hot-blooded men in each other's way come to blows now and then, by day or night (Lex, 2026-10-28: brawls
             // weren't happening; a reason always came first, so the chance meeting's brawl seldom got a turn). A roll per
             // pair and day, until the minds choose it themselves; strong enough to come before a snap or gossip
-            if (twoMen && Hot(x) && (Hot(y) || y.Temper == "Cold") && x.Temper != "Coward" &&
-                Voice.Chance(PairKey(x, y) + gameDay + "hotblood", Weighted(where.Saloon ? HotBloodSaloonChance : HotBloodStreetChance, where.Trouble)))
-                all.Add(new Reason { Kind = "brawl", Strength = where.Saloon ? 50 : 47, Why = x.Name + " and " + y.Name + " are both hot-blooded, and neither will give way" });
+            // Two hot men (or a hot and a cold one) at the full chance; one hot man at half; two ordinary men at a quarter
+            // (Lex, 2026-10-28, at the highest weight in Valentine: no fights, since two hot men together are rare in a
+            // thin town and the weight had no pair to work on); never a coward
+            if (twoMen && x.Temper != "Coward" && y.Temper != "Coward")
+            {
+                bool hx = Hot(x), hy = Hot(y);
+                int full = where.Saloon ? HotBloodSaloonChance : HotBloodStreetChance;
+                int pct = hx && (hy || y.Temper == "Cold") || hy && x.Temper == "Cold" ? full : hx || hy ? full / 2 : full / 4;
+                if (Voice.Chance(PairKey(x, y) + gameDay + "hotblood", Weighted(pct, where.Trouble)))
+                    all.Add(new Reason { Kind = "brawl", Strength = where.Saloon ? 50 : 47,
+                                         Why = hx && hy ? x.Name + " and " + y.Name + " are both hot-blooded, and neither will give way"
+                                             : hx || hy ? (hx ? x.Name : y.Name) + " has a temper, and " + (hx ? y.Name : x.Name) + " won't be pushed"
+                                             : x.Name + " and " + y.Name + " rub each other the wrong way, and neither will give way" });
+            }
             // someone free and taken with the one beside them makes eyes at them; the answer is the other's own
             Reason court = Courtship(x, y, gameDay, where);
             if (court != null)
