@@ -28,6 +28,9 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   the boards behind the bar; the barkeep says pipes, and thinks otherwise. [Encounters] VoiceBelow.
 - The doctor's patient: by day, someone whose child has the fever walks to the doctor's and
   back, thinking it over. [Scenes] DoctorsPatient.
+- People think of what happened to them in more ways: every memory has four or more lines
+  (over a thousand in all, from five hundred), so a brawl or a kindness isn't recalled in the
+  same two sentences all week.
 - Manners of 1899: a friend is someone you've had two scenes with (one kind word no longer
   makes a mourner); a respectable woman doesn't drink herself drunk, stand rounds or spit,
   and shames a bully rather than squaring up; strangers are "mister" and "ma'am"; he and she,
