@@ -178,6 +178,7 @@ namespace EnrageWestworld.InGame
                 case "visitor":
                 case "traveller":
                 case "supper":
+                case "campfire":
                     said = RequestEncounter(a.Id, how, out asked);
                     if (!asked)
                         return said;
@@ -187,6 +188,7 @@ namespace EnrageWestworld.InGame
                             : a.Id == "visitor" ? "the hour (midnight to 04:00), once a night, the roll (it still needs a town, out of doors, no lawman near)"
                             : a.Id == "traveller" ? "the hour (07:00-19:00), being on a road, once a day, the roll (not the towns)"
                             : a.Id == "supper" ? "the hour (17:30-21:00), being on a road, once a day, the lawman rule, the roll (not the towns or the ticker); it takes no money, moves no clock and saves nothing"
+                            : a.Id == "campfire" ? "the hour (20:00-04:00), the rest between fires, the roll (not the towns)"
                             : "the hour (midnight to 03:30), the wilds, once a night, the roll";
                     return null;
                 case "cast":
@@ -247,6 +249,15 @@ namespace EnrageWestworld.InGame
                         skipped = "the day and hour, the rarity and the rests (Pacing \"preacher\")";
                         return PreacherScene(Game.Player.Character, now, true, out pw) ? null : pw;
                     }
+                case "below":
+                    {
+                        string bsaid;
+                        skipped = "the hour (23:00-04:00), the roll and the rests (Pacing \"below\")";
+                        string bwhy = BelowFire(now, out bsaid);
+                        if (bsaid != null)
+                            said = bsaid;
+                        return bwhy;
+                    }
                 case "bell":
                     {
                         string bw;
@@ -260,6 +271,12 @@ namespace EnrageWestworld.InGame
                         string sw;
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
+                    }
+                case "patient":
+                    {
+                        string pw2;
+                        skipped = "the doctor's hours, the rarity and the rests (Pacing \"patient\")";
+                        return PatientScene(Game.Player.Character, now, true, out pw2) ? null : pw2;
                     }
                 case "lostchild":
                     {

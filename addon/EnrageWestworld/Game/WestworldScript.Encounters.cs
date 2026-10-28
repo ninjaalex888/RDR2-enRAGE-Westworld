@@ -47,7 +47,7 @@ namespace EnrageWestworld.InGame
             Safe("encounters", _aEncounters);
         }
 
-        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || _supper != null; } }
+        private bool EncounterLive { get { return _crying != null || _hermit != null || _gathering != null || _exec != null || _visitor != null || _traveller != null || _campfire != null || _supper != null; } }
 
         /// What's going on, for the log and the stalker key.
         private string EncounterWhat
@@ -60,6 +60,8 @@ namespace EnrageWestworld.InGame
                     return "a figure is abroad in the dark";
                 if (_traveller != null)
                     return "a traveller is on the road";
+                if (_campfire != null)
+                    return "strangers sit at a fire";
                 if (_supper != null)
                     return "a man on the road has supper waiting";
                 if (_exec != null)
@@ -86,6 +88,8 @@ namespace EnrageWestworld.InGame
                 VisitorStep(now);
             if (_traveller != null)
                 TravellerStep(now);
+            if (_campfire != null)
+                CampfireStep(now);
             if (_supper != null)
                 SupperStep(now);
             VisitorBodyStep();   // a body left behind goes once nobody can see (WestworldScript.Visitor.cs)
@@ -130,9 +134,9 @@ namespace EnrageWestworld.InGame
             // arrive one by one, not together
             List<string> notNow = new List<string>();   // each kind that's on but can't happen here and now, and why
             int first = _encounterTurn++ & 0x7fffffff;
-            for (int i = 0; i < 7; i++)
+            for (int i = 0; i < 8; i++)
             {
-                if (TryEncounter((first + i) % 7, notNow, now))
+                if (TryEncounter((first + i) % 8, notNow, now))
                 {
                     _encounterWait = null;
                     return;
@@ -226,7 +230,7 @@ namespace EnrageWestworld.InGame
                         return false;
                     StartSupper(now);
                     return true;
-                default:
+                case 6:
                     if (!_cfg.Gatherings || _gathering != null)
                         return false;
                     not = GatherNotNow();
@@ -236,6 +240,19 @@ namespace EnrageWestworld.InGame
                         return false;
                     }
                     return EncounterRoll("a gathering", _cfg.GatheringChance) && StartGathering(now);
+                default:
+                    if (!_cfg.Campfires || _campfire != null)
+                        return false;
+                    not = CampfireNotNow() ?? Pacing.WhyNot(_store.Pace, "campfire", null, null, _store.LastGameMin, 0, false, out skipped, true);
+                    if (not != null)
+                    {
+                        notNow.Add("strangers at a campfire: " + not);
+                        return false;
+                    }
+                    if (!EncounterRoll("strangers at a campfire", _cfg.CampfireChance))
+                        return false;
+                    StartCampfire(now);   // Pacing notes it once the fire is lit (CampfireSpawn)
+                    return true;
             }
         }
 
@@ -245,7 +262,7 @@ namespace EnrageWestworld.InGame
             get
             {
                 return (_crying != null ? 1 : 0) + (_exec != null ? 1 : 0) + (HermitWithYou() ? 1 : 0) + (_gathering != null ? 1 : 0) + (_visitor != null ? 1 : 0) +
-                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_stalker != null ? 1 : 0);
+                       (_traveller != null ? 1 : 0) + (_supper != null ? 1 : 0) + (_campfire != null ? 1 : 0) + (_stalker != null ? 1 : 0);
             }
         }
 
@@ -261,6 +278,7 @@ namespace EnrageWestworld.InGame
                 case "visitor": return _visitor != null;
                 case "traveller": return _traveller != null;
                 case "supper": return _supper != null;
+                case "campfire": return _campfire != null;
                 case "gathering": return _gathering != null;
                 default: return false;
             }
@@ -277,6 +295,7 @@ namespace EnrageWestworld.InGame
                 : kind == "visitor" ? (_cfg.NightVisitor ? null : "The night visitor is off ([Encounters] NightVisitor).")
                 : kind == "traveller" ? (_cfg.Travellers ? null : "Travellers are off ([Encounters] Travellers).")
                 : kind == "supper" ? (_cfg.SupperInvitation ? null : "The supper invitation is off ([Encounters] SupperInvitation).")
+                : kind == "campfire" ? (_cfg.Campfires ? null : "Campfires are off ([Encounters] Campfires).")
                 : _cfg.Gatherings ? null : "Gatherings are off ([Encounters] Gatherings; they need West World on too).";
             if (off != null)
                 return off;
@@ -304,6 +323,8 @@ namespace EnrageWestworld.InGame
                     return "Somebody on foot will be waiting further along the road. Ride on and see.";
                 case "supper":
                     return "A man will be waiting further along the road with supper on. A test takes no money.";
+                case "campfire":
+                    return "A fire will be lit near you, out of sight, with men round it. Go and see.";
                 default:
                     return "The awake will gather somewhere near you, out of sight.";
             }
@@ -311,7 +332,7 @@ namespace EnrageWestworld.InGame
 
         private string KeyOf(string kind)
         {
-            if (kind == "visitor" || kind == "traveller" || kind == "supper")
+            if (kind == "visitor" || kind == "traveller" || kind == "supper" || kind == "campfire")
                 return "its Testing page row";
             KeySpec k = kind == "execution" ? _execKey : kind == "crying" ? _cryingKey : kind == "hermit" ? _hermitKey : _gatherKey;
             return k.ToString();
@@ -337,6 +358,16 @@ namespace EnrageWestworld.InGame
                     }
                     else
                         StartTraveller(now, true);
+                    break;
+                case "campfire":
+                    string notC = CampfireNotNow(true);
+                    if (notC != null)
+                    {
+                        Log.Write("ENCOUNTER test, campfire: not now: " + notC);
+                        Hint("Not now: " + notC + ".", 5000);
+                    }
+                    else
+                        StartCampfire(now, true);
                     break;
                 case "supper":
                     string notS = SupperNotNow(true);
@@ -757,6 +788,8 @@ namespace EnrageWestworld.InGame
                 EndVisitor(why);
             if (_traveller != null)
                 EndTraveller(why);
+            if (_campfire != null)
+                EndCampfire(why);
             if (_supper != null || _supperDarkSince != 0)
                 EndSupper(why);   // the dark lifted and the controls given back, if it was down
             VisitorLeftClear();   // a mission or shutdown: what it left goes with it
@@ -775,6 +808,7 @@ namespace EnrageWestworld.InGame
             if (_gathering != null) on.Add("a gathering (" + _gathering.Phase + ")");
             if (_visitor != null) on.Add("the night visitor");
             if (_traveller != null) on.Add("a traveller");
+            if (_campfire != null) on.Add("a campfire (" + _campfire.Phase + ")");
             if (_supper != null) on.Add("the supper invitation (" + _supper.Phase + ")");
             if (_stalker != null) on.Add("a stalker");
             string live = (on.Count > 0 ? string.Join(", ", on) : "none") + " (" + EncountersLive + " counted, at most " + _cfg.EncountersAtOnce + ")";
@@ -784,6 +818,7 @@ namespace EnrageWestworld.InGame
                    ", hermits " + HermitsStatus() +
                    ", gatherings " + GatheringsStatus() +
                    ", supper " + SupperStatus() +
+                   ", campfires " + CampfireStatus() +
                    (_encounterWait != null ? ", last roll skipped: " + _encounterWait : "");
         }
     }

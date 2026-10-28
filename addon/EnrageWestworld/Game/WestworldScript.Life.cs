@@ -35,6 +35,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             FallWanderStep(now);
             WanderLaterStep(now);
+            PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
             ThrownOutStep(now);   // the card cheat on the boardwalk
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
             if (_director.Busy)
@@ -87,6 +88,8 @@ namespace EnrageWestworld.InGame
                 return;   // a Sunday afternoon's street preacher (WestworldScript.Preacher.cs)
             if (_interiorType == 0 && LostChildScene(me, now, false, out fallWhy))
                 return;   // a mother asking around for her child (WestworldScript.LostChild.cs)
+            if (_interiorType == 0 && PatientScene(me, now, false, out fallWhy))
+                return;   // someone walks to the doctor for a child's fever (WestworldScript.Patient.cs)
             if (_interiorType == 0 && SabbathScene(me, now, false, out fallWhy))
                 return;   // a Sunday morning's kneel by the church (WestworldScript.Sabbath.cs)
             if (_interiorType == 0 && BellScene(me, now, false, out fallWhy))

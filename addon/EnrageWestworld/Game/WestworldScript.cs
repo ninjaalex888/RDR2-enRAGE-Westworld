@@ -450,6 +450,8 @@ namespace EnrageWestworld.InGame
 			WanderLaterClear();
 			SightsReset("a save loaded");
 			VicesReset();
+			BelowAbort("a save loaded");
+			PatientAbort("a save loaded");
 			GrudgesAbort();
 			_fallWatch = null;
 			try
@@ -1147,13 +1149,16 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST visitor: " + VisitorStatus());
 			Log.Write("TEST traveller: " + TravellerStatus());
+			Log.Write("TEST campfire: " + CampfireStatus());
 			Log.Write("TEST supper: " + Guarded(SupperStatus));
 			Log.Write("TEST preacher and old days: " + PreacherStatus());
 			Log.Write("TEST lost child: " + LostChildStatus());
+			Log.Write("TEST doctor's patient: " + PatientStatus());
 			Log.Write("TEST test cast: " + Guarded(TestCastStatus));
 			Log.Write("TEST controller: " + Guarded(PadStatus));
 			Log.Write("TEST sabbath: " + SabbathStatus());
 			Log.Write("TEST bell: " + BellStatus());
+			Log.Write("TEST voice below: " + BelowStatus());
 			Log.Write("TEST card cheats: " + _thrownOuts + " shown the door and thought of it outside this session");
 			Log.Write("TEST condolences: " + _condoles + " this session" + (_condoleLast != null ? "; last: " + _condoleLast : ""));
 			Log.Write("TEST trouble: " + TroubleStatus());

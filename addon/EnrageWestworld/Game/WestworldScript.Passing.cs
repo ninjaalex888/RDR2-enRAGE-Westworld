@@ -273,6 +273,8 @@ namespace EnrageWestworld.InGame
                 return true;   // and its gunshot row (WestworldScript.Gunshot.cs)
             if (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h)
                 return true;
+            if (PatientWalking(h))
+                return true;   // on the way to the doctor's and back (WestworldScript.Patient.cs)
             if (_nod != null && ((_nod.A != null && _nod.A.Handle == h) || (_nod.B != null && _nod.B.Handle == h)))
                 return true;
             for (int i = 0; i < _sights.Count; i++)

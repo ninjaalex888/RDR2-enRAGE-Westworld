@@ -22,6 +22,12 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   their parts for the mind too; the supper invitation's host wanders off when nobody comes, and a
   fault in the dark no longer says your pockets were turned out; Show minds' cards cost less in a
   crowd; a talk cut short isn't remembered as small talk.
+- Strangers at a campfire: at night out of the towns, men round a fire call you over for
+  coffee and a tale; now and then a traveller walks in from the dark. [Encounters] Campfires.
+- The voice below the floor (West World): late at night in a saloon, a muffled plea from under
+  the boards behind the bar; the barkeep says pipes, and thinks otherwise. [Encounters] VoiceBelow.
+- The doctor's patient: by day, someone whose child has the fever walks to the doctor's and
+  back, thinking it over. [Scenes] DoctorsPatient.
 - Manners of 1899: a friend is someone you've had two scenes with (one kind word no longer
   makes a mourner); a respectable woman doesn't drink herself drunk, stand rounds or spit,
   and shames a bully rather than squaring up; strangers are "mister" and "ma'am"; he and she,

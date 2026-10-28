@@ -183,7 +183,9 @@ namespace EnrageWestworld.InGame
                 FlirtPromptEnd();
                 _director.Abort("stopping");
                 EndEncounters("the add-on stopped");
+                BelowAbort("the add-on stopped");
                 WakeActsAbort();
+                PatientAbort("the add-on stopped");
                 GrudgesAbort();      // someone walking up to have it out with you stops (their walk order cleared)
                 SoberVoices(true);   // the drink goes out of every voice we put it in
                 WakeVoiceEnd(_now, "the add-on stopped");
@@ -739,6 +741,8 @@ namespace EnrageWestworld.InGame
             _missionPaused = true;
             _director.Abort("a mission started");
             EndEncounters("a mission started");
+            BelowAbort("a mission started");
+            PatientAbort("a mission started");
             WakeActsAbort();
             AnimTestEnd("a mission started");
             GunshotTestEnd("a mission started");
@@ -826,6 +830,7 @@ namespace EnrageWestworld.InGame
             PassingStep(now);   // people who know each other acknowledge it as they pass (WestworldScript.Passing.cs)
             SightsStep(now);    // people notice how you look (WestworldScript.Sights.cs)
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
+            BelowStep(now);     // the voice below the saloon floor, late at night (WestworldScript.Below.cs)
             MindShadowStep(now);   // the mind in shadow mode: traits, needs, feelings and mood, reported only (WestworldScript.Mind.cs)
             TestCastStep(now);     // the Testing page's test cast, while they're about (WestworldScript.TestCast.cs)
             if (_drinkVoice != 0 || _drunkVoices.Count > 0)

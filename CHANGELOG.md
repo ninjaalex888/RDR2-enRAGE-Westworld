@@ -21,6 +21,18 @@ Built in the night run of 2026-10-28 (Lex's brief), on the 0.6.3 release; nothin
 - People think of a named person as he or she, not they; "You're welcome", "Take care" and "I'll be seeing you" are gone; a friend's condolence doesn't set a place at the table.
 - The old men have twelve talks and the sweethearts eight quarrels, so no two pairs repeat word for word.
 
+### Strangers at a campfire
+
+- At night out of the towns, two or three men sit round a fire off the road and one calls you over: sit a spell on foot and he tells a tale over coffee, the others chiming in; ride on and he mutters; a gun on them and they beg off. Now and then a traveller walks in from the dark and is made room for. `[Encounters] Campfires` (on), `CampfireChance` (15); the Testing row `campfire`.
+
+### The voice below the floor (West World)
+
+- Late at night in a saloon, now and then, a muffled plea comes up through the boards behind the bar. The barkeep says it's the pipes; his thoughts say otherwise. Stand over the boards and it stops. Next morning the town has a word of it. Nothing is ever found. `[Encounters] VoiceBelow` (on, with West World); the Testing row `below`.
+
+### The doctor's patient
+
+- By day in a town, someone whose child has the fever walks to the doctor's and back, thinking it over on the way (hope going, the doctor's word inside, what's left of it coming home). `[Scenes] DoctorsPatient` (on); the Testing row `patient`.
+
 ### The mind in shadow (continued)
 
 - `[Mind] MindLevels` (off, in testing): the mind's work spread by distance and a budget a frame: the people in view every look, the town around every 10-30 s, everyone saved elsewhere once a game day (counted only: `MIND away:`); off, exactly as before. F7 `TEST mind levels:`.

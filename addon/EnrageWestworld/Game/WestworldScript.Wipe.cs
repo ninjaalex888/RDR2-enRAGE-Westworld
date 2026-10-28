@@ -71,6 +71,8 @@ namespace EnrageWestworld.InGame
             WanderLaterClear();
             SightsReset("memories wiped");
             VicesReset();
+            BelowAbort("the wipe");
+            PatientAbort("the wipe");
             GrudgesAbort();
             _sightSeen.Clear();
             _sightTown.Clear();
