@@ -18,6 +18,10 @@
 
 - At dusk on the roads, out of the towns, a too-friendly man may wave you down and ask you to supper at his place, just off the road (`[Encounters] SupperInvitation`, on; `SupperChance`, 12% a roll, half past five to nine in the evening, once a day; settings version 81). His thought over his head gives him away. Ride on, draw on him or antagonize him and he lets you go. Greet him, or stop by him a moment, and he leads you off the road; follow him there on foot and the screen goes dark. You come round in a ditch at first light, a little way off, your head splitting and most of your cash gone (never more than $250). That can't be undone, so the encounter is rare and has its own switch, and his thought (the ticker must be on) gives him away first. Its Testing row takes no money, moves no clock and saves nothing.
 
+### Groundwork for the language layer (nothing in game yet)
+
+- What a local language model would be asked about a person (their nature, mood, what they feel and about whom, what shows on their face, their worry, a memory, the place and the hour) and the checks every answer must pass before anyone would see it: short, plain, no modern words, no names it wasn't given, never breaking the frame. Nothing loads a model or connects anywhere; the written lines stay as they are.
+
 ### Lines
 
 - Every line in RealNPCs (about 5,600) checked for words too modern for 1899, for the same line turning up in two places, and for overused openings. Reworded: the two sarcastic "Must be nice"s, a grieving thought that repeated a memory line, a remark that repeated a plea, and a courtship reply that repeated your own flirt.
