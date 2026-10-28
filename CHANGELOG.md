@@ -34,6 +34,7 @@
 ### Show minds
 
 - Ctrl+F2 turns the cards over people near you off and on for the session (`[Testing] TestShowMindsKey`; an ini with no key for it gets Ctrl+F2; settings version 83). The settings panel's Testing page has the switch that's saved. On as it comes.
+- In a crowd the cards no longer pile up (Lex's screenshot, four over the bar): the nearest person has the full card, everyone else one line (name, temper, mood), and a card that would cross another lifts itself above it, nearer people placed first.
 - The card sits clear above the thought over the same head (it could cover the thought's first line): it keeps room for a two-line thought always, so it doesn't jump as thoughts come and go, and rises above a longer one while it shows.
 
 ### The test cast

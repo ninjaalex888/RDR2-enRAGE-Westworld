@@ -21,7 +21,10 @@ namespace EnrageWestworld.InGame
             public int Handle;
             public string[] Lines;
             public float Width;
+            public string Short;      // the one line the rest get (name, temper, mood) while the nearest has the full card
+            public float ShortWidth;
         }
+        private readonly List<float[]> _cardRects = new List<float[]>();   // this frame's cards, so none overlaps another (Lex, 2026-10-28)
 
         private const float MindCardScale = 0.2f, MindCardAbove = 1.0f, MindCardWidth = 0.24f;
         private const float MindCardMetres = 11f;   // Lex, 2026-10-27 (it was 15)
@@ -52,9 +55,14 @@ namespace EnrageWestworld.InGame
                 BuildMindCards();
             }
             float lineH = Draw.LineHeight(MindCardScale), pad = 0.004f;
+            _cardRects.Clear();
             for (int i = 0; i < _mindCards.Count; i++)
             {
                 MindCardShown c = _mindCards[i];
+                // the nearest gets the full card, the rest one line each; a card that would cross one already placed
+                // (nearer people first) lifts itself above it (Lex, 2026-10-28: four full cards piled up over the bar)
+                string[] lines = i == 0 ? c.Lines : new[] { c.Short };
+                float width = i == 0 ? c.Width : c.ShortWidth;
                 if (!ENTITY.DOES_ENTITY_EXIST(c.Handle) || ENTITY.IS_ENTITY_DEAD(c.Handle) || !ENTITY.IS_ENTITY_ON_SCREEN(c.Handle))
                     continue;
                 Vector3 head = PED.GET_PED_BONE_COORDS(c.Handle, 21030, 0f, 0f, 0f);
@@ -72,11 +80,20 @@ namespace EnrageWestworld.InGame
                         thoughtTop = Math.Min(thoughtTop, _overHeadTopY);
                     y = Math.Min(y, thoughtTop - 0.008f - pad);
                 }
-                float top = y - lineH * c.Lines.Length;
-                Draw.Rect(x - c.Width / 2f - pad, top - pad, c.Width + pad * 2f, lineH * c.Lines.Length + pad * 2f, 8, 12, 18, 170);
-                Draw.Rect(x - c.Width / 2f - pad, top - pad, c.Width + pad * 2f, 0.0015f, 120, 170, 210, 200);   // blue, not the thought's gold
-                for (int k = 0; k < c.Lines.Length; k++)
-                    Draw.Text(c.Lines[k], x - c.Width / 2f, top + k * lineH, MindCardScale, k == 0 ? 236 : 200, k == 0 ? 236 : 214, k == 0 ? 236 : 226);
+                float h = lineH * lines.Length, top = y - h;
+                float x0 = x - width / 2f - pad, x1 = x + width / 2f + pad;
+                for (int tries = 0; tries < 8; tries++)
+                {
+                    float[] hit = _cardRects.FirstOrDefault(r => x0 < r[2] && x1 > r[0] && top - pad < r[3] && top + h + pad > r[1]);
+                    if (hit == null)
+                        break;
+                    top = hit[1] - 0.003f - pad - h;   // above the one it crossed
+                }
+                _cardRects.Add(new[] { x0, top - pad, x1, top + h + pad });
+                Draw.Rect(x0, top - pad, width + pad * 2f, h + pad * 2f, 8, 12, 18, 170);
+                Draw.Rect(x0, top - pad, width + pad * 2f, 0.0015f, 120, 170, 210, 200);   // blue, not the thought's gold
+                for (int k = 0; k < lines.Length; k++)
+                    Draw.Text(lines[k], x - width / 2f, top + k * lineH, MindCardScale, k == 0 ? 236 : 200, k == 0 ? 236 : 214, k == 0 ? 236 : 226);
             }
         }
 
@@ -97,7 +114,10 @@ namespace EnrageWestworld.InGame
                 if (mind != null)
                     card = card.Concat(new[] { mind });
                 string[] lines = card.Select(l => Draw.Fit(l, MindCardScale, MindCardWidth)).ToArray();
-                _mindCards.Add(new MindCardShown { Handle = p.Handle, Lines = lines, Width = lines.Max(l => Draw.Width(l, MindCardScale)) });
+                // the one line: the name line, and the mood (the first clause of the second line) when there is one
+                string mood = lines.Length > 1 ? lines[1].Split(';')[0].Trim() : null;
+                string one = Draw.Fit(lines[0] + (mood != null && mood.Length > 0 ? ", " + mood : ""), MindCardScale, MindCardWidth);
+                _mindCards.Add(new MindCardShown { Handle = p.Handle, Lines = lines, Width = lines.Max(l => Draw.Width(l, MindCardScale)), Short = one, ShortWidth = Draw.Width(one, MindCardScale) });
                 if (_mindCardsShown++ == 0)
                     Log.Write("SHOW minds: the first card, over " + who.Name + ": " + string.Join(" | ", lines));
                 if (_mindCards.Count >= 4)
