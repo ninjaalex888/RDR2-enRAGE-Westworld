@@ -17,14 +17,16 @@ namespace EnrageWestworld.Core
             return devotion == "Devout" || (devotion == "Churchgoer" && Voice.Chance(seed + "|preach", 25));
         }
 
-        public static Scene Preacher(SceneCast c, string seed, string answerDevotion)
+        /// sunday: false on the other days (Lex, 2026-10-27: a preacher any day, Sunday afternoons most): the lines that
+        /// name the Sabbath give way to weekday ones.
+        public static Scene Preacher(SceneCast c, string seed, string answerDevotion, bool sunday = true)
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
-            Scene s = new Scene { Kind = answerDevotion == "Godless" ? "argue" : "smalltalk", Summary = "someone preached in the street on a Sunday" };
-            s.Add(0, Voice.Pick(seed + "p1", "Hear me, friends! The Lord keeps a ledger, and every name is in it!", "Brothers and sisters, it's the Sabbath. Have you thought on your souls today?",
+            Scene s = new Scene { Kind = answerDevotion == "Godless" ? "argue" : "smalltalk", Summary = "someone preached in the street" + (sunday ? " on a Sunday" : "") };
+            s.Add(0, Voice.Pick(seed + "p1", "Hear me, friends! The Lord keeps a ledger, and every name is in it!", sunday ? "Brothers and sisters, it's the Sabbath. Have you thought on your souls today?" : "Brothers and sisters! Half the week gone, and your souls not once in your thoughts!",
                                 "Repent, I say! The road is wide that leads to ruin, and this street is wide enough!",
                                 "Gather round! It costs you nothing to listen, and it may save you everything!", "Friends! The dust on your boots is the dust you came from!"), "cheer", "face")
-             .Add(0, Voice.Pick(seed + "p2", "Not a sparrow falls but He sees it. Nor a dollar spent in that saloon.", "The whiskey's free of a Sunday, they say. Nothing's free. Nothing.",
+             .Add(0, Voice.Pick(seed + "p2", "Not a sparrow falls but He sees it. Nor a dollar spent in that saloon.", sunday ? "The whiskey's free of a Sunday, they say. Nothing's free. Nothing." : "Payday's coming. The saloon knows it. So does the Lord.",
                                 "A man can run from the law. He can't outrun the Lord.",
                                 "The railroad brought us everything but grace. That we have to walk to.", "Six days for the world. One for Him. Is that too dear a price?"), "mild");
             switch (answerDevotion)
@@ -34,7 +36,7 @@ namespace EnrageWestworld.Core
                      .Add(0, Voice.Pick(seed + "a1", "Bless you, " + b + ". Bring a friend next Sunday.", "There's one who listens! The Lord sees you, " + b + "."), "mild");
                     break;
                 case "Churchgoer":
-                    s.Add(1, Voice.Pick(seed + "b2", "Fine words, " + a + ". I was at service this morning.", "Can't argue with any of that.", "Save some for the pastor, " + a + ".", "Well said. Though the pastor says it longer."), "mild")
+                    s.Add(1, Voice.Pick(seed + "b2", sunday ? "Fine words, " + a + ". I was at service this morning." : "Fine words, " + a + ". I'll be in my pew come Sunday.", "Can't argue with any of that.", "Save some for the pastor, " + a + ".", "Well said. Though the pastor says it longer."), "mild")
                      .Add(0, Voice.Pick(seed + "a2", "Then you know it's true. Spread it.", "The pastor has his flock. I have the street."), "mild");
                     break;
                 case "Lapsed":

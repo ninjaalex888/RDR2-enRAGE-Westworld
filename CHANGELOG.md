@@ -18,6 +18,10 @@
 
 - At dusk on the roads, out of the towns, a too-friendly man may wave you down and ask you to supper at his place, just off the road (`[Encounters] SupperInvitation`, off until it's been tested: turn it on to meet him; `SupperChance`, 12% a roll, half past five to nine in the evening, once a day; settings version 82). His thought over his head gives him away. Ride on, draw on him or antagonize him and he lets you go. Greet him, or stop by him a moment, and he leads you off the road; follow him there on foot and the screen goes dark. You come round in a ditch at first light, a little way off, your head splitting and most of your cash gone (never more than $250). That can't be undone, so the encounter is rare and has its own switch, and his thought (the ticker must be on) gives him away first. Its Testing row takes no money, moves no clock and saves nothing.
 
+### The street preacher
+
+- A devout townsperson may preach in the street on any day now, between nine and six, not only on Sunday afternoons (Lex). It's a tenth as likely on a weekday as on a Sunday afternoon, still once a town a day at most, and the same person no more than every two days. On a weekday the sermon doesn't mention the Sabbath.
+
 ### Despair's voice
 
 - Someone who can't bear it no longer sounds like a hostage (Lex: pleading to be untied, crying for help, "leave me alone"), nor like someone saying random things. The game has no lines for this, and each voice records its own words, so for now they say only a farewell as it begins (in their own voice, by their nature), and the rest of the act is quiet, their thoughts over their head. With poison, the pain and the moment of wanting it back are voiced too. The waking act before it never has them begging to be untied. Lines chosen for each voice from what it really says come later.

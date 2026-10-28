@@ -32,9 +32,17 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             int clock = CLOCK.GET_CLOCK_HOURS();
-            if (!test && (now < _nextPreacher || InnerLife.Weekday != 0 || clock < 13 || clock >= 17))
+            bool sunday = InnerLife.Weekday == 0;
+            // Sunday afternoons most (13:00-17:00, Pacing's 35% a look); any other day in waking hours (09:00-18:00) a tenth
+            // as often (Lex, 2026-10-27); once a town a day and a person every two days either way (Pacing's rests)
+            if (!test && (now < _nextPreacher || (sunday ? clock < 13 || clock >= 17 : clock < 9 || clock >= 18)))
                 return false;
             _nextPreacher = now + PreacherLookMs;
+            if (!test && !sunday && _rng.Next(100) >= 10)
+            {
+                _preacherWhyNot = "a weekday: a tenth as likely as a Sunday";
+                return false;
+            }
             long g = _store.LastGameMin;
             string skipped0;
             string pre = Pacing.WhyNot(_store.Pace, "preacher", _placeTown, null, g, _rng.Next(100), test, out skipped0);
@@ -64,7 +72,7 @@ namespace EnrageWestworld.InGame
             string seed = preacher.Who.Id + "|preach|" + g / 1440;
             SceneCast cast = BuildCast(preacher.Ped, b.Ped, null, false, me, now, seed);
             string faith = b.Who.P != null && b.Who.P.Devotion != null ? b.Who.P.Devotion : "Churchgoer";
-            Scene s = Scenes.Preacher(cast, seed, faith);
+            Scene s = Scenes.Preacher(cast, seed, faith, InnerLife.Weekday == 0);
             StartScene(s, new List<Ped> { preacher.Ped, b.Ped }, cast, seed, now, test);
             if (!_director.Busy)
             {
@@ -106,7 +114,7 @@ namespace EnrageWestworld.InGame
         private string PreacherStatus()
         {
             return "preachers " + _preachers + ", old days " + _oldDays + " this session" + (_preacherLast != null ? "; last preacher: " + _preacherLast : "") +
-                   (_preacherWhyNot != null ? "; the last look: " + _preacherWhyNot : "") + "; today is " + (InnerLife.Weekday == 0 ? "Sunday" : "not Sunday");
+                   (_preacherWhyNot != null ? "; the last look: " + _preacherWhyNot : "") + "; today is " + (InnerLife.Weekday == 0 ? "Sunday (13:00-17:00, the most likely)" : "a weekday (09:00-18:00, a tenth as likely)");
         }
     }
 }

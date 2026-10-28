@@ -218,7 +218,7 @@ namespace EnrageWestworld.Core
 
         // The voice for each beat. Lex, 2026-10-27: the first ones sounded like someone held hostage (pleading to be
         // untied, crying for help, "leave me alone"); a bank of everyday lines at every beat then sounded random, since
-        // the game has no line for this and each voice says its own words for a line's name. Until each voice's own takes
+        // no recording was made for this, and each voice speaks its own words under a line's name. Until each voice's own takes
         // that fit are known (Lex's one-time transcription of every voice; a list of voice, line and take per beat, our own
         // data, will replace this), only what fits in every voice is said: the farewell as it begins (by temperament), and
         // with poison the body's dread and the regret's cry for help. The other beats are silent, their words a thought
