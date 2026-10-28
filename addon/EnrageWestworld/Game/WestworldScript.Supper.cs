@@ -26,7 +26,7 @@ namespace EnrageWestworld.InGame
             public string Phase = "spawn", Seed;   // spawn, waiting, invited, leading, dark, woke
             public Vector3 Home, Road;             // where he takes you (well off the track), and where he stood
             public int StartedAt, PhaseAt, StoppedSince, Tries, Taken, ThoughtAt;
-            public bool Test, Thought, Woken;
+            public bool Test, Thought, Woken, Robbed;   // Robbed: the money step ran (a test too), so the waking may be told
         }
 
         private SupperRun _supper;
@@ -294,6 +294,7 @@ namespace EnrageWestworld.InGame
                         if (cash - after != would)
                             Log.Write("SUPPER: CHECK THE UNITS: the cash went from " + cash + " to " + after + ", not down by " + would);
                     }
+                    s.Robbed = true;
                     Log.Write("SUPPER: dark; " + Cents(s.Taken) + " taken" + (s.Test ? " (a test: nothing, the clock left alone)" : ", the clock on to first light") + ", you in a ditch" + (ditch == Vector3.Zero ? " (no dry spot near: where you stood)" : ""));
                 }
                 else if (s.Phase == "woke" && now - s.PhaseAt > 2500)
@@ -451,7 +452,9 @@ namespace EnrageWestworld.InGame
                 SupperLight(null);
             if (s == null)
                 return;
-            if (s.Phase == "woke" && !s.Woken)
+            if (s.Phase == "woke" && !s.Woken && !s.Robbed)
+                Log.Write("SUPPER: the dark ended before the robbery (nothing taken, nothing told)");   // a fault before the money step: no "pockets turned out" for a robbery that never was (the night review)
+            if (s.Phase == "woke" && !s.Woken && s.Robbed)
             {
                 try
                 {
