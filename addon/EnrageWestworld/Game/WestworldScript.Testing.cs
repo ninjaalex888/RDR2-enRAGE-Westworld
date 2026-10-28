@@ -228,16 +228,16 @@ namespace EnrageWestworld.InGame
                     return TestLetter(out said);
                 case "fall":
                     {
-                        if (_director.Busy)
-                            return "a scene is going on already";
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already (let it finish)";
                         string fallWhy;
                         skipped = "the rarity and the rests (Pacing \"fall\")";
                         return FallScene(Game.Player.Character, now, true, out fallWhy) ? null : fallWhy;
                     }
                 case "preacher":
                     {
-                        if (_director.Busy)
-                            return "a scene is going on already";
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already (let it finish)";
                         string pw;
                         skipped = "the day and hour, the rarity and the rests (Pacing \"preacher\")";
                         return PreacherScene(Game.Player.Character, now, true, out pw) ? null : pw;
@@ -250,39 +250,39 @@ namespace EnrageWestworld.InGame
                     }
                 case "sabbath":
                     {
-                        if (_director.Busy)
-                            return "a scene is going on already";
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already (let it finish)";
                         string sw;
                         skipped = "the day and hour, the rarity and the rests (Pacing \"sabbath\")";
                         return SabbathScene(Game.Player.Character, now, true, out sw) ? null : sw;
                     }
                 case "lostchild":
                     {
-                        if (_director.Busy)
-                            return "a scene is going on already";
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already (let it finish)";
                         string lw;
                         skipped = "the hour, the rarity and the rests (Pacing \"lostchild\")";
                         return LostChildScene(Game.Player.Character, now, true, out lw) ? null : lw;
                     }
                 case "olddays":
                     {
-                        if (_director.Busy)
-                            return "a scene is going on already";
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already (let it finish)";
                         skipped = "the chance meeting's wait and roll";
                         return OldDaysFire(now);
                     }
                 case "callout":
                     {
-                        if (_director.Busy)
-                            return "a scene is going on already";
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already (let it finish)";
                         string cw;
                         skipped = "the hour, the rarity and the rests (Pacing \"callout\")";
                         return CalloutScene(Game.Player.Character, now, true, out cw) ? null : cw;
                     }
                 case "grudge":
                     {
-                        if (_director.Busy)
-                            return "a scene is going on already";
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already (let it finish)";
                         string gw;
                         skipped = "the rarity and the rests (Pacing \"grudge\")";
                         return GrudgeScene(Game.Player.Character, now, true, out gw) ? null : gw;
@@ -301,8 +301,8 @@ namespace EnrageWestworld.InGame
                     }
                 case "round":
                     {
-                        if (_director.Busy)
-                            return "a scene is going on already";
+                        if (_director.Busy && !TestMakeRoom())
+                            return "a scene is going on in view already (let it finish)";
                         string roundWhy;
                         skipped = "the hour, who has cause, the rarity and the rests (Pacing \"round\")";
                         return RoundScene(Game.Player.Character, now, true, out roundWhy) ? null : roundWhy;
@@ -357,11 +357,29 @@ namespace EnrageWestworld.InGame
 
         /// A street scene of this kind between the nearest named pair that fits, played now through the Director (as a
         /// test: no tie or memory is noted). The same building as a reason's scene (BuildSceneFor, AddMeet).
+        /// A test fired while a street scene plays out of your sight: that scene is stopped to make room (Lex, 2026-10-27:
+        /// "a scene was going on but I couldn't see anything"; one scene plays at a time). One you can see is left to finish.
+        private bool TestMakeRoom()
+        {
+            Ped me = Game.Player.Character;
+            for (int i = 0; i < 4; i++)
+            {
+                Ped c = _director.CastAt(i);
+                if (c == null)
+                    break;
+                if (c.Exists() && !c.IsDead && c.Position.DistanceTo(me.Position) <= 25f && NodInView(me, c))
+                    return false;
+            }
+            _director.Abort("made room for a test (the scene was out of your sight)");
+            Log.Write("TEST: a street scene out of your sight was stopped to make room");
+            return !_director.Busy;
+        }
+
         private string FireScene(string kind, int now, string seed, out string said)
         {
             said = null;
-            if (_director.Busy)
-                return "a scene is going on already";
+            if (_director.Busy && !TestMakeRoom())
+                return "a scene is going on in view already (let it finish)";
             if (_wedding != null || _plea != null || _theft != null)
                 return "a wedding, a plea or a thief chase is going on";
             Ped me = Game.Player.Character;
