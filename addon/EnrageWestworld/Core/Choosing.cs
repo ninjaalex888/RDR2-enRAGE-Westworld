@@ -22,6 +22,8 @@ namespace EnrageWestworld.Core
         public string Last;                   // what they did a moment ago (an action's Id), or null
         public string Mood;                   // Mood.Words' first word: sore, glad, or null for even
         public bool Works = true;             // a working trade: the day's work is a duty, not only a want (gentry and ladies: false)
+        public string WorkPlace;              // where their work is, if it's somewhere work is otherwise improper (a barkeep's saloon)
+        public bool Woman, SaloonGirl;        // a respectable woman of 1899 didn't drink or play cards in a saloon; the saloon's own women did
     }
 
     public sealed class Doing
@@ -69,23 +71,31 @@ namespace EnrageWestworld.Core
             new Doing { Id = "rest", Words = "sits down to rest", Serves = N(0, 0.8f, 0.1f), Effort = 0f, Risk = 0f, Proper = c => true, Suits = t => -0.08f * T(t, Traits.Order) },
             new Doing { Id = "home", Words = "heads home", Serves = N(0.2f, 0.9f, 0.6f, 0, 0.5f, 0, 0, 0.1f), Effort = 0.15f, Risk = 0f, Proper = c => c.Place != "home" && c.InTown && (c.Hour >= 19 || c.Hour < 6), Suits = t => 0.1f * T(t, Traits.Order) - 0.06f * T(t, Traits.Sociability) },
             new Doing { Id = "shelter", Words = "looks for a roof overhead", Serves = N(0, 0.1f, 1f), Effort = 0.1f, Risk = 0f, Proper = c => !c.Indoors && (c.Weather == "rain" || c.Weather == "storm" || c.Weather == "snow" || c.Weather == "dust"), Suits = t => 0.06f * T(t, Traits.Anxiety) },
-            new Doing { Id = "work", Words = "gets on with the work", Serves = N(0, 0, 0, 0.9f, 0, 0, 0.2f, 0.2f), Effort = 0.35f, Risk = 0.02f, Proper = c => c.Weekday != 0 && c.Hour >= 7 && c.Hour < 18 && c.Place != "church" && c.Place != "saloon", Suits = t => 0.15f * T(t, Traits.Order) + 0.05f * T(t, Traits.SelfControl) },
-            new Doing { Id = "drink", Words = "has a drink", Serves = N(0, 0.1f, 0.1f, -0.1f, 0, 0.3f, 0, 0, 1f), Effort = 0.05f, Risk = 0.05f, Proper = c => c.Place == "saloon" && !Sunday(c) || c.Place == null && c.Hour >= 17 && !Sunday(c) && c.InTown, Suits = t => -0.12f * T(t, Traits.SelfControl) - 0.1f * T(t, Traits.Piety) + 0.05f * T(t, Traits.Sociability) },
-            new Doing { Id = "cards", Words = "joins the card game", Serves = N(0, 0, 0, 0.2f, 0, 0.3f, 0.2f, 0, 0.9f), Effort = 0.1f, Risk = 0.15f, Proper = c => c.Place == "saloon" && !Sunday(c), Suits = t => 0.15f * T(t, Traits.Risk) - 0.1f * T(t, Traits.Piety) - 0.05f * T(t, Traits.SelfControl) },
+            new Doing { Id = "work", Words = "gets on with the work", Serves = N(0, 0, 0, 0.9f, 0, 0, 0.2f, 0.2f), Effort = 0.35f, Risk = 0.02f, Proper = c => c.Weekday != 0 && c.Hour >= 7 && c.Hour < 18 && (c.Place != "church" && c.Place != "saloon" || c.WorkPlace != null && c.WorkPlace == c.Place), Suits = t => 0.15f * T(t, Traits.Order) + 0.05f * T(t, Traits.SelfControl) },
+            new Doing { Id = "drink", Words = "has a drink", Serves = N(0, 0.1f, 0.1f, -0.1f, 0, 0.3f, 0, 0, 1f), Effort = 0.05f, Risk = 0.05f, Proper = c => (!c.Woman || c.SaloonGirl) && (c.Place == "saloon" && !Sunday(c) || c.Place == null && c.Hour >= 17 && !Sunday(c) && c.InTown), Suits = t => -0.12f * T(t, Traits.SelfControl) - 0.1f * T(t, Traits.Piety) + 0.05f * T(t, Traits.Sociability) },
+            new Doing { Id = "cards", Words = "joins the card game", Serves = N(0, 0, 0, 0.2f, 0, 0.3f, 0.2f, 0, 0.9f), Effort = 0.1f, Risk = 0.15f, Proper = c => (!c.Woman || c.SaloonGirl) && c.Place == "saloon" && !Sunday(c), Suits = t => 0.15f * T(t, Traits.Risk) - 0.1f * T(t, Traits.Piety) - 0.05f * T(t, Traits.SelfControl) },
             new Doing { Id = "pray", Words = "says a prayer", Serves = N(0, 0.05f, 0, 0, 0.1f, 0, 0, 1f), Effort = 0.05f, Risk = 0f, Proper = c => c.Place == "church" || Sunday(c) && c.Place != "saloon" || c.Place == "home", Suits = t => 0.25f * T(t, Traits.Piety) },
-            new Doing { Id = "talk", Words = "strikes up a conversation", Serves = N(0, 0, 0, 0, 0.05f, 1f, 0.2f, 0.1f), Effort = 0.1f, Risk = 0.03f, Proper = c => c.Others > 0 && c.Place != "church", Suits = t => 0.2f * T(t, Traits.Sociability) - 0.05f * T(t, Traits.Anxiety) },
+            new Doing { Id = "talk", Words = "strikes up a conversation", Serves = N(0, 0, 0, 0, 0.05f, 1f, 0.2f, 0.1f), Effort = 0.1f, Risk = 0.03f, Proper = c => c.Others > 0 && (c.Place != "church" || c.Weekday == 0 && c.Hour >= 11 && c.Hour < 14), Suits = t => 0.2f * T(t, Traits.Sociability) - 0.05f * T(t, Traits.Anxiety) },
             new Doing { Id = "watch", Words = "keeps a wary eye out", Serves = N(0, 0, 0, 0, 0.7f), Effort = 0.05f, Risk = 0f, Proper = c => true, Suits = t => 0.15f * T(t, Traits.Anxiety) - 0.05f * T(t, Traits.Trust) },
             new Doing { Id = "keepclear", Words = "keeps well clear of you", Serves = N(0, 0, 0, 0, 1f), Effort = 0.15f, Risk = 0f, Proper = c => c.PlayerFeared, Suits = t => 0.15f * T(t, Traits.Anxiety) - 0.1f * T(t, Traits.Assertiveness) },
             new Doing { Id = "showoff", Words = "makes sure to be seen", Serves = N(0, 0, 0, 0, 0, 0.2f, 1f), Effort = 0.15f, Risk = 0.05f, Proper = c => c.Others >= 2 && c.Place != "church", Suits = t => 0.15f * T(t, Traits.Assertiveness) - 0.12f * T(t, Traits.Honesty) },
         };
 
-        // a feeling still strongly felt goes ahead of any plan, by its urge: what it makes them do
+        // a feeling still strongly felt goes ahead of any plan, by its urge: an action of the list where one fits, else
+        // "urge:<urge>" (what the feeling itself makes them do), with its words
         private static readonly Dictionary<string, string> UrgeAction = new Dictionary<string, string>
         {
-            { "confront", "confront" }, { "intervene", "step in" }, { "avoid", "keep clear" }, { "hide", "hide" }, { "freeze", "freeze" }, { "withdraw", "withdraw" },
-            { "help", "help" }, { "amends", "make amends" }, { "repay", "repay" }, { "share", "tell someone" }, { "disparage", "talk about it" }, { "watch", "watch it" },
-            { "display", "show it" }, { "rest", "sit down" }
+            { "rest", "rest" }, { "watch", "watch" }, { "display", "showoff" }, { "share", "talk" }
         };
+        private static readonly Dictionary<string, string> UrgeWords = new Dictionary<string, string>
+        {
+            { "confront", "squares up to whoever did it" }, { "intervene", "steps in" }, { "avoid", "gets well away from it" }, { "hide", "makes themselves scarce" },
+            { "freeze", "goes still" }, { "withdraw", "keeps to themselves" }, { "help", "goes to help" }, { "amends", "tries to make it right" }, { "repay", "means to see it repaid" },
+            { "disparage", "runs them down to anyone near" }, { "dismiss", "turns their back on it" }
+        };
+
+        // what's done for a while (doing it a moment ago is a reason to go on); the rest are brief (a reason not to again)
+        private static readonly string[] Lasting = { "work", "rest", "home", "shelter", "pray", "cards", "drink" };
 
         /// How much chance sways them: the impulsive more, the orderly less (0.1..1).
         public static float Impulse(Traits t)
@@ -123,7 +133,7 @@ namespace EnrageWestworld.Core
             s -= d.Effort * (n != null ? 0.3f + n[NeedState.Rest] : 0.3f);   // effort weighs more on the tired
             s -= d.Risk * (1f + 0.3f * T(t, Traits.Anxiety) - 0.3f * T(t, Traits.Risk));
             if (d.Id == c.Last)
-                s -= 0.25f;   // not the same thing again straight off
+                s += Array.IndexOf(Lasting, d.Id) >= 0 ? 0.3f : -0.25f;   // a day's work goes on; a word or a look isn't repeated straight off
             s += (Voice.Hash(seed + "|" + d.Id) % 1000 / 1000f - 0.5f) * 0.4f * Impulse(t);
             return s;
         }
@@ -131,9 +141,15 @@ namespace EnrageWestworld.Core
         /// What they do next and why: the urge of a feeling still strongly felt first, else the best-scoring proper action.
         public static KeyValuePair<string, string> Choose(NeedState n, Traits t, ChoiceContext c, string seed)
         {
-            string urged;
-            if (c.Urge != null && c.FeelingLeft >= Interrupts && UrgeAction.TryGetValue(c.Urge, out urged))
+            if (c.Urge != null && c.Urge != "none" && c.FeelingLeft >= Interrupts)
+            {
+                string urged;
+                if (c.Urge == "avoid" && c.PlayerFeared)
+                    urged = "keepclear";
+                else if (!UrgeAction.TryGetValue(c.Urge, out urged))
+                    urged = "urge:" + c.Urge;
                 return new KeyValuePair<string, string>(urged, "a feeling (" + c.Urge + ")");
+            }
             Doing top = null;
             float most = float.MinValue;
             string topWhy = null;
@@ -152,6 +168,9 @@ namespace EnrageWestworld.Core
 
         public static string WordsOf(string id)
         {
+            string w;
+            if (id != null && id.StartsWith("urge:", StringComparison.Ordinal))
+                return UrgeWords.TryGetValue(id.Substring(5), out w) ? w : id.Substring(5);
             foreach (Doing d in All)
                 if (d.Id == id)
                     return d.Words;

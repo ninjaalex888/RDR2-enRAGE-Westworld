@@ -103,6 +103,12 @@ namespace EnrageWestworld.Core
             return first[Voice.Hash(seed + "f") % first.Length];
         }
 
+        /// Whether a word is one of the names residents are given (the language layer's check).
+        internal static bool IsName(string w)
+        {
+            return Array.IndexOf(MenFirst, w) >= 0 || Array.IndexOf(WomenFirst, w) >= 0 || Array.IndexOf(Surnames, w) >= 0;
+        }
+
         public static string Surname(string seed)
         {
             return Surnames[Voice.Hash(seed + "s") % Surnames.Length];

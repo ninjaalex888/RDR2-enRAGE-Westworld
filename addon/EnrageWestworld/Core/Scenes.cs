@@ -79,6 +79,12 @@ namespace EnrageWestworld.Core
             return woman ? Voice.Pick(seed + "fw", Women) : Voice.Pick(seed + "fm", Men);
         }
 
+        /// Whether a word is one of the first names scenes give strangers (the language layer's check).
+        internal static bool IsName(string w)
+        {
+            return Array.IndexOf(Men, w) >= 0 || Array.IndexOf(Women, w) >= 0;
+        }
+
         /// Chooses a scene that fits the cast and the place. Null when nothing fits.
         public static Scene Choose(SceneCast c, string seed, bool allowFight)
         {

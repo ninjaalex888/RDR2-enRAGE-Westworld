@@ -19,7 +19,8 @@ namespace EnrageWestworld.Core
         public string Key;            // the happening's: kind|doer|target|at (the same thing, however it reached them)
         public string Kind;           // the happening's kind
         public string Doer, Target;   // as this person knows them: a name, or a description ("a stranger") once lost in the telling
-        public string DoerId, TargetId;
+        public string DoerId, TargetId;       // as they know them (null once lost)
+        public string WhoDid, WhoTo;          // the happening's own ids, never lost: nobody is told of their own doing
         public string Town, Place;    // the place may drift in the telling (null: the street)
         public long At;               // when it happened (game minute)
         public long Learned;          // when they came to know it
@@ -52,7 +53,10 @@ namespace EnrageWestworld.Core
             bool own = selfId != null && (e.DoerId == selfId || e.TargetId == selfId);
             double age = now - e.Learned;
             double left = (0.35 + 0.65 * e.Felt) * Math.Pow(0.5, age / HalfLife(e, own));
-            return (float)(left * (0.5 + 0.5 * e.Sure));
+            float s = (float)(left * (0.5 + 0.5 * e.Sure));
+            // what they saw and felt hard isn't lost the way the rest is: forgetting slows in the tail (consolidation), so
+            // it stays just above forgetting, a memory that can still come back
+            return e.How == "saw" && e.Felt >= 0.8f ? Math.Max(s, Forgotten + 0.01f) : s;
         }
 
         /// The episode for someone who saw or heard a happening (how: saw | heard), with how strongly they felt it.
@@ -61,11 +65,14 @@ namespace EnrageWestworld.Core
             if (h == null || h.Kind == null)
                 return null;
             bool saw = how == "saw";
+            if (float.IsNaN(felt))
+                felt = 0f;
+            // only heard (a shout, a shot): who it was isn't known, either of them
             return new Episode
             {
-                Key = KeyOf(h), Kind = h.Kind, Doer = saw ? h.DoerName : null, Target = saw ? h.TargetName : h.TargetName, DoerId = saw ? h.DoerId : null, TargetId = h.TargetId,
-                Town = h.Town, Place = h.Place, At = h.At, Learned = h.At, How = saw ? "saw" : "heard", Removes = 0, Felt = Math.Max(0f, Math.Min(1f, felt)),
-                Sure = saw ? 1f : 0.7f
+                Key = KeyOf(h), Kind = h.Kind, Doer = saw ? h.DoerName : null, Target = saw ? h.TargetName : null, DoerId = saw ? h.DoerId : null, TargetId = saw ? h.TargetId : null,
+                WhoDid = h.DoerId, WhoTo = h.TargetId, Town = h.Town, Place = h.Place, At = h.At, Learned = h.At, How = saw ? "saw" : "heard", Removes = 0,
+                Felt = Math.Max(0f, Math.Min(1f, felt)), Sure = saw ? 1f : 0.7f
             };
         }
 
@@ -74,23 +81,28 @@ namespace EnrageWestworld.Core
             return h.Kind + "|" + h.DoerId + "|" + h.TargetId + "|" + h.At;
         }
 
-        /// What the listener comes away with when the teller tells it (serial reproduction): one remove further, a little
-        /// less sure, felt less (it wasn't theirs), and by the seed a name lost to a description or the place moved.
-        public static Episode Retold(Episode e, string tellerFirstName, long now, string seed)
+        /// What the listener comes away with when the teller tells it (serial reproduction: levelling and sharpening): one
+        /// remove further, a little less sure, felt as much as it matters to them (listenerFelt, from their own appraisal,
+        /// when the caller has it; else 0.6 of the teller's), and by the seed a name lost (to "somebody", or to "a stranger":
+        /// the gist bends toward the outsider), the place moved, or a quarrel told as blows.
+        public static Episode Retold(Episode e, string tellerFirstName, long now, string seed, float listenerFelt = -1f)
         {
             int roll = Voice.Hash(seed + "|rt") % 100;
             var r = new Episode
             {
-                Key = e.Key, Kind = e.Kind, Doer = e.Doer, Target = e.Target, DoerId = e.DoerId, TargetId = e.TargetId, Town = e.Town, Place = e.Place, At = e.At,
-                Learned = now, How = "told", From = tellerFirstName, Removes = e.Removes + 1, Felt = e.Felt * 0.6f, Sure = e.Sure * 0.8f
+                Key = e.Key, Kind = e.Kind, Doer = e.Doer, Target = e.Target, DoerId = e.DoerId, TargetId = e.TargetId, WhoDid = e.WhoDid, WhoTo = e.WhoTo, Town = e.Town,
+                Place = e.Place, At = e.At, Learned = now, How = "told", From = tellerFirstName, Removes = e.Removes + 1,
+                Felt = listenerFelt >= 0f && !float.IsNaN(listenerFelt) ? Math.Min(1f, listenerFelt) : e.Felt * 0.6f, Sure = e.Sure * 0.8f
             };
             if (r.Doer != null && roll < 25 + 10 * e.Removes)
             {
-                r.Doer = null;   // "somebody", by the second or third telling
+                r.Doer = Voice.Hash(seed + "|rs") % 2 == 0 ? "a stranger" : null;   // "somebody", or the outsider, by the second or third telling
                 r.DoerId = null;
             }
             if (r.Place != null && Voice.Hash(seed + "|rp") % 100 < 12)
                 r.Place = null;   // "in the street", near enough
+            if ((r.Kind == "scene:argue" || r.Kind == "scene:snap" || r.Kind == "scene:quarrel") && Voice.Hash(seed + "|rk") % 100 < 8)
+                r.Kind = "scene:brawl";   // a quarrel told as a fight
             return r;
         }
 
@@ -121,8 +133,8 @@ namespace EnrageWestworld.Core
                 List<Episode> l;
                 if (!_of.TryGetValue(id, out l))
                 {
-                    if (_of.Count >= People && _order.Count > 0)
-                        _of.Remove(_order.Dequeue());
+                    while (_of.Count >= People && _order.Count > 0)
+                        _of.Remove(_order.Dequeue());   // the first in goes (an id already forgotten is passed over)
                     _of[id] = l = new List<Episode>(PerPerson);
                     _order.Enqueue(id);
                 }
@@ -142,6 +154,8 @@ namespace EnrageWestworld.Core
                     for (int i = 1; i < l.Count; i++)
                         if (Strength(l[i], now, id) < Strength(l[weakest], now, id))
                             weakest = i;
+                    if (Strength(e, now, id) <= Strength(l[weakest], now, id))
+                        return false;   // weaker than anything they hold: it doesn't stay
                     l.RemoveAt(weakest);
                 }
                 l.Add(e);
@@ -152,8 +166,25 @@ namespace EnrageWestworld.Core
             public int Forget(long now)
             {
                 int n = 0;
+                List<string> empty = null;
                 foreach (var kv in _of)
+                {
                     n += kv.Value.RemoveAll(e => Strength(e, now, kv.Key) < Forgotten);
+                    if (kv.Value.Count == 0)
+                        (empty ?? (empty = new List<string>())).Add(kv.Key);
+                }
+                if (empty != null)
+                {
+                    foreach (string id in empty)
+                        _of.Remove(id);   // nobody with nothing left takes a place under the cap
+                    var keep = new List<string>();
+                    foreach (string id in _order)
+                        if (_of.ContainsKey(id))
+                            keep.Add(id);
+                    _order.Clear();
+                    foreach (string id in keep)
+                        _order.Enqueue(id);
+                }
                 return n;
             }
 
@@ -169,7 +200,7 @@ namespace EnrageWestworld.Core
                 float most = 0.2f;
                 foreach (Episode e in mine)
                 {
-                    if (now - e.At > 3 * 1440 || e.ToldTo.Contains(listener) || _told.Contains(teller + ">" + listener + ">" + e.Key) || e.DoerId == listener || e.TargetId == listener)
+                    if (now - e.At > 3 * 1440 || e.ToldTo.Contains(listener) || _told.Contains(teller + ">" + listener + ">" + e.Key) || e.WhoDid == listener || e.WhoTo == listener)
                         continue;
                     if (theirs != null && theirs.Any(x => x.Key == e.Key))
                         continue;
@@ -210,7 +241,7 @@ namespace EnrageWestworld.Core
             string doer = e.Doer ?? "somebody", target = e.Target ?? "somebody";
             string where = (e.Place != null ? " in the " + e.Place : "") + (e.Town != null ? " in " + e.Town : "");
             long ago = Math.Max(0, now - e.At);
-            string when = ago < 90 ? "just now" : ago < 1440 ? (ago / 60) + " hours ago" : ago < 2880 ? "yesterday" : (ago / 1440) + " days ago";
+            string when = ago < 90 ? "just now" : ago < 120 ? "an hour ago" : ago < 1440 ? (ago / 60) + " hours ago" : ago < 2880 ? "yesterday" : (ago / 1440) + " days ago";
             string body = WhatOf(e.Kind, !saw).Replace("{d}", doer).Replace("{t}", target) + where;
             return (saw ? "saw " : e.How == "heard" ? "heard that " : "heard from " + (e.From ?? "somebody") + " that ") + body + ", " + when + (e.Sure < 0.5f ? " (not sure of it)" : "");
         }
@@ -230,7 +261,13 @@ namespace EnrageWestworld.Core
                 case "deed:theft": return past ? "{d} stole from {t}" : "{d} steal from {t}";
                 case "help": case "charity": return past ? "{d} helped {t}" : "{d} help {t}";
                 case "standoff": return past ? "{d} and {t} drew on each other" : "{d} and {t} draw on each other";
-                default: return (past ? "there was a " : "a ") + k.Replace(':', ' ') + " between {d} and {t}";
+                case "passby": return past ? "{d} walked past {t} when {t} was down" : "{d} walk past {t} when {t} was down";
+                case "scorn": case "brushoff": return past ? "{d} gave {t} the cold shoulder" : "{d} give {t} the cold shoulder";
+                case "flirt": case "court": return past ? "{d} sweet-talked {t}" : "{d} sweet-talk {t}";
+                default:
+                    if (k.StartsWith("encounter:", StringComparison.Ordinal))
+                        return past ? "something strange happened out there" : "something strange out there";
+                    return past ? "there was some business between {d} and {t}" : "some business between {d} and {t}";
             }
         }
     }
