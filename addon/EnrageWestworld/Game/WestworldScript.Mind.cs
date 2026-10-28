@@ -617,15 +617,7 @@ namespace EnrageWestworld.InGame
             _mindEvPeople.Clear();
             _mindEvCursor = 0;
             _mindEvSaw = 0;
-            _mindEvDoer = null;
-            // who did it to whom: the scene's cast is by who speaks first, so the pair's tie says (one-sided kinds)
-            if (ev.DoerId != null && ev.TargetId != null)
-                foreach (SceneTie t in _store.Ties)
-                    if (t.Has(ev.DoerId) && t.Has(ev.TargetId))
-                    {
-                        _mindEvDoer = t.Doer;
-                        break;
-                    }
+            _mindEvDoer = _engine.DoerOf(ev);   // who did it to whom: the pair's tie (Core/Engine.Appraise.cs, the one road the tests take too)
             var seen = new HashSet<string>();
             Action<string, bool> add = (id, heard) =>
             {
@@ -648,14 +640,7 @@ namespace EnrageWestworld.InGame
             MindWho w = MindWhoById(id);
             if (w == null || w.Traits == null || w.P == null)
                 return;   // only people near the player now whom the mind already knows (the doc's level 0)
-            Func<string, string, int> warmth = (x, y) =>
-            {
-                foreach (SceneTie t in _store.Ties)
-                    if (t.Has(x) && t.Has(y))
-                        return t.Warmth;
-                return 0;
-            };
-            AppraisalEvent ae = Appraisal.From(ev, id, w.P.Woman, w.P.Home, warmth, _mindEvDoer, heardOnly, _mindEvSaw);
+            AppraisalEvent ae = _engine.AppraiseFor(ev, w.P, heardOnly, _mindEvSaw);   // the doer and the warmth from the ties (Core/Engine.Appraise.cs)
             if (ae == null)
                 return;
             Feeling f = Appraisal.Of(ae, w.Traits);
