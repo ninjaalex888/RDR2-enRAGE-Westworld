@@ -68,6 +68,15 @@ namespace EnrageWestworld.Core
             E("gesture", Speaker + " / happy_cheer_f_001", "joy,gratitude,pride", "share,display", "moderate", "any", "standing", "NOT YET SEEN: last night's round"),
             E("gesture", Speaker + " / happy_laugh_f_001", "joy,contempt", "share,dismiss", "mild", "any", "standing", "NOT YET SEEN: last night's round"),
             E("gesture", Speaker + " / neutral_point_l_001", "anger,contempt", "confront,disparage", "moderate", "any", "standing", "NOT YET SEEN: last night's traveller"),
+            // the reactions' clips (Core/Reactions.cs): the sets were found in game (0.6.1 probe) and a head-shake was seen playing in a Shift+F9 scene (2026-10-26); the rest are listed in anims.lua and not yet seen played (night 2026-10-28, item 13: the mind's reactions play them through Reactions.KindOf)
+            E("gesture", Silent + " / aknwoledge_timid_look_down_f_001", "shame,guilt", "hide,withdraw,amends,avoid", "mild", "any", "standing", SetsFound + "; the reactions' look-down, not yet seen played"),
+            E("gesture", Silent + " / silent_might_flee_nervous_f_001", "fear", "avoid,freeze", "mild", "any", "standing", SetsFound + "; the reactions' flinch, not yet seen played"),
+            E("gesture", Silent + " / silent_aggressive_taunt_f_001", "anger", "confront", "mild", "men", "standing", SetsFound + "; the reactions' bristle, not yet seen played"),
+            E("gesture", Silent + " / silent_negative_dismiss_f_001", "anger,contempt", "confront,dismiss", "mild", "women", "standing", SetsFound + "; the reactions' bristle for women, not yet seen played"),
+            E("gesture", Silent + " / silent_confused_look_f_001", "fear,pity", "watch", "mild", "any", "standing", SetsFound + "; the reactions' puzzled look, not yet seen played"),
+            E("gesture", Silent + " / silent_neutral_shrug_f_001", "relief,contempt,envy", "dismiss,rest", "mild", "any", "standing", SetsFound + "; the reactions' shrug, not yet seen played"),
+            E("gesture", Silent + " / silent_wince_l_004", "fear", "freeze", "mild", "any", "standing", SetsFound + "; the reactions' wince (the hurt seen playing is the street fight's reel), not yet seen played"),
+            E("gesture", Silent + " / silent_positive_headonod_f_001", "gratitude,joy,relief", "repay,share,rest", "mild", "any", "standing", SetsFound + "; the reactions' nod, not yet seen played"),
             // the few Online emotes Story Mode has (0.6.1 probe: 3 of 28 sets)
             E("emote", "script_mp@emotes@respectful_bow@male@unarmed@full", "gratitude,pride", "repay,display", "moderate", "any", "standing", Played + " (0.6.1, the stalker's acts)"),
             E("emote", "script_mp@emotes@pointlaugh@male@unarmed@full", "contempt,joy", "dismiss,disparage", "moderate", "any", "standing", Played + " (0.6.1)"),

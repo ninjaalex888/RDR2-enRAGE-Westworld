@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace EnrageWestworld.Core
 {
-    public static class Reactions
+    public static partial class Reactions
     {
         /// The tone the Director passes for the hurt reaction after a slam (not a line's tone).
         public const string HurtTone = "!hurt";

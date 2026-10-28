@@ -34,7 +34,9 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   worth telling, the hearer keeps it a little less surely, and what was heard drifts in the retelling
   (the unnamed doer becomes someone the hearer dislikes, a slight grows, two men become three); what
   someone saw never changes who did it, and what you did never drifts. Standing where something
-  happened brings it back. Off (as it comes), thoughts and memories are exactly as in 0.6.3.
+  happened brings it back. The one spoken to in a street scene answers with their body from
+  their own mind and the manners of 1899. Off (as it comes), thoughts, memories and reactions
+  are exactly as in 0.6.3.
   And the mind now says what each person near you would do (the log's MIND would: lines, the
   card's "would:"): a meal, the work, the saloon of an evening, church on Sunday, a word with a
   friend, stepping clear of a foe. Nobody is moved by it yet. And what each believes: the log

@@ -45,12 +45,18 @@ namespace EnrageWestworld.InGame
             if (ENTITY.IS_ENTITY_DEAD(h) || PED.IS_PED_RAGDOLL(h) || PED.IS_PED_FLEEING(h) || (!hurt && ENTITY.GET_ENTITY_SPEED(h) > 1.2f))
                 return;   // down, running or walking off: leave them to it
             TASK.TASK_LOOK_AT_ENTITY(h, r.To.Handle, 3500, 0, 51, 0);
-            string kind = Reactions.Listener(r.Tone, r.Temper, r.Seed);
-            if (kind == null)
-                return;
             if (PED.IS_PED_USING_ANY_SCENARIO(h))
             {
                 Log.Write("REACT " + r.ByName + " only looks at " + r.ToName + " (in a scenario: leaning, sitting or at work)");
+                return;
+            }
+            string kind, mind = null;
+            if (hurt || !_cfg.MindLive || !MindReaction(r, h, out kind, out mind))
+                kind = Reactions.Listener(r.Tone, r.Temper, r.Seed);   // the slam's hurt, the mind off, nobody it knows, or a tone it doesn't name: the table as before
+            if (kind == null)
+            {
+                if (mind != null)
+                    Log.Detail("REACT " + r.ByName + " keeps it off their face at " + r.ToName + "'s " + r.Tone + " line (the mind: " + mind + ")");
                 return;
             }
             string dict, clip;
@@ -76,8 +82,47 @@ namespace EnrageWestworld.InGame
             _reacted++;
             _reactLast = r.ByName + " " + Reactions.Verb(kind) + " (" + clip + ")";
             Log.Write("REACT " + r.ByName + " " + Reactions.Verb(kind) + (hurt ? " after the slam" : " at " + r.ToName + "'s " + r.Tone + " line") +
-                      " (" + (r.Temper ?? "no temper") + "; " + clip + ")");
+                      " (" + (r.Temper ?? "no temper") + "; " + clip + (mind != null ? "; the mind: " + mind : "") + ")");
         }
+
+        /// The reaction from the mind (step 5's mapping, behind [Mind] MindLive; Core/Reactions.Mapped.cs): the line as an
+        /// event, appraised by the listener's traits (the shadow's cache), shown by 1899's rules, played through the
+        /// catalogue. False when the mind doesn't know them yet (the old way then). `mind`: the feeling and what shows,
+        /// for the log.
+        private bool MindReaction(Director.Reaction r, int h, out string kind, out string mind)
+        {
+            kind = null;
+            mind = null;
+            try
+            {
+                MindWho w;
+                if (_engine == null || _store == null || !_mindWho.TryGetValue(h, out w) || w.Id == null || w.Traits == null || w.P == null || w.Model != ENTITY.GET_ENTITY_MODEL(h))
+                    return false;   // the mind doesn't know them (or the handle has been reused since): the table
+                PersonState st = _store.Find(w.Id);
+                Feeling f;
+                string shows;
+                bool neighbours = _placeTown != null && w.P.Home == _placeTown;
+                kind = Reactions.Mapped(r.Tone, w.Traits, r.Woman, _engine.NowIndoors ? _engine.NowPlace : null, Math.Max(0, _mindNear.Count - 1), neighbours, LawmanNear(r.By, 25f),
+                                        InHisCups(r.By, w.P), st != null ? st.WakeStage : 0, r.Seed, out f, out shows);
+                if (f == null)
+                    return false;   // a tone the mind doesn't name (the everyday, the odd): the table's shrug, nod or puzzled look
+                mind = f.Kind + " (" + f.Strength + ", urge " + f.Urge + "), shows " + shows;
+                return true;
+            }
+            catch (Exception ex)
+            {
+                if (!_mindReactFailed)
+                {
+                    _mindReactFailed = true;
+                    Log.Write("REACT the mind's reaction failed once, the table from here: " + ex.Message);
+                }
+                kind = null;
+                mind = null;
+                return false;   // the mind's fault never costs the old reactions
+            }
+        }
+
+        private bool _mindReactFailed;
 
         /// A scene's people's temperaments (Reactions.Listener): enRAGE's or the resident's own, else null.
         private string CastTemper(Ped p)

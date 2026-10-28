@@ -56,7 +56,7 @@ namespace EnrageWestworld.InGame
         private static bool LawmanNear(Ped me, float metres)
         {
             Vector3 at = me.Position;
-            return World.GetAllPeds().Any(p => p != null && p.Exists() && !p.IsDead && Natives.IsLaw(p) && p.Position.DistanceTo(at) < metres);
+            return World.GetAllPeds().Any(p => p != null && p.Exists() && !p.IsDead && p.Position.DistanceTo(at) < metres && Natives.IsLaw(p));
         }
 
         private void StartSupper(int now, bool test = false)
