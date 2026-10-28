@@ -40,6 +40,7 @@ namespace EnrageWestworld.Core
         [DataMember(Name = "py", EmitDefaultValue = false)] public float PY;
         [DataMember(Name = "pz", EmitDefaultValue = false)] public float PZ;
         public bool Many;                                                                 // not saved: a drifted reading where two became three (Minds.Drifted)
+        public string Slant;                                                              // not saved: how a memory against a strong belief is read by one who rewrites it (Beliefs.Slant): deserved, trick, provoked, outsiders
 
         public string WhoAt(int i)
         {
@@ -365,6 +366,10 @@ namespace EnrageWestworld.Core
                        Find(m, role, "fresh", tg) ?? Find(m, string.Empty, "fresh", tg);
             if (pool == null || pool.Length == 0)
                 return null;
+            // a memory read against a strong belief, by one who rewrites it (Beliefs.Slant, MindLive): its own words, most of the time
+            string[] slanted;
+            if (m.Slant != null && Pools.TryGetValue("slant|" + m.Slant, out slanted) && slanted.Length > 0 && Voice.Chance(seed + "|slant", 65))
+                return Fill(slanted[(Voice.Hash(m.Key + "|" + p.Id + "|s") + m.Times) % slanted.Length], m, p, you);
             string raw = pool[(Voice.Hash(m.Key + "|" + p.Id) + m.Times) % pool.Length];
             return Fill(raw, m, p, you);
         }

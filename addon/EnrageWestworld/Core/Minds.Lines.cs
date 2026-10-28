@@ -21,6 +21,13 @@ namespace EnrageWestworld.Core
             { "blows|did|chewing|fearful", new[] { "Keeping to the back lanes. {who} might still be looking.", "Every loud voice and I flinch. Since {who}." } },
             { "blows|did|letting|fearful", new[] { "Haven't seen {who} in days. Thank the Lord for small mercies.", "Ribs barely ache now. The fright takes longer." } },
             { "blows|did|fresh|cold", new[] { "{who} wanted teaching. Lesson's done. Back to work.", "Wasted a good hour on {who}'s fists. Time is money." } },
+            // a memory against a strong belief, read by one who rewrites it in their own favour (Beliefs.Slant, after item 14; MindLive): one's own
+            // theft or blows against "an honest man" (deserved), the player's kindness against "dangerous" (a trick), his violence against
+            // "kind" (provoked), a death seen against "a decent place" (outsiders)
+            { "slant|deserved", new[] { "{who} had it coming. Anybody who was there would say so.", "Started it himself, near enough. I only finished it.", "A man can only be pushed so far. {who} pushed.", "I'd do it again. That's not the same as being sorry." } },
+            { "slant|trick", new[] { "{you} was after something, being kind like that. They always are.", "Nobody does a thing for nothing. Not {you}. Watch him.", "Kind today. A man like {you} is kind the way a cat is kind to a mouse.", "A good turn from {you}. I'll be paying for it one way or another." } },
+            { "slant|provoked", new[] { "{you} wouldn't have done that for nothing. Somebody pushed him to it.", "There'll have been a reason. There's always a reason with a man like {you}.", "I didn't see the start of it. {you} isn't the sort to start it.", "Whoever he hit had it coming, likely. {you}'s not a cruel man." } },
+            { "slant|outsiders", new[] { "Outsiders, that was. Nobody from here does a thing like that.", "Drifters. The town's the same town it was yesterday.", "One bad day doesn't make a bad town. It was strangers.", "It happened here, but it wasn't us. That's the difference." } },
             { "blows|did|chewing|cold", new[] { "Tore a good coat brawling with {who}. Somebody pays for the cloth.", "Men keep talking of the fight with {who}. Let them. Talk is cheap." } },
             { "blows|did|letting|cold", new[] { "{who}. Hardly think of it. Hardly.", "Knuckles healed. The grudge kept in a drawer, for later." } },
             { "blows|did|fresh|plain", new[] { "Brawling in the street like a boy. With {who}, of all people.", "Lip's split. Pride too. {who} won't let me forget it." } },

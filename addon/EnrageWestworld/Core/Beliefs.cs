@@ -264,6 +264,25 @@ namespace EnrageWestworld.Core
             return against ? Road(t) : null;
         }
 
+        /// How one who rewrites (Road "rewrite") reads a memory against a strong belief (Dissonance): one's own theft or
+        /// blows against "an honest man" is deserved, the player's kindness against "dangerous" a trick, his violence
+        /// against "kind" provoked, a death seen against "a decent place" outsiders' doing. Null when the memory stands
+        /// (no belief against it, or a nature that takes it onto the self or moves what it believes of others instead).
+        public static string Slant(MindMemory m, float[] beliefs, Traits t)
+        {
+            if (Dissonance(m, beliefs, t) != "rewrite")
+                return null;
+            if (Minds.AboutYou(m) && m.Kind == "deed:kindness")
+                return "trick";
+            if (Minds.AboutYou(m) && m.Kind == "deed:violence")
+                return "provoked";
+            if (m.How == "did" && m.Role == "doer" && (m.Kind == "theft" || m.Kind == "blows"))
+                return "deserved";
+            if (m.Kind == "death" && m.Sub == "seen")
+                return "outsiders";
+            return null;
+        }
+
         /// The beliefs in words for the log: the held ones, the doubted ones.
         public static string Describe(float[] baseline, float[] moved)
         {

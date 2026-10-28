@@ -46,6 +46,36 @@ namespace EnrageWestworld.Core
 
         /// roll: the old path's (a feeling comes first as often as it's still felt); pull: the Minds' weight for it. New
         /// code under the ticker: a fault gives nothing (every thought as it was) and is logged once.
+        public int MemoriesSlanted;   // readings slanted by a belief (Beliefs.Slant), for F7
+        private readonly float[] _beliefBase = new float[Beliefs.Count];
+        private readonly BeliefContext _beliefCtx = new BeliefContext();
+
+        /// How this memory reads against what this person believes (Beliefs.Slant): null for most. With MindLive only.
+        /// Reads the shadow's traits and belief deltas; nothing is written.
+        public string SlantOf(Person p, PersonState st, MindMemory m)
+        {
+            if (m == null || p == null || p.Id == null)
+                return null;
+            try
+            {
+                Traits tr = Shadow.TraitsOf(TraitSource.From(p, p.Facets != null && p.Facets.Count > 0 ? "record" : p.Id.StartsWith("folk:", StringComparison.Ordinal) ? "folk" : "resident"));
+                if (tr == null)
+                    return null;
+                _beliefCtx.WakeStage = st != null ? st.WakeStage : 0;
+                _beliefCtx.Memories = st != null ? st.Mind : null;
+                _beliefCtx.Standing = Beliefs.StandingOf(InnerLife.TradeGroup(p.Trade));
+                Beliefs.Fill(_beliefBase, p, tr, _beliefCtx);
+                BeliefState bs = Shadow.BeliefsOf(p.Id);
+                for (int i = 0; i < Beliefs.Count; i++)
+                    _beliefBase[i] = Beliefs.Of(_beliefBase, bs.Moved, i);
+                return Beliefs.Slant(m, _beliefBase, tr);
+            }
+            catch
+            {
+                return null;   // a fault here costs nothing but the slant
+            }
+        }
+
         private KeyValuePair<string, string> MindSay(Person p, int hour, string seed, InnerLife.Context day, long now, bool roll, out float pull)
         {
             pull = 0f;

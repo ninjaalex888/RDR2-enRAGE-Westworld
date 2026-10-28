@@ -661,6 +661,9 @@ namespace EnrageWestworld.Core
                             mm = dr;
                             MemoriesDrifted++;
                         }
+                        mm.Slant = SlantOf(p, st, mm);   // read against what they believe (Beliefs.Slant); worked out each read, never written
+                        if (mm.Slant != null)
+                            MemoriesSlanted++;
                     }
                     // saved from an execution: its own words (Executions.After), for the three days they last; the
                     // player's deeds: him as they know him
