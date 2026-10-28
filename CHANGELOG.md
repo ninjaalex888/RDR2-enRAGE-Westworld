@@ -13,6 +13,14 @@ Built in the night run of 2026-10-28 (Lex's brief), on the 0.6.3 release; nothin
 - A lawman standing by hushes anger and contempt on people's faces (the rule was written but never read); F7's supper, test cast and controller lines can't cost the lines after them.
 - A real-voice talk cut short was remembered as small talk had; only one that ran its course is.
 
+### Manners of 1899
+
+- A friend is someone you've had two scenes with, or warmth enough; one hand up or one round bought no longer makes a man who grieves you for three weeks, drinks over you, condoles and takes up your grudges.
+- A respectable woman doesn't drink herself drunk in a saloon, stand the house a round, or spit; the saloon's own women may. A woman who steps in on a bully shames him, and he answers her as a lady.
+- Strangers aren't on first-name terms: in a scene between people with no tie and no town in common, it's "mister" and "ma'am".
+- People think of a named person as he or she, not they; "You're welcome", "Take care" and "I'll be seeing you" are gone; a friend's condolence doesn't set a place at the table.
+- The old men have twelve talks and the sweethearts eight quarrels, so no two pairs repeat word for word.
+
 ### The mind in shadow (continued)
 
 - `[Mind] MindLevels` (off, in testing): the mind's work spread by distance and a budget a frame: the people in view every look, the town around every 10-30 s, everyone saved elsewhere once a game day (counted only: `MIND away:`); off, exactly as before. F7 `TEST mind levels:`.
