@@ -722,6 +722,10 @@ Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           "Let the test cast go" takes them away. There is also a row that wipes every NPC's memory (Enter twice). Alt+F11 opens it as well, but
           only on enRAGE 0.9.5.3; on other versions Alt+F11 opens enRAGE's own.
           About 15 seconds after loading, a notice says which key to use.
+RB+D-pad  on a controller: hold RB and press D-pad up for the settings panel, left for F7, right
+          for your letters (the letters turn with the D-pad and close with B). Set them from the
+          controller on the panel's Hotkeys page (A, then hold one button and press another), or in
+          [Controller] in the ini (PlayStation names work: R1+Up). Never in the game's own menus.
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
           regulars and the fully awake around you show on the map for a minute
 F2        flirt with the person you're looking at (FlirtKey; it was F6, the game's camera).

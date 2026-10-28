@@ -150,6 +150,7 @@ namespace EnrageWestworld.InGame
             _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
             BuildTestKeys();   // the Testing page's keys ([Testing], WestworldScript.Testing.cs)
+            BuildPadKeys();    // and a controller's buttons ([Controller], WestworldScript.Pad.cs)
         }
 
         private void IniTick(int now)

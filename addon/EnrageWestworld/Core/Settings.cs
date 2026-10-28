@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 85;
+        public const int CurrentVersion = 86;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -205,6 +205,13 @@ namespace EnrageWestworld.Core
         public string SettingsKey2 = "Alt+F";
         public bool PanelSlowsTime = true;    // the world slows while the settings panel is open, as it does for the game's wheels (Lex, 2026-10-27; settings version 84)
         public float PanelTimeScale = 0.25f;
+        // [Controller] (Lex, 2026-10-28; settings version 86): a controller's buttons for RealNPCs' own keys, a button
+        // held and another pressed (Core/PadChord.cs); read only while a controller is the last thing touched
+        public bool PadKeys = true;
+        public string PadSettings = "RB+DPadUp";
+        public string PadStatus = "RB+DPadLeft";
+        public string PadLetters = "RB+DPadRight";
+        public string PadTickerNext = "None";
         public bool DebugLog;
         public bool PerfMeter = true;
 
@@ -544,6 +551,10 @@ namespace EnrageWestworld.Core
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             ThoughtsOverHeadScale = Math.Max(0.12f, Math.Min(0.6f, ThoughtsOverHeadScale));
             PanelTimeScale = Math.Max(0.05f, Math.Min(1f, PanelTimeScale));
+            PadSettings = PadChord.Normal(PadSettings) ?? "RB+DPadUp";   // one that can't be read: the default (the panel is how a controller reaches everything)
+            PadStatus = PadChord.Normal(PadStatus) ?? "None";
+            PadLetters = PadChord.Normal(PadLetters) ?? "None";
+            PadTickerNext = PadChord.Normal(PadTickerNext) ?? "None";
             WillingSingle = Math.Max(0, Math.Min(100, WillingSingle));
             WillingTaken = Math.Max(0, Math.Min(100, WillingTaken));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
@@ -758,6 +769,16 @@ namespace EnrageWestworld.Core
             b.AppendLine("PanelTimeScale = " + F(PanelTimeScale) + "   ; how slow: 1 is normal speed, 0.25 a quarter (0.05-1)");
             b.AppendLine("DebugLog = " + B(DebugLog));
             b.AppendLine("PerfMeter = " + B(PerfMeter) + "   ; times every part of RealNPCs each frame: F7 writes the costliest (TEST perf), and the log says when the add-on goes over 1 ms a frame for 10 s or one frame over 4 ms (PERF)");
+            b.AppendLine();
+            b.AppendLine("[Controller]");
+            b.AppendLine("PadKeys = " + B(PadKeys) + "   ; a controller's buttons for RealNPCs' keys below, used while a controller is the last thing you touched");
+            b.AppendLine("; each is a button held and another pressed (RB+DPadUp), or one button alone. Buttons: A B X Y LB RB LT RT LS RS Select DPadUp DPadDown");
+            b.AppendLine("; DPadLeft DPadRight (PlayStation: Cross Circle Square Triangle L1 R1 L2 R2 L3 R3 Touchpad), or a game control by name (INPUT_...); None: no button.");
+            b.AppendLine("; The settings panel's Hotkeys page sets them from the controller. Everything on its Testing page fires from there with A.");
+            b.AppendLine("PadSettings = " + PadSettings + "   ; opens the settings panel (as " + SettingsKey + " does)");
+            b.AppendLine("PadStatus = " + PadStatus + "   ; what the nearest person thinks of you, and the status lines in the log (as " + TestKey + " does)");
+            b.AppendLine("PadLetters = " + PadLetters + "   ; your letters, diaries and clippings (as " + ReaderKey + " does)");
+            b.AppendLine("PadTickerNext = " + PadTickerNext + "   ; the next line on the ticker now (as " + TickerNextKey + " does)");
             b.AppendLine();
             b.AppendLine("[Testing]");
             b.AppendLine("TestKeys = " + B(TestKeys) + "   ; master switch for the keys below (the settings panel's Testing page fires them with it off too)");

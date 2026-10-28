@@ -27,7 +27,28 @@ namespace EnrageWestworld.InGame
             _doc = Math.Max(0, Math.Min(index, _docs.Count - 1));
             _page = 0;
             Open = true;
+            _padArmed = false;   // the buttons that opened it count for nothing until they're let go
             Layout();
+        }
+
+        // the pad (Lex, 2026-10-28: controllers): the D-pad turns pages and papers, LB and RB too, B or A closes
+        private const uint PadUp = 1662638961u, PadDown = 97156178u, PadLeft = 2791226036u, PadRight = 3736290067u, PadLB = 3901091606u, PadRB = 398377320u,
+                           PadAccept = 3350541322u, PadCancel = 359624985u;
+        private static readonly uint[] PadAll = { PadUp, PadDown, PadLeft, PadRight, PadLB, PadRB, PadAccept, PadCancel };
+        private bool _padArmed;
+
+        private void PadInput()
+        {
+            if (!_padArmed)
+            {
+                _padArmed = !PadAll.Any(c => PAD.IS_DISABLED_CONTROL_PRESSED(0, c));
+                return;
+            }
+            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadCancel) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadAccept)) Key(Keys.Escape);
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRight) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadRB)) Key(Keys.Right);
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLeft) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadLB)) Key(Keys.Left);
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadDown)) Key(Keys.Down);
+            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, PadUp)) Key(Keys.Up);
         }
 
         public void Close()
@@ -117,6 +138,13 @@ namespace EnrageWestworld.InGame
             if (!Open)
                 return;
             PAD.DISABLE_ALL_CONTROL_ACTIONS(0);
+            bool pad = !PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
+            if (pad)
+            {
+                PadInput();
+                if (!Open)
+                    return;   // the pad closed it
+            }
             if (Math.Abs(Draw.Aspect - _laidOutAspect) > 0.01f)
                 Layout();
             Draw.Rect(0f, 0f, 1f, 1f, 0, 0, 0, 120);
@@ -142,7 +170,7 @@ namespace EnrageWestworld.InGame
             }
             string foot = (_docs.Count > 1 ? "Paper " + (_doc + 1) + " of " + _docs.Count + "     " : "") +
                           (_pages.Count > 1 ? "Page " + (_page + 1) + " of " + _pages.Count + "     " : "") +
-                          "Left/Right: turn     Up/Down: next paper     Backspace: close";
+                          (pad ? "D-pad left/right: turn     up/down: next paper     B: close" : "Left/Right: turn     Up/Down: next paper     Backspace: close");
             Draw.Text(foot, X + 0.03f, Y + H - 0.04f, SmallScale, 110, 84, 56);
         }
     }

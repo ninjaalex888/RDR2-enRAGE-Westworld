@@ -243,6 +243,7 @@ namespace EnrageWestworld.InGame
 			long pt = StepBegin(out pd);
 			Feed.Tick();
 			Frame(gameTime);
+			PadStep();   // a controller's buttons for our keys (WestworldScript.Pad.cs)
 			SettingsStep(gameTime);
 			StepEnd("frame and panel (step)", pt, pd);
 			if (_engine == null)
@@ -1134,6 +1135,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST preacher and old days: " + PreacherStatus());
 			Log.Write("TEST lost child: " + LostChildStatus());
 			Log.Write("TEST test cast: " + TestCastStatus());
+			Log.Write("TEST controller: " + PadStatus());
 			Log.Write("TEST sabbath: " + SabbathStatus());
 			Log.Write("TEST bell: " + BellStatus());
 			Log.Write("TEST card cheats: " + _thrownOuts + " shown the door and thought of it outside this session");

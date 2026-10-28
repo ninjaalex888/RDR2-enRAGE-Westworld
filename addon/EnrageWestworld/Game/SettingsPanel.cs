@@ -30,6 +30,7 @@ namespace EnrageWestworld.InGame
             public string Label, Help;   // our own words for another mod's setting
             public string Action, ActionLabel, ActionAsk;   // a row that does something on Enter, after a second Enter
             public bool Fire;         // a Testing row (Core/TestActions.cs): Enter sets its key, as on every key row; Space fires it now and closes the panel (a gamepad's A fires it)
+            public bool Pad;          // a controller binding ([Controller]): A or Enter waits for a button held and another pressed
         }
 
         private static bool Pickable(Row r)
@@ -100,6 +101,16 @@ namespace EnrageWestworld.InGame
         {
             return TestActions.ByKey(key) != null;
         }
+
+        // [Controller]: a controller's buttons for our keys (WestworldScript.Pad.cs), each with its own words on the Hotkeys page
+        private static readonly Dictionary<string, string> PadRows = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { "PadSettings", "Open these settings" }, { "PadStatus", "Status (as F7)" }, { "PadLetters", "Letters" }, { "PadTickerNext", "Next ticker line" }
+        };
+        private static readonly string[] PadHolds = { "LB", "RB", "LT", "RT", "LS", "RS", "Select" };
+        private List<KeyValuePair<string, uint>> _padButtons;
+        private Row _padCapture;
+        private bool _padCaptureArmed;
 
         private static bool IsOurKey(string key)
         {
@@ -194,6 +205,7 @@ namespace EnrageWestworld.InGame
             _theirsPath = enrageIniPath;
             Open = true;
             _capture = null;
+            _padCapture = null;
             _note = string.Empty;
             Draw.FrameBudget = PanelBudget;
             Reload();
@@ -207,6 +219,7 @@ namespace EnrageWestworld.InGame
             Flush();
             Open = false;
             _capture = null;
+            _padCapture = null;
             Draw.FrameBudget = Draw.NormalBudget;
         }
 
@@ -223,8 +236,8 @@ namespace EnrageWestworld.InGame
                     .Concat(_ours.Sections.Where(x => x.Name.Length > 0 && !OurOrder.Contains(x.Name, StringComparer.OrdinalIgnoreCase)));
                 foreach (IniSection s in ordered)
                 {
-                    if (s.Name.Equals("Testing", StringComparison.OrdinalIgnoreCase))
-                        continue;   // the Testing page is built from its catalogue, below
+                    if (s.Name.Equals("Testing", StringComparison.OrdinalIgnoreCase) || s.Name.Equals("Controller", StringComparison.OrdinalIgnoreCase))
+                        continue;   // the Testing page is built from its catalogue, below; the controller's buttons are on the Hotkeys page
                     // the keys are all on the Hotkeys page instead
                     List<Row> rows = s.Entries.Where(e => !IsOurKey(e.Key)).Select(e => new Row { E = e }).ToList();
                     if (rows.Count > 0)
@@ -237,6 +250,20 @@ namespace EnrageWestworld.InGame
                 {
                     keys.Rows.Add(new Row { Heading = "RealNPCs" });
                     keys.Rows.AddRange(ourKeys.Select(e => new Row { E = e }));
+                }
+                IniSection padSection = _ours.Sections.FirstOrDefault(x => x.Name.Equals("Controller", StringComparison.OrdinalIgnoreCase));
+                if (padSection != null && padSection.Entries.Count > 0)
+                {
+                    keys.Rows.Add(new Row { Heading = "RealNPCs on a controller" });
+                    foreach (IniEntry e in padSection.Entries)
+                    {
+                        string label;
+                        if (PadRows.TryGetValue(e.Key, out label))
+                            keys.Rows.Add(new Row { E = e, Pad = true, Label = label,
+                                                    Help = "A (or Enter) sets it: hold LB, RB, a trigger or a stick and press another button. B keeps it; Y leaves it with none. Everything on the Testing page fires from there with A." });
+                        else
+                            keys.Rows.Add(new Row { E = e });
+                    }
                 }
                 // Testing: one row per action in the catalogue, by group. Enter fires it now (the panel closes, it fires a
                 // second later); Right or Left sets its key, Delete leaves it without one
@@ -382,6 +409,21 @@ namespace EnrageWestworld.InGame
             {
                 Capture(key, shift, ctrl, alt);
                 return;
+            }
+            if (_padCapture != null)
+            {
+                if (key == Keys.Escape || key == Keys.Back)
+                {
+                    _note = Name(_padCapture) + " stays " + _padCapture.E.Value + ".";
+                    _padCapture = null;
+                }
+                else if (key == Keys.Delete)
+                {
+                    Row pr = _padCapture;
+                    _padCapture = null;
+                    PadWrite(pr, "None");
+                }
+                return;   // the buttons come from the controller (PadCaptureStep)
             }
             if (_confirm != null && key != Keys.Enter)
             {
@@ -549,6 +591,13 @@ namespace EnrageWestworld.InGame
 
         private void Enter(Row r)
         {
+            if (r.Pad)
+            {
+                _padCapture = r;
+                _padCaptureArmed = false;   // the A that started it counts for nothing until it's let go
+                _note = "On the controller: hold LB, RB, a trigger or a stick, and press another button. B keeps " + r.E.Value + "; Y leaves it with none.";
+                return;
+            }
             if (r.Fire)
             {
                 // Enter sets the key, as on every other key row (Lex, 2026-10-27: Enter closed the panel); a gamepad can't
@@ -691,6 +740,57 @@ namespace EnrageWestworld.InGame
                 _note += ". Careful: enRAGE uses " + key + " too (" + Label(same.Key) + "), so both will happen.";
         }
 
+        /// A controller binding being set: once every button is let go, a held shoulder button, trigger, stick or Select
+        /// and another pressed make it. B alone keeps it; Y alone leaves it with none; a button alone is the game's.
+        private void PadCaptureStep()
+        {
+            if (_padButtons == null)
+                _padButtons = PadChord.Buttons.Select(n => new KeyValuePair<string, uint>(n, Natives.Hash(PadChord.ControlOf(n)))).ToList();
+            if (!_padCaptureArmed)
+            {
+                _padCaptureArmed = !_padButtons.Any(b => PAD.IS_DISABLED_CONTROL_PRESSED(0, b.Value));
+                return;
+            }
+            string held = PadHolds.FirstOrDefault(h => PAD.IS_DISABLED_CONTROL_PRESSED(0, _padButtons.First(b => b.Key == h).Value));
+            string press = _padButtons.Where(b => b.Key != held && PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, b.Value)).Select(b => b.Key).FirstOrDefault();
+            if (press == null)
+                return;
+            Row r = _padCapture;
+            if (held == null)
+            {
+                if (press == "B")
+                {
+                    _padCapture = null;
+                    _note = Name(r) + " stays " + r.E.Value + ".";
+                }
+                else if (press == "Y")
+                {
+                    _padCapture = null;
+                    PadWrite(r, "None");
+                }
+                else if (!PadHolds.Contains(press))
+                    _note = press + " alone is the game's: hold LB, RB, a trigger or a stick and press " + press + " with it. B keeps " + r.E.Value + ".";
+                return;
+            }
+            _padCapture = null;
+            PadWrite(r, PadChord.Name(held, press));
+        }
+
+        /// A controller binding saved; another of ours on the same buttons is left with none (as a key moves over).
+        private void PadWrite(Row r, string chord)
+        {
+            IniEntry other = chord == "None" ? null : _ours.Sections.SelectMany(s => s.Entries)
+                .FirstOrDefault(x => x != r.E && PadRows.ContainsKey(x.Key) && chord.Equals(PadChord.Normal(x.Value), StringComparison.OrdinalIgnoreCase));
+            if (other != null)
+                _ours.Set(other, "None");   // saved with this one
+            Write(r, chord);
+            if (other != null)
+            {
+                _note += "; taken from " + PadRows[other.Key] + ", which has no button now";
+                Log.Write("SETTINGS RealNPCs " + other.Key + " = None (its buttons, " + chord + ", went to " + r.E.Key + ")");
+            }
+        }
+
         private void Change(Row r, int dir, bool big)
         {
             IniEntry e = r.E;
@@ -707,6 +807,11 @@ namespace EnrageWestworld.InGame
                 string step = HookupsNext(e, dir, big);
                 if (step != null)
                     Stage(r, step);
+                return;
+            }
+            if (r.Pad)
+            {
+                _note = "A or Enter sets it from the controller.";
                 return;
             }
             if (r.Fire)
@@ -1075,9 +1180,11 @@ namespace EnrageWestworld.InGame
             PAD.DISABLE_ALL_CONTROL_ACTIONS(0);
             HUD.HIDE_HUD_AND_RADAR_THIS_FRAME();
             bool pad = !PAD.IS_USING_KEYBOARD_AND_MOUSE(0);
-            if (pad && PadInput())
+            if (_padCapture != null)
+                PadCaptureStep();   // the controller's buttons are being set: they don't move the panel
+            else if (pad && PadInput())
                 return;   // the pad closed it
-            if (!pad)
+            else if (!pad)
                 WheelInput();
             Draw.Rect(0f, 0f, 1f, 1f, 0, 0, 0, 110);
             Draw.Rect(X, Y, W, H, 18, 15, 12, 238);
@@ -1158,7 +1265,7 @@ namespace EnrageWestworld.InGame
                 }
                 int lr = off ? 105 : sel ? 255 : 226, lg = off ? 98 : sel ? 246 : 216, lb = off ? 90 : sel ? 230 : 196;
                 Draw.Text(Draw.Fit(Name(r), RowScale, W * 0.58f), left + 0.006f, y, RowScale, lr, lg, lb);
-                string v = _capture == r ? "press a key..." : e.Value.Length == 0 ? "(empty)" : Shown(r, e.Value);
+                string v = _capture == r ? "press a key..." : _padCapture == r ? "hold one, press another..." : e.Value.Length == 0 ? "(empty)" : Shown(r, e.Value);
                 v = Draw.Fit(v, RowScale, W * 0.3f);
                 int vr, vg, vb;
                 if (off) { vr = 105; vg = 98; vb = 90; }
