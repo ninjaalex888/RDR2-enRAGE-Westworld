@@ -222,9 +222,12 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
-		public Acquaintance AcquaintanceAt(int handle)
+		/// enRAGE's townsperson in this body. The test cast are nobody's here (evenCast for F7): enRAGE knows its townsfolk
+		/// by their look, and took the cast for people it had met who looked the same (Lex's test, 2026-10-28 00:08: the
+		/// preacher became an awake townsman, who walked off on a waking act of his).
+		public Acquaintance AcquaintanceAt(int handle, bool evenCast = false)
 		{
-			if (_acqOf == null)
+			if (_acqOf == null || !evenCast && Spawner.IsCast(handle))
 			{
 				return null;
 			}

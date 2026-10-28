@@ -68,9 +68,16 @@ namespace EnrageWestworld.InGame
                 return "there's no town here (they're townsfolk)";
             if (_interiorType != 0)
                 return "you're indoors (they come to a street)";
+            // out of sight behind you; a narrow street may have nowhere hidden (Lex was refused three times running,
+            // 2026-10-28): further out, then in the open near you
             Vector3 home;
-            if (!EncounterSpot(me, 14f, 26f, out home))
-                return "nowhere hidden from you 14-26 m behind you to put them (turn about and try again)";
+            bool inSight = false;
+            if (!EncounterSpot(me, 14f, 26f, out home) && !EncounterSpot(me, 8f, 40f, out home))
+            {
+                if (!TestCastOpenSpot(me, out home))
+                    return "nowhere to stand them within 18 m of you";
+                inSight = true;
+            }
             var run = new TestCastRun { Home = home, Town = _placeTown, StartedAt = now, ModelSince = now };
             foreach (TestCast.Part part in TestCast.Parts)
             {
@@ -90,8 +97,23 @@ namespace EnrageWestworld.InGame
             _testCastRun = run;
             said = "The test cast is coming: " + TestCast.Parts.Length + " people, " + (int)home.DistanceTo(me.Position) + " m " + Compass(me.Position, home) + " of you.";
             Log.Write("CAST bring: " + run.Due.Count + " to make or bring back from the save, " + run.Here + " here already; their spot " + (int)home.DistanceTo(me.Position) + " m " +
-                      Compass(me.Position, home) + " of you in " + _placeTown);
+                      Compass(me.Position, home) + " of you in " + _placeTown + (inSight ? " (nowhere hidden from you: in sight)" : ""));
             return null;
+        }
+
+        /// A spot to stand on 10-18 m from you, any way round (never indoors: StandSpot), for when nowhere is hidden.
+        private bool TestCastOpenSpot(Ped me, out Vector3 at)
+        {
+            for (int i = 0; i < 12; i++)
+            {
+                double a = _rng.NextDouble() * 2 * Math.PI;
+                float d = 10f + (float)_rng.NextDouble() * 8f;
+                if (Natives.StandSpot(me.Position + new Vector3((float)Math.Cos(a) * d, (float)Math.Sin(a) * d, 0f), me.Position.Z, out at) &&
+                    Math.Abs(at.Z - me.Position.Z) < 3f)
+                    return true;
+            }
+            at = Vector3.Zero;
+            return false;
         }
 
         /// The Testing row: the test cast taken away (kept in the save).
@@ -291,10 +313,12 @@ namespace EnrageWestworld.InGame
                 if (!TestCastAlive(b))
                     return b.R.Name + " (" + b.Part.Id + "): gone";
                 int h = b.Ped.Handle;
-                Acquaintance ac = _bridge.AcquaintanceAt(h);
+                Acquaintance ac = _bridge.AcquaintanceAt(h, true);
+                string named = ac == null ? _bridge.EnrageNameAt(h, true) : null;
                 string why = MayDirectWhyNot(b.Ped) ?? (NotFree(h) ? "in a scene or a test" : "free");
                 return b.R.Name + " (" + b.Part.Id + ", " + (int)b.Ped.Position.DistanceTo(me.Position) + " m): " + why +
-                       (ac != null ? "; enRAGE knows them as " + ac.Name : _bridge.CanTellLooked && _bridge.Looked(h) ? "; enRAGE has looked at them" : "") +
+                       (ac != null ? "; enRAGE takes them for its " + ac.Name + " (RealNPCs keeps them as " + b.R.Name + ")"
+                        : named != null ? "; enRAGE calls them " + named : _bridge.CanTellLooked && _bridge.Looked(h) ? "; enRAGE has looked at them" : "") +
                        (TestCast.WhyNotFit(b.R, b.Part) is string bad ? "; doesn't fit: " + bad : "");
             }));
             return "brought " + _testCastBrought + " time" + (_testCastBrought == 1 ? "" : "s") + " this session" + (_testCastLast != null ? " (last: " + _testCastLast + ")" : "") +

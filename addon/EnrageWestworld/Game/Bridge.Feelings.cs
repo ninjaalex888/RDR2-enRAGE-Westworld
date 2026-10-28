@@ -126,8 +126,10 @@ namespace EnrageWestworld.InGame
         }
 
         /// The name enRAGE has given this person, if it has (its _named list, the one Bridge.Looks reads).
-        public string EnrageNameAt(int handle)
+        public string EnrageNameAt(int handle, bool evenCast = false)
         {
+            if (!evenCast && Spawner.IsCast(handle))
+                return null;   // the test cast go by their own names (AcquaintanceAt)
             ResolveLooks();
             try
             {

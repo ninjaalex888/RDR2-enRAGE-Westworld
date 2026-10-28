@@ -44,7 +44,6 @@ namespace EnrageWestworld.InGame
             int h = ped.Handle;
             if (Spawner.IsOurs(h)) return "one of the add-on's own";
             if (ENTITY.IS_ENTITY_DEAD(h)) return "dead";
-            if (Spawner.IsCast(h) && _resBind.ContainsKey(h)) return null;   // the test cast: ours, whatever enRAGE has made of them
             if (!PED.IS_PED_HUMAN(h)) return "not human";
             if (PED.IS_PED_A_PLAYER(h)) return "a player";
             if (Natives.IsChild(ped)) return "a child";
