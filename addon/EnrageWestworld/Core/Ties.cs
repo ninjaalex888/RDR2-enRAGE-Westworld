@@ -76,6 +76,14 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// Friends, as opposed to two people one kind word apart: warmth 2 or more, or warm with two scenes between them
+        /// (night 2026-10-28, item 10: one hand up or one round bought had everyone grieving, drinking over, condoling
+        /// and taking up grudges for a man they'd met once).
+        public static bool Friends(SceneTie t)
+        {
+            return t != null && (t.Warmth >= 2 || t.Warmth > 0 && t.Count >= 2);
+        }
+
         /// Courting, as opposed to a friendly word.
         public static bool Romantic(string kind)
         {

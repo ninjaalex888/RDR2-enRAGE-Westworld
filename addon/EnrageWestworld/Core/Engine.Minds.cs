@@ -430,7 +430,7 @@ namespace EnrageWestworld.Core
                 string other = t.OtherId(e.Id);
                 if (other != null && !told.ContainsKey(other))
                 {
-                    told[other] = t.Warmth > 0 ? "friend" : t.Warmth < 0 ? "foe" : "known";
+                    told[other] = Ties.Friends(t) ? "friend" : t.Warmth < 0 ? "foe" : "known";   // a friend's death is grieved; a man met once is only known (item 10)
                     names[other] = other == t.A ? t.AName : t.BName;
                 }
             }

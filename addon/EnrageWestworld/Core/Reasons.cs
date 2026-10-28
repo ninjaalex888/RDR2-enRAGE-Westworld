@@ -123,7 +123,7 @@ namespace EnrageWestworld.Core
                 }
                 // a friend of someone grieving (word of a friend's death in the last three days) offers sympathy, the first
                 // time they meet after the news reached them (Scenes.Condole; the grieving one is A)
-                if (tie.Warmth > 0 && (a.Grief != null || b.Grief != null))
+                if (Ties.Friends(tie) && (a.Grief != null || b.Grief != null))
                 {
                     Someone grieving = a.Grief != null ? a : b, friend = grieving == a ? b : a;
                     // the friend must have had the word too: nobody offers sympathy for a death they haven't heard of
@@ -132,7 +132,7 @@ namespace EnrageWestworld.Core
                         return new Reason { Kind = "condole", Strength = 62, BFirst = grieving == b, Why = friend.Name + " offers " + grieving.Name + " sympathy for " + grieving.Grief };
                 }
                 // a friend (or sweetheart) of someone who has just been roughed up or robbed goes to them: a small kindness
-                if (tie.Warmth > 0 && (a.Hurt != null || b.Hurt != null))
+                if (Ties.Friends(tie) && (a.Hurt != null || b.Hurt != null))
                 {
                     Someone hurt = a.Hurt != null ? a : b, friend = hurt == a ? b : a;
                     return new Reason { Kind = "tend", Strength = 58, BFirst = friend == b, Why = friend.Name + " goes to " + hurt.Name + ", who was just " + (hurt.Hurt == "rough" ? "roughed up" : "robbed") };

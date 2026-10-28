@@ -67,7 +67,7 @@ namespace EnrageWestworld.InGame
                 string victim = t.OtherId(t.Doer);
                 foreach (SceneTie w in _store.Ties)
                 {
-                    if (w.Warmth <= 0 || !w.Has(victim) || w.Has(t.Doer))
+                    if (!Ties.Friends(w) || !w.Has(victim) || w.Has(t.Doer))
                         continue;
                     Candidate c;
                     string cid = w.OtherId(victim);
