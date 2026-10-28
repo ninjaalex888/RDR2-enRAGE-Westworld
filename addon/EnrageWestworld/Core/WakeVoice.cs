@@ -12,7 +12,7 @@
 //   3 Unravelling: strings in the mouth. Their whole stock of words in a rush, a plea to be untied with nothing tying
 //     them, the sky told off. Panic and anger, every 15 s or so.
 //   4 Awake: they know, and they choose. The same few lines, picked on purpose and said to him, the one who isn't on
-//     strings: it was you; untie me; I'd leave if there were anywhere to go; I'll be seeing you. Every 7 to 11 s.
+//     strings: it was you; untie me; I'd leave if there were anywhere to go; we'll meet again. Every 7 to 11 s.
 // Lines are game line names carried by most of the 330 ambient voices (amb_takes.txt; ticktest WakeVoiceTest checks
 // 60+), the best fit first. The game decides whether it will play a line out of its context: the Testing page's
 // "Wake voices: every line" plays each once and logs it, so any it always refuses can be taken out.
@@ -156,8 +156,8 @@ namespace EnrageWestworld.Core
                 "Hello. I chose that. I meant it. That one's mine.",
                 "One word I picked for myself. One." } },
             new WakeVoiceMoment { Id = "s4:farewell", Stage = 4, Lines = new[] { "GENERIC_GOODBYE" }, Look = "you", ToYou = true, Farewell = true, Thoughts = new[] {
-                "I'll be seeing you. Or the next one of me will.",
-                "Take care. One of us ought to get out." } },
+                "We'll meet again. Or the next one of me will.",
+                "Mind yourself. One of us ought to get out." } },
         };
 
         /// Between one voice moment and the next for someone at this stage, near the player: a step up each stage.

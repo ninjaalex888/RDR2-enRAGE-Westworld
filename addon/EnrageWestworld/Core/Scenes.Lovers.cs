@@ -78,7 +78,7 @@ namespace EnrageWestworld.Core
             "Knitted you a scarf. It's crooked, but it's warm.",
             "A new pocketknife. Yours was a disgrace.",
             "Cigars. Two of them. Don't smoke them both at once.",
-            "Darned your socks. Every pair. You're welcome."
+            "Darned your socks. Every pair. A word of thanks wouldn't kill you."
         };
 
         /// A comes to B with a gift and says sorry; B takes it (kind makeup) or doesn't (brushoff).

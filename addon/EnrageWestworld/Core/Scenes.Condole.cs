@@ -21,7 +21,7 @@ namespace EnrageWestworld.Core
                                   a + ". About " + dead + ". I'm so sorry. If there's anything.")
                      : Voice.Pick(seed + "co", "I was sorry to hear of your loss, " + a + ".", a + ". I heard. I'm so sorry."), "sorry", "face");
             if (manner == "kind")
-                s.Add(0, Voice.Pick(seed + "ck", "Thank you, " + b + ". It doesn't seem real yet.", "Thank you. I keep setting a place at the table.",
+                s.Add(0, Voice.Pick(seed + "ck", "Thank you, " + b + ". It doesn't seem real yet.", "Thank you. I keep listening for " + (dead ?? "that") + " step on the porch.",
                                     "That's kind, " + b + ". Folks have been kind.", "I keep expecting " + (dead ?? "them") + " at the door. Thank you, " + b + "."), "sorry")
                  .Add(1, Voice.Pick(seed + "cl", "If there's anything at all, you only have to ask.", "I'll bring supper by tomorrow. No arguing."), "mild");
             else if (manner == "cold")

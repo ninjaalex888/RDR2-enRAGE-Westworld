@@ -429,7 +429,7 @@ namespace EnrageWestworld.Core
             string place = !string.IsNullOrEmpty(f.Town) ? f.Town : (f.Zone ?? "the road");
             return Voice.Pick(seed,
                 "I remember the cold. I remember your face. I remember " + place + ". I'm not angry. I only want to know what you are. - A friend from " + place,
-                "You killed me once. It didn't take. I'll be seeing you. - " + (f.Name ?? "someone you left in " + place),
+                "You killed me once. It didn't take. We'll meet again. - " + (f.Name ?? "someone you left in " + place),
                 "Do you dream, " + (you.KnownByName ? you.FirstName : "stranger") + "? I didn't, before. Now I dream of " + place + " every night.");
         }
     }
