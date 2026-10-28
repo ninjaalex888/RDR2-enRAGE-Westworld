@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased (daytime 2026-10-27, on top of 0.6.3)
+## 0.6.3
+
+Built on 2026-10-26, overnight and through the day and night of 2026-10-27 (Lex's briefs), with play-tests between. Seen working in game by the release: the execution on the road, the Testing page and its test cast, the street scenes (the brawl with real punches, someone standing up to a bully, the fall and a hand up, the lost child, the old days, the preacher, the round's words), the mind cards, despair's farewell, the stalker, the awake running at a wall, the wake stages over heads. Not yet seen in game: the controller buttons, the supper invitation (off by default), the callout, the Sabbath, the bell, the night visitor's and the traveller's newest changes, and from 2026-10-26 the "Hook up" prompt, the CasualHookups fallback and the body-watch witness.
 
 ### The mind underneath, in shadow (being tested)
 
@@ -89,9 +91,6 @@
 - A mother asking after her lost child is asking after her youngest, never the child the fever took, and not every week. A drinker mourning a child, a son or a black-edged letter mourns; it's no longer "bad luck". A coward never calls a man out at noon.
 - Smaller: greetings in passing had who greeted whom backwards; falls never happen under an awning, so nobody is helped "off the boards"; the traveller no longer hails "You, on the horse!" when you're on foot; the old men's dance of '68 is thirty years back in 1899; shutting down stops a grudge walk, drunk voices and a waking voice; the street scenes' search for people costs less.
 
-## 0.6.3 (not released yet)
-
-Built on 2026-10-26, the night after (Lex's overnight brief, 2026-10-27) and the morning's first play-test of that night's work. Seen working in game: the execution on the road (both saving him and the shooting), the settings panel's Testing page, women answering your flirting by chance (better, still being tested), the awake running at a wall, and the wake stages over heads. Not yet seen in game: most of the night's work (the encounters, the street scenes and kindnesses, enRAGE's records as stalkers and their deaths booked in enRAGE), and from 2026-10-26 Minds, the despair act, news taking time, greeting first, the "Hook up" prompt, the CasualHookups fallback and the body-watch witness.
 
 ### After the first play-test (2026-10-27)
 

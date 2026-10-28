@@ -1,4 +1,4 @@
-RealNPCs 0.6.2 - an unofficial add-on for enRAGE (formerly enRAGE Westworld)
+RealNPCs 0.6.3 - an unofficial add-on for enRAGE (formerly enRAGE Westworld)
 =========================================================================
 
 The people enRAGE keeps track of start acting like they have their own lives. They tell you about
@@ -15,6 +15,43 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.6.3
+------------
+- A livelier street. People deal with each other around you far more often: brawls between
+  hot-blooded strangers by day or night, saloon fights at any hour, someone standing up to a
+  bully (and the fight that follows, with real punches), falls and a hand up, rounds bought,
+  grudges taken up, a mother asking after her lost child, a street preacher any day, two old
+  men arguing over the old days, a man calling another out at noon, condolences in the street,
+  sweethearts falling out and making up, a debt paid in public, a card cheat shown the door,
+  the Sabbath, and a bell at three only the awake hear. [Scenes] TroubleWeight (1 as built,
+  2 twice as often, 0 never by chance) sets how often people come to blows or quarrel.
+- Night encounters: a figure crouched over a body who stands and stares, then turns up behind
+  you; a stranded traveller asking the way (lost, snakebitten, or being robbed on the road);
+  and, off until you switch it on, the supper invitation (CONTENT NOTE: accepting it costs you
+  most of your cash and the night, and it can't be undone; [Encounters] SupperInvitation).
+- People notice how you look (bloodied, drunk, filthy, soaked) and take it by their nature, and
+  people who know each other nod, tip a hat or wave as they pass (enemies give a hard look).
+- The dead are kept in a ledger shared with enRAGE, so a death it missed is still a death.
+  enRAGE's own records can stalk you and can despair (CONTENT NOTE; booked in enRAGE's history).
+- Despair has a voice: the farewell in the person's own recorded voice, chosen by temperament.
+- A mind under every person, run beside the game and only reported while it's tested: traits,
+  needs, worries, what they feel about what happens near you, their mood. Show minds (Ctrl+F2)
+  puts a card over the people near you; in a crowd the nearest has the full card and the rest a
+  line, never overlapping. [Mind] MindShadow, MindLive (off).
+- Controllers: hold RB and press D-pad up for the settings panel, left for F7, right for your
+  letters; set your own on the Hotkeys page from the controller ([Controller]).
+- Subtitles, one set at a time: the game draws its own white subtitle for any recorded line
+  while its Subtitles option is on, so RealNPCs' boxed ones show only while that option is off
+  ([Output] Subtitles = game); "ours" shows RealNPCs' always.
+- The settings panel's Testing page fires everything RealNPCs can do, by key or by Enter, and
+  "Bring the test cast here" brings eight people the tests need, kept in your save.
+- The world slows while the settings panel is open. Saves happen in quiet moments (loading,
+  paused, faded out) and never put an empty save over a real one.
+- Seen working in game: the street scenes above (the brawl, the stand-up, the fall, the lost
+  child, the old days, the preacher, the round's words), the test cast, the mind cards, despair's
+  farewell, the stalker, the execution. Not yet seen: the controller buttons, the supper
+  invitation, and several of the rarer scenes (the callout, the Sabbath, the bell).
 
 NEW IN 0.6.2
 ------------
