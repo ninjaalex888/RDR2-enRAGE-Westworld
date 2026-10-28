@@ -766,7 +766,8 @@ namespace EnrageWestworld.InGame
                 Hour = CLOCK.GET_CLOCK_HOURS(), Minute = CLOCK.GET_CLOCK_MINUTES(), Weekday = InnerLife.Weekday, GameDay = g > 0 ? g / 1440 : -1, Now = g,
                 Weather = _engine.NowWeather, Indoors = _engine.NowIndoors, Place = _engine.NowPlace, Others = Math.Max(0, _mindNear.Count - 1),
                 Drunk = InHisCups(new Ped(h), w.P), Feared = _engine.SawYouViolent(w.Id, 3), WakeStage = st != null ? st.WakeStage : 0, Memories = st != null ? st.Mind : null,
-                AteAt = w.AteAt   // the shadow's own meal, if its choice was to eat
+                AteAt = w.AteAt,   // the shadow's own meal, if its choice was to eat
+                Recent = w.Recent  // and its other brief acts: a rest rests, a talk keeps company (after item 14)
             };
             w.Needs = Needs.Of(w.P, w.Traits, c);
             w.Concerns = Needs.Of(w.P, c.GameDay, c.GameDay >= 0 ? Links.Against(_store.Links, w.Id, c.GameDay) : null);

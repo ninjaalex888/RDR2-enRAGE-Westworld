@@ -27,6 +27,25 @@ namespace EnrageWestworld.Core
         public int WakeStage;                   // the Awakening (0-4)
         public long AteAt = -1;                 // the game minute they last ate, when it's known (Choosing's eat); -1: their meal hours alone
         public List<MindMemory> Memories;       // theirs, if they keep any (null for the unsaved)
+        public RecentActs Recent;               // the brief things they did lately and when (the shadow's choosing), so a rest rests, a talk keeps company, a prayer gives meaning for a while (after item 14); null: unknown
+
+        /// Minutes since they last did this (the shadow's choosing), or -1 when not lately.
+        public long SinceAct(string id)
+        {
+            if (Recent == null || Now < 0)
+                return -1;
+            for (int k = 0; k < 3; k++)
+                if (Recent.Id[k] == id)
+                    return Math.Max(0, Now - Recent.At[k]);
+            return -1;
+        }
+
+        /// How much of a need an act done lately still answers: all of it just done, none past `minutes`.
+        public float Eased(string id, float minutes)
+        {
+            long since = SinceAct(id);
+            return since < 0 || since >= minutes ? 0f : 1f - since / minutes;
+        }
     }
 
     /// The nine, each 0..1.
@@ -122,7 +141,7 @@ namespace EnrageWestworld.Core
             n.V[NeedState.Hunger] = asleep ? 0.25f : Clamp(0.08f + since * (Array.IndexOf(Poor, g) >= 0 ? 0.125f : 0.10f));   // 0.16 an hour until 2026-10-28: everyone in town sat at 0.85+ for two hours before every meal (the psychologist's review); the poor feel it more
             // rest: the hours awake (up at 5 or 6), worst before dawn; drink tires
             float wake = country ? 5f : 6f, up = hour >= wake ? hour - wake : hour + 24f - wake;
-            n.V[NeedState.Rest] = Clamp(0.05f + Math.Max(0f, up - 3f) * 0.055f + (c.Drunk ? 0.15f : 0f));
+            n.V[NeedState.Rest] = Clamp(0.05f + Math.Max(0f, up - 3f) * 0.055f + (c.Drunk ? 0.15f : 0f) - 0.3f * c.Eased("rest", 120f));   // a sit-down rests for a couple of hours (the shadow's choosing)
             // warmth and dry: the weather out of doors, the night, less under a roof
             float wet = c.Indoors ? 0f : c.Weather == "storm" ? 0.75f : c.Weather == "rain" ? 0.55f : c.Weather == "snow" ? 0.7f : c.Weather == "fog" ? 0.2f : c.Weather == "dust" ? 0.25f : 0.05f;
             float night = !c.Indoors && (hour >= 21f || hour < 6f) ? 0.15f : 0f;
@@ -180,6 +199,11 @@ namespace EnrageWestworld.Core
                             break;
                     }
                 }
+            // what they did lately answers a need for a while (the shadow's choosing: a talk, a word with a friend or the saloon keeps
+            // company, a prayer or church gives meaning, showing off settles standing; the stand-in before, Choosing.Answered, stays)
+            standing -= 0.2f * c.Eased("showoff", 120f);
+            company -= 0.25f * Math.Max(c.Eased("talk", 180f), Math.Max(c.Eased("greet", 120f), c.Eased("saloon", 240f)));
+            meaning -= 0.25f * Math.Max(c.Eased("pray", 240f), c.Eased("church", 360f));
             n.V[NeedState.Safety] = Clamp(danger * (1f + 0.3f * z(Traits.Anxiety)));
             n.V[NeedState.Standing] = Clamp(standing);
             n.V[NeedState.Company] = Clamp(company);
@@ -194,7 +218,7 @@ namespace EnrageWestworld.Core
                 string wk; int ws; bool wg;
                 if (c.GameDay >= 0 && InnerLife.WorryNow(p, c.GameDay, out wk, out ws, out wg) && ws == 3 && !wg)
                     pull += 0.2f;   // a worry that ended badly: the bottle or the table calls louder
-                n.V[NeedState.Vice] = Clamp(pull);
+                n.V[NeedState.Vice] = Clamp(pull - 0.3f * Math.Max(c.Eased("drink", 120f), c.Eased("cards", 180f)));   // a drink taken or a hand played eases the pull a while
             }
             // the worry presses on money where it's about money
             string kind; int stage; bool good;
