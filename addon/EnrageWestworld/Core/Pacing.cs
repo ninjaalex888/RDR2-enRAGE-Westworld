@@ -58,11 +58,13 @@ namespace EnrageWestworld.Core
             // small: everyday moments; frequent, but never the same people again soon
             { "nod", new Rule("nod", false, 60, 0, 0, 45) },                       // per pair
             { "sight", new Rule("sight", false, 40, 30, 0, 90) },                  // "who" is the state: an hour and a half before the same again
-            { "fall", new Rule("fall", false, 6, 150, 600, 1440) },
-            { "standup", new Rule("standup", false, 45, 60, 0, 720) },
-            { "round", new Rule("round", false, 25, 240, 1440, 1440) },            // per saloon a night
+            // fall, standup, round and grudge about twice as often since 2026-10-28 (Lex: the world lively with people
+            // dealing with each other; was 6/150/600, 45/60, 25/240/1440 and 30/180)
+            { "fall", new Rule("fall", false, 12, 90, 300, 1440) },
+            { "standup", new Rule("standup", false, 75, 20, 0, 720) },
+            { "round", new Rule("round", false, 40, 180, 720, 1440) },             // per saloon twice a day
             { "drink", new Rule("drink", false, 55, 60, 300, 1440) },              // a saloon: one drinker in five hours or so
-            { "grudge", new Rule("grudge", false, 30, 180, 0, 1440) },             // per pair a day
+            { "grudge", new Rule("grudge", false, 45, 120, 0, 1440) },             // per pair a day
             { "callout", new Rule("callout", false, 40, 1440, 1440, 2880) },       // a noon callout: once a day at most
             { "preacher", new Rule("preacher", false, 35, 0, 1440, 2880) },       // a Sunday's street preacher: once a town a day, a person every two
             { "lostchild", new Rule("lostchild", false, 15, 720, 4320, 129600) },  // a mother asking after her child: three days a town, a season a woman

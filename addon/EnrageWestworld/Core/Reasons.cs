@@ -176,7 +176,7 @@ namespace EnrageWestworld.Core
             {
                 bool hot = Hot(x);
                 // a hot man at the worst of it snaps at a man who won't take it: it comes to blows
-                if (hot && twoMen && Hot(y) && Voice.Chance(x.Id + gameDay + "snapblows", 20))
+                if (hot && twoMen && Hot(y) && Voice.Chance(x.Id + gameDay + "snapblows", 35))   // was 20 (Lex, 2026-10-28: brawls often)
                     all.Add(new Reason { Kind = "brawl", Strength = 56, Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
                 else
                     all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
@@ -279,7 +279,7 @@ namespace EnrageWestworld.Core
 
         /// Percent of fistfights between enemies that a rough man turns into a face into the table instead.
         public const int RoughChance = 45;
-        public const int DrinkTemperChance = 35;   // a hothead, a night: drink and temper in the saloon come to blows (rolled per man, not per pair)
+        public const int DrinkTemperChance = 50;   // a hothead, a night: drink and temper in the saloon come to blows (rolled per man, not per pair); 35 until Lex asked for brawls often (2026-10-28)
 
         /// Quick to anger: a hothead or a proud man.
         public static bool Hot(Someone s)

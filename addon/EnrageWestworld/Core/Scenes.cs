@@ -95,7 +95,7 @@ namespace EnrageWestworld.Core
                 w.Add(new KeyValuePair<string, int>("flirt", c.Saloon ? 14 : 18));
             w.Add(new KeyValuePair<string, int>("argue", 16));
             if (twoMen && allowFight)
-                w.Add(new KeyValuePair<string, int>("brawl", c.Saloon ? 10 : 5));
+                w.Add(new KeyValuePair<string, int>("brawl", c.Saloon ? 20 : 10));   // twice the old 10 and 5 (Lex, 2026-10-28: brawls often)
             if (mixed && !c.Night)
                 w.Add(new KeyValuePair<string, int>("propose", 3));
             if (c.Saloon && twoMen)

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 86;
+        public const int CurrentVersion = 87;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -143,7 +143,7 @@ namespace EnrageWestworld.Core
         public int AvengerChance = 35;
         public bool CastRelatives = true;
         public bool Drama = true;
-        public int DramaGapSeconds = 150;
+        public int DramaGapSeconds = 90;   // 150 until settings version 87 (Lex, 2026-10-28: the world lively)
         public bool SaloonGossip = true;
         public bool Weddings = true;
         public bool Funerals = true;
@@ -398,6 +398,12 @@ namespace EnrageWestworld.Core
                     s.TestKeyMap["TestShowMindsKey"] = "Ctrl+F2";
                     raised.Add("TestShowMindsKey None -> Ctrl+F2");
                 }
+            }
+            if (s.SettingsVersion < 87 && s.DramaGapSeconds == 150)
+            {
+                // the old default (Lex, 2026-10-28: scenes between people fairly often); a gap of your own is kept
+                s.DramaGapSeconds = 90;
+                raised.Add("DramaGapSeconds 150 -> 90");
             }
             if (s.SettingsVersion == 81 && s.SupperInvitation)
             {

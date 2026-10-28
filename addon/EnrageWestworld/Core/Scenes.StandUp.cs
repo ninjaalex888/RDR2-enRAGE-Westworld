@@ -18,9 +18,10 @@ namespace EnrageWestworld.Core
         {
             if (temper == "Coward" || warmthToB < 0 || warmthToA > 0)
                 return false;
+            // a friend 80% and a steady stranger 50% since 2026-10-28 (Lex: the bully often; were 70 and 35)
             if (warmthToB > 0)
-                return Voice.Chance(seed + "|friend", 70);
-            return !woman && (temper == "Loyal" || temper == "Proud") && Voice.Chance(seed + "|steady", 35);
+                return Voice.Chance(seed + "|friend", 80);
+            return !woman && (temper == "Loyal" || temper == "Proud") && Voice.Chance(seed + "|steady", 50);
         }
 
         /// Whether the bully backs off: a Hothead seldom does, the cold and the proud half the time, most men do.
