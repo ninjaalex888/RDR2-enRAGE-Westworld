@@ -43,6 +43,7 @@ namespace EnrageWestworld.InGame
         }
 
         private const int ChooseMs = 60000, ChoiceLinesAMinute = 5;
+        private int _mindChoosesAbout;   // choices worked out for the about ring (MindLevels on; after item 14)
         private int _mindChooseCursor, _mindChoices, _mindChoiceChanges, _mindChoiceLines, _mindChoiceHeld, _mindChoiceMinuteAt, _mindChoiceMinuteCount;
         private string _mindLastChoice;
 
@@ -234,7 +235,21 @@ namespace EnrageWestworld.InGame
                 return;
             if (w.Needs == null || now - w.NeedsAt >= NeedsMs || now < w.NeedsAt)
                 MindNeeds(w, e.Handle, now);
+            // the about ring chooses too (after item 14): what they'd do now from their needs, once a minute at most, no line
+            if (w.Needs != null && w.P != null && (w.ChoseAt == 0 || now - w.ChoseAt >= ChooseMs || now < w.ChoseAt) && !ENTITY.IS_ENTITY_DEAD(e.Handle))
+            {
+                _aboutChooseWho = w;
+                _aboutChooseHandle = e.Handle;
+                _aboutChooseNow = now;
+                if (_aAboutChoose == null)
+                    _aAboutChoose = () => MindChooseFor(_aboutChooseWho, _aboutChooseHandle, _aboutChooseNow, true);
+                Safe("mind choosing", _aAboutChoose);   // the same guard as the near ring's (a fault switches the choosing off, not the levels)
+                _aboutChooseWho = null;
+            }
         }
+        private MindWho _aboutChooseWho;
+        private int _aboutChooseHandle, _aboutChooseNow;
+        private Action _aAboutChoose;
 
         /// The away pass (level 2): one time a game day a town, the residents saved for it, a few a frame: a worry ended,
         /// ties older than a week cooled, a life event, all worked out from id and day and only counted; one MIND away
@@ -317,7 +332,7 @@ namespace EnrageWestworld.InGame
                 Levels l = _mindLevels;
                 return "on; " + l.Count + " placed, near " + l.NearCount + " (on screen within " + (int)Levels.NearMetres + " m, at most " + Levels.NearMax + "; " + l.NearAll.Count + " within 20 m in all), about " + l.AboutCount + " (within " + (int)Levels.AboutMetres + " m); " +
                        l.Ran + " visits, " + l.Deferred + " put off, " + l.Starved + " late, " + l.Changes + " level changes, " + l.Capped + " kept out of a full ring; budget " + l.BudgetMicros + " us a working frame, used " + (l.Frames > 0 ? l.Spent / l.Frames : 0) + " us on average, peak " + l.PeakMicros + "; the scan " + _mindScanMicros + " us (peak " + _mindScanPeak + ")" +
-                       "; away passes " + _mindAwayPasses + (_mindAwayLast != null ? ", last: " + _mindAwayLast : "") + (_mindAwayTown != null ? ", now " + _mindAwayTown + " (" + _mindAwayCursor + " of " + (_store.Residents != null ? _store.Residents.Count : 0) + " read)" : "");
+                       "; about-ring choices " + _mindChoosesAbout + "; away passes " + _mindAwayPasses + (_mindAwayLast != null ? ", last: " + _mindAwayLast : "") + (_mindAwayTown != null ? ", now " + _mindAwayTown + " (" + _mindAwayCursor + " of " + (_store.Residents != null ? _store.Residents.Count : 0) + " read)" : "");
             }
             catch (Exception ex)
             {
@@ -343,6 +358,14 @@ namespace EnrageWestworld.InGame
                 return;
             if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
                 return;
+            MindChooseFor(w, h, now, false);
+        }
+
+        /// One person's choice now (the shadow's choosing): their needs, nature, mood, the strongest feeling and, for the
+        /// near ring, who is in sight. `quiet`: the about ring (MindLevels on; after item 14): out of view nobody is "in
+        /// sight", and no line is written (the near ring's look writes it when they come near and the choice stands).
+        private void MindChooseFor(MindWho w, int h, int now, bool quiet)
+        {
             w.ChoseAt = now;
             long g = _store.LastGameMin;
             string tg = w.TradeGroup ?? (w.TradeGroup = InnerLife.TradeGroup(w.P.Trade));
@@ -366,6 +389,7 @@ namespace EnrageWestworld.InGame
             c.Mood = mw.StartsWith("sore", StringComparison.Ordinal) ? "sore" : mw.StartsWith("glad", StringComparison.Ordinal) ? "glad" : null;
             // who is in sight: a warm tie to nod to, a foe to step clear of (the store's ties, read only; the ties walked
             // once, each matched against the few near). The doer of a one-sided trouble has no foe in his victim.
+            if (!quiet)
             foreach (SceneTie t in _store.Ties)
             {
                 if (!t.Has(w.Id) || t.Warmth == 0)
@@ -406,6 +430,11 @@ namespace EnrageWestworld.InGame
                 w.ChoiceHeld = null;
                 _mindChoiceChanges++;
                 _mindLastChoice = w.Name + " -> " + Choosing.WordsOf(ch.Key);
+            }
+            if (quiet)
+            {
+                _mindChoosesAbout++;
+                return;   // out of view: no line (written when they come near, if the choice still stands)
             }
             if (w.ChoiceTold || Choosing.CarriesOn(w.Choice))
                 return;   // said already, or carrying on, which isn't news
