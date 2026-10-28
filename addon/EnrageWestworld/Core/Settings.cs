@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 81;
+        public const int CurrentVersion = 82;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -114,7 +114,7 @@ namespace EnrageWestworld.Core
         public int NightVisitorChance = 18;
         public bool Travellers = true;
         public int TravellerChance = 20;
-        public bool SupperInvitation = true;   // the supper invitation, the player version (Lex, 2026-10-27 18:33; settings version 81)
+        public bool SupperInvitation;   // the supper invitation, the player version (Lex, 2026-10-27 18:33; settings version 81); off until it's been tested (Lex, the same evening; version 82)
         public int SupperChance = 12;
         public string CryingWomanKey = "None";
         public bool Executions = true;
@@ -378,6 +378,13 @@ namespace EnrageWestworld.Core
                 // your own is kept)
                 s.TickerNearbyMetres = 20f;
                 raised.Add("TickerNearbyMetres 30 -> 20");
+            }
+            if (s.SettingsVersion == 81 && s.SupperInvitation)
+            {
+                // version 81 had the supper invitation on as it came, for an hour; off until it's been tested (Lex,
+                // 2026-10-27), so an 81 ini's "on" was that default, not a choice
+                s.SupperInvitation = false;
+                raised.Add("SupperInvitation on -> off (until it's been tested)");
             }
             if (s.SettingsVersion < 77 && !s.ShowMinds)
             {
@@ -649,7 +656,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("NightVisitorChance = " + NightVisitorChance + "   ; percent on each roll, midnight to four, once a night at most");
             b.AppendLine("Travellers = " + B(Travellers) + "   ; by day on the roads, a man on foot waves you down and asks the way to the nearest town; greet him, or stop a moment, and he finds his way");
             b.AppendLine("TravellerChance = " + TravellerChance + "   ; percent on each roll, seven in the morning to seven at night, once a day at most");
-            b.AppendLine("SupperInvitation = " + B(SupperInvitation) + "   ; at dusk on the roads, a too-friendly man asks you to supper at his place. Follow him there on foot and you wake in a ditch at first light with most of your cash gone ($250 at most). Ride on and he lets you go");
+            b.AppendLine("SupperInvitation = " + B(SupperInvitation) + "   ; at dusk on the roads, a too-friendly man asks you to supper at his place. Follow him there on foot and you wake in a ditch at first light with most of your cash gone ($250 at most). Ride on and he lets you go. Off until it's been tested");
             b.AppendLine("SupperChance = " + SupperChance + "   ; percent on each roll, half past five to nine in the evening, once a day at most");
             b.AppendLine("Executions = " + B(Executions) + "   ; out on the roads, two men holding one of a nearby town's people on his knees at gunpoint, for a reason from his own life. Ride on and they go through with it");
             b.AppendLine("ExecutionChance = " + ExecutionChance + "   ; percent on each roll, once a day at most, outside the towns");

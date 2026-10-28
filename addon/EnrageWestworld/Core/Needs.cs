@@ -25,6 +25,7 @@ namespace EnrageWestworld.Core
         public int Others;                      // people in sight of them (0: alone)
         public bool Feared;                     // someone they fear is near (the player they saw do violence, a foe)
         public int WakeStage;                   // the Awakening (0-4)
+        public long AteAt = -1;                 // the game minute they last ate, when it's known (Choosing's eat); -1: their meal hours alone
         public List<MindMemory> Memories;       // theirs, if they keep any (null for the unsaved)
     }
 
@@ -108,9 +109,12 @@ namespace EnrageWestworld.Core
             bool country = g == "farm" || g == "trapper" || g == "old";
             float hour = c.Hour + c.Minute / 60f;
             float z(int i) => t != null ? t.Z[i] : 0f;
-            // hunger: since the last meal of their day, a little over the hours; low just after eating; asleep, flat
+            // hunger: since the last meal of their day, a little over the hours; low just after eating; asleep, flat. A meal
+            // they're known to have eaten since (AteAt) counts too (Lex, 2026-10-27: eating lowers hunger)
             int[] meals = country ? CountryMeals : TownMeals;
             float since = HoursSinceMeal(hour, meals);
+            if (c.AteAt >= 0 && c.Now >= c.AteAt)
+                since = Math.Min(since, (c.Now - c.AteAt) / 60f);
             bool asleep = hour >= 22f || hour < (country ? 5f : 6f);
             n.V[NeedState.Hunger] = asleep ? 0.25f : Clamp(0.08f + 0.16f * since + (Array.IndexOf(Poor, g) >= 0 ? 0.08f : 0f));
             // rest: the hours awake (up at 5 or 6), worst before dawn; drink tires
