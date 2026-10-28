@@ -24,7 +24,7 @@ namespace EnrageWestworld.InGame
         }
 
         private StandUpNote _standUp;
-        private int _standUps, _standUpBacked;
+        private int _standUps, _standUpBacked, _standUpTestTurn;
         private string _standUpLast, _standUpWhyNot;
 
         /// Someone steps into this rough or brawl before the blow, or nobody does. True if they did (the scene now has
@@ -76,7 +76,9 @@ namespace EnrageWestworld.InGame
                 why = _standUpWhyNot = "rests: " + pace;
                 return false;
             }
-            bool backs = Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
+            // a test takes turns, the fight first (Lex, 2026-10-28: a plain bully backs off three times in four, so a test
+            // seldom showed the fight it was fixed for)
+            bool backs = test ? _standUpTestTurn++ % 2 == 1 : Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
             bool rough = s.Kind == "rough";
             bool far = by.Ped.Position.DistanceTo(people[0].Position) > 3.5f;
             cast.Names[2] = Person.FirstOf(by.Who.Name);
@@ -95,7 +97,7 @@ namespace EnrageWestworld.InGame
             _standUpLast = by.Who.Name + " for " + b.Name + " against " + a.Name + ": " + (backs ? "he backed off" : "he went on") + (test ? " (a test)" : "");
             Log.Write("KIND stood up: " + by.Who.Name + " steps in for " + b.Name + " against " + a.Name + " -> " + (backs ? "backs off" : "tells them to keep out") + " (" +
                       (TieWarmth(by.Who.Id, b) > 0 ? "a friend of " + Person.FirstOf(b.Name) : "a " + (by.Who.Temper ?? "plain") + " " + (by.Who.Woman ? "woman" : "man")) + ", " + s.Kind + ")" +
-                      (test ? ", a test" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
+                      (test ? ", a test (it takes turns: the fight goes on, then he backs off)" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
             return true;
         }
 
