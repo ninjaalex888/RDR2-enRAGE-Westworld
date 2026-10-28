@@ -388,7 +388,8 @@ namespace EnrageWestworld.InGame
             string seed = act.P.Id + "|act|" + act.Said + "|" + now / 1000, prev;
             _wvLast.TryGetValue(act.Handle, out prev);
             WakeVoiceMoment m = last && !mayDespair ? WakeVoice.Farewell()
-                : WakeVoice.Choose(Math.Max(Awakening.Awake, act.Stage), WakeVoiceContextFor(p, me, dist, ENTITY.GET_ENTITY_SPEED(me.Handle) > 0.8f, now), seed, prev);
+                : WakeVoice.Choose(Math.Max(Awakening.Awake, act.Stage), WakeVoiceContextFor(p, me, dist, ENTITY.GET_ENTITY_SPEED(me.Handle) > 0.8f, now), seed, prev,
+                                   mayDespair ? (Func<WakeVoiceMoment, bool>)WakeVoice.Captive : null);   // an act that may end in despair never sounds like a hostage
             if (m == null)
                 return false;
             WakeVoiceBegin(p, act.Name, act.P.Id, act.Stage, m, seed, true, now);

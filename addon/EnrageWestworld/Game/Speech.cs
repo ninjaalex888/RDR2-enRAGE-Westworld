@@ -54,12 +54,8 @@ namespace EnrageWestworld.InGame
         public static readonly string[] Weird = { "PLAYER_ACTING_WEIRD", "PLAYER_LOOKING_WEIRD", "WHATS_GOING_ON" };
         public static readonly string[] Disbelief = { "GENERIC_SHOCKED_DISBELIEF" };   // the awake, at what can't be (Lex heard a bystander's take of it at a death and wanted it for the awake)
         public static readonly string[] DisbeliefElse = { "GENERIC_SHOCKED_HIGH", "WHATS_GOING_ON" };   // for a voice that lacks it
-        // despair's last words (Lex: "pick 10 voice lines that would make sense"): disbelief, a goodbye, trailing off,
-        // leaving, things going badly, not knowing, fear, wanting to be let be. Picked by what they say in the one voice
-        // transcribed locally (never quoted here: Rockstar's words stay on Lex's PC); each voice words them its own way,
-        // and 210 to 330 of the 330 voices carry each.
-        public static readonly string[] LastWords = { "GENERIC_SHOCKED_DISBELIEF", "WHATS_GOING_ON", "CONVO_TAIL_OFF", "GENERIC_GOODBYE", "GOODBYE_START",
-                                                      "IM_OUTTA_HERE", "GOING_BADLY", "NO_IDEA", "GENERIC_FRIGHTENED_HIGH", "LEAVE_ME" };
+        // despair's last words and every beat's voice are DespairWords' now (VoiceLines by beat and temperament; Lex,
+        // 2026-10-27: the old ten included fright and "leave me alone", which sounded like a hostage)
         public static readonly string[] Uneasy = { "WHATS_GOING_ON", "GENERIC_SHOCKED_MED", "NO_IDEA", "GENERIC_SHOCKED_DISBELIEF" };   // the uncanny lines: someone unsettled by their own world
         public static readonly string[] FightTalk = { "MELEE_BRING_IT_ON", "FIGHT", "FIGHT_RESPONSE", "GENERIC_ANGRY_SHOUT" };
         public static readonly string[] Chat = { "HOWS_IT_GOING", "CHAT_GOOD_WEATHER", "COMMENT_WORKING_HARD", "GREET_GENERAL_FAMILIAR" };

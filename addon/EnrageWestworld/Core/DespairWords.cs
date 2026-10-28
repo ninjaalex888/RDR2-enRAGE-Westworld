@@ -216,19 +216,82 @@ namespace EnrageWestworld.Core
             return new[] { new DespairBeat(-1, 0, "calm") };
         }
 
-        /// The game's lines voiced with a beat, the first the voice has (null: said in silence). Picked by name from the
-        /// lines most of the 330 ambient voices carry (amb_takes.txt): fright, a mutter, a plea, a moan.
+        // The voice for each beat (Lex, 2026-10-27: the old ones sounded like someone held hostage: pleading to be untied,
+        // crying for help, "leave me alone"). Now the game's own lines a person at the end would say, picked by what they
+        // say in the one voice transcribed locally (never quoted here) and carried by 183 to 330 of the 332 voices
+        // (amb_takes.txt): the farewell, "sorry, I can't", "don't worry about me", things going badly, not knowing,
+        // trailing off, weariness, quiet acceptance, the world gone strange, a low dread. Each beat's pool by temperament
+        // (bold, fearful, cold, plain), tried in a turn set by the seed, so two people seldom say the same; a voice that
+        // lacks one falls through to the next (Speech.SayAny).
+        private static readonly Dictionary<string, string[]> Voices = new Dictionary<string, string[]>
+        {
+            { "last|plain", new[] { "GENERIC_GOODBYE", "GENERIC_NO", "RESPONSE_IDLING", "GOODBYE_START", "GOING_BADLY" } },
+            { "last|fearful", new[] { "GENERIC_NO", "GOING_BADLY", "GENERIC_GOODBYE", "NO_IDEA", "GENERIC_FRIGHTENED_MED" } },
+            { "last|cold", new[] { "DISMISSIVE_REACT", "EVENT_COMMENT_RESPONSE", "GOODBYE_START", "GENERIC_GOODBYE", "RESPONSE_IDLING" } },
+            { "last|bold", new[] { "IM_OUTTA_HERE", "GENERIC_YES", "GOODBYE_START", "RESPONSE_IDLING", "GENERIC_GOODBYE" } },
+            { "pain|plain", new[] { "GOING_BADLY", "WHATS_GOING_ON", "CONVO_TAIL_OFF", "GENERIC_SHOCKED_DISBELIEF" } },
+            { "pain|fearful", new[] { "GENERIC_FRIGHTENED_MED", "GOING_BADLY", "WHATS_GOING_ON", "NO_IDEA" } },
+            { "pain|cold", new[] { "GENERIC_SHOCKED_DISBELIEF", "DISMISSIVE_REACT", "GOING_BADLY", "CONVO_TAIL_OFF" } },
+            { "pain|bold", new[] { "GENERIC_SHOCKED_MED", "GENERIC_SHOCKED_DISBELIEF", "GOING_BADLY", "WHATS_GOING_ON" } },
+            { "burden|plain", new[] { "RESPONSE_WORKING_HARD", "NO_IDEA", "CONVO_TAIL_OFF", "GOING_BADLY" } },
+            { "burden|fearful", new[] { "NO_IDEA", "GOING_BADLY", "SORRY_TO_HEAR_THAT", "CONVO_TAIL_OFF" } },
+            { "burden|cold", new[] { "DISMISSIVE_REACT", "RESPONSE_WORKING_HARD", "EVENT_COMMENT_RESPONSE", "NO_IDEA" } },
+            { "burden|bold", new[] { "RESPONSE_WORKING_HARD", "GOING_BADLY", "CONVO_TAIL_OFF", "NO_IDEA" } },
+            { "plea|plain", new[] { "RESPONSE_IDLING", "GOING_BADLY", "GENERIC_NO", "SORRY_TO_HEAR_THAT" } },
+            { "plea|fearful", new[] { "GENERIC_FRIGHTENED_MED", "GENERIC_NO", "GOING_BADLY", "RESPONSE_IDLING" } },
+            { "plea|cold", new[] { "RESPONSE_IDLING", "DISMISSIVE_REACT", "GENERIC_NO", "GOING_BADLY" } },
+            { "plea|bold", new[] { "RESPONSE_IDLING", "GENERIC_NO", "GOING_BADLY", "IM_OUTTA_HERE" } },
+            { "alone|plain", new[] { "CONVO_TAIL_OFF", "NO_IDEA", "GOING_BADLY", "WHATS_GOING_ON" } },
+            { "alone|fearful", new[] { "NO_IDEA", "GENERIC_FRIGHTENED_MED", "CONVO_TAIL_OFF", "GOING_BADLY" } },
+            { "alone|cold", new[] { "CONVO_TAIL_OFF", "DISMISSIVE_REACT", "NO_IDEA" } },
+            { "alone|bold", new[] { "CONVO_TAIL_OFF", "GOING_BADLY", "WHATS_GOING_ON" } },
+            { "calm|plain", new[] { "DISMISSIVE_REACT", "CONVO_TAIL_OFF", "EVENT_COMMENT_RESPONSE" } },
+            { "calm|fearful", new[] { "CONVO_TAIL_OFF", "NO_IDEA", "DISMISSIVE_REACT" } },
+            { "calm|cold", new[] { "EVENT_COMMENT_RESPONSE", "DISMISSIVE_REACT" } },
+            { "calm|bold", new[] { "GENERIC_YES", "DISMISSIVE_REACT", "EVENT_COMMENT_RESPONSE" } },
+            { "body|plain", new[] { "GENERIC_FRIGHTENED_MED", "GOING_BADLY", "SERIOUSLY_WOUNDED_MOAN" } },
+            { "regret|plain", new[] { "GENERIC_FRIGHTENED_MED", "GENERIC_SHOCKED_MED", "SCARED_HELP" } },   // poison only: the flash of wanting it back is a real cry for help
+        };
+
+        /// Every line name any beat can voice (for the tests and the voice probe).
+        public static IEnumerable<string> AllVoiceLines()
+        {
+            return Voices.Values.SelectMany(v => v).Distinct();
+        }
+
+        /// The voice for a beat, plain temperament, in the pool's own order (the tests).
         public static string[] VoiceLines(string beat)
         {
-            switch (beat)
+            return VoiceLines(beat, "plain", null);
+        }
+
+        /// The voice for a beat by temperament group (bold, fearful, cold, plain; the plain pool where theirs has none),
+        /// started at a point the seed picks so two people seldom open with the same line; the rest follow as fallbacks.
+        public static string[] VoiceLines(string beat, string group, string seed)
+        {
+            string[] pool;
+            if (!Voices.TryGetValue(beat + "|" + (group ?? "plain"), out pool) && !Voices.TryGetValue(beat + "|plain", out pool))
+                return null;
+            if (seed == null || pool.Length < 2)
+                return pool;
+            int start = (int)((uint)Core.Voice.Hash(seed + "|dv") % (uint)pool.Length);
+            return pool.Skip(start).Concat(pool.Take(start)).ToArray();
+        }
+
+        /// The temperament group for the voice: the mind's traits when it has them (a very anxious nature fearful, a
+        /// cold and solitary one cold, a forceful one bold), else the temper's group (Minds.TemperGroup).
+        public static string VoiceGroup(string temper, Traits t)
+        {
+            if (t != null)
             {
-                case "pain": return new[] { "SCARED_COMMUNICATE", "GENERIC_FRIGHTENED_MED", "GENERIC_FRIGHTENED_HIGH" };
-                case "burden": return new[] { "CONVO_TAIL_OFF", "NO_IDEA" };
-                case "plea": case "alone": return new[] { "PLEAD_HOGTIED", "PLEAD", "GOING_BADLY" };
-                case "body": return new[] { "SERIOUSLY_WOUNDED_MOAN", "VICTIMIZED_REACT", "GENERIC_FRIGHTENED_MED" };
-                case "regret": return new[] { "SCARED_HELP", "PANIC_HELP", "PLEAD" };
-                default: return null;
+                if (t[Traits.Anxiety] >= 1.0f)
+                    return "fearful";
+                if (t[Traits.Compassion] <= -0.8f && t[Traits.Sociability] <= -0.5f)
+                    return "cold";
+                if (t[Traits.Assertiveness] >= 1.0f && t[Traits.Anxiety] < 0.5f)
+                    return "bold";
             }
+            return Minds.TemperGroup(temper);
         }
 
         /// A line for the beat: their temperament's lines and the plain ones (with {who}'s when there's someone), the

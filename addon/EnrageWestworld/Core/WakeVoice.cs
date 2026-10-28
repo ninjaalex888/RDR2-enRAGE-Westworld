@@ -16,6 +16,7 @@
 // Lines are game line names carried by most of the 330 ambient voices (amb_takes.txt; ticktest WakeVoiceTest checks
 // 60+), the best fit first. The game decides whether it will play a line out of its context: the Testing page's
 // "Wake voices: every line" plays each once and logs it, so any it always refuses can be taken out.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -189,14 +190,24 @@ namespace EnrageWestworld.Core
         /// The moment for this person now, or null: their stage's, fitting what's around them, not the one they had last,
         /// never a farewell (the awake act asks for that one by name). Moments that need the player near or watching come
         /// first when they fit (they're the step up), else any that fits.
-        public static WakeVoiceMoment Choose(int stage, WakeVoiceContext c, string seed, string lastId)
+        public static WakeVoiceMoment Choose(int stage, WakeVoiceContext c, string seed, string lastId, Func<WakeVoiceMoment, bool> skip = null)
         {
-            List<WakeVoiceMoment> fit = All.Where(m => m.Stage == stage && !m.Farewell && m.Id != lastId && Fits(m, c)).ToList();
+            List<WakeVoiceMoment> fit = All.Where(m => m.Stage == stage && !m.Farewell && m.Id != lastId && Fits(m, c) && (skip == null || !skip(m))).ToList();
             if (fit.Count == 0)
                 return null;
             List<WakeVoiceMoment> aimed = fit.Where(m => m.When != null).ToList();
             List<WakeVoiceMoment> from = aimed.Count > 0 && (Voice.Hash(seed + "|aim") & 0x7fffffff) % 100 < 55 ? aimed : fit;
             return from[(Voice.Hash(seed) & 0x7fffffff) % from.Count];
+        }
+
+        // lines that sound like someone held captive or in danger from another (pleading to be untied, crying for help,
+        // telling others to run): odd and right for the waking in the street, wrong in an act that may end in despair
+        // (Lex, 2026-10-27: "as if they are being held hostage")
+        public static readonly string[] CaptiveLines = { "PLEAD_HOGTIED", "PLEAD", "PANIC_COMMUNICATE", "SCARED_COMMUNICATE", "PANIC_HELP", "SCARED_HELP" };
+
+        public static bool Captive(WakeVoiceMoment m)
+        {
+            return m != null && m.Lines != null && m.Lines.Any(l => Array.IndexOf(CaptiveLines, l) >= 0);
         }
 
         public static WakeVoiceMoment Farewell()

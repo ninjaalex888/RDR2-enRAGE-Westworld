@@ -370,7 +370,7 @@ namespace EnrageWestworld.InGame
                 return;
             _despairSaid.Add(line);
             _despairLastLine = act.Name + " (" + pool + "): " + line;
-            string[] voice = voiceFirst ?? DespairWords.VoiceLines(pool);
+            string[] voice = voiceFirst ?? DespairWords.VoiceLines(pool, DespairVoiceGroup(act), act.P.Id + "|" + pool);
             if (toYou)
                 Feed.Say(act.Name, line, voice != null ? Speech.WhenSet(h, voice, me.Handle) : null, h, toYou: true, ahead: true);
             else if (voice != null)

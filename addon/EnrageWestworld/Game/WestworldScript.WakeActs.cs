@@ -1318,15 +1318,32 @@ namespace EnrageWestworld.InGame
         private int _disbeliefSaid;
         private string _disbeliefLast;
 
-        /// Their last words, voiced (Lex): one of ten of the game's own lines that fit (Speech.LastWords), the first tried
+        /// Their last words, voiced (Lex): the game's own lines that fit a farewell by their temperament (DespairWords, "last"), the first tried
         /// picked for the person, then the rest in turn until their voice has one. The written "last" line is the subtitle
         /// when the recording's own words aren't known.
         private void DespairLastWords(WakeAct act, Ped me)
         {
-            int start = (int)((uint)Voice.Hash(act.P.Id + "|lastwords") % (uint)Speech.LastWords.Length);
-            string[] order = Speech.LastWords.Skip(start).Concat(Speech.LastWords.Take(start)).ToArray();
-            Log.Write("WAKE despair: " + act.Name + "'s last words, voiced from " + order[0] + " first" + (act.Who != null ? "; closest to " + act.Who : ""));
+            string group = DespairVoiceGroup(act);
+            string[] order = DespairWords.VoiceLines("last", group, act.P.Id + "|lastwords");
+            Log.Write("WAKE despair: " + act.Name + "'s last words, voiced from " + order[0] + " first (" + group + ")" + (act.Who != null ? "; closest to " + act.Who : ""));
             DespairSay(act, "last", Game.GameTime, order);
+        }
+
+        /// Whose voice despair speaks in: the mind's traits when the shadow knows this person (in memory, nothing made),
+        /// else their temper (DespairWords.VoiceGroup).
+        private string DespairVoiceGroup(WakeAct act)
+        {
+            EnrageWestworld.Core.Traits t = null;
+            try
+            {
+                if (_cfg.MindShadow && _engine != null && act.P != null && act.P.Id != null)
+                    t = _engine.Shadow.TraitsOf(TraitSource.From(act.P, act.P.Facets != null && act.P.Facets.Count > 0 ? "record" : act.P.Id.StartsWith("folk:", StringComparison.Ordinal) ? "folk" : "resident"));
+            }
+            catch
+            {
+                t = null;   // the temper alone, then
+            }
+            return DespairWords.VoiceGroup(act.P != null ? act.P.Personality : null, t);
         }
 
         /// Someone fully awake at what can't be: the game's own disbelief line in their voice (a voice without it gets a
