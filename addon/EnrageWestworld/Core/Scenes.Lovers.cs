@@ -31,8 +31,32 @@ namespace EnrageWestworld.Core
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             Scene s = new Scene { Kind = "argue", Summary = "sweethearts had words in the street" };
-            switch (Voice.Hash(seed + "|tt") % 4)
+            switch (Voice.Hash(seed + "|tt") % 8)   // eight quarrels, so no two couples have the same one word for word (night 2026-10-28, item 10)
             {
+                case 4:
+                    s.Add(0, "You walked " + (c.BWoman ? "her" : "him") + " home from church, " + b + ". I saw it from the window.", "angry", "face")
+                     .Add(1, "It was raining. I had the umbrella.", "mild")
+                     .Add(0, "You never had an umbrella for me.", "angry")
+                     .Add(1, "You never once stood in the rain, " + a + ". I'm going.", "storm", "walkaway");
+                    break;
+                case 5:
+                    s.Add(0, "My mother asked after you Sunday. I didn't know what to tell her, " + b + ".", "angry", "face")
+                     .Add(1, "Tell her I'm well. What else is there?", "mild")
+                     .Add(0, "She wants to know what you mean by it. So do I.", "angry")
+                     .Add(1, "I mean to walk home before I say something I'd regret, " + a + ".", "storm", "walkaway");
+                    break;
+                case 6:
+                    s.Add(0, "You laughed when I said it, " + b + ". Before the whole room.", "angry", "face")
+                     .Add(1, "It was a joke. Everybody laughed.", "mild")
+                     .Add(0, "It wasn't a joke to me.", "angry")
+                     .Add(1, "Then I'm sorry, and I'm going, " + a + ". Both.", "storm", "walkaway");
+                    break;
+                case 7:
+                    s.Add(0, "Three weeks and not a word, " + b + ". Not a note.", "angry", "face")
+                     .Add(1, "I can't write what I don't know how to say.", "mild")
+                     .Add(0, "You could have said hello. That's one word.", "angry")
+                     .Add(1, "Then hello, " + a + ". And goodbye for today.", "storm", "walkaway");
+                    break;
                 case 0:
                     s.Add(0, "I waited all Sunday afternoon, " + b + ". You never came.", "angry", "face")
                      .Add(1, "Something came up. I told you after.", "mild")

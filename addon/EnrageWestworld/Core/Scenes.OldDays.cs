@@ -16,8 +16,69 @@ namespace EnrageWestworld.Core
             string a = N(c, 0, seed), b = N(c, 1, seed);
             Scene s = new Scene { Kind = "smalltalk", Summary = "two old-timers argued about the old days" };
             string topic = OldTopics[Voice.Hash(seed + "|old") % OldTopics.Length];
+            bool second = Voice.Hash(seed + "|old2") % 2 == 1;   // each topic has two tellings, so no two pairs of old men say the same words (night 2026-10-28, item 10)
             switch (topic)
             {
+                case "winter" when second:
+                    s.Add(0, "Froze the creek solid in '80. Drove a wagon over it.", "mild", "face")
+                     .Add(1, "You drove a wagon into it, " + a + ". We fished you out.", "mock")
+                     .Add(0, "That was the thaw. Different week.", "mild")
+                     .Add(1, "Same wagon. Same fool at the reins.", "mock")
+                     .Add(0, "You'd have gone the same way, " + b + ", only you were abed with the grippe.", "angry")
+                     .Add(1, "Abed and dry. There's a lesson in it.", "mild")
+                     .Add(0, "...Lost a good team that day.", "mild")
+                     .Add(1, "Lost your hat too. Floated clear to the mill.", "cheer");
+                    break;
+                case "coffee" when second:
+                    s.Add(0, "A man could eat a week on a dollar when I was young.", "mild", "face")
+                     .Add(1, "A man could starve a week on a dollar, is what. You've forgot the prices.", "mild")
+                     .Add(0, "Eggs a penny apiece, " + b + ". I remember what I remember.", "mild")
+                     .Add(1, "You remember your mother's hens, " + a + ". That ain't a price.", "mock")
+                     .Add(0, "Leave my mother out of it.", "angry")
+                     .Add(1, "Finest hens in the county. I'm saying nothing against the hens.", "mild")
+                     .Add(0, "...They were good layers.", "mild")
+                     .Add(1, "Ate one at your wedding. Tough as a saddle.", "cheer");
+                    break;
+                case "railroad" when second:
+                    s.Add(0, "First engine come through, half the town ran the other way.", "mild", "face")
+                     .Add(1, "You ran the other way, " + a + ". The town stood and cheered.", "mock")
+                     .Add(0, "I went to see to the horses. They were spooked.", "mild")
+                     .Add(1, "The horses were tied. You were the one spooked.", "mock")
+                     .Add(0, "I was twelve years old, " + b + ".", "angry")
+                     .Add(1, "Twelve and fast. Never saw a boy clear a fence like it.", "mild")
+                     .Add(0, "...It was a loud machine.", "mild")
+                     .Add(1, "Still is. Still clear a fence for it, I'd wager.", "cheer");
+                    break;
+                case "sheriff" when second:
+                    s.Add(0, "Marshal Gaines kept this town quiet with a look. Never drew once.", "mild", "face")
+                     .Add(1, "Never drew because he never had to find his gun. Left it in the saloon twice, " + a + ".", "mock")
+                     .Add(0, "He left it on purpose. A man like that didn't need it.", "mild")
+                     .Add(1, "He left it because he was drunk. I carried it back to him.", "mock")
+                     .Add(0, "You carried a lot of things in those days, " + b + ". Most of them weren't yours.", "angry")
+                     .Add(1, "That was the once, and I was a boy.", "mild")
+                     .Add(0, "...He did have a look about him, though.", "mild")
+                     .Add(1, "He did. Looked straight through you. Even sober.", "cheer");
+                    break;
+                case "dance" when second:
+                    s.Add(0, "Fiddler at the Christmas dance of '75. Never heard the like since.", "mild", "face")
+                     .Add(1, "That fiddler was my cousin, " + a + ", and he was tone deaf.", "mock")
+                     .Add(0, "Then he was a tone-deaf wonder. Whole room was up.", "mild")
+                     .Add(1, "Whole room was up because the stove went out. They danced to keep warm.", "mock")
+                     .Add(0, "You'd argue with the sunrise, " + b + ".", "angry")
+                     .Add(1, "Only when it's late.", "mild")
+                     .Add(0, "...He could play, your cousin.", "mild")
+                     .Add(1, "He could. Deaf as a post and he could play. Go figure that.", "cheer");
+                    break;
+                case "ridge" when second:
+                    s.Add(0, "That night on the ridge I never closed my eyes once.", "mild", "face")
+                     .Add(1, "You snored like a sawmill, " + a + ". The captain threw a boot at you.", "mock")
+                     .Add(0, "That was Hollis snoring. I was on watch.", "mild")
+                     .Add(1, "Hollis was dead by then, God rest him. It was you, " + b + ".", "mild")
+                     .Add(0, "...Was he? That early?", "mild")
+                     .Add(1, "That early. You said the words over him yourself, " + a + ".", "mild")
+                     .Add(0, "I did. I'd forgot I did.", "mild")
+                     .Add(1, "You said them well. I'll give you that. Then you snored.", "cheer");
+                    break;
                 case "winter":
                     s.Add(0, "Worst winter I ever saw was '72. Snow up to the eaves.", "mild", "face")
                      .Add(1, "'72? The winter of '86 was worse, and you know it, " + a + ".", "mild")
