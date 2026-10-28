@@ -40,6 +40,7 @@ namespace EnrageWestworld.Core
         public string AboutId;       // the same by id ("player"), or null; DoerId: whoever did it, for a feeling about oneself
         public string DoerId;
         public string Why;           // the event kind
+        public string Shows;         // what the face showed of it, when the game side worked it out (Display.Shows: shown, softened, masked, turned), else null
         public float[] All;          // every feeling's intensity, in Kinds order (for the log and the tests)
 
         /// mild, moderate, strong, or "-" for none.

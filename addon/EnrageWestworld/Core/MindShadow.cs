@@ -106,7 +106,7 @@ namespace EnrageWestworld.Core
                         least = i;
                 list.RemoveAt(least);
             }
-            list.Add(new FeltAt { Kind = k, Intensity = f.Intensity, At = now, About = f.About, AboutId = f.AboutId, DoerId = f.DoerId });
+            list.Add(new FeltAt { Kind = k, Intensity = f.Intensity, At = now, About = f.About, AboutId = f.AboutId, DoerId = f.DoerId, Masked = f.Shows == "masked" || f.Shows == "turned" });
             FeelingsNoted++;
             if (OnFeel != null)
                 OnFeel(id);

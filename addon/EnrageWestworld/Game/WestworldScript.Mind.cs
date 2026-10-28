@@ -155,6 +155,7 @@ namespace EnrageWestworld.InGame
             Feeling f = Appraisal.Of(ae, w.Traits);
             if (f.Kind == "none")
                 return;
+            f.Shows = Display.Shows(f, ae, w.Traits);   // kept with the feeling, so a masked one's thought can say the mask too
             _engine.Shadow.Feel(id, f, ev.At);
             _mindFelt++;
             string about = ae.Doer == "player" && f.About == ev.DoerName ? "you" : f.About;
@@ -167,7 +168,7 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             PadMood b = Mood.Baseline(w.Traits), m = _engine.Shadow.MoodOf(id, w.Traits, g);
             string mind = Mood.SoreOrGlad(m, b), old = _cfg.MindLive ? null : _engine.MoodToday(w.P, w.P.Home ?? _placeTown);
-            MindLog(now, "MIND " + w.Name + " (" + (w.Src.Temper ?? "plain") + "): " + f.Kind + " (" + f.Strength + ")" + (about != null ? " at " + about : "") + ", urge " + f.Urge + ", shows " + Display.Shows(f, ae, w.Traits) + " (" + MindCanShow(f, w) + ")" +
+            MindLog(now, "MIND " + w.Name + " (" + (w.Src.Temper ?? "plain") + "): " + f.Kind + " (" + f.Strength + ")" + (about != null ? " at " + about : "") + ", urge " + f.Urge + ", shows " + f.Shows + " (" + MindCanShow(f, w) + ")" +
                          " <- " + ev.Kind + " (" + ae.Role + (heardOnly ? ", only heard it" : "") + ", " + ae.Witnesses + " saw); mood " + Mood.Words(m, b) +
                          (!_cfg.MindLive && old != mind ? "; the old mood says " + (old ?? "nothing") + ", the mind's " + (mind ?? "nothing") : ""));
         }

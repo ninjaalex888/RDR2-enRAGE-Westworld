@@ -89,7 +89,7 @@ namespace EnrageWestworld.Core
                 {
                     string kind = Feeling.Kinds[best.Kind], whom, who, you;
                     WhomOf(p, best, kind, day, out whom, out who, out you);
-                    string line = MindThoughts.Line(kind, whom, seed, you, who, used);   // its three said today: the other thoughts
+                    string line = MindThoughts.Line(kind, whom, seed, you, who, used, best.Masked);   // all of its pool said today: the other thoughts; a masked feeling says the mask too
                     if (line != null)
                     {
                         pull = 40f + 50f * Math.Min(1f, most);
@@ -113,7 +113,7 @@ namespace EnrageWestworld.Core
             int top = n.Top(0.85f);
             if (top < 0)
                 return default(KeyValuePair<string, string>);
-            string need = MindThoughts.NeedLine(top, n.ViceName, seed, used, c.Indoors ? null : c.Weather);
+            string need = MindThoughts.NeedLine(top, n.ViceName, seed, used, c.Indoors ? null : c.Weather, InnerLife.TradeGroup(p.Trade), Minds.TemperGroup(p.Personality));
             if (need == null)
                 return default(KeyValuePair<string, string>);
             pull = 38f;
