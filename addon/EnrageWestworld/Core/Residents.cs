@@ -104,6 +104,12 @@ namespace EnrageWestworld.Core
             return first[Voice.Hash(seed + "f") % first.Length];
         }
 
+        /// Whether a first name is one of the women's (he or she in a line about them).
+        public static bool IsWomansName(string w)
+        {
+            return w != null && Array.IndexOf(WomenFirst, w) >= 0;
+        }
+
         /// Whether a word is one of the names residents are given (the language layer's check).
         internal static bool IsName(string w)
         {

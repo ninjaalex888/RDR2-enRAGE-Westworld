@@ -407,7 +407,7 @@ namespace EnrageWestworld.Core
             string who = m.NameAt(0) ?? "somebody", a = m.NameAt(0) ?? "somebody", b = m.NameAt(1) ?? "somebody";
             if (m.Many)
                 raw = raw.Replace("{a} and {b}", "{a}, {b} and another");   // two became three in the telling (Minds.Drifted)
-            string s = raw.Replace("{who}", who).Replace("{a}", a).Replace("{b}", b).Replace("{you}", you ?? "that stranger")
+            string s = Ties.Pronouns(raw, Residents.IsWomansName(Person.FirstOf(who)) || Scenes.IsWomansName(Person.FirstOf(who))).Replace("{who}", who).Replace("{a}", a).Replace("{b}", b).Replace("{you}", you ?? "that stranger")
                           .Replace("{town}", string.IsNullOrEmpty(m.Town ?? p.Home) ? "this town" : m.Town ?? p.Home);
             return Sentences(s);
         }

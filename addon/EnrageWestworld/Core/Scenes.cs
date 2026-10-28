@@ -81,6 +81,11 @@ namespace EnrageWestworld.Core
         }
 
         /// Whether a word is one of the first names scenes give strangers (the language layer's check).
+        public static bool IsWomansName(string w)
+        {
+            return w != null && Array.IndexOf(Women, w) >= 0;
+        }
+
         internal static bool IsName(string w)
         {
             return Array.IndexOf(Men, w) >= 0 || Array.IndexOf(Women, w) >= 0;

@@ -183,7 +183,7 @@ namespace EnrageWestworld.Core
             "I was right. {other} was louder. That's not the same thing.",
             "Tossed and turned over {other}. The pillow's no help.",
             "Next time {other} starts, I'll keep my mouth shut. I won't, but I'll mean to.",
-            "{other} said I'd always been a fool. Always. Like they'd kept count.",
+            "{other} said I'd always been a fool. Always. Like {he}'d kept count.",
             "Words with {other} again. Same words. Same mud.",
             "Kicked the stove over {other}. The stove didn't deserve it.",
             "Thought of the right answer an hour later. {other} would've been struck dumb by it.",
@@ -201,7 +201,7 @@ namespace EnrageWestworld.Core
             "Saw {other} whispering after. About me, I'd bet a dollar.",
             "There's a stone in my boot, and its name is {other}.",
             "Cleaned the lamp chimney twice, thinking of {other}. It was clean the first time.",
-            "{other} thinks they won. Let them think it."
+            "{other} thinks {he} won. Let {him} think it."
         };
 
         private static readonly string[] Blows =
@@ -242,9 +242,9 @@ namespace EnrageWestworld.Core
         {
             "{other} and the money. Always the money between us now.",
             "Saw {other} buy a round like a rich man. With whose money, I wonder.",
-            "{other} owes me, and walks around like the sun owes them a living.",
+            "{other} owes me, and walks around like the sun owes {him} a living.",
             "Counted what {other} owes. Counted it again. Same number.",
-            "Lent {other} money. Should've lent them a rope.",
+            "Lent {other} money. Should've lent {him} a rope.",
             "Every time {other} buys tobacco I add it up. That's my tobacco.",
             "{other} says next week. Said next week last month.",
             "Money sours everything. Sours me and {other}, anyhow.",
@@ -254,7 +254,7 @@ namespace EnrageWestworld.Core
             "{other}'s good for it. I keep telling myself. {other}'s good for it.",
             "Saw {other} at the card table. With my money, likely.",
             "Never lend to friends, Pa said. Should've listened. {other}.",
-            "{other} talked fine words when they borrowed. Quiet now.",
+            "{other} talked fine words when {he} borrowed. Quiet now.",
             "Ink on the IOU's faded. {other}'s memory's faded faster.",
             "Five dollars is five dollars, {other}. Even to you.",
             "Lie awake doing sums. Every sum ends in {other}.",
@@ -264,11 +264,11 @@ namespace EnrageWestworld.Core
             "Money between neighbours is a fence nobody built on purpose. Me and {other}.",
             "{other} crossed the street when I came. Money does that.",
             "Should I let {other} keep it? Buy myself some peace?",
-            "If {other} pays, I'll buy them a drink. If.",
+            "If {other} pays, I'll stand {him} a whiskey. If.",
             "Told the storekeeper about {other}'s debt. Shouldn't have. Did.",
             "Wonder if {other} even remembers. They remember everything else.",
             "Every dollar {other} spends is a dollar of mine walking by.",
-            "Money's money, and {other}'s {other}. Hard to keep them apart.",
+            "Money's money, and {other}'s {other}. Hard to keep the two apart.",
             "{other} owes me money and an honest word. Neither's come."
         };
 
@@ -313,15 +313,15 @@ namespace EnrageWestworld.Core
             "{other} and I had a good long jaw. Hours went by like minutes.",
             "{other} knows a thing or two about horses. Didn't expect that.",
             "Laughed with {other}. Haven't laughed like that since spring.",
-            "{other} told me about their people back east. Felt like I'd met them.",
+            "{other} told me about {his} people back east. Felt like I'd met them.",
             "Good to have someone to pass the time with. {other}, of all people.",
             "{other} remembered my name. Most don't bother.",
             "Talked weather with {other}. Then talked everything else.",
             "{other} has a dry way of saying things. Took me a while to catch on.",
             "Easy, talking to {other}. Like an old boot.",
-            "{other} said they'd buy the next coffee. I'll hold them to it.",
+            "{other} said {he}'d buy the next coffee. I'll hold {him} to it.",
             "Never knew {other} had a brother in the army.",
-            "{other} talks with their hands. Nearly lost my hat.",
+            "{other} talks with {his} hands. Nearly lost my hat.",
             "Nice, being asked my opinion. {other} asked twice.",
             "{other} and me see the town the same way. Rare.",
             "Bumped into {other} again. Twice in a week. Getting to be a habit.",
@@ -345,7 +345,7 @@ namespace EnrageWestworld.Core
             "{other} asked after my trouble. Meant it, too. Didn't expect that.",
             "{other} was glad for me. Truly glad. There's few would be.",
             "{other} brought me soup. Soup. I near wept into it.",
-            "{other} said it'd come right. Said it like they believed it.",
+            "{other} said it'd come right. Said it like {he} believed it.",
             "Didn't ask for help. {other} gave it anyway.",
             "{other} sat with me a while. Didn't say much. Didn't need to.",
             "I won't forget {other} stopping. Not for a long time.",
@@ -356,7 +356,7 @@ namespace EnrageWestworld.Core
             "Plenty walked by. {other} didn't.",
             "{other} put a hand on my shoulder. Still feel it there.",
             "Owe {other} more than coffee. Coffee's a start.",
-            "{other} has troubles of their own. Still made room for mine.",
+            "{other} has troubles of {his} own. Still made room for mine.",
             "There's good people yet. {other}'s one.",
             "Ma would've liked {other}. That's the highest I've got.",
             "{other} said I'd done right. Hadn't heard that in a while.",
@@ -364,7 +364,7 @@ namespace EnrageWestworld.Core
             "{other} made me laugh when I'd no business laughing.",
             "Thought I was alone in it. {other} showed me otherwise.",
             "Kindness from {other}. Didn't know where to put my hands.",
-            "{other} gave me their time. Rich folk don't give that.",
+            "{other} gave me {his} time. Rich folk don't give that.",
             "Wrote {other}'s name in my book. So I won't forget.",
             "{other} didn't make a show of it. Just did it.",
             "Felt foolish taking {other}'s help. Felt worse turning it down.",
@@ -383,7 +383,7 @@ namespace EnrageWestworld.Core
             "Laughed with {other} today. After all that. Laughed.",
             "Took both of us being stubborn, and both of us giving in. {other} first.",
             "Should've made it up with {other} months back. Wasted months.",
-            "{other} said they were sorry. I said I was sorrier. We'll argue about that instead.",
+            "{other} said {he} was sorry. I said I was sorrier. We'll argue about that instead.",
             "Bought {other} a drink. Drank it together. Like before.",
             "Lighter on my feet since {other} and I settled it.",
             "Ma always said never let the sun go down on it. Took a few sundowns with {other}.",
@@ -401,7 +401,7 @@ namespace EnrageWestworld.Core
             "Hand on {other}'s shoulder. Theirs on mine. That was all it took.",
             "Shouldn't have taken so long. {other} knows it. I know it.",
             "Back to borrowing {other}'s tools. Missed that.",
-            "Wrote {other} a note. Tore it up. Said it to their face instead.",
+            "Wrote {other} a note. Tore it up. Said it to {his} face instead.",
             "Slept the whole night through. First since the quarrel with {other}.",
             "Some quarrels end with a shot. Mine with {other} ended with coffee. Thank the Lord.",
             "{other} grinned at me like old times. Old times are back.",
@@ -454,7 +454,7 @@ namespace EnrageWestworld.Core
             "Didn't think. Just grabbed {other}. Thinking came after.",
             "{other}'s face hit the wood loud as a gunshot. Can still hear it.",
             "Might've gone too far with {other}. Might not've gone far enough.",
-            "{other} won't run their mouth for a while. Can't, with that lip.",
+            "{other} won't run {his} mouth for a while. Can't, with that lip.",
             "Woke up thinking of {other}'s face going down. Not proud. Not sorry.",
             "If the law asks, {other} slipped.",
             "My temper got the better of me with {other}. Got the better of {other} too.",
@@ -513,7 +513,7 @@ namespace EnrageWestworld.Core
         {
             "{other} never felt a thing. Some folks walk around asking to be robbed.",
             "Three dollars and a lucky rabbit's foot off {other}. Wasn't lucky for {other}.",
-            "Saw {other} patting their coat. Didn't look back. You never look back."
+            "Saw {other} patting {his} coat. Didn't look back. You never look back."
         };
         private static readonly string[] LiftDone =
         {
@@ -531,14 +531,14 @@ namespace EnrageWestworld.Core
             "I'd know {other}'s face anywhere now. Had a hand right in my pocket.",
             "{other}. Bold as brass, in broad day. I'll count my change twice around {other}.",
             "Felt the tug, turned round, and there was {other}. Hand in my coat.",
-            "{other} had the nerve to smile when I caught them.",
+            "{other} had the nerve to smile when I caught {him}.",
             "Keep my money in my boot now. Thanks to {other}.",
             "Thought {other} was decent. So much for thinking.",
             "Told the whole street about {other}. Every word true.",
             "{other}'s fingers were quick. Not quick enough.",
             "Pat my pocket every few steps now. Can't help it. {other}.",
             "Ought to have called the sheriff on {other}. Still might.",
-            "{other} looked me in the eye with their hand in my pocket. Bold as a crow.",
+            "{other} looked me in the eye with {his} hand in my pocket. Bold as a crow.",
             "Lost nothing but my trust. {other} took that clean.",
             "Next time I see {other}, I'll cross the street and count to ten.",
             "{other} said it was a mistake. Hand slipped. Into my coat.",
@@ -598,7 +598,7 @@ namespace EnrageWestworld.Core
             "Counted the steps home. Two hundred, the long way. {other}."
         };
         // {other}: the one who fell (for the one who helped or walked past), or the one who helped or walked past
-        private static readonly string[] HelpDid = { "{other} took a fall and I helped them up. Glad I was there.", "Hope {other}'s mending. Went down hard." };
+        private static readonly string[] HelpDid = { "{other} took a fall and I helped {him} up. Glad I was there.", "Hope {other}'s mending. Went down hard." };
         private static readonly string[] HelpDone = {
             "{other} picked me up when I fell. I owe {other} for that.",
             "{other} stopped. Plenty didn't.",
@@ -606,22 +606,22 @@ namespace EnrageWestworld.Core
             "Knee's sore, pride's sorer. {other} was kind about both.",
             "Could've lain there an hour. {other} came in a minute.",
             "{other}'s hand was steady. Mine wasn't.",
-            "Thanked {other} twice. Should've thanked them three times.",
+            "Thanked {other} twice. Should've thanked {him} three times.",
             "Wonder what I'd have done if {other} hadn't come.",
             "{other} didn't laugh. Others did. {other} didn't.",
             "Feel I owe {other} a pie. Maybe two.",
             "Tumbled in the street like a fool. {other} made it not matter.",
-            "Will look out for {other}, should they ever fall.",
+            "Will look out for {other}, should {he} ever fall.",
             "{other} didn't ask anything for it. Just went on.",
             "Ankle's swelling. {other} said to keep it up. I will.",
             "Kind of {other}. The town's full of folk who wouldn't.",
             "Told Ma about {other} in a letter. She'll like that.",
-            "{other}'s face when they reached me. Worried. For me.",
+            "{other}'s face when {he} reached me. Worried. For me.",
             "Didn't know {other} could lift like that.",
             "Will remember {other}'s name now. Didn't before.",
             "Ashamed of falling. Grateful to {other}. Both at once.",
             "{other} stayed till I could stand. That's a friend.",
-            "Hope I'd do as {other} did, if it was them.",
+            "Hope I'd do as {other} did, if it was {him} down there.",
             "{other} picked up my hat too. Dusted it. Small thing. Big thing.",
             "Every time I see {other} now, I'll think of the street, and the hand.",
             "Somebody laughed while I lay there. Then {other} came.",
@@ -640,14 +640,14 @@ namespace EnrageWestworld.Core
             "{other} stepped round me like a puddle.",
             "Won't forget {other}'s boots going by my face.",
             "Thought better of {other}. Thought wrong.",
-            "If {other} ever falls, I'll stop. Just to show them.",
+            "If {other} ever falls, I'll stop. Just to show {him}.",
             "Lay in the dirt and watched {other} walk off.",
             "Funny how quick {other} remembered somewhere to be.",
-            "{other} saw me. Don't tell me they didn't.",
+            "{other} saw me. Don't tell me {he} didn't.",
             "Would it have cost {other} anything? A minute. A minute.",
             "Still feel the street's chill. And {other}'s back.",
             "Told everyone how {other} walked on by. Told it plain.",
-            "{other} tips their hat to me now like nothing happened.",
+            "{other} tips {his} hat to me now like nothing happened.",
             "My knee healed. What {other} did hasn't.",
             "Some folks are all Sunday and no Monday. {other}.",
             "Picked myself up. No thanks to {other}.",
@@ -680,8 +680,8 @@ namespace EnrageWestworld.Core
             "Never had anyone stand up for me before {other}.",
             "{other} didn't make a show of it after. Just went on.",
             "Can walk this street again. Thanks to {other}.",
-            "Told {other} I owe them. {other} said nonsense. I owe them.",
-            "Saw the look {other} gave him. Didn't know {other} had that in them.",
+            "Told {other} I owe {him}. {other} said nonsense. I owe {him}.",
+            "Saw the look {other} gave him. Didn't know {other} had that in {him}.",
             "Ma always said find your people. Found one. {other}.",
             "Won't forget the sound of {other} saying enough.",
             "Shame I needed it. Glad {other} gave it.",
@@ -705,7 +705,7 @@ namespace EnrageWestworld.Core
         private static readonly string[] SettledDone = { "{other} paid me back. Every cent. I'd have bet the other way.", "Counted {other}'s money twice. All there.", "Didn't think I'd see that money again. {other} surprised me.", "{other} owes me nothing now. Strange, after all that.", "Took {other}'s coins in the street. Felt near sorry." };
         private static readonly string[] TownSettled = { "{a} paid {b} back in the street, every cent, with folks watching.", "Heard {a} squared up with {b} in front of half the town.", "{a} paid what was owed. {b} said so out loud. Good for {a}.", "{a} squared up with {b} where the whole street could watch.", "Money changed hands between {a} and {b} today. Square, they say." };
         private static readonly string[] TownRound = { "{a} stood the whole saloon a round. Folks'll be friends with {a} till Sunday.", "{a} bought for the house, {b} says. Wish I'd been there.", "{a} bought the house a drink last night. {b} hasn't stopped saying so." };
-        private static readonly string[] FacedDone = { "{other} put their nose in my business. I won't forget it.", "{other}, playing the hero. In front of half the street." };
+        private static readonly string[] FacedDone = { "{other} put {his} nose in my business. I won't forget it.", "{other}, playing the hero. In front of half the street." };
 
         private static readonly string[] CharityDid =
         {
@@ -755,12 +755,34 @@ namespace EnrageWestworld.Core
         };
 
         /// A thought about someone they had a scene with lately, by first name; about their death if they've died since.
-        public static string Thought(SceneTie t, string id, string seed, bool otherDead = false)
+        /// He or she for the other person in a line ({he} {him} {his} {himself}; the slots are capitalised when the
+        /// line starts with them). The Ties pools said "they" of a named person until the night of 2026-10-28, which read
+        /// modern; a person of 1899 is he or she.
+        public static string Pronouns(string line, bool woman)
+        {
+            if (line == null || line.IndexOf('{') < 0)
+                return line;
+            line = line.Replace("{he}", woman ? "she" : "he").Replace("{him}", woman ? "her" : "him").Replace("{his}", woman ? "her" : "his").Replace("{himself}", woman ? "herself" : "himself");
+            return line.Replace("{He}", woman ? "She" : "He").Replace("{His}", woman ? "Her" : "His");
+        }
+
+        /// Whether the other end of a tie is a woman, by their first name when nothing better is known (the tie carries
+        /// names, not sex; the add-on's and the scenes' women's names are known lists).
+        public static bool OtherIsWoman(SceneTie t, string id)
+        {
+            string name = t != null ? t.Other(id) : null;
+            if (name == null)
+                return false;
+            string first = Person.FirstOf(name);
+            return Residents.IsWomansName(first) || Scenes.IsWomansName(first);
+        }
+
+        public static string Thought(SceneTie t, string id, string seed, bool otherDead = false, bool? otherWoman = null)
         {
             if (otherDead)
-                return Voice.Pick(seed + "tdead", t.Warmth < 0 ? DeadFoe : t.Warmth > 0 ? DeadFriend : DeadKnown).Replace("{other}", Person.FirstOf(t.Other(id)));
+                return Pronouns(Voice.Pick(seed + "tdead", t.Warmth < 0 ? DeadFoe : t.Warmth > 0 ? DeadFriend : DeadKnown).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
             if (t.Kind == "avoid" && t.Doer != null)
-                return Voice.Pick(seed + "avoid", t.Did(id) ? AvoidDid : AvoidDone).Replace("{other}", Person.FirstOf(t.Other(id)));
+                return Pronouns(Voice.Pick(seed + "avoid", t.Did(id) ? AvoidDid : AvoidDone).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
             if (Trouble(t.Kind) && t.Doer != null)
             {
                 bool did = t.Did(id);
@@ -769,11 +791,11 @@ namespace EnrageWestworld.Core
                                  : t.Kind == "scorn" ? (did ? ScornDid : ScornDone) : t.Kind == "help" ? (did ? HelpDid : HelpDone)
                                  : t.Kind == "passby" ? (did ? PassDid : PassDone) : t.Kind == "defend" ? (did ? DefendDid : DefendDone)
                                  : t.Kind == "faced" ? (did ? FacedDid : FacedDone) : t.Kind == "round" ? (did ? RoundDid : RoundDone) : t.Kind == "settled" ? (did ? SettledDid : SettledDone) : (did ? DrunkDid : DrunkDone);
-                return Voice.Pick(seed + "trouble", trouble).Replace("{other}", Person.FirstOf(t.Other(id)));
+                return Pronouns(Voice.Pick(seed + "trouble", trouble).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
             }
             string[] pool = t.Kind == "brawl" ? Blows : t.Kind == "debt" ? Money : t.Kind == "makeup" ? MadeUp : t.Kind == "brushoff" ? Shrugged
                           : t.Kind == "comfort" || t.Kind == "cheer" || t.Kind == "apology" ? Kindness : t.Warmth < 0 ? Quarrel : Romantic(t.Kind) ? Sweet : Known;
-            return Voice.Pick(seed + "tie", pool).Replace("{other}", Person.FirstOf(t.Other(id)));
+            return Pronouns(Voice.Pick(seed + "tie", pool).Replace("{other}", Person.FirstOf(t.Other(id))), otherWoman ?? OtherIsWoman(t, id));
         }
 
         // ---- what the town says ---------------------------------------------------------------------------
