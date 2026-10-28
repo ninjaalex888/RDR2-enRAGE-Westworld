@@ -1127,6 +1127,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST visitor: " + VisitorStatus());
 			Log.Write("TEST traveller: " + TravellerStatus());
+			Log.Write("TEST supper: " + SupperStatus());
 			Log.Write("TEST preacher and old days: " + PreacherStatus());
 			Log.Write("TEST lost child: " + LostChildStatus());
 			Log.Write("TEST sabbath: " + SabbathStatus());
