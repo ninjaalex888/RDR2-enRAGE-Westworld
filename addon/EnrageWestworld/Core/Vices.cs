@@ -13,6 +13,15 @@ namespace EnrageWestworld.Core
     {
         /// Why this person would drink tonight, or null: grief for a friend first (by name; it takes anyone), then a
         /// worry that ended badly today (its kind; not the Coward, who goes home and hides instead).
+        /// The same, for a woman: a respectable woman of 1899 didn't drink herself drunk in a saloon; the saloon's own
+        /// women did (night 2026-10-28, item 10).
+        public static string DrinkWhy(string griefFor, bool worryEndedBadly, string worryKind, string temper, bool woman, bool saloonWoman)
+        {
+            if (woman && !saloonWoman)
+                return null;
+            return DrinkWhy(griefFor, worryEndedBadly, worryKind, temper);
+        }
+
         public static string DrinkWhy(string griefFor, bool worryEndedBadly, string worryKind, string temper)
         {
             if (griefFor != null)

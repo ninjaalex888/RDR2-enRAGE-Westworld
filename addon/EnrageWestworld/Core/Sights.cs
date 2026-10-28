@@ -58,7 +58,7 @@ namespace EnrageWestworld.Core
         }
 
         /// The whole reaction to the player.
-        public static Look For(string state, string temper, string regard, string seed)
+        public static Look For(string state, string temper, string regard, string seed, bool woman = false)
         {
             string feel = Feeling(state, temper, regard, seed);
             var l = new Look { State = state, Feeling = feel };
@@ -87,7 +87,7 @@ namespace EnrageWestworld.Core
                     }
                     break;
                 case "disgust":
-                    l.Gesture = Passing.Spitter(temper) && r < 30 ? "spit" : "headshake";
+                    l.Gesture = Passing.Spitter(temper) && !woman && r < 30 ? "spit" : "headshake";   // women don't spit (item 10)
                     l.LookMs = 2000;
                     l.Voice = r < 50 ? new[] { "VOCAL_FX_DISAPPROVE" } : null;   // wordless
                     break;

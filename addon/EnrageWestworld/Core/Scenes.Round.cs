@@ -13,6 +13,14 @@ namespace EnrageWestworld.Core
 
         /// Why this person would buy the house a drink tonight, or null: good news today first, then a glad mood, then
         /// an outgoing nature and money in the pocket (never the Greedy, who'd sooner keep it).
+        /// The same, for a woman: a respectable woman didn't stand the house a round; the saloon's own women might (item 10).
+        public static string RoundWhy(bool goodNewsToday, string mood, bool outgoing, bool wellOff, string temper, bool woman, bool saloonWoman)
+        {
+            if (woman && !saloonWoman)
+                return null;
+            return RoundWhy(goodNewsToday, mood, outgoing, wellOff, temper);
+        }
+
         public static string RoundWhy(bool goodNewsToday, string mood, bool outgoing, bool wellOff, string temper)
         {
             if (temper == "Greedy")

@@ -58,7 +58,7 @@ namespace EnrageWestworld.Core
                     a.LookMs = 3500;                                   // the look that stays a beat too long
                     break;
                 case "hostile":
-                    a.Gesture = Spitter(aTemper) && r < 30 ? "spit" : "none";
+                    a.Gesture = Spitter(aTemper) && !aWoman && r < 30 ? "spit" : "none";   // a woman's answer to an enemy is the cut, not a spit (item 10)
                     a.Answer = "look";   // the other feels it and looks back
                     a.Speaks = false;
                     a.LookMs = 2200;

@@ -79,7 +79,7 @@ namespace EnrageWestworld.InGame
                 bool good;
                 bool news = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && good;
                 string w = couple != null && c.Who.Temper != "Greedy" && c.Who.Id != wed.AId && c.Who.Id != wed.BId && !AgainstCouple(c.Who.Id, wed) ? "wedding" :   // not the newlyweds themselves
-                            Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper) ?? (test ? "glad" : null);
+                            Scenes.RoundWhy(news, c.Who.Mood, c.Who.P.Outgoing, c.Who.WellOff, c.Who.Temper, c.Who.Woman, InnerLife.TradeGroup(c.Who.P.Trade) == "girl") ?? (test ? "glad" : null);
                 int r = Array.IndexOf(Scenes.RoundWhys, w);
                 if (w == null || r >= rank || !people.Any(o => o != c && o.Ped.Position.DistanceTo(c.Ped.Position) < RoundBar && TieWarmth(o.Who.Id, c.Who) >= 0))
                     continue;

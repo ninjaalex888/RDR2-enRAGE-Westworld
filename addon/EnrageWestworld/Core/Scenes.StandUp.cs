@@ -49,13 +49,17 @@ namespace EnrageWestworld.Core
             if (far)
                 add.Add(new Beat(2, null, null, "approach"));
             add.Add(new Beat(2, null, null, "cb:stoodup"));
-            add.Add(new Beat(2, rough ? Voice.Pick(seed + "su", "That's enough, " + a + ". Leave " + b + " be.", a + "! Leave " + b + " alone.", "Not here, " + a + ". Not while I'm standing here.",
+            // a woman who steps in shames them; she doesn't offer to fight (item 10)
+            add.Add(new Beat(2, c.CWoman ? (rough ? Voice.Pick(seed + "su", "Shame on you, " + a + ". Leave " + b + " be.", a + "! For shame. Let " + b + " alone.", "Not in the street, " + a + ". Not before everyone.")
+                                                   : Voice.Pick(seed + "sx", "Shame on the both of you!", "Not here, " + a + ". Not today. " + b + ", you too.", "For shame. The pair of you, in the open street."))
+                                         : (rough ? Voice.Pick(seed + "su", "That's enough, " + a + ". Leave " + b + " be.", a + "! Leave " + b + " alone.", "Not here, " + a + ". Not while I'm standing here.",
                                                    "Leave off " + b + ", or deal with me.")
-                                      : Voice.Pick(seed + "sx", "That's enough! The both of you!", "Not here, " + a + ". Not today. " + b + ", you too.", "Put your hands down, the pair of you."),
+                                                  : Voice.Pick(seed + "sx", "That's enough! The both of you!", "Not here, " + a + ". Not today. " + b + ", you too.", "Put your hands down, the pair of you.")),
                              "intervene", "face"));
             if (backsOff)
             {
-                add.Add(new Beat(0, rough ? Voice.Pick(seed + "sb", "...Fine. " + b + " ain't worth it.", "This ain't over, " + b + ".", "Keep your nose out, " + cn + ". ...Fine.")
+                add.Add(new Beat(0, c.CWoman ? Voice.Pick(seed + "sb", "...Fine. Not in front of a lady.", "This ain't over, " + b + ". Beg your pardon, ma'am.", "...Fine. " + b + " ain't worth it.")
+                                          : rough ? Voice.Pick(seed + "sb", "...Fine. " + b + " ain't worth it.", "This ain't over, " + b + ".", "Keep your nose out, " + cn + ". ...Fine.")
                                           : Voice.Pick(seed + "sy", "...Fine. Not worth the skinned knuckles.", "Another time, " + b + ".", "You're lucky " + cn + " came by."), "storm", "walkaway"));
                 add.Add(new Beat(1, null, null, "faceone") { To = 2 });
                 add.Add(new Beat(1, rough ? Voice.Pick(seed + "st", "Thank you, " + cn + ". I owe you.", cn + ". Thank God.", "Obliged, " + cn + ". He'd have done it.")
@@ -68,7 +72,8 @@ namespace EnrageWestworld.Core
             }
             else
             {
-                add.Add(new Beat(0, rough ? Voice.Pick(seed + "si", "Keep walking, " + cn + ".", "Ain't your quarrel, " + cn + ". Never was.", "Mind your own, " + cn + ", or you're next.")
+                add.Add(new Beat(0, c.CWoman ? Voice.Pick(seed + "si", "This is no business for a lady, " + cn + ".", "Go on home, " + cn + ". This ain't for you to see.")
+                                          : rough ? Voice.Pick(seed + "si", "Keep walking, " + cn + ".", "Ain't your quarrel, " + cn + ". Never was.", "Mind your own, " + cn + ", or you're next.")
                                           : Voice.Pick(seed + "sw", "Step aside, " + cn + ".", "This is ours to settle, " + cn + "."), "angry", "face"));
                 s.Beats.InsertRange(at, add);
                 s.Summary += "; someone tried to step in";

@@ -68,7 +68,7 @@ namespace EnrageWestworld.InGame
                 int ws;
                 bool good;
                 bool bad = InnerLife.WorryNow(c.Who.P, g / 1440, out wk, out ws, out good) && ws >= 3 && !good;
-                string w = Vices.DrinkWhy(_engine.GriefFor(c.Who.Id, 720), bad, wk, c.Who.Temper) ?? (test ? "badnews:trouble" : null);
+                string w = Vices.DrinkWhy(_engine.GriefFor(c.Who.Id, 720), bad, wk, c.Who.Temper, c.Who.Woman, InnerLife.TradeGroup(c.Who.P.Trade) == "girl") ?? (test ? "badnews:trouble" : null);
                 if (w == null)
                     continue;
                 drinker = c;

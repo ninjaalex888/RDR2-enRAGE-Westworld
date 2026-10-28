@@ -227,7 +227,7 @@ namespace EnrageWestworld.InGame
                 var run = new SightRun
                 {
                     By = p, At = me, ToYou = true, Name = SightName(p, known ? name : null, woman), State = state, Key = key, Woman = woman, Seed = seed,
-                    Look = Sights.For(state, temper, regard, seed), Start = now + n * 1600, Step = 0
+                    Look = Sights.For(state, temper, regard, seed, woman), Start = now + n * 1600, Step = 0
                 };
                 _sights.Add(run);
                 _sightSeen[key] = g;
