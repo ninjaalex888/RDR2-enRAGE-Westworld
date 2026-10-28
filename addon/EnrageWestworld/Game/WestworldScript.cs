@@ -1061,6 +1061,19 @@ namespace EnrageWestworld.InGame
 				_flirtRequested = true;
 			}
 		}
+		/// A status for the F7 dump that must never cost the lines after it (the night review, 2026-10-28: Test() runs outside any Safe).
+		private static string Guarded(Func<string> status)
+		{
+			try
+			{
+				return status();
+			}
+			catch (Exception ex)
+			{
+				return "failed: " + ex.Message;
+			}
+		}
+
 
 		private void Test()
 		{
@@ -1131,11 +1144,11 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST visitor: " + VisitorStatus());
 			Log.Write("TEST traveller: " + TravellerStatus());
-			Log.Write("TEST supper: " + SupperStatus());
+			Log.Write("TEST supper: " + Guarded(SupperStatus));
 			Log.Write("TEST preacher and old days: " + PreacherStatus());
 			Log.Write("TEST lost child: " + LostChildStatus());
-			Log.Write("TEST test cast: " + TestCastStatus());
-			Log.Write("TEST controller: " + PadStatus());
+			Log.Write("TEST test cast: " + Guarded(TestCastStatus));
+			Log.Write("TEST controller: " + Guarded(PadStatus));
 			Log.Write("TEST sabbath: " + SabbathStatus());
 			Log.Write("TEST bell: " + BellStatus());
 			Log.Write("TEST card cheats: " + _thrownOuts + " shown the door and thought of it outside this session");
