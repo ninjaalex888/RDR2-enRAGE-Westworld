@@ -20,7 +20,7 @@
 
 ### Despair's voice
 
-- Someone who can't bear it no longer sounds like a hostage (Lex: pleading to be untied, crying for help, "leave me alone"). Their voice now comes from 19 of the game's own lines a person at the end would say: a farewell, "sorry, I can't", "don't worry about me", things going badly, not knowing, trailing off, quiet acceptance, the world gone strange, a low dread. They're chosen for each moment of the act and by the person's nature (the mind's traits when it knows them), so two people seldom say the same. The quiet at the end is voiced too, and the waking act before it never has them begging to be untied.
+- Someone who can't bear it no longer sounds like a hostage (Lex: pleading to be untied, crying for help, "leave me alone"), nor like someone saying random things. The game has no lines for this, and each voice records its own words, so for now they say only a farewell as it begins (in their own voice, by their nature), and the rest of the act is quiet, their thoughts over their head. With poison, the pain and the moment of wanting it back are voiced too. The waking act before it never has them begging to be untied. Lines chosen for each voice from what it really says come later.
 
 ### The settings panel
 

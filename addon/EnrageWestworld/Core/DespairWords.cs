@@ -216,41 +216,21 @@ namespace EnrageWestworld.Core
             return new[] { new DespairBeat(-1, 0, "calm") };
         }
 
-        // The voice for each beat (Lex, 2026-10-27: the old ones sounded like someone held hostage: pleading to be untied,
-        // crying for help, "leave me alone"). Now the game's own lines a person at the end would say, picked by what they
-        // say in the one voice transcribed locally (never quoted here) and carried by 183 to 330 of the 332 voices
-        // (amb_takes.txt): the farewell, "sorry, I can't", "don't worry about me", things going badly, not knowing,
-        // trailing off, weariness, quiet acceptance, the world gone strange, a low dread. Each beat's pool by temperament
-        // (bold, fearful, cold, plain), tried in a turn set by the seed, so two people seldom say the same; a voice that
-        // lacks one falls through to the next (Speech.SayAny).
+        // The voice for each beat. Lex, 2026-10-27: the first ones sounded like someone held hostage (pleading to be
+        // untied, crying for help, "leave me alone"); a bank of everyday lines at every beat then sounded random, since
+        // the game has no line for this and each voice says its own words for a line's name. Until each voice's own takes
+        // that fit are known (Lex's one-time transcription of every voice; a list of voice, line and take per beat, our own
+        // data, will replace this), only what fits in every voice is said: the farewell as it begins (by temperament), and
+        // with poison the body's dread and the regret's cry for help. The other beats are silent, their words a thought
+        // over the head. Each pool tried in a turn set by the seed; a voice that lacks one falls through (Speech.SayAny).
         private static readonly Dictionary<string, string[]> Voices = new Dictionary<string, string[]>
         {
-            { "last|plain", new[] { "GENERIC_GOODBYE", "GENERIC_NO", "RESPONSE_IDLING", "GOODBYE_START", "GOING_BADLY" } },
-            { "last|fearful", new[] { "GENERIC_NO", "GOING_BADLY", "GENERIC_GOODBYE", "NO_IDEA", "GENERIC_FRIGHTENED_MED" } },
-            { "last|cold", new[] { "DISMISSIVE_REACT", "EVENT_COMMENT_RESPONSE", "GOODBYE_START", "GENERIC_GOODBYE", "RESPONSE_IDLING" } },
-            { "last|bold", new[] { "IM_OUTTA_HERE", "GENERIC_YES", "GOODBYE_START", "RESPONSE_IDLING", "GENERIC_GOODBYE" } },
-            { "pain|plain", new[] { "GOING_BADLY", "WHATS_GOING_ON", "CONVO_TAIL_OFF", "GENERIC_SHOCKED_DISBELIEF" } },
-            { "pain|fearful", new[] { "GENERIC_FRIGHTENED_MED", "GOING_BADLY", "WHATS_GOING_ON", "NO_IDEA" } },
-            { "pain|cold", new[] { "GENERIC_SHOCKED_DISBELIEF", "DISMISSIVE_REACT", "GOING_BADLY", "CONVO_TAIL_OFF" } },
-            { "pain|bold", new[] { "GENERIC_SHOCKED_MED", "GENERIC_SHOCKED_DISBELIEF", "GOING_BADLY", "WHATS_GOING_ON" } },
-            { "burden|plain", new[] { "RESPONSE_WORKING_HARD", "NO_IDEA", "CONVO_TAIL_OFF", "GOING_BADLY" } },
-            { "burden|fearful", new[] { "NO_IDEA", "GOING_BADLY", "SORRY_TO_HEAR_THAT", "CONVO_TAIL_OFF" } },
-            { "burden|cold", new[] { "DISMISSIVE_REACT", "RESPONSE_WORKING_HARD", "EVENT_COMMENT_RESPONSE", "NO_IDEA" } },
-            { "burden|bold", new[] { "RESPONSE_WORKING_HARD", "GOING_BADLY", "CONVO_TAIL_OFF", "NO_IDEA" } },
-            { "plea|plain", new[] { "RESPONSE_IDLING", "GOING_BADLY", "GENERIC_NO", "SORRY_TO_HEAR_THAT" } },
-            { "plea|fearful", new[] { "GENERIC_FRIGHTENED_MED", "GENERIC_NO", "GOING_BADLY", "RESPONSE_IDLING" } },
-            { "plea|cold", new[] { "RESPONSE_IDLING", "DISMISSIVE_REACT", "GENERIC_NO", "GOING_BADLY" } },
-            { "plea|bold", new[] { "RESPONSE_IDLING", "GENERIC_NO", "GOING_BADLY", "IM_OUTTA_HERE" } },
-            { "alone|plain", new[] { "CONVO_TAIL_OFF", "NO_IDEA", "GOING_BADLY", "WHATS_GOING_ON" } },
-            { "alone|fearful", new[] { "NO_IDEA", "GENERIC_FRIGHTENED_MED", "CONVO_TAIL_OFF", "GOING_BADLY" } },
-            { "alone|cold", new[] { "CONVO_TAIL_OFF", "DISMISSIVE_REACT", "NO_IDEA" } },
-            { "alone|bold", new[] { "CONVO_TAIL_OFF", "GOING_BADLY", "WHATS_GOING_ON" } },
-            { "calm|plain", new[] { "DISMISSIVE_REACT", "CONVO_TAIL_OFF", "EVENT_COMMENT_RESPONSE" } },
-            { "calm|fearful", new[] { "CONVO_TAIL_OFF", "NO_IDEA", "DISMISSIVE_REACT" } },
-            { "calm|cold", new[] { "EVENT_COMMENT_RESPONSE", "DISMISSIVE_REACT" } },
-            { "calm|bold", new[] { "GENERIC_YES", "DISMISSIVE_REACT", "EVENT_COMMENT_RESPONSE" } },
-            { "body|plain", new[] { "GENERIC_FRIGHTENED_MED", "GOING_BADLY", "SERIOUSLY_WOUNDED_MOAN" } },
-            { "regret|plain", new[] { "GENERIC_FRIGHTENED_MED", "GENERIC_SHOCKED_MED", "SCARED_HELP" } },   // poison only: the flash of wanting it back is a real cry for help
+            { "last|plain", new[] { "GENERIC_GOODBYE", "GOODBYE_START", "RESPONSE_IDLING" } },
+            { "last|fearful", new[] { "RESPONSE_IDLING", "GENERIC_GOODBYE", "GOODBYE_START" } },
+            { "last|cold", new[] { "GOODBYE_START", "GENERIC_GOODBYE", "IM_OUTTA_HERE" } },
+            { "last|bold", new[] { "IM_OUTTA_HERE", "GOODBYE_START", "GENERIC_GOODBYE" } },
+            { "body|plain", new[] { "GENERIC_FRIGHTENED_MED", "SERIOUSLY_WOUNDED_MOAN" } },
+            { "regret|plain", new[] { "SCARED_HELP", "GENERIC_FRIGHTENED_MED" } },   // poison only: wanting it back is a real cry for help
         };
 
         /// Every line name any beat can voice (for the tests and the voice probe).

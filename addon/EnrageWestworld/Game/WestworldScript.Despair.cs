@@ -371,10 +371,8 @@ namespace EnrageWestworld.InGame
             _despairSaid.Add(line);
             _despairLastLine = act.Name + " (" + pool + "): " + line;
             string[] voice = voiceFirst ?? DespairWords.VoiceLines(pool, DespairVoiceGroup(act), act.P.Id + "|" + pool);
-            if (toYou)
-                Feed.Say(act.Name, line, voice != null ? Speech.WhenSet(h, voice, me.Handle) : null, h, toYou: true, ahead: true);
-            else if (voice != null)
-                Speech.SayAny(h, voice, me.Handle);
+            if (voice != null)
+                Speech.SayAny(h, voice, me.Handle);   // their own voice says what it says; our words are the thought over the head, never a subtitle under different words
             _despairLine = new TickerLine { Label = act.Name + ", thinking", Text = line, Kind = "near", Handle = h };
             _despairLineUntil = now + 30000;   // up until the next beat replaces it or the act ends (EndWakeAct); gone when they die
             Log.Write("WAKE despair: " + act.Name + " (" + pool + (toYou ? ", to you" : "") + "): " + line);
