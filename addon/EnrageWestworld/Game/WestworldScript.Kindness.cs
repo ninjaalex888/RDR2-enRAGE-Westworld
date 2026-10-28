@@ -64,7 +64,8 @@ namespace EnrageWestworld.InGame
                 // named only the ground whatever it was)
                 string counted = string.Join(", ", people.Select(c => c.Ped.Position.DistanceTo(me.Position) < 3f ? "at your feet" : FallCant(c.Ped, me, test))
                                                          .GroupBy(r => r).OrderByDescending(gr => gr.Count()).Select(gr => gr.Count() + " " + gr.Key));
-                why = _fallWhyNot = "nobody fits within " + FallFromYou + " m" + (people.Count > 0 ? " (" + people.Count + " named people near: " + counted + ")" : " (no named people free near you)");
+                why = _fallWhyNot = "nobody fits within " + FallFromYou + " m" + (people.Count > 0 ? " (" + people.Count + " named people near: " + counted + ")" : " (no named people free near you)") +
+                                    "; everyone within " + FallFromYou + " m: " + CrowdCounted(me, FallFromYou);
                 return false;
             }
             Candidate by = people.Where(c => c != faller && c.Who.Id != faller.Who.Id && c.Ped.Position.DistanceTo(faller.Ped.Position) < FallSeen &&
@@ -123,12 +124,18 @@ namespace EnrageWestworld.InGame
             float speed = ENTITY.GET_ENTITY_SPEED(h);
             if (!test && (speed < 0.8f || speed > 2.6f))
                 return "not walking";
-            if (p.Position.DistanceTo(me.Position) > FallFromYou || !NodInView(me, p))
-                return "out of view";
+            if (p.Position.DistanceTo(me.Position) > FallFromYou)
+                return "further than " + FallFromYou + " m";
+            if (!ENTITY.IS_ENTITY_ON_SCREEN(h))
+                return "not on your screen";
+            if (!ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17))
+                return "something between you";
             if (IsRecord(h))
                 return "one of enRAGE's records";
-            if (PED.IS_PED_USING_ANY_SCENARIO(h))
-                return "sitting, leaning or at work";
+            if (PED.IS_PED_SITTING(h))
+                return "sitting";
+            if (PED.IS_PED_USING_ANY_SCENARIO(h) && !test)
+                return "standing, leaning or at work in one spot";   // a test may tip over someone standing about (the tumble breaks the scenario; Lex, 2026-10-27)
             if (ENTITY.IS_ENTITY_IN_WATER(h) || INTERIOR.GET_INTERIOR_FROM_ENTITY(h) != 0 || !IsGrownUp(p))
                 return "indoors or in water";
             Vector3 pos = p.Position;
@@ -143,6 +150,36 @@ namespace EnrageWestworld.InGame
                     off++;
             }
             return off > 1 ? "on stairs or a slope" : null;
+        }
+
+        /// Everyone within the radius of you, counted by what keeps them out of the street scenes (for a refusal): the
+        /// game's own scripts' people (mission entities, never directed), lawmen, children, riding or in a vehicle,
+        /// fighting or fleeing, enRAGE's busy people, and the rest (free to take part).
+        private string CrowdCounted(Ped me, float radius)
+        {
+            var why = new Dictionary<string, int>();
+            Action<string> add = k => why[k] = why.TryGetValue(k, out int n) ? n + 1 : 1;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                if (p == null || !p.Exists() || p.Handle == me.Handle || p.IsDead || !PED.IS_PED_HUMAN(p.Handle) || p.Position.DistanceTo(me.Position) > radius)
+                    continue;
+                int h = p.Handle;
+                if (Natives.IsChild(p))
+                    add("children");
+                else if (Natives.IsLaw(p))
+                    add("lawmen");
+                else if (PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false))
+                    add("riding or in a wagon");
+                else if (PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h))
+                    add("fighting or fleeing");
+                else if (ENTITY.IS_ENTITY_A_MISSION_ENTITY(h) && !IsRecord(h))
+                    add("the game's own scripts' people");
+                else if (MayDirectWhyNot(p) != null)
+                    add("busy (enRAGE's, a scene, a story)");
+                else
+                    add("free");
+            }
+            return why.Count == 0 ? "nobody" : string.Join(", ", why.OrderByDescending(kv => kv.Value).Select(kv => kv.Value + " " + kv.Key));
         }
 
         /// The ground height just below a point (from a little above it, so a roof or an awning overhead doesn't count),
