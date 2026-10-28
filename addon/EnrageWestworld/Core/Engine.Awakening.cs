@@ -76,6 +76,14 @@ namespace EnrageWestworld.Core
             return p;
         }
 
+        /// Drops the cached Person for a resident whose facts changed under the same name (the test cast's Fit sets the
+        /// age, faith, temper and trade after MeetResident may already have cached them: the night review, 2026-10-28).
+        public void ForgetPerson(string id)
+        {
+            if (id != null)
+                _resPeople.Remove(id);
+        }
+
         /// Makes a resident for an ordinary person who has just been asked about. Not saved until something happens
         /// to them, except that the share of residents who start already waking is rolled here, and those are kept.
         public Resident MeetResident(uint model, bool woman, string town, string trade, string seed, long now)

@@ -274,6 +274,7 @@ namespace EnrageWestworld.InGame
             foreach (int old in _resBind.Where(kv => kv.Value.R == res).Select(kv => kv.Key).ToList())
                 _resBind.Remove(old);   // a body of theirs the game still has somewhere: a passer-by now
             res.Town = run.Town;
+            _engine.ForgetPerson(res.Id);   // Fit and the town change came after MeetResident may have cached their Person (the night review)
             _engine.KeepResident(res, gameNow);
             _resBind[h] = new ResBind { R = res, Model = model };
             var body = new TestCastBody { Part = part, R = res, Ped = p };
