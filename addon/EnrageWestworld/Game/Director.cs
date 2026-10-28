@@ -27,7 +27,9 @@ namespace EnrageWestworld.InGame
             public int NextAt;
             public int StartedAt;
             public bool Fighting;
-            public int FightUntil;
+            public int FightUntil;               // until blows start (FightStartMs), then the fight's own length from then
+            public bool FightOn;                 // they're at it
+            public int FightA, FightB, FightAskedAt, FightOrderedAt, FightMs;
             public int[] StartHealth;
             public string Seed;
             public Action Done;
@@ -329,6 +331,27 @@ namespace EnrageWestworld.InGame
             {
                 for (int i = 0; i < 2; i++)
                     KeepFists(l.Cast[i]);
+                if (!l.FightOn)
+                {
+                    if (PED.IS_PED_IN_MELEE_COMBAT(l.FightA) || PED.IS_PED_IN_MELEE_COMBAT(l.FightB) || PED.IS_PED_IN_COMBAT(l.FightA, l.FightB) || PED.IS_PED_IN_COMBAT(l.FightB, l.FightA))
+                    {
+                        l.FightOn = true;
+                        l.FightUntil = now + l.FightMs;
+                        Log.Write("SCENE fight: at it " + ((now - l.FightAskedAt) / 1000.0).ToString("0.0") + " s after the word");
+                    }
+                    else if (now >= l.FightUntil)
+                    {
+                        Abort("they never came to blows in " + FightStartMs / 1000 + " s (" +
+                              (PED.IS_PED_USING_ANY_SCENARIO(l.FightA) || PED.IS_PED_USING_ANY_SCENARIO(l.FightB) ? "still sat or leaning" : "ordered, never in combat") + ")");
+                        return;
+                    }
+                    else
+                    {
+                        if (now - l.FightOrderedAt > 2000)
+                            FightOrder(l);
+                        return;
+                    }
+                }
                 bool hurt = Health(l, 0) < 0.6f || Health(l, 1) < 0.6f;
                 if (now < l.FightUntil && !hurt)
                     return;
@@ -520,11 +543,19 @@ namespace EnrageWestworld.InGame
                         WEAPON.SET_CURRENT_PED_WEAPON(p.Handle, fists, true, 0, false, false);
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                     PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t, false);
-                    TASK.TASK_COMBAT_PED(h, t, 0, 16);
-                    TASK.TASK_COMBAT_PED(t, h, 0, 16);
                     l.StartHealth = new[] { Math.Max(1, ENTITY.GET_ENTITY_HEALTH(l.Cast[0].Handle)), Math.Max(1, ENTITY.GET_ENTITY_HEALTH(l.Cast[1].Handle)) };
                     l.Fighting = true;
-                    l.FightUntil = Game.GameTime + Math.Max(5000, ms);
+                    // the fight's own seconds start when they're at it (Tick): two men leaning or sat, ordered to fight
+                    // the moment they were told to stop, got up and never swung, and the beat's 9 s ran out on the
+                    // words alone (Lex, 2026-10-28)
+                    l.FightOn = false;
+                    l.FightA = h;
+                    l.FightB = t;
+                    l.FightAskedAt = Game.GameTime;
+                    l.FightOrderedAt = 0;
+                    l.FightMs = Math.Max(5000, ms);
+                    l.FightUntil = Game.GameTime + FightStartMs;
+                    FightOrder(l);
                     return 1000;
                 case "endfight":
                     Ped a = l.Cast[0], b = l.Cast[1];
@@ -679,6 +710,30 @@ namespace EnrageWestworld.InGame
         }
 
         /// A brawl stays a brawl: if a fighter reaches for a gun or a knife, it goes back in the holster.
+        private const int FightStartMs = 12000;
+
+        /// The order to fight, once both are on their feet: a man sat or leaning is told to stop (the clear lets him get
+        /// up) and, still in it after 3 s, taken out of it at once. Given again every 2 s until they're at it.
+        private static void FightOrder(Live l)
+        {
+            int now = Game.GameTime;
+            bool up = true;
+            foreach (int p in new[] { l.FightA, l.FightB })
+            {
+                if (!PED.IS_PED_USING_ANY_SCENARIO(p))
+                    continue;
+                if (now - l.FightAskedAt > 3000)
+                    TASK.CLEAR_PED_TASKS_IMMEDIATELY(p, false, true);
+                else
+                    up = false;
+            }
+            if (!up)
+                return;
+            TASK.TASK_COMBAT_PED(l.FightA, l.FightB, 0, 16);
+            TASK.TASK_COMBAT_PED(l.FightB, l.FightA, 0, 16);
+            l.FightOrderedAt = now;
+        }
+
         private static unsafe void KeepFists(Ped p)
         {
             if (p == null || !p.Exists())
