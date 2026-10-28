@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
             float assert = Z(Traits.Assertiveness), honesty = Z(Traits.Honesty), defer = Z(Traits.Deference);
             bool loose = e.Drunk || e.WakeStage >= 3;                                   // drink and waking loosen every rule
             bool hushed = (e.Place == "church" || e.Place == "graveside") && !loose;     // still and quiet
+            bool lawBy = e.Law && !loose;   // a lawman standing by hushes anger and contempt too (the doc: quiet before the law; the night review, 2026-10-28: the flag was set but never read)
             bool publicPlace = e.Witnesses > 0 && e.Company != "alone";
             bool cold = compassion < -0.6f && soc < -0.6f;                              // the detached
             bool hot = anger > 1f;                                                      // can't quite hold it
@@ -47,7 +48,7 @@ namespace EnrageWestworld.Core
                 case "anger":
                     if (loose)
                         return "shown";
-                    if (hushed || e.Doer == "lawman")
+                    if (hushed || lawBy || e.Doer == "lawman")
                         return hot ? "softened" : "masked";   // church and the law: anger swallowed upward (a hothead only half manages)
                     if (role(f, e) == "onlooker" && mild)
                         return hot ? "shown" : cold || defer < -0.8f ? "masked" : "softened";   // someone else's business: a hard look
@@ -102,7 +103,7 @@ namespace EnrageWestworld.Core
                 case "envy":
                     return hot && !hushed ? "shown" : "masked";   // nobody owns to envy but a hothead
                 case "contempt":
-                    if (hushed)
+                    if (hushed || lawBy)
                         return "masked";
                     if (role(f, e) != "self")
                         return proud ? "shown" : f.Urge == "watch" || cold ? "masked" : "shown";
