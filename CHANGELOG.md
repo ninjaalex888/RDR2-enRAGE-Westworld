@@ -121,6 +121,10 @@ Built on 2026-10-26, overnight and through the day and night of 2026-10-27 (Lex'
 
 - How people will remember what they saw and pass it on: a memory fades by how much it mattered, fast at first and then slower and slower (a scuffle seen is gone in about three days; a killing seen is still there, faintly, a year on, and longer if people keep talking about it), and when friends meet the strongest news is told on, a little less sure and with names lost at each telling, until "Earl Platt knocked Hollis down" becomes "somebody knocked Hollis down".
 
+### Groundwork for quarrels that go further (nothing in game yet)
+
+- How a quarrel climbs or comes down, in code only: words, a shove, blows, a gun drawn, a shot, with the hotter of the two pushing up by his nature, his drink, what it's over, the crowd and the history between them, and the cooler bringing it down with an apology, a joke, a drink, by backing down or walking off, or a friend stepping in; the law at hand and a town's gun rule hold the law-abiding back from a gun; nobody draws what he doesn't carry. Over twenty thousand quarrels most end in words, a third in a fight, a gun comes out in two or three of a hundred and a shot in under one; drunk armed men with history in a saloon at night are the exception, as they were.
+
 ### Groundwork for the language layer (nothing in game yet)
 
 - What a local language model would be asked about a person (their nature, mood, what they feel and about whom, what shows on their face, their worry, a memory, the place and the hour) and the checks every answer must pass before anyone would see it: short, plain, no modern words, no names it wasn't given, never breaking the frame. Nothing loads a model or connects anywhere; the written lines stay as they are.
