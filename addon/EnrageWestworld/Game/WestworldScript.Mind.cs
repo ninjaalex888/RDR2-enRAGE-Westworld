@@ -324,7 +324,7 @@ namespace EnrageWestworld.InGame
                 else
                 {
                     ResBind b;
-                    if (_resBind.TryGetValue(h, out b) && b.R != null && !b.R.Dead)
+                    if (_resBind.TryGetValue(h, out b) && b.R != null && !b.R.Dead && b.Model == model)   // handles are reused: the model check every other binding site makes (the night review)
                     {
                         Person res = _engine.PersonOfResident(b.R);
                         w.Id = res.Id;
