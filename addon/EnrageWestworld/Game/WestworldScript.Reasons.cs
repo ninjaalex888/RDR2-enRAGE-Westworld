@@ -518,6 +518,10 @@ namespace EnrageWestworld.InGame
                 return false;
             if (!_restMsOf.TryGetValue(h, out ms))
                 ms = PersonRestMs;
+            // a trouble weight over 1 shortens the rests too: in a thin town everyone near has just been in a scene
+            // (Lex, 2026-10-28: "there isn't many people in town"); at 5, 24 s and 3 min after blows
+            if (_cfg.TroubleWeight > 1f)
+                ms = (int)(ms / _cfg.TroubleWeight);
             return now - at < ms;
         }
 
@@ -549,7 +553,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             int now = Game.GameTime;
             int fought = _restMsOf.Keys.Count(h => Resting(h, now));
-            string sat = fought > 0 ? fought + " who came to blows sitting it out (" + FoughtRestMs / 60000 + " min); " : "";
+            string sat = fought > 0 ? fought + " who came to blows sitting it out (" + (int)(FoughtRestMs / Math.Max(1f, _cfg.TroubleWeight) / 60000) + " min); " : "";
             List<Candidate> people = ReasonCandidates(me, now);
             if (people.Count < 2)
                 return sat + people.Count + " named people free near you; no pairs";
