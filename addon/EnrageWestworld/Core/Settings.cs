@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 87;
+        public const int CurrentVersion = 88;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -157,6 +157,7 @@ namespace EnrageWestworld.Core
         public int RealVoiceTalkSeconds = 120;
         public bool CrudeTalk = true;
         public bool RoughHandling = true;
+        public float TroubleWeight = 1f;   // [Scenes] every chance of a fight or a quarrel between people scaled by it (Lex, 2026-10-28; settings version 88)
         public bool NpcThieves = true;
         public bool DrunkChallenges = true;
         public bool Reactions = true;
@@ -191,7 +192,7 @@ namespace EnrageWestworld.Core
 
         // [Output]
         public string NewsTo = "corner";
-        public string Subtitles = "on";
+        public string Subtitles = "game";   // game | ours | both | off (2026-10-28)
         public bool UseGameFeed;
         public string TestKey = "F7";
         public string WarNewsTo = "feed";
@@ -550,6 +551,7 @@ namespace EnrageWestworld.Core
             StalkerMinutes = Math.Max(1, Math.Min(240, StalkerMinutes));
             AvengerChance = Math.Max(0, Math.Min(100, AvengerChance));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
+            TroubleWeight = Math.Max(0f, Math.Min(5f, TroubleWeight));
             TickerSeconds = Math.Max(4, Math.Min(120, TickerSeconds));
             TickerY = Math.Max(0.05f, Math.Min(0.99f, TickerY));
             TickerScale = Math.Max(0.15f, Math.Min(0.8f, TickerScale));
@@ -565,7 +567,10 @@ namespace EnrageWestworld.Core
             WillingTaken = Math.Max(0, Math.Min(100, WillingTaken));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
             RealVoiceTalkSeconds = Math.Max(30, Math.Min(1800, RealVoiceTalkSeconds));
-            Subtitles = (Subtitles ?? "").Trim().ToLowerInvariant() == "off" ? "off" : "on";   // the old matched and game are on
+            // game | ours | both | off (Lex, 2026-10-28: the game's own white subtitle for a recorded line can't be stopped, so
+            // one set at a time); the old on (and matched, game) read as game
+            string sm = (Subtitles ?? "").Trim().ToLowerInvariant();
+            Subtitles = sm == "off" || sm == "ours" || sm == "both" ? sm : "game";
             FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
         }
 
@@ -730,6 +735,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Kindnesses = " + B(Kindnesses) + "   ; small kindnesses between people: someone who trips in the street is helped up by a friend or a kind passer-by, or left lying by the cold and their enemies (and you can give them a hand up yourself); remembered either way");
             b.AppendLine("SightReactions = " + B(SightReactions) + "   ; people near you notice how you look (bloodied, drunk, filthy, soaked) and take it by their nature: the timid afraid, the hard sizing you up, the kind concerned; and a man walking off bloodied from a street fight gets looked at");
             b.AppendLine("Acknowledge = " + B(Acknowledge) + "   ; two people who know each other nod, tip a hat or wave as they pass (enemies give a hard look, sweethearts a long one), and each thinks something of it; a pair once in 45 game minutes");
+            b.AppendLine("TroubleWeight = " + F(TroubleWeight) + "   ; how often people come to blows or quarrel: 1 as built, 2 twice as often, 0.5 half, 0 never by chance (0-5); it scales the brawl's and the argument's share of a chance meeting, hot blood between strangers, drink and temper, and a snap that comes to blows");
             b.AppendLine("RoughHandling = " + B(RoughHandling) + "   ; street scenes: a man with a grudge (or a hothead with drink in him) grabs another and smashes his face into the nearest table, bar or wall, with the game's own move; with nothing to hand it stays a fistfight");
             b.AppendLine("NpcThieves = " + B(NpcThieves) + "   ; street scenes: someone short of money or light-fingered picks a well-off or drunk mark's pocket; mostly the mark never knows who");
             b.AppendLine("DrunkChallenges = " + B(DrunkChallenges) + "   ; street scenes: a drunk in a saloon at night calls a man out and falls on his face before a punch is thrown");
@@ -760,7 +766,7 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[Output]");
             b.AppendLine("NewsTo = " + NewsTo + "   ; where news, rumours and what people elsewhere think of you go: corner (the \"Around town\" box, top right), ticker, or gamefeed (the game's own updates, top left)");
-            b.AppendLine("Subtitles = " + Subtitles + "   ; on: what people say to you shows on the game's subtitle line while their voice plays (their recorded words when known), when the game's own Subtitles option is on too; off: none. Talk you only overhear never has one");
+            b.AppendLine("Subtitles = " + Subtitles + "   ; what people say to you, while their voice plays (their recorded words when known). The game draws its own white subtitle for any recorded line while its Subtitles option is on, and a mod can't stop that, so: game: RealNPCs' boxed subtitles only while the game's option is off (one set at a time); ours: RealNPCs' always (switch the game's off to see only these); both; off: none of RealNPCs'. Talk you only overhear never has one");
             b.AppendLine("UseGameFeed = " + B(UseGameFeed) + "   ; EXPERIMENTAL: the game's top-left toasts (same as NewsTo = gamefeed)");
             b.AppendLine("TestKey = " + TestKey + "   ; shows what the nearest person enRAGE knows thinks of you");
             b.AppendLine("WarNewsTo = " + WarNewsTo + "   ; where gang and faction news (wars, feuds, clashes, rivalries) is shown: feed (the game's own updates, top left), corner (the \"Around town\" box) or ticker");

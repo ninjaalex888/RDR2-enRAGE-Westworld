@@ -53,6 +53,21 @@ namespace EnrageWestworld.InGame
 		/// [Output] Subtitles (on, unless "off").
 		public static bool SubtitlesOn = true;
 
+		/// [Output] Subtitles: game (ours only while the game's own Subtitles option is off, so one set shows at a time),
+		/// ours (always), both, off (Lex, 2026-10-28: the game's white line for a recorded line can't be stopped).
+		public static string SubtitleMode = "game";
+
+		/// Whether RealNPCs' subtitle may show now, by the mode and the game's own option.
+		public static bool SubtitlesAllowed()
+		{
+			if (!SubtitlesOn || SubtitleMode == "off")
+				return false;
+			if (SubtitleMode == "ours")
+				return true;
+			bool game = HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON();
+			return SubtitleMode == "both" ? game : !game;
+		}
+
 		/// For the F7 dump: how many subtitles have been shown, and the last.
 		public static int SubtitlesShown;
 		public static string LastSubtitle;
@@ -238,8 +253,8 @@ namespace EnrageWestworld.InGame
 							Log.Write("Voice: " + ex.Message);
 						}
 					}
-					string sub = line.ToYou ? SubtitleRule.Text(true, played, line.OnShow == null && line.Group != null && line.Group == _voicedGroup, SubtitlesOn,
-					                                            HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON(), InView(line.Ped), line.Speaker, words, line.Part) : null;
+					string sub = line.ToYou ? SubtitleRule.Text(true, played, line.OnShow == null && line.Group != null && line.Group == _voicedGroup, SubtitlesAllowed(),
+					                                            true, InView(line.Ped), line.Speaker, words, line.Part) : null;
 					if (sub != null)
 					{
 						_subText = Clean(sub);

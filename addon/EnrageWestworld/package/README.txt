@@ -726,6 +726,10 @@ RB+D-pad  on a controller: hold RB and press D-pad up for the settings panel, le
           for your letters (the letters turn with the D-pad and close with B). Set them from the
           controller on the panel's Hotkeys page (A, then hold one button and press another), or in
           [Controller] in the ini (PlayStation names work: R1+Up). Never in the game's own menus.
+          Subtitles: the game draws its own white one for any recorded line while its Subtitles option
+          is on, so RealNPCs' boxed ones show only while that option is off ([Output] Subtitles = game);
+          set it to "ours" and switch the game's off to see only RealNPCs'. [Scenes] TroubleWeight sets
+          how often people come to blows or quarrel (1 as built, 2 twice as often, 0 never by chance).
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
           regulars and the fully awake around you show on the map for a minute
 F2        flirt with the person you're looking at (FlirtKey; it was F6, the game's camera).

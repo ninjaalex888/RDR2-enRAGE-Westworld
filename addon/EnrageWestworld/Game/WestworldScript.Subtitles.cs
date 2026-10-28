@@ -55,14 +55,16 @@ namespace EnrageWestworld.InGame
         private void SubtitleNote()
         {
             _subNoted = true;
-            Log.Write("SUBTITLES: " + (_cfg.Subtitles == "off" ? "off ([Output] Subtitles)" : "on, for what's said to you while the voice plays") + "; the game's own Subtitles option is " +
-                      (HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON() ? "on" : "OFF, so none show (turn it on in the game's settings)"));
+            Log.Write("SUBTITLES: " + SubtitlesStatus());
         }
 
         /// F7: the setting, the game's own option, and the subtitles shown so far.
         private string SubtitlesStatus()
         {
-            return (_cfg.Subtitles == "off" ? "off" : "on") + "; the game's own option " + (HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON() ? "on" : "OFF") + "; " + Feed.SubtitlesShown + " shown" +
+            bool game = HUD.IS_SUBTITLE_PREFERENCE_SWITCHED_ON();
+            return "[Output] Subtitles = " + _cfg.Subtitles + "; the game's own option " + (game ? "on" : "off") + ", so " +
+                   (Feed.SubtitlesAllowed() ? "RealNPCs' boxed subtitles show" + (game ? " (and the game's white ones too)" : "") : game ? "the game's white subtitles show, RealNPCs' stay off" : "none show") +
+                   "; " + Feed.SubtitlesShown + " shown" +
                    (Feed.LastSubtitle != null ? ", last: " + Feed.LastSubtitle : "") + "; news to " + _cfg.NewsRoute + ", faction news to " + _cfg.WarRoute;
         }
     }
