@@ -31,6 +31,9 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   (the unnamed doer becomes someone the hearer dislikes, a slight grows, two men become three); what
   someone saw never changes who did it, and what you did never drifts. Standing where something
   happened brings it back. Off (as it comes), thoughts and memories are exactly as in 0.6.3.
+  And the mind now says what each person near you would do (the log's MIND would: lines, the
+  card's "would:"): a meal, the work, the saloon of an evening, church on Sunday, a word with a
+  friend, stepping clear of a foe. Nobody is moved by it yet.
 
 NEW IN 0.6.3
 ------------

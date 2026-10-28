@@ -21,6 +21,7 @@ namespace EnrageWestworld.Core
         public string AboutId;    // the same by id ("player"), or null; DoerId whoever did it (Feeling's), for the thought's words
         public string DoerId;
         public bool Masked;       // the face hid it (Display: masked or turned), so the thought may say the mask too (night 2026-10-28)
+        public string Urge;       // what it made them want to do (Appraisal's urge), for the shadow's choosing (night 2026-10-28, item 5)
     }
 
     /// A mood: pleasant or not, keyed up or flat, in control or not, each -1..1.

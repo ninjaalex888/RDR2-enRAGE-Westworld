@@ -115,8 +115,11 @@ namespace EnrageWestworld.Core
             float since = HoursSinceMeal(hour, meals);
             if (c.AteAt >= 0 && c.Now >= c.AteAt)
                 since = Math.Min(since, (c.Now - c.AteAt) / 60f);
-            bool asleep = hour >= 22f || hour < (country ? 5f : 6f);
-            n.V[NeedState.Hunger] = asleep ? 0.25f : Clamp(0.08f + 0.16f * since + (Array.IndexOf(Poor, g) >= 0 ? 0.08f : 0f));
+            float wakeAt = country ? 5f : 6f;
+            if (hour < meals[0] + 0.5f && since > hour + 24f - 22f)
+                since -= (2f + wakeAt) * 0.75f;   // before the first meal: the night's sleep counts a quarter (hunger is entrained to mealtimes and suppressed in sleep: the review, Cummings 2001), so a man wakes at about 0.6, not "nothing else matters"
+            bool asleep = hour >= 22f || hour < wakeAt;
+            n.V[NeedState.Hunger] = asleep ? 0.25f : Clamp(0.08f + since * (Array.IndexOf(Poor, g) >= 0 ? 0.125f : 0.10f));   // 0.16 an hour until 2026-10-28: everyone in town sat at 0.85+ for two hours before every meal (the psychologist's review); the poor feel it more
             // rest: the hours awake (up at 5 or 6), worst before dawn; drink tires
             float wake = country ? 5f : 6f, up = hour >= wake ? hour - wake : hour + 24f - wake;
             n.V[NeedState.Rest] = Clamp(0.05f + Math.Max(0f, up - 3f) * 0.055f + (c.Drunk ? 0.15f : 0f));

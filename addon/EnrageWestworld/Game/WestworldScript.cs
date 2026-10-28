@@ -1112,6 +1112,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST worries: " + WorriesStatus());
 			Log.Write("TEST mind: " + MindsStatus());
 			Log.Write("TEST mind shadow: " + MindShadowStatus());
+			Log.Write("TEST mind choices: " + MindChoicesStatus());
 			Log.Write("TEST perf: " + PerfStatus() + "; Core compiled ahead: " + _prejitStatus);
 			Log.Write("TEST save: " + SaveStatus());
 			Log.Write("TEST wake voices: " + WakeVoiceStatus());

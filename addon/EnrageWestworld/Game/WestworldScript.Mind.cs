@@ -32,7 +32,17 @@ namespace EnrageWestworld.InGame
             public NeedState Needs;         // worked out when looked at, again after NeedsMs (step 3)
             public List<Concern> Concerns;
             public int NeedsAt;
+            // the shadow's choosing (night 2026-10-28, item 5): what they'd do now, worked out once a minute, never acted on
+            public string Choice, ChoiceWhy, ChoiceNext, ChoiceHeld;
+            public RecentActs Recent;       // the last three brief things and when (a brief thing done lately serves less)
+            public bool ChoiceTold;         // its MIND would line is written (a held one is written on the next look while the choice stands)
+            public int ChoseAt;
+            public long AteAt = -1;         // the shadow's own meal (the choice was "eat"), so hunger falls for it
         }
+
+        private const int ChooseMs = 60000, ChoiceLinesAMinute = 5;
+        private int _mindChooseCursor, _mindChoices, _mindChoiceChanges, _mindChoiceLines, _mindChoiceHeld, _mindChoiceMinuteAt, _mindChoiceMinuteCount;
+        private string _mindLastChoice;
 
         private const int NeedsMs = 30000;   // needs move by the game hour: worked out again every 30 s (15 game minutes)
 
@@ -70,6 +80,141 @@ namespace EnrageWestworld.InGame
             for (int k = 0; k < 2 && _mindCursor < _mindNear.Count; k++)
                 MindLook(_mindNear[_mindCursor++], now);
             MindAppraiseStep(now);   // one person a frame from the happening being appraised
+            if (_aMindChoose == null)
+                _aMindChoose = () => MindChooseStep(_now);
+            Safe("mind choosing", _aMindChoose);   // one person a frame, each once a minute: what they would do now (shadow; nobody is tasked); its own guard, so a fault in it can't stop the traits, needs and feelings
+        }
+
+        private Action _aMindChoose;
+
+        /// Choosing what to do, in shadow (the mind design's step 6; Core/Choosing.cs): for one person near a frame, once
+        /// a minute each, every action open to them now scored against their needs, nature, mood and any feeling still
+        /// running; a line only when the choice changes, at most five a minute inside the 20 MIND lines, with "but
+        /// enRAGE has him" (or whatever else stands in the way) where MayDirect would refuse. Nobody is tasked.
+        private void MindChooseStep(int now)
+        {
+            if (_mindNear.Count == 0)
+                return;
+            if (_mindChooseCursor >= _mindNear.Count)
+                _mindChooseCursor = 0;
+            int h = _mindNear[_mindChooseCursor++];
+            MindWho w;
+            if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.Traits == null || w.Needs == null || w.P == null)
+                return;
+            if (w.ChoseAt != 0 && now - w.ChoseAt < ChooseMs && now >= w.ChoseAt)
+                return;
+            if (!ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
+                return;
+            w.ChoseAt = now;
+            long g = _store.LastGameMin;
+            string tg = InnerLife.TradeGroup(w.P.Trade);
+            if (w.Recent == null)
+                w.Recent = new RecentActs();
+            var c = new ChoiceContext
+            {
+                Hour = CLOCK.GET_CLOCK_HOURS(), Weekday = InnerLife.Weekday, Place = _engine.NowIndoors ? _engine.NowPlace : null, Indoors = _engine.NowIndoors,
+                InTown = _placeTown != null, Weather = _engine.NowWeather, Others = Math.Max(0, _mindNear.Count - 1), PlayerFeared = _engine.SawYouViolent(w.Id, 3),
+                Last = w.Choice, Recent = w.Recent, Now = g, TradeGroup = tg, Works = tg != "gentry" && !(w.P.Woman && tg == "town"), WorkPlace = tg == "girl" ? "saloon" : null, Woman = w.P.Woman, SaloonGirl = tg == "girl"
+            };
+            FeltAt best;
+            float left;
+            if (_engine.Shadow.Strongest(w.Id, g, out best, out left))
+            {
+                c.Urge = best.Urge;
+                c.FeelingLeft = left;
+            }
+            PadMood m = _engine.Shadow.MoodOf(w.Id, w.Traits, g);
+            string mw = Mood.Words(m, Mood.Baseline(w.Traits));   // against their own baseline: a sour nature at rest is "even" here (the review)
+            c.Mood = mw.StartsWith("sore", StringComparison.Ordinal) ? "sore" : mw.StartsWith("glad", StringComparison.Ordinal) ? "glad" : null;
+            // who is in sight: a warm tie to nod to, a foe to step clear of (the store's ties, read only; the ties walked
+            // once, each matched against the few near). The doer of a one-sided trouble has no foe in his victim.
+            foreach (SceneTie t in _store.Ties)
+            {
+                if (!t.Has(w.Id) || t.Warmth == 0)
+                    continue;
+                string other = t.OtherId(w.Id);
+                if (other == null || other == w.Id)
+                    continue;
+                bool near = false;
+                foreach (int oh in _mindNear)
+                {
+                    MindWho o;
+                    if (oh != h && _mindWho.TryGetValue(oh, out o) && o.Id == other)
+                    {
+                        near = true;
+                        break;
+                    }
+                }
+                if (!near)
+                    continue;
+                if (t.Warmth > 0)
+                    c.TiesNear++;
+                else if (!(Ties.Trouble(t.Kind) && t.Did(w.Id)))
+                    c.FoeNear = true;
+            }
+            string next;
+            KeyValuePair<string, string> ch = Choosing.Choose(w.Needs, w.Traits, c, Choosing.SeedFor(w.Id, g), out next);
+            _mindChoices++;
+            w.Recent.Note(ch.Key, g);
+            if (ch.Key == "eat")
+                w.AteAt = g;   // the shadow's own meal: hunger falls for it at the next needs
+            bool changed = ch.Key != w.Choice;
+            if (changed)
+            {
+                w.Choice = ch.Key;
+                w.ChoiceWhy = ch.Value;
+                w.ChoiceNext = next;
+                w.ChoiceTold = false;
+                w.ChoiceHeld = null;
+                _mindChoiceChanges++;
+                _mindLastChoice = w.Name + " -> " + Choosing.WordsOf(ch.Key);
+            }
+            if (w.ChoiceTold || Choosing.CarriesOn(w.Choice))
+                return;   // said already, or carrying on, which isn't news
+            if (now - _mindChoiceMinuteAt >= 60000 || now < _mindChoiceMinuteAt)
+            {
+                _mindChoiceMinuteAt = now;
+                _mindChoiceMinuteCount = 0;
+            }
+            if (_mindChoiceMinuteCount >= ChoiceLinesAMinute || !MindLogRoom(now))
+            {
+                if (changed)
+                    _mindChoiceHeld++;   // written on the next look if the choice still stands
+                return;
+            }
+            w.ChoiceHeld = MayDirectWhyNot(new Ped(h));   // only for a line that will be written (natives and a Ped)
+            if (MindLog(now, "MIND would: " + w.Name + " -> " + Choosing.WordsOf(w.Choice) + " (" + w.ChoiceWhy + (w.ChoiceNext != null ? "; next: " + Choosing.WordsOf(w.ChoiceNext) : "") + ")" +
+                        (w.ChoiceHeld != null ? "; but " + (w.ChoiceHeld.IndexOf("enRAGE", StringComparison.OrdinalIgnoreCase) >= 0 ? "enRAGE has him (" + w.ChoiceHeld + ")" : w.ChoiceHeld) : "")))
+            {
+                w.ChoiceTold = true;
+                _mindChoiceMinuteCount++;
+                _mindChoiceLines++;
+            }
+        }
+
+        /// F7: the shadow's choosing.
+        private string MindChoicesStatus()
+        {
+            try
+            {
+                if (_cfg == null || !_cfg.MindShadow)
+                    return "off ([Mind] MindShadow)";
+                var near = new List<string>();
+                foreach (int h in _mindNear)
+                {
+                    if (near.Count >= 4)
+                        break;
+                    MindWho w;
+                    if (_mindWho.TryGetValue(h, out w) && w.Id != null && w.Choice != null)
+                        near.Add(w.Name + " would " + Choosing.WordsOf(w.Choice) + " (" + w.ChoiceWhy + (w.ChoiceNext != null ? "; next " + Choosing.WordsOf(w.ChoiceNext) : "") + (w.ChoiceHeld != null ? "; but " + w.ChoiceHeld : "") + ")");
+                }
+                return "shadow only, nobody tasked; " + _mindChoices + " choices worked out (once a minute each), " + _mindChoiceChanges + " changed, " + _mindChoiceLines + " MIND would lines, " + _mindChoiceHeld + " held back (5 a minute); last: " + (_mindLastChoice ?? "none") +
+                       (near.Count > 0 ? "; near: " + string.Join("; ", near) : "");
+            }
+            catch (Exception ex)
+            {
+                return "couldn't say (" + ex.Message + ")";
+            }
         }
 
         private int _mindFelt, _mindEvCursor, _mindEvStale;
@@ -211,6 +356,8 @@ namespace EnrageWestworld.InGame
             _mindEvPeople.Clear();
             _mindFelt = 0;
             _mindLastFelt = null;   // nothing from a rewound future in F7
+            _mindChooseCursor = 0;
+            _mindLastChoice = null;
         }
 
         /// The living people within MindMetres, nearest first (reused lists; the world's ped array is the one allocation).
@@ -277,7 +424,8 @@ namespace EnrageWestworld.InGame
             {
                 Hour = CLOCK.GET_CLOCK_HOURS(), Minute = CLOCK.GET_CLOCK_MINUTES(), Weekday = InnerLife.Weekday, GameDay = g > 0 ? g / 1440 : -1, Now = g,
                 Weather = _engine.NowWeather, Indoors = _engine.NowIndoors, Place = _engine.NowPlace, Others = Math.Max(0, _mindNear.Count - 1),
-                Drunk = InHisCups(new Ped(h), w.P), Feared = _engine.SawYouViolent(w.Id, 3), WakeStage = st != null ? st.WakeStage : 0, Memories = st != null ? st.Mind : null
+                Drunk = InHisCups(new Ped(h), w.P), Feared = _engine.SawYouViolent(w.Id, 3), WakeStage = st != null ? st.WakeStage : 0, Memories = st != null ? st.Mind : null,
+                AteAt = w.AteAt   // the shadow's own meal, if its choice was to eat
             };
             w.Needs = Needs.Of(w.P, w.Traits, c);
             w.Concerns = Needs.Of(w.P, c.GameDay, c.GameDay >= 0 ? Links.Against(_store.Links, w.Id, c.GameDay) : null);
@@ -337,7 +485,23 @@ namespace EnrageWestworld.InGame
                 }
             }
             if (was != null && was.Id != null && was.Id == w.Id)
-                w.Told = was.Told;   // the same person looked up again
+            {
+                // the same person looked up again: what the shadow worked out for them carries over (the night review:
+                // without this every choice and need went every 30 s)
+                w.Told = was.Told;
+                w.Traits = was.Traits;
+                w.Needs = was.Needs;
+                w.Concerns = was.Concerns;
+                w.NeedsAt = was.NeedsAt;
+                w.Choice = was.Choice;
+                w.ChoiceWhy = was.ChoiceWhy;
+                w.ChoiceNext = was.ChoiceNext;
+                w.ChoiceHeld = was.ChoiceHeld;
+                w.ChoiceTold = was.ChoiceTold;
+                w.Recent = was.Recent;
+                w.ChoseAt = was.ChoseAt;
+                w.AteAt = was.AteAt;
+            }
             return w;
         }
 
@@ -389,7 +553,8 @@ namespace EnrageWestworld.InGame
                 if (_cfg == null || !_cfg.MindShadow || !_mindWho.TryGetValue(h, out w) || w.Id == null || w.Traits == null)
                     return null;
                 return "mind: " + w.Traits.Words(2) + (w.Traits.Label != null ? " (" + w.Traits.Label.ToLowerInvariant() + ")" : "") + "; " + MindFeelingWords(w) +
-                       (w.Needs != null ? "; " + w.Needs.Words() : "") + (w.Concerns != null && w.Concerns.Count > 0 ? "; " + w.Concerns[0].Words : "");
+                       (w.Needs != null ? "; " + w.Needs.Words() : "") + (w.Concerns != null && w.Concerns.Count > 0 ? "; " + w.Concerns[0].Words : "") +
+                       (w.Choice != null && !Choosing.CarriesOn(w.Choice) ? "; would: " + Choosing.WordsOf(w.Choice) : "");
             }
             catch
             {

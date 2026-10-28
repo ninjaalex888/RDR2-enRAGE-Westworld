@@ -106,10 +106,30 @@ namespace EnrageWestworld.Core
                         least = i;
                 list.RemoveAt(least);
             }
-            list.Add(new FeltAt { Kind = k, Intensity = f.Intensity, At = now, About = f.About, AboutId = f.AboutId, DoerId = f.DoerId, Masked = f.Shows == "masked" || f.Shows == "turned" });
+            list.Add(new FeltAt { Kind = k, Intensity = f.Intensity, At = now, About = f.About, AboutId = f.AboutId, DoerId = f.DoerId, Masked = f.Shows == "masked" || f.Shows == "turned", Urge = f.Urge });
             FeelingsNoted++;
             if (OnFeel != null)
                 OnFeel(id);
+        }
+
+        /// The feeling with most left in it now and how much (Mood.Lasting), for the shadow's choosing; false for none.
+        public bool Strongest(string id, long now, out FeltAt best, out float left)
+        {
+            best = default(FeltAt);
+            left = 0f;
+            List<FeltAt> list = Felt(id);
+            if (list == null)
+                return false;
+            foreach (FeltAt f in list)
+            {
+                float l = Mood.Lasting(f, now);
+                if (l > left)
+                {
+                    left = l;
+                    best = f;
+                }
+            }
+            return left > 0f;
         }
 
         /// What they felt lately (null: nothing).
