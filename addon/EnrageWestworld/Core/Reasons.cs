@@ -185,7 +185,7 @@ namespace EnrageWestworld.Core
                 bool hot = Hot(x);
                 // a hot man at the worst of it snaps at a man who won't take it: it comes to blows
                 if (hot && twoMen && Hot(y) && Voice.Chance(x.Id + gameDay + "snapblows", Weighted(35, where.Trouble)))   // was 20 (Lex, 2026-10-28: brawls often)
-                    all.Add(new Reason { Kind = "brawl", Strength = 56, Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
+                    all.Add(new Reason { Kind = "brawl", Strength = 56, Matter = "nothing", Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
                 else
                     all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
             }

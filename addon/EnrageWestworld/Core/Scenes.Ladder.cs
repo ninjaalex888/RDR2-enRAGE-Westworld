@@ -7,8 +7,9 @@
 // apology, a joke, backing down, walking off, a friend stepping in as the cast's third, a drink in a saloon, the fists'
 // own verdict, the law in sight). The shot is NEVER played: a run that reaches it ends as a standoff that breaks off,
 // and the scene says so (LadderNote), because nothing of the mind damages anybody yet (For Lex). The scene's Kind is the
-// top rung reached (argue for words or a shove, brawl for blows, standoff for a gun drawn), so the ties, the memories,
-// the plain record and the record fates all flow as they do for the fixed scenes. Off, nothing here runs.
+// top rung reached (argue for words or a shove, brawl for blows, standoff for a gun drawn), and StartScene notes it by what
+// happened in it (a standoff that fought is a brawl, an argue ended by an apology or a drink an apology), so the ties, the
+// memories, the plain record and the record fates flow as they do for the fixed scenes. Off, nothing here runs.
 using System;
 using System.Collections.Generic;
 
@@ -30,8 +31,8 @@ namespace EnrageWestworld.Core
             int r = Voice.Hash(seed + "|matter") % 100;
             if (strangers)
                 return saloon ? (r < 50 ? "drink" : r < 80 ? "honour" : "nothing") : (r < 60 ? "nothing" : "honour");   // strangers owe each other nothing and share no fence (the review)
-            if (saloon)
-                return r < 40 ? "drink" : r < 70 ? "honour" : r < 85 ? "money" : "nothing";
+            if (saloon)   // drink in him makes drink the likelier matter
+                return r < (drunk ? 55 : 40) ? "drink" : r < (drunk ? 78 : 70) ? "honour" : r < 90 ? "money" : "nothing";
             return r < 45 ? "nothing" : r < 75 ? "honour" : r < 90 ? "money" : "land";
         }
 
@@ -49,7 +50,7 @@ namespace EnrageWestworld.Core
             }
         }
 
-        /// The quarrel from the ladder. `startRung`: 0 words (an argue), 1 the shove (a brawl reason). `steps` gets the
+        /// The quarrel from the ladder. `startRung`: 0 words (an argue), 2 the blows (a brawl reason). `steps` gets the
         /// run for the log. A woman never goes past the shove and nobody draws what he doesn't carry (Escalation's own
         /// rules); the friend way needs the cast's third (`c.Friend` 0 or 1: whose friend), else it's a walk-off.
         public static Scene Quarrel(SceneCast c, string seed, Traits ta, Traits tb, QuarrelContext q, int startRung, out List<Escalation.Step> steps)

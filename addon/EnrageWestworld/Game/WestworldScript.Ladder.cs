@@ -3,7 +3,7 @@
 // the mind knows would be an argue or a brawl, the ladder decides how far it goes and how it ends, from their traits
 // (the shadow's cache) and the surroundings as the game reads them here: the place and the hour, who is in drink, the
 // guns on their belts, who is a woman, a lawman within 30 m, a friend of either within 10 m who is free to step in (he
-// joins as the cast's third when the ladder picks him), the crowd watching, the pair's tie and its history, who was
+// joins as the cast's third when the ladder picks him; he needs a clear view of A), the crowd watching, the pair's tie and its history, who was
 // wronged, and what it's over (the reason's matter, a worry between them, or the place's usual). The scene is played
 // through the Director's acts as today (shove, fight, aim, holster); the guns come out only where BuildCast allows them
 // (both armed, no law within 45 m, not a saloon), else the draw is a stare-down over a hand at the belt; the shot is never
@@ -73,7 +73,7 @@ namespace EnrageWestworld.InGame
                 // who is watching: everyone within 12 m of them but the two, the player among them when he's that close
                 q.Witnesses = World.GetAllPeds().Count(p => p != null && p.Exists() && !p.IsDead && PED.IS_PED_HUMAN(p.Handle) && p.Handle != first.Handle && p.Handle != second.Handle &&
                                                              p.Handle != me.Handle && p.Position.DistanceTo(mid) < 12f) + (me.Position.DistanceTo(mid) < 12f ? 1 : 0);
-                // what it's over: the reason's matter, else a worry between them, else sweethearts fallen out, else the place's usual
+                // what it's over: the reason's matter, else a debt or a feud between them, else the place's usual
                 if (matter == null)
                 {
                     // a debt between them is money only when A is the one owed (the words have A as the creditor); a feud is

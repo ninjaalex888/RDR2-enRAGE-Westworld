@@ -777,6 +777,9 @@ in the file. The new ones:
             feelings and mood of the people near you and writes them to the log (MIND lines), F7
             (TEST mind shadow) and the Show minds cards; it changes nothing anyone does or thinks.
             MindLive (false): what that mind decides reaches the screen: moods, and thoughts of what people really feel (about you, a friend, a stranger) and of a pressing want
+            MindLevels (false, in testing): the mind's work spread by distance and a budget a frame.
+            QuarrelLadder (true, under MindLive): an argument or a fight between two people the mind knows
+            climbs or cools by their natures and the room; the shot is never fired.
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left

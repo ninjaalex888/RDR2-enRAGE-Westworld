@@ -2,8 +2,8 @@
 // the people's inner lives, histories and surroundings lead there, true to 1899, where most killings were sudden quarrels
 // over drink, honour, money or land, at close range, often in a saloon at night between men with history, and many towns
 // banned guns inside the limits; and de-escalation by feeling too: an apology, a joke, backing down, walking off, a friend
-// stepping in, a drink offered). Built in the night run of 2026-10-28 (after item 14), Core only: nothing in the game
-// calls it yet. The rungs are words, a shove, blows, a gun drawn, a shot; at each the hotter of the two pushes up or the
+// stepping in, a drink offered). Built in the night run of 2026-10-28 (after item 14); read by the Director behind [Mind]
+// MindLive since item 16 (Scenes.Ladder.cs, 2026-10-29). The rungs are words, a shove, blows, a gun drawn, a shot; at each the hotter of the two pushes up or the
 // cooler brings it down, from their traits (anger, self-control, assertiveness, risk, compassion, deference to the law),
 // drink, what it's over, who is watching (face), the history between them, who was wronged, a friend at hand, the law at
 // hand, the town's gun rule, whether either carries a gun (nobody draws what he doesn't carry, and drawing on an unarmed
