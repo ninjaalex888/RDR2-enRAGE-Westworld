@@ -1,6 +1,6 @@
 // The voice below the floor ([Encounters] VoiceBelow, West World; the words are Core/Below.cs): late at night (23:00-
 // 04:00) in a saloon whose barkeep is a post of the town's, now and then (Pacing "below": once a night a town), a
-// muffled plea comes up from somebody unseen under the boards behind the bar: a ped spawned below the floor, invisible,
+// muffled plea comes up from somebody unseen under the boards behind the bar: a ped spawned just below the floor (0.9 m; 2.6 m was too faint to notice, 2026-10-29), invisible,
 // frozen, who pleads every 15-25 s while you're within 10 m, four times at most; each time a line really played, the
 // barkeep's thought shows over his head (the stovepipe, the rats, then worse). Go behind the bar and the voice stops;
 // the keeper thinks again, and next morning the town has a word of it. Stand before the barkeep a moment while it goes on
@@ -164,7 +164,7 @@ namespace EnrageWestworld.InGame
                 }
                 if (!Spawner.Ready(b.Model))
                     return;
-                Ped v = Spawner.Spawn(b.Model, b.Boards + new Vector3(0f, 0f, -2.6f), 0f);
+                Ped v = Spawner.Spawn(b.Model, b.Boards + new Vector3(0f, 0f, -0.9f), 0f);
                 if (v == null)
                     return;
                 int h = v.Handle;
@@ -245,6 +245,10 @@ namespace EnrageWestworld.InGame
             b.Heard++;
             _belowHeard++;
             b.NextAt = now + 15000 + _rng.Next(10000);
+            // the plea on the ticker too, in our words (Lex, 2026-10-29: standing at the bar, "I didn't see much happen": the voice
+            // from 2.6 m under the boards was too faint to notice)
+            if (_cfg.Ticker)
+                _ticker.Say("Under the floor", Grammar.UpperFirst(Below.Overheard(b.Seed + b.Heard)) + ".", b.Keeper.Handle, 4500);
             Log.Write("BELOW a plea through the floor (" + line + "); " + b.KeeperName + " thinks of " + (b.Heard == 1 ? "the stovepipe" : "worse"));
         }
 
