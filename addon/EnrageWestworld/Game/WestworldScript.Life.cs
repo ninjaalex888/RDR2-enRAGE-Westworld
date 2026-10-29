@@ -1030,11 +1030,12 @@ namespace EnrageWestworld.InGame
             public Relative R;
             public string StateId, StateName, Town, Counts;
             public uint Model;
-            public int Since, Tries;
+            public int Since, Tries, NextTryAt, Remakes;   // tries spaced 700 ms (the game's ped pool is full now and then); remade when enRAGE names the body
             public bool Test;
         }
 
         private KinPending _kinPending;
+        private int _kinRemakes;   // bodies made for the current relative that enRAGE named (let go and made again, twice at most)
         private KinWalk _kinWalk;
         private int _kinNotBefore, _kinWalks, _kinArrived, _kinGaveUp;
         private string _kinLast, _kinWhyNot;
@@ -1266,8 +1267,9 @@ namespace EnrageWestworld.InGame
                 Log.Write("CAST " + k.R.Name + " not made: the town changed");
                 return;
             }
-            if (PanelOpen || MISC.GET_MISSION_FLAG())
+            if (PanelOpen || MISC.GET_MISSION_FLAG() || now < k.NextTryAt)
                 return;
+            k.NextTryAt = now + 700;
             if (!Spawner.Ready(k.Model))
             {
                 if (now - k.Since > 15000)
@@ -1280,7 +1282,7 @@ namespace EnrageWestworld.InGame
             Vector3 at;
             if (!EncounterSpot(me, 14f, 26f, out at) && !EncounterSpot(me, 8f, 40f, out at) && !TestCastOpenSpot(me, out at))
             {
-                if (++k.Tries >= 3)
+                if (++k.Tries >= 12)
                 {
                     _kinPending = null;
                     Log.Write("CAST " + k.R.Name + " not made: no spot for them");
@@ -1291,15 +1293,17 @@ namespace EnrageWestworld.InGame
             Ped body = Spawner.Spawn(k.Model, at, (float)(Math.Atan2(-(mp.X - at.X), mp.Y - at.Y) * 180.0 / Math.PI));
             if (body == null)
             {
-                if (++k.Tries >= 3)
+                if (++k.Tries >= 12)
                 {
                     _kinPending = null;
                     _kinWhyNot = k.R.Name + " couldn't be made: " + (Spawner.LastSpawnWhy ?? "the spawn failed");
-                    Log.Write("CAST " + k.R.Name + " not made: " + (Spawner.LastSpawnWhy ?? "the spawn failed") + " (three tries)");
+                    Log.Write("CAST " + k.R.Name + " not made: " + (Spawner.LastSpawnWhy ?? "the spawn failed") + " (twelve tries over eight seconds: the game's ped pool is full here)");
                 }
                 return;
             }
             _kinPending = null;
+            if (k.Remakes == 0)
+                _kinRemakes = 0;
             int bh = body.Handle;
             float d = body.Position.DistanceTo(mp);
             _casts[bh] = new KeyValuePair<Relative, string>(k.R, k.StateId);
@@ -1355,6 +1359,32 @@ namespace EnrageWestworld.InGame
             float d = w.Ped.Position.DistanceTo(me.Position);
             if (w.Said == 0)
             {
+                // a body made for the part that enRAGE takes for one of its own townsfolk by its look (its card goes on him within its
+                // 2 s people sync: Lex saw "Manley Biggs" over James McLoughlin) is let go unseen and made again with another look, twice
+                if (w.Spawned && now - w.Since < 3000 && _bridge.AcquaintanceAt(h) != null)
+                {
+                    string theirs = _bridge.EnrageNameAt(h) ?? "one of its townsfolk";
+                    int remakes = _kinRemakes + 1;
+                    _casts.Remove(h);
+                    Spawner.Release(w.Ped, true);
+                    _kinWalk = null;
+                    if (remakes <= 2)
+                    {
+                        _kinRemakes = remakes;
+                        uint model = Spawner.ModelFor(w.Town, w.R.Woman, Voice.Hash(w.R.Name + "|kin|" + now + "|" + remakes));
+                        Spawner.Ready(model);
+                        _kinPending = new KinPending { R = w.R, StateId = w.StateId, StateName = w.StateName, Town = w.Town, Model = model, Since = now, Test = w.Test, Remakes = remakes };
+                        Log.Write("CAST " + w.R.Name + ": enRAGE took the body for " + theirs + "; let go unseen and made again with another look (" + remakes + ")");
+                    }
+                    else
+                    {
+                        _kinRemakes = 0;
+                        _kinGaveUp++;
+                        _kinLast = w.R.Name + " gave it up: enRAGE named every body made for them";
+                        Log.Write("CAST " + w.R.Name + " gave it up: enRAGE took every body made for them for its own townsfolk (" + theirs + " last)");
+                    }
+                    return;
+                }
                 string may = w.Spawned ? null : MayDirectWhyNot(w.Ped);   // a body made for the part is ours by nature
                 if (may != null || _director.Involves(h))
                 {
