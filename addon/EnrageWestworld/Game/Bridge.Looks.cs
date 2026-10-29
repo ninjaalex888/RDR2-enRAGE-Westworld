@@ -18,6 +18,8 @@ namespace EnrageWestworld.InGame
         {
             get
             {
+                if (!Present)
+                    return true;   // standing alone the answer is always no: nobody of enRAGE's has looked at anyone
                 ResolveLooks();
                 return _namedField != null && _fpOfField != null;
             }
