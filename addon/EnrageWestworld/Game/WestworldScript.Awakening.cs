@@ -110,7 +110,11 @@ namespace EnrageWestworld.InGame
             {
                 int h = kv.Key;
                 if (!ENTITY.DOES_ENTITY_EXIST(h))
+                {
                     gone.Add(h);
+                    if (kv.Value.R.Regular)
+                        _regGoneAt[kv.Value.R.Id] = Game.GameTime;   // their body streamed out: not back on the next one (WestworldScript.Regulars.cs)
+                }
                 else if (ENTITY.IS_ENTITY_DEAD(h))
                 {
                     if (KnockedOutWhy(h) != null)

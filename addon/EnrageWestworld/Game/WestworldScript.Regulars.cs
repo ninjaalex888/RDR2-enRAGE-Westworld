@@ -21,6 +21,8 @@ namespace EnrageWestworld.InGame
         private readonly HashSet<int> _regChecked = new HashSet<int>();      // handles already considered
         private readonly Dictionary<uint, int> _outfitsOf = new Dictionary<uint, int>();
         private readonly HashSet<string> _metThisTime = new HashSet<string>();   // regular id | handle: counted once
+        private readonly Dictionary<string, int> _regGoneAt = new Dictionary<string, int>();   // regular id -> when their last body streamed out
+        private const int RegularGoneMs = 180000;   // a regular whose body went comes back no sooner than this (standing alone every body is free to cast, and one came back 36 times in an hour: 2026-10-29)
         private int _nextSeenSample, _nextRegulars, _nextSeenPrune;
         private bool _regPrimed, _regToldDress;
         private Action _aRegulars;
@@ -83,7 +85,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 uint model = ENTITY.GET_ENTITY_MODEL(h);
                 bool woman = !PED.IS_PED_MALE(h);
-                Resident r = Regulars.Back(_store.Residents, town, model, woman, x => _resBind.Values.Any(v => v.R == x));
+                Resident r = Regulars.Back(_store.Residents, town, model, woman, x => _resBind.Values.Any(v => v.R == x) || RegularGone(x, now));
                 bool fresh = r == null;
                 if (fresh)
                 {
@@ -107,6 +109,13 @@ namespace EnrageWestworld.InGame
                 Log.Write("REGULAR " + (fresh ? "new" : "back") + ": " + r.Name + " (" + r.Trade + ") in " + town + (dress ? ", outfit " + r.Outfit : "") +
                           ", " + (int)d + " m off, unseen" + (st != null && st.Sightings > 0 ? ", met " + st.Sightings + " time" + (st.Sightings == 1 ? "" : "s") + " before" : ""));
             }
+        }
+
+        /// A regular whose last body streamed out within RegularGoneMs: left alone for now, so they don't hop from body to body.
+        private bool RegularGone(Resident r, int now)
+        {
+            int at;
+            return _regGoneAt.TryGetValue(r.Id, out at) && now - at < RegularGoneMs;
         }
 
         /// Notes who has been on screen; a handle the game has given to someone new (another model) starts over.
