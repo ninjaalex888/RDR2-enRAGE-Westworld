@@ -24,7 +24,7 @@ Built in the night run of 2026-10-28 (Lex's brief) and the morning after it, on 
 
 ### Small things from the in-game pass (2026-10-29)
 
-- The second settings key is Alt+R (was Alt+F; an ini that still says Alt+F is moved, settings version 98). The test cast tell a member knocked out in a brawl from one dead, as the ledger does, so the bully comes back after a fistfight instead of being replaced. The log says why a talk told nothing on (`MIND told nothing: ...`), for the memory check.
+- The settings panel opens with Ctrl+F7 and Alt+R (Alt+R was Alt+F; an ini that still says Alt+F for either key is moved, settings versions 98 and 99). The test cast tell a member knocked out in a brawl from one dead, as the ledger does, so the bully comes back after a fistfight instead of being replaced. The log says why a talk told nothing on (`MIND told nothing: ...`), for the memory check.
 
 ### The mind sees your shoves (2026-10-29, from the in-game pass)
 

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 98;
+        public const int CurrentVersion = 99;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -529,6 +529,14 @@ namespace EnrageWestworld.Core
                 {
                     s.SettingsKey2 = "Alt+R";   // 2026-10-29 (Lex): the second settings key moves from Alt+F to Alt+R
                     log?.Invoke("Settings: SettingsKey2 Alt+F -> Alt+R (the second key that opens the settings panel; set it back if you want Alt+F).");
+                }
+                if (s.SettingsVersion < 99 && KeyIs(s.SettingsKey, "Alt+F"))
+                {
+                    // 2026-10-29 (Lex): Alt+F is to open nothing; an ini whose first key was Alt+F goes to Ctrl+F7 (the default), beside Alt+R
+                    s.SettingsKey = KeyIs(s.SettingsKey2, "Ctrl+F7") ? "Alt+R" : "Ctrl+F7";
+                    if (KeyIs(s.SettingsKey2, "Alt+F") || KeyIs(s.SettingsKey2, s.SettingsKey))
+                        s.SettingsKey2 = "Alt+R";
+                    log?.Invoke("Settings: SettingsKey Alt+F -> " + s.SettingsKey + " (Alt+F opens nothing now; the keys are " + s.SettingsKey + " and " + s.SettingsKey2 + ").");
                 }
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
