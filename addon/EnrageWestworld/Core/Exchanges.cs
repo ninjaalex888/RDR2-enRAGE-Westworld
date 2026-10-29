@@ -76,32 +76,32 @@ namespace EnrageWestworld.Core
 
         // ---- the other one's answer -------------------------------------------------------------------------
 
-        private static readonly string[] KindToTrouble = { "Lord. I'm sorry, {a}. If there's anything at all.", "I'll say a prayer for it. For whatever that's worth." };
-        private static readonly string[] ColdToTrouble = { "Everybody's got troubles.", "Well. Can't help you there." };
-        private static readonly string[] SharpToTrouble = { "No call to bite my head off.", "Keep your troubles to yourself, then." };
-        private static readonly string[] SnapBack = { "Then don't ask.", "Off with you, then." };
+        private static readonly string[] KindToTrouble = { "Lord. I'm sorry, {a}. If there's anything at all.", "I'll say a prayer for it. For whatever that's worth.", "I didn't know, {a}. There's coffee on my stove whenever you want it.", "No offence taken. You've a weight on you, anybody can see it." };
+        private static readonly string[] ColdToTrouble = { "Everybody's got troubles.", "Well. Can't help you there.", "None of my affair. Good day.", "Then I'll leave you to it." };
+        private static readonly string[] SharpToTrouble = { "No call to bite my head off.", "Keep your troubles to yourself, then.", "I only said good morning. Choke on it, then.", "Try that tone on somebody who'll stand for it." };
+        private static readonly string[] SnapBack = { "Then don't ask.", "Off with you, then.", "Mind your own, {b}.", "Good. Then we're done talking." };
 
-        private static readonly string[] KindToGood = { "That's the best thing I've heard all week, {a}.", "Ha! Good. Good for you. You've earned it." };
-        private static readonly string[] ColdToGood = { "Huh. Lucky.", "Mm. Well. That's something." };
-        private static readonly string[] SharpToGood = { "Some folks get all the luck.", "Well. Ain't that grand." };
+        private static readonly string[] KindToGood = { "That's the best thing I've heard all week, {a}.", "Ha! Good. Good for you. You've earned it.", "Well now! That calls for a drink, {a}, and I'm buying.", "I knew it'd come right, {a}. I said so at supper." };
+        private static readonly string[] ColdToGood = { "Huh. Lucky.", "Mm. Well. That's something.", "Good for you, I suppose.", "So long as you're pleased with it." };
+        private static readonly string[] SharpToGood = { "Some folks get all the luck.", "Well. Ain't that grand.", "You'll be insufferable for a month, then.", "Spare me the dancing, {a}. Some of us had a plain day." };
 
-        private static readonly string[] KindToBad = { "I'm so sorry, {a}. Truly.", "Come by tonight. You shouldn't sit alone with that." };
-        private static readonly string[] ColdToBad = { "That's hard. That's how it goes.", "Well. Life's like that." };
-        private static readonly string[] SharpToBad = { "Told you how it'd go.", "Can't say I'm surprised." };
+        private static readonly string[] KindToBad = { "I'm so sorry, {a}. Truly.", "Come by tonight. You shouldn't sit alone with that.", "Oh, {a}. Here, sit down a minute. Sit.", "That's a hard blow. Anything you need, you've only to say it." };
+        private static readonly string[] ColdToBad = { "That's hard. That's how it goes.", "Well. Life's like that.", "It happens to everybody sooner or later.", "Hm. A pity. Can't be helped." };
+        private static readonly string[] SharpToBad = { "Told you how it'd go.", "Can't say I'm surprised.", "And what did you expect, {a}?", "You brought that on yourself, and you know it." };
 
         // ---- a quarrel, again ---------------------------------------------------------------------------------
 
-        private static readonly string[] QuarrelAgain = { "Still sore, {b}? I am.", "You've a nerve, standing there like nothing happened.", "Thought about what I said, {b}?" };
-        private static readonly string[] MakeUp = { "I was wrong, {a}. There. I said it.", "Let it go, {a}. It ain't worth what it's costing us." };
-        private static readonly string[] Accept = { "...Well. All right, then.", "Huh. All right. Buy me a drink and we'll call it square." };
-        private static readonly string[] Refuse = { "Wrong don't begin to cover it.", "Sorry don't mend a thing." };
-        private static readonly string[] Stand = { "Step aside, {a}, or I'll put you aside.", "One more word, {a}. Just the one." };
-        private static readonly string[] Dare = { "Not here. Not today.", "Another time, {b}. Count on it." };
+        private static readonly string[] QuarrelAgain = { "Still sore, {b}? I am.", "You've a nerve, standing there like nothing happened.", "Thought about what I said, {b}?", "Don't you cross the street on my account, {b}. Stand there and hear me." };
+        private static readonly string[] MakeUp = { "I was wrong, {a}. There. I said it.", "Let it go, {a}. It ain't worth what it's costing us.", "I've been sore a week over nothing, {a}. Let's be done with it.", "My hand's out, {a}. Take it or don't, but it's out." };
+        private static readonly string[] Accept = { "...Well. All right, then.", "Huh. All right. Buy me a drink and we'll call it square.", "...Fine. Fine. I was sick of it, too.", "Ah, give it here, {b}. Life's too short." };
+        private static readonly string[] Refuse = { "Wrong don't begin to cover it.", "Sorry don't mend a thing.", "Keep your hand, {b}. I know where it's been.", "A week late with that, and a dollar short." };
+        private static readonly string[] Stand = { "Step aside, {a}, or I'll put you aside.", "One more word, {a}. Just the one.", "Say it again, {a}, and say it closer.", "You want this settled, {a}? Here's as good a place as any." };
+        private static readonly string[] Dare = { "Not here. Not today.", "Another time, {b}. Count on it.", "I'll pick the day, {b}. Not you.", "Walk on, {b}. I've not forgotten and I won't." };
 
         // ---- sweethearts ----------------------------------------------------------------------------------------
 
-        private static readonly string[] SweetHello = { "There you are, {b}.", "Afternoon, {b}. You look well.", "I was hoping I'd pass you." };
-        private static readonly string[] SweetBack = { "Were you, now?", "I took the long way round. Don't ask why.", "You'll make me blush in the street." };
+        private static readonly string[] SweetHello = { "There you are, {b}.", "Afternoon, {b}. You look well.", "I was hoping I'd pass you.", "Morning, {b}. I saved you the first of the apples." };
+        private static readonly string[] SweetBack = { "Were you, now?", "I took the long way round. Don't ask why.", "You'll make me blush in the street.", "Hush, {a}. Half the town's at the window." };
 
         // ---- the worrier and the real person at the other end (Links.cs): by the worry's stage, steered by its end ----
 
@@ -124,10 +124,10 @@ namespace EnrageWestworld.Core
         private static readonly string[] OwedSharp = { "Soon ain't a day of the week.", "You said that last week.", "Don't swear. Pay." };
         private static readonly string[] Paid = { "Here. Eleven dollars, {b}. Count it.", "...Square, then. Square and glad of it." };
         // paid in the street (Tier 4): counted out where folks can see, the one who paid asks it said aloud, and it is
-        private static readonly string[] PaidCount = { "...nine, ten, eleven. Eleven it is.", "Eight... nine... ten... eleven. Well, I'll be." };
-        private static readonly string[] PaidAsk = { "Say it so they can hear, {b}.", "Out loud, {b}. Let the street hear it." };
-        private static readonly string[] PaidWitness = { "You all heard it. {a} paid me square, every cent.", "Mark it, folks. {a} owes me nothing. Not one cent." };
-        private static readonly string[] PaidLast = { "Lighter than I've felt in a month.", "Never again. Not a dollar, not from anybody.", "There. Now I can look a man in the eye." };
+        private static readonly string[] PaidCount = { "...nine, ten, eleven. Eleven it is.", "Eight... nine... ten... eleven. Well, I'll be.", "Ten... and eleven. Every cent, and no bent ones.", "...ten, eleven. Eleven dollars, counted in the street." };
+        private static readonly string[] PaidAsk = { "Say it so they can hear, {b}.", "Out loud, {b}. Let the street hear it.", "Now say it, {b}. Say we're square.", "Tell them, {b}. I want it heard." };
+        private static readonly string[] PaidWitness = { "You all heard it. {a} paid me square, every cent.", "Mark it, folks. {a} owes me nothing. Not one cent.", "{a} and me are square. Anybody says different, send them to me.", "Paid in full, and in the street. {a}'s word is good." };
+        private static readonly string[] PaidLast = { "Lighter than I've felt in a month.", "Never again. Not a dollar, not from anybody.", "There. Now I can look a man in the eye.", "Eleven dollars, and I'd have sworn it weighed a hundred." };
         private static readonly string[] Mule = { "Working my mule hard, {b}? Sleeping well?", "I didn't want it this way, {a}. You know I didn't.", "Owed is owed, {a}." };
 
         // a feud: A (the one worrying) at the neighbour, by stage; mended or not at the end

@@ -95,26 +95,32 @@ namespace EnrageWestworld.Core
         private static readonly string[] Owed =
         {
             "{name} owes me eleven dollars. Saw {name} buying tobacco this morning, bold as brass.",
-            "Have to call in what {name} owes me. Hate doing it. Doing it anyway."
+            "Have to call in what {name} owes me. Hate doing it. Doing it anyway.",
+            "{name} ducked into the barber's when I came by. Eleven dollars will do that.",
+            "Lent {name} that money in good faith. Good faith's getting thin."
         };
-        private static readonly string[] OwedPaid = { "{name} paid up. Every cent. Didn't think I'd see it.", "{name} counted it into my hand and looked me in the eye. Square.", "Paid, and {name} shook on it. Didn't expect the handshake." };
-        private static readonly string[] OwedTook = { "Took {name}'s mule for the debt. Feels like stealing, and the law says it ain't.", "{name}'s mule in my field. Mine by rights. Doesn't feel it.", "Took {name}'s watch for what was owed. It stopped the day after. Serves me." };
+        private static readonly string[] OwedPaid = { "{name} paid up. Every cent. Didn't think I'd see it.", "{name} counted it into my hand and looked me in the eye. Square.", "Paid, and {name} shook on it. Didn't expect the handshake.", "Eleven dollars from {name}, warm from a pocket. I'll say nothing more about it." };
+        private static readonly string[] OwedTook = { "Took {name}'s mule for the debt. Feels like stealing, and the law says it ain't.", "{name}'s mule in my field. Mine by rights. Doesn't feel it.", "Took {name}'s watch for what was owed. It stopped the day after. Serves me.", "Took {name}'s saddle for the debt. It hangs in my barn and I can't look at it." };
 
         private static readonly string[] Neighbour =
         {
             "{name} swears I moved that fence post. I'll swear on a Bible I didn't.",
-            "{name} glares at me over the fence like I owe rent on the air."
+            "{name} glares at me over the fence like I owe rent on the air.",
+            "{name}'s hens were in my garden again. I counted every pecked tomato.",
+            "Heard {name} hammering at that fence before sunup. Spite gets an early start."
         };
-        private static readonly string[] NeighbourMended = { "Shook hands with {name}. Strange. Like a stone out of my boot.", "{name} and me, speaking again. The fence is where it always was, and nobody mentions it.", "Lent {name} my saw this morning. A year ago I'd have lent {name} the sharp end." };
-        private static readonly string[] NeighbourBitter = { "{name} told the sheriff a tale about that fence. I'll not forget it.", "{name} crossed the road rather than pass me. Good. Saves me doing it.", "Fence stands where {name} put it. I'll move it back the day {name}'s in the ground." };
+        private static readonly string[] NeighbourMended = { "Shook hands with {name}. Strange. Like a stone out of my boot.", "{name} and me, speaking again. The fence is where it always was, and nobody mentions it.", "Lent {name} my saw this morning. A year ago I'd have lent {name} the sharp end.", "{name} brought a pie over. Didn't say sorry. The pie said it." };
+        private static readonly string[] NeighbourBitter = { "{name} told the sheriff a tale about that fence. I'll not forget it.", "{name} crossed the road rather than pass me. Good. Saves me doing it.", "Fence stands where {name} put it. I'll move it back the day {name}'s in the ground.", "{name} put up a sign facing my kitchen window. I'll not read it." };
 
         private static readonly string[] Courted =
         {
             "{name} keeps finding reasons to pass my door. I've noticed. I let it go on.",
-            "{name} went red as a brick when I said good morning."
+            "{name} went red as a brick when I said good morning.",
+            "{name} brought a bucket of water up from the well for me. Nobody asked.",
+            "Found myself fixing my hair in the window glass before {name} came by. Foolish."
         };
-        private static readonly string[] CourtedYes = { "Said yes to {name}. Felt like jumping a creek.", "Said yes to {name}. Everybody at church already knew. Everybody always knows.", "Walking out with {name} Sunday. Mother's pleased. Mother's suspicious. Both." };
-        private static readonly string[] CourtedNo = { "Had to tell {name} no. Kind as I could. Still felt cruel.", "Told {name} no. {name} took it quietly. Made it worse.", "Said no to {name} and went home and cried. Don't know why. It was the right answer." };
+        private static readonly string[] CourtedYes = { "Said yes to {name}. Felt like jumping a creek.", "Said yes to {name}. Everybody at church already knew. Everybody always knows.", "Walking out with {name} Sunday. Mother's pleased. Mother's suspicious. Both.", "Told {name} yes. Been smiling at the stove all evening like a fool." };
+        private static readonly string[] CourtedNo = { "Had to tell {name} no. Kind as I could. Still felt cruel.", "Told {name} no. {name} took it quietly. Made it worse.", "Said no to {name} and went home and cried. Don't know why. It was the right answer.", "{name} will hear my no from the whole town by Sunday. Wish I could have spared that." };
 
         /// What the one at the other end thinks about it, by the worrier's first name, as the worry goes on and ends.
         public static string OtherThought(WorryLink l, long gameDay, string seed)

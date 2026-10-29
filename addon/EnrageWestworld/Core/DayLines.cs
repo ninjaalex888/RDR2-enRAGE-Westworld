@@ -107,7 +107,7 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] Scout =
         {
-            "Rode out ahead and found fresh tracks heading north.", "Read the sign at the river. Three riders, one horse lame.", "Mapped a pass nobody uses. Somebody will, now."
+            "Rode out ahead and found fresh tracks heading north.", "Read the sign at the river. Three riders, one horse lame.", "Mapped a pass nobody uses. Somebody will, now.", "Smelled a camp a mile off. Wet wood smoke. Greenhorns."
         };
 
         private static readonly string[] Drifter =
@@ -118,17 +118,17 @@ namespace EnrageWestworld.Core
 
         private static readonly Dictionary<string, string[]> TownLines = new Dictionary<string, string[]>
         {
-            { "Valentine", new[] { "Valentine stinks of cattle. Always has.", "Another fight outside the saloon in Valentine. Same two men as last week." } },
-            { "Rhodes", new[] { "Rhodes is all red mud and old grudges.", "Somebody in Rhodes is always feuding with somebody else in Rhodes." } },
-            { "Saint Denis", new[] { "Saint Denis never sleeps. I'd give anything for a night's quiet.", "Saw a horseless carriage in Saint Denis. Nearly ran over a nun." } },
-            { "Strawberry", new[] { "The mayor of Strawberry gave another speech. Nobody listened.", "Pine smoke over Strawberry all day." } },
-            { "Blackwater", new[] { "Blackwater's got more lawmen than honest men these days.", "Folks in Blackwater still lock their doors. They remember." } },
-            { "Annesburg", new[] { "Coal dust on everything in Annesburg. Even the bread.", "The mine whistle in Annesburg. You stop hearing it, then you don't." } },
-            { "Armadillo", new[] { "Armadillo's dying slow, like a dog in the sun.", "The wind brought sand into everything in Armadillo." } },
-            { "Tumbleweed", new[] { "Tumbleweed is quiet. Too quiet, if you ask me.", "Nothing in Tumbleweed but heat and the sheriff." } },
-            { "Van Horn", new[] { "Van Horn's the kind of place you keep your back to the wall.", "Somebody got knifed in Van Horn. Nobody saw a thing, as usual." } },
-            { "Lagras", new[] { "The mosquitoes in Lagras could carry off a child.", "Gators in the shallows at Lagras. Watched them watch me." } },
-            { "Emerald Ranch", new[] { "Emerald Ranch smells of money and manure.", "Quiet at Emerald Ranch. Suits me." } }
+            { "Valentine", new[] { "Valentine stinks of cattle. Always has.", "Another fight outside the saloon in Valentine. Same two men as last week.", "Mud to the ankle on the main street of Valentine. The boardwalk's for show.", "Cattle pens full in Valentine. The bawling kept me up half the night." } },
+            { "Rhodes", new[] { "Rhodes is all red mud and old grudges.", "Somebody in Rhodes is always feuding with somebody else in Rhodes.", "Big houses outside Rhodes with the paint peeling. Old money, no money.", "Nobody in Rhodes asks your business. They already decided it." } },
+            { "Saint Denis", new[] { "Saint Denis never sleeps. I'd give anything for a night's quiet.", "Saw a horseless carriage in Saint Denis. Nearly ran over a nun.", "Streetcar bell all day in Saint Denis. My head's still ringing.", "Gas lamps lit before dark in Saint Denis. A city afraid of its own shadows." } },
+            { "Strawberry", new[] { "The mayor of Strawberry gave another speech. Nobody listened.", "Pine smoke over Strawberry all day.", "Creek runs loud through Strawberry. Loud enough to sleep by.", "Sawdust on every step in Strawberry. The mill never stops." } },
+            { "Blackwater", new[] { "Blackwater's got more lawmen than honest men these days.", "Folks in Blackwater still lock their doors. They remember.", "Watched the ferry come in at Blackwater. Half the town on the dock to see who got off.", "Blackwater keeps its streets swept and its memory long." } },
+            { "Annesburg", new[] { "Coal dust on everything in Annesburg. Even the bread.", "The mine whistle in Annesburg. You stop hearing it, then you don't.", "Miners coming off shift in Annesburg, black to the eyes. Nobody spoke.", "River runs brown past Annesburg. Nothing lives in it." } },
+            { "Armadillo", new[] { "Armadillo's dying slow, like a dog in the sun.", "The wind brought sand into everything in Armadillo.", "Half the doors in Armadillo are nailed shut. Nobody says why.", "Buzzards over Armadillo again. They know something." } },
+            { "Tumbleweed", new[] { "Tumbleweed is quiet. Too quiet, if you ask me.", "Nothing in Tumbleweed but heat and the sheriff.", "Sand in my teeth from Tumbleweed. Still.", "Tumbleweed's water tastes of the barrel it came in." } },
+            { "Van Horn", new[] { "Van Horn's the kind of place you keep your back to the wall.", "Somebody got knifed in Van Horn. Nobody saw a thing, as usual.", "Van Horn stinks of fish and worse. Kept my hand on my purse.", "Drunk men on the pier at Van Horn at noon. Not a sober face in the place." } },
+            { "Lagras", new[] { "The mosquitoes in Lagras could carry off a child.", "Gators in the shallows at Lagras. Watched them watch me.", "Everything in Lagras is wet, including the bread.", "Frogs at Lagras so loud I couldn't hear myself think." } },
+            { "Emerald Ranch", new[] { "Emerald Ranch smells of money and manure.", "Quiet at Emerald Ranch. Suits me.", "Nobody at Emerald Ranch looks you in the eye for long.", "Fine horses at Emerald Ranch. Nobody rides them." } }
         };
 
         private static readonly string[] LetterTails =
@@ -139,13 +139,13 @@ namespace EnrageWestworld.Core
 
         private static readonly Dictionary<string, string[]> Closers = new Dictionary<string, string[]>
         {
-            { "Hothead", new[] { "Somebody's going to cross me tomorrow. I can feel it.", "Near came to blows over a spilled drink. Near.", "Broke a chair. It was looking at me funny." } },
-            { "Coward", new[] { "Barred the door twice.", "Heard hoofbeats in the night and didn't sleep after.", "Kept to the back roads. Safer." } },
-            { "Proud", new[] { "Nobody in this territory does it better than me. Nobody.", "A man tipped his hat to me in the street. As he should.", "Let them talk. They'll remember my name." } },
-            { "Cold", new[] { "Nothing worth writing. Nothing worth feeling.", "Watched a man weep in the street. Felt nothing.", "Slept well. I always do." } },
-            { "Greedy", new[] { "Counted my money. Not enough. Never enough.", "Every man I meet is either a mark or a waste of time.", "There's a fortune out there with my name on it." } },
-            { "Loyal", new[] { "Stood by my friends today. Always will.", "A man asked me to sell out my own. I told him where to go.", "My word's my word. That's all I've got." } },
-            { "Drifter", new[] { "Thinking about moving on again.", "Itchy feet. Always itchy feet.", "Wonder what's past the next ridge." } }
+            { "Hothead", new[] { "Somebody's going to cross me tomorrow. I can feel it.", "Near came to blows over a spilled drink. Near.", "Broke a chair. It was looking at me funny.", "Knuckles raw. Can't recall what he said. I recall how he went down." } },
+            { "Coward", new[] { "Barred the door twice.", "Heard hoofbeats in the night and didn't sleep after.", "Kept to the back roads. Safer.", "Blew the lamp out early so nobody would know I was home." } },
+            { "Proud", new[] { "Nobody in this territory does it better than me. Nobody.", "A man tipped his hat to me in the street. As he should.", "Let them talk. They'll remember my name.", "Polished my boots before bed. People judge you from the ground up." } },
+            { "Cold", new[] { "Nothing worth writing. Nothing worth feeling.", "Watched a man weep in the street. Felt nothing.", "Slept well. I always do.", "Somebody's dog died today. They told me as if it mattered." } },
+            { "Greedy", new[] { "Counted my money. Not enough. Never enough.", "Every man I meet is either a mark or a waste of time.", "There's a fortune out there with my name on it.", "Found a nickel in the mud. Washed it. A nickel is a nickel." } },
+            { "Loyal", new[] { "Stood by my friends today. Always will.", "A man asked me to sell out my own. I told him where to go.", "My word's my word. That's all I've got.", "Walked a friend home drunk. He'd have done the same. He has." } },
+            { "Drifter", new[] { "Thinking about moving on again.", "Itchy feet. Always itchy feet.", "Wonder what's past the next ridge.", "Packed my bedroll before I'd unpacked it. Old habit." } }
         };
 
         private static readonly string[] PlainClosers =

@@ -16,19 +16,19 @@ namespace EnrageWestworld.Core
 
     public static class Crowd
     {
-        private static readonly string[] SideWithB = { "Don't let {a} talk to you like that, {b}.", "{b}'s in the right of it and everybody knows it." };
-        private static readonly string[] SideWithA = { "Tell {b} straight, {a}. Somebody ought to.", "Go on, {a}. You've held your tongue long enough." };
-        private static readonly string[] Calm = { "Leave it, the pair of you. Not in the street.", "Come on, {a}. It ain't worth it." };
-        private static readonly string[] Cold = { "Take it somewhere else.", "Somebody fetch the sheriff before this gets stupid." };
-        private static readonly string[] Sharp = { "Settle it or shift, the pair of you. You're blocking the road.", "Louder, {a}. They can't hear you in Rhodes." };
+        private static readonly string[] SideWithB = { "Don't let {a} talk to you like that, {b}.", "{b}'s in the right of it and everybody knows it.", "Stand your ground, {b}. {a}'s all wind and no weather.", "Half this street heard what {a} said, {b}. Don't you take it." };
+        private static readonly string[] SideWithA = { "Tell {b} straight, {a}. Somebody ought to.", "Go on, {a}. You've held your tongue long enough.", "Say your piece, {a}. {b}'s had this coming since spring.", "We're all behind you, {a}. {b} knows it, too." };
+        private static readonly string[] Calm = { "Leave it, the pair of you. Not in the street.", "Come on, {a}. It ain't worth it.", "Leave it be, {b}. There's children watching from the porch.", "Come on, now. Shake hands and go get a drink, the both of you." };
+        private static readonly string[] Cold = { "Take it somewhere else.", "Somebody fetch the sheriff before it gets out of hand.", "Some of us have work to get to.", "Shout at each other in your own yard, not mine." };
+        private static readonly string[] Sharp = { "Settle it or shift, the pair of you. You're blocking the road.", "Louder, {a}. They can't hear you in Rhodes.", "Is this a quarrel or a quilting bee? Somebody throw a punch.", "Somebody sell tickets. {a} and {b} are putting on a show." };
 
-        private static readonly string[] FightCheer = { "Hit him, {b}! Hit him!", "Two dollars on {a}!" };
-        private static readonly string[] FightFear = { "Somebody stop them!", "Lord, somebody pull them apart!" };
+        private static readonly string[] FightCheer = { "Hit him, {b}! Hit him!", "Two dollars on {a}!", "Mind his left, {a}! His left!", "Knock him into the trough, {b}!" };
+        private static readonly string[] FightFear = { "Somebody stop them!", "Lord, somebody pull them apart!", "Fetch the sheriff! They'll kill each other!", "Stop it! Stop it, there's blood on the boards!" };
 
-        private static readonly string[] WarmKind = { "About time, the pair of you.", "Well, look at that. Good for you, {a}." };
-        private static readonly string[] WarmCold = { "In broad daylight. Lord.", "Some of us are trying to eat." };
+        private static readonly string[] WarmKind = { "About time, the pair of you.", "Well, look at that. Good for you, {a}.", "Somebody tell the preacher to brush his coat.", "Look at {a}, red as a ribbon. Bless the two of them." };
+        private static readonly string[] WarmCold = { "In broad daylight. Lord.", "Some of us are trying to eat.", "Take it off the street. There's a church for that.", "My mother would have fetched a bucket of water." };
 
-        private static readonly string[] SadKind = { "Poor soul.", "God keep you, {a}." };
+        private static readonly string[] SadKind = { "Poor soul.", "God keep you, {a}.", "Hard luck, {a}. We're all sorry for it.", "Let {a} be a while. Nobody needs to stare." };
 
         /// What kind of scene this is to the people watching: "quarrel", "fight", "warm", "sad", or null for one that
         /// draws no word (small talk, gossip, the paper, a song).

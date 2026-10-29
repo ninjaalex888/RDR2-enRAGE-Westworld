@@ -46,20 +46,24 @@ namespace EnrageWestworld.Core
         {
             "There you are.",
             "Closer. A little closer.",
-            "You always stop for me."
+            "You always stop for me.",
+            "Hold still. This part is quick."
         };
 
         public static readonly string[] AmbushCall =
         {
             "This one stopped.",
-            "Told you one would come."
+            "Told you one would come.",
+            "Now, boys. He's close enough.",
+            "Here's another with a kind heart."
         };
 
         public static readonly string[] IntoTheDark =
         {
             "You came last night too. You always come.",
             "Every night you stop. Every night you walk on.",
-            "Go home. It starts again at dark."
+            "Go home. It starts again at dark.",
+            "Same horse. Same hour. Same kind face."
         };
 
         // ---- the hermit who woke ----------------------------------------------------------------------
@@ -143,7 +147,8 @@ namespace EnrageWestworld.Core
         {
             "No! Not again!",
             "Get back! Get back from me!",
-            "You won't take me back there!"
+            "You won't take me back there!",
+            "Leave me my fire! Leave me that much!"
         };
 
         /// His thoughts, for the ticker.
@@ -248,7 +253,8 @@ namespace EnrageWestworld.Core
         {
             "Go! Go now!",
             "Not yet - not yet!",
-            "Break! Break!"
+            "Break! Break!",
+            "Scatter! Into the trees!"
         };
 
         /// Thoughts on the ticker for those in the circle nobody knows by name.

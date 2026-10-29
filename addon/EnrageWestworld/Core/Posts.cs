@@ -378,7 +378,9 @@ namespace EnrageWestworld.Core
         private static readonly string[] NobodySaw =
         {
             "Nobody saw who did it. Or nobody will say.",
-            "Every stranger who comes through that door, I wonder. Him? Him?"
+            "Every stranger who comes through that door, I wonder. Him? Him?",
+            "Somebody in this town knows. Somebody always knows.",
+            "I look at hands now. Whoever did it had hands like anybody's."
         };
 
         // shot down at the counter and back (the game's bandages): in the first days, and later
@@ -405,20 +407,24 @@ namespace EnrageWestworld.Core
         {
             "That's the man who shot me. Don't look at him. Don't look at the gun.",
             "Hands shaking on the counter. Serve him. Let him go. Let him go.",
-            "If he does it again, no doctor will be quick enough."
+            "If he does it again, no doctor will be quick enough.",
+            "The scar pulls when he walks in. The body knows him before I do."
         };
 
         private static readonly string[] ShooterBitter =
         {
             "Shot me, and walks back in to buy. Some men have no shame. I have a long memory.",
-            "Keep smiling. One day the law catches up with him, and I'll be there to watch."
+            "Keep smiling. One day the law catches up with him, and I'll be there to watch.",
+            "He stands where he stood when he shot me. I'll not step back. Not this time.",
+            "He put me on these boards once. He'll not see me flinch at my own counter."
         };
 
         private static readonly string[] ShooterCold =
         {
             "He shot me once. Still a paying customer. The business holds no grudges. I do.",
             "Took a bullet off that one. Took his money since, too. We're square, near enough.",
-            "Shot me, bought a hat, tipped it. There's a kind of honesty in that."
+            "Shot me, bought a hat, tipped it. There's a kind of honesty in that.",
+            "His coin spends the same as any. The hole in me cost more than he's spent. So far."
         };
 
         /// The town hears that someone shot down at their counter is back at it. Null if nothing to say.
@@ -431,14 +437,17 @@ namespace EnrageWestworld.Core
         private static readonly string[] NewFace =
         {
             "New face. Watch the hands, then the boots. Boots tell you where a man's been.",
-            "Never seen him before. He looks at the door like he's already measured it."
+            "Never seen him before. He looks at the door like he's already measured it.",
+            "Stranger. Trail dust on him and no hurry in him. Those are the ones to watch.",
+            "Don't know him. Don't know his horse. I'll know his money soon enough."
         };
 
         private static readonly string[] Regular =
         {
             "Him again. Third time this week. Either he likes the place or he's learning the exits.",
             "Knows where everything is now. Walks in like he owns it.",
-            "Regular, now. Pays in coin. Never says where it came from. Not my business."
+            "Regular, now. Pays in coin. Never says where it came from. Not my business.",
+            "Back again. I've started setting his usual on the counter before he asks."
         };
 
         /// What the person at a post is thinking. near: the player is close. seen: how often they've seen him.

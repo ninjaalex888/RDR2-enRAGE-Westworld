@@ -69,17 +69,17 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] Grief = { "Another. For {who}. And one after that.", "{who}'s gone. Whiskey doesn't help. Pour it anyway.",
                                                    "Keep seeing {who}'s face. Glass is empty again.", "Should've said something to {who}. Last time. Should've." };
-        private static readonly string[] GriefBold = { "Somebody'll pay for {who}. After this glass.", "Drink to {who}. Then another. Then another.", "{who} wouldn't want me crying. Wouldn't want me sober either." };
-        private static readonly string[] GriefCold = { "{who}. Well. Everybody goes.", "Don't feel it yet. Maybe the whiskey will.", "{who}'s gone. The bottle's here. One of them listens." };
+        private static readonly string[] GriefBold = { "Somebody'll pay for {who}. After this glass.", "Drink to {who}. Then another. Then another.", "{who} wouldn't want me crying. Wouldn't want me sober either.", "{who} owed me a drink. I'll drink it for {who}. And the next." };
+        private static readonly string[] GriefCold = { "{who}. Well. Everybody goes.", "Don't feel it yet. Maybe the whiskey will.", "{who}'s gone. The bottle's here. One of them listens.", "{who}'s chair's empty. Somebody'll sit in it by Saturday." };
         // the worries that end in a death: a child's fever, the black-edged letter, the son brought home in a sack
         public static readonly string[] Losses = { "fever", "letter", "son" };
-        private static readonly string[] LossFever = { "Little hands. So hot, then so cold. Fill it.", "Fetched the doctor too late. I was the one too late. Pour." };
-        private static readonly string[] LossLetter = { "Read it again. The words stay the same. Another.", "Wrote all spring into nothing. Pour." };
-        private static readonly string[] LossSon = { "My boy. My boy. Fill it up.", "Raised him steady. Steady didn't save him." };
+        private static readonly string[] LossFever = { "Little hands. So hot, then so cold. Fill it.", "Fetched the doctor too late. I was the one too late. Pour.", "Small coffin. The carpenter wouldn't take my money. Pour.", "Sat by that bed four nights. Can still hear the breathing stop. Fill it." };
+        private static readonly string[] LossLetter = { "Read it again. The words stay the same. Another.", "Wrote all spring into nothing. Pour.", "Black edge on the envelope. Knew before I opened it. Another.", "Kept writing to somebody already in the ground. Fill it." };
+        private static readonly string[] LossSon = { "My boy. My boy. Fill it up.", "Raised him steady. Steady didn't save him.", "Taught him to ride on that gray. He was never coming home. Pour.", "His boots are still by the door. Can't move them. Another." };
         private static readonly string[] BadNews = { "Pour. Don't talk. Pour.", "Drink till it's somebody else's trouble.", "Gone wrong. All of it. Another.",
                                                      "Face hot. Hands cold. Glass empty." };
-        private static readonly string[] BadNewsBold = { "Somebody's going to hear about this. Not tonight.", "Drink first. Break something after.", "Wait till morning. Then they'll hear from me." };
-        private static readonly string[] BadNewsCold = { "Lost that one. Drink, then think.", "Numbers don't lie. Whiskey does. Better company.", "Bad luck's only arithmetic. Drink makes the numbers smaller." };
+        private static readonly string[] BadNewsBold = { "Somebody's going to hear about this. Not tonight.", "Drink first. Break something after.", "Wait till morning. Then they'll hear from me.", "Fill it to the brim. Somebody owes me for this day." };
+        private static readonly string[] BadNewsCold = { "Lost that one. Drink, then think.", "Numbers don't lie. Whiskey does. Better company.", "Bad luck's only arithmetic. Drink makes the numbers smaller.", "Write it off. Drink it off. Same column." };
 
         public static IEnumerable<string> AllLines()
         {

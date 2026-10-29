@@ -54,7 +54,8 @@ namespace EnrageWestworld.Core
         {
             "Kneeling in the dirt for a man in the sky. Well.",
             "Waste of a good morning, and they'll tell me I'm the fool.",
-            "Bell's ringing. Ring away. I've got a horse to shoe."
+            "Bell's ringing. Ring away. I've got a horse to shoe.",
+            "Prayed every night for a year once. The hay still burned."
         };
 
         public static string Prayer(string seed)

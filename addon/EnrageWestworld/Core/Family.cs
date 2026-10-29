@@ -36,7 +36,7 @@ namespace EnrageWestworld.Core
 
 		private static readonly string[] MenLines = new string[8] { "tends bar", "wears a deputy's badge", "clerks at a bank", "preaches on Sundays", "keeps a livery stable", "lays track for the railroad", "drinks more than he should", "practises law, and won't let anyone forget it" };
 
-		private static readonly string[] CityMenLines = new string[3] { "works the docks", "drives a streetcar", "rolls cigars at the factory" };
+		private static readonly string[] CityMenLines = new string[4] { "works the docks", "drives a streetcar", "rolls cigars at the factory", "stokes the boilers at a foundry" };
 
 		private static readonly string[] ParentLines = new string[5] { "is getting on in years", "prays for {p} every night", "hasn't spoken to {p} in years", "writes every month", "keeps a candle in the window for {p}" };
 
