@@ -73,6 +73,7 @@ namespace EnrageWestworld.Core
                     break;
                 case "cold":
                     s.Kind = "brushoff";
+                    s.Doer = 1;   // the wrongdoer (B) walks off
                     s.Add(1, Voice.Pick(seed + "gc", "Don't know what you heard. Don't care.", "Talk to somebody who's listening."), "mild", "walkaway")
                      .Add(0, Voice.Pick(seed + "gx", "That's right. Walk.", "Coward."), "angry");
                     break;

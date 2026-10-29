@@ -109,7 +109,7 @@ namespace EnrageWestworld.Core
         public static Scene Mend(SceneCast c, string seed, bool taken)
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
-            Scene s = new Scene { Kind = taken ? "makeup" : "brushoff", Summary = taken ? "sweethearts made it up in the street" : "a sweetheart's peace offering was turned down" };
+            Scene s = new Scene { Kind = taken ? "makeup" : "brushoff", Doer = taken ? -1 : 1, Summary = taken ? "sweethearts made it up in the street" : "a sweetheart's peace offering was turned down" };
             s.Add(0, Voice.Pick(seed + "mg", c.BWoman ? GiftsForHer : GiftsForHim), "flatter", "face")
              .Add(1, Voice.Pick(seed + "m1", "Oh. It's you, " + a + ".", "I didn't think you'd come, " + a + ".", "You've a cheek, " + a + ", showing your face to me.", "What's that, " + a + "?", "Well, look who's come crawling, " + a + "."), "mild")
              .Add(0, Voice.Pick(seed + "m2", "I was wrong, " + b + ". I've thought of nothing else since.", "I said things I didn't mean, " + b + ". I'm sorry for them.",

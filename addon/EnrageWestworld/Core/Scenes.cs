@@ -37,6 +37,7 @@ namespace EnrageWestworld.Core
         public bool Fight;
         public string Summary;   // for gossip afterwards: "two men came to blows"
         public bool NoteAtCue;   // its tie and memories wait for the scene's own cue (a cb: act), not its start
+        public int Doer = -1;    // which of the cast did the one-sided thing when the scene's own shape says (the creditor who called a debt in, the one who brushed the other off); -1: the tie's rule (Ties.Trouble: A) or nobody (item 17)
         public List<Escalation.Step> Ladder;   // the quarrel ladder's run this scene was built from (Scenes.Ladder.cs; behind [Mind] MindLive); null for the fixed scenes
         public string LadderNote;              // what the ladder said that the scene doesn't play (the shot), for the log
         public readonly List<Beat> Beats = new List<Beat>();
@@ -342,7 +343,7 @@ namespace EnrageWestworld.Core
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             int amount = 10 + Voice.Hash(seed + "amt") % 8 * 5;
-            Scene s = new Scene { Kind = "debt", Summary = "a man called in a debt of " + amount + " dollars" };
+            Scene s = new Scene { Kind = "debt", Doer = 0, Summary = "a man called in a debt of " + amount + " dollars" };   // A calls it in
             s.Add(0, b + ". You know why I'm here.", "mild", "approach").Add(1, "I need more time.", "scared").Add(0, "You had time. " + Grammar.UpperFirst(Voice.Number(amount)) + " dollars, " + b + ".")
              .Add(1, "I got five. Take five.", "scared");
             switch (Voice.Hash(seed) % 3)

@@ -10,7 +10,7 @@ namespace EnrageWestworld.Core
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
             bool shy = why == "shy";
-            Scene s = new Scene { Kind = answer == "no" ? "brushoff" : "flirt", Summary = answer == "no" ? "someone tried their luck and was sent off" : "someone caught someone's eye" };
+            Scene s = new Scene { Kind = answer == "no" ? "brushoff" : "flirt", Doer = answer == "no" ? 1 : -1, Summary = answer == "no" ? "someone tried their luck and was sent off" : "someone caught someone's eye" };
             // A tries their luck
             string open = c.Saloon
                 ? Voice.Pick(seed + "co", "Can I stand you a drink, " + b + "?", "This seat taken, " + b + "? It is now.", "I've been watching you laugh all night, " + b + ". Had to come and see why.")

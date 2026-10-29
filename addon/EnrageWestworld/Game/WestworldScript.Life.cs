@@ -341,7 +341,7 @@ namespace EnrageWestworld.InGame
         /// shove is a quarrel), and the memory of it for everyone around (never a lift, which nobody saw).
         private void NoteHappened(Pending p, string kind)
         {
-            NoteSceneTie(kind, p.People);
+            NoteSceneTie(kind, p.People, p.S != null ? p.S.Doer : -1);
             NoteMinds(kind, p.People, p.Names);   // what they and those watching remember of it (Minds)
             Safe("world events", () => RecordSceneEvent(kind, p.People));   // and the plain record, with its witnesses (WorldEvents.cs)
             if (kind != "lift" && p.People.Count >= 2)
@@ -355,14 +355,17 @@ namespace EnrageWestworld.InGame
 
         /// What the scene leaves between its two people (Ties.cs), when both can be met again: a town regular, a
         /// resident saved for something else, or one of enRAGE's townsfolk. Nobody is saved just for this.
-        private void NoteSceneTie(string kind, List<Ped> people)
+        private void NoteSceneTie(string kind, List<Ped> people, int doer = -1)
         {
             if (people.Count < 2 || Ties.Effect(kind) == null)
                 return;
             string aId, aName, bId, bName;
             if (!LastingId(people[0], out aId, out aName) || !LastingId(people[1], out bId, out bName))
                 return;
-            SceneTie t = Ties.Note(_store.Ties, aId, aName, bId, bName, _placeTown, kind, Bridge.Now());
+            // who did it to whom: the tie's own rule (Ties.Trouble: A), or the scene's word when its shape says (Scene.Doer: the
+            // creditor who called the debt in, the one who brushed the other off), so the appraisal can read it (item 17)
+            SceneTie t = doer == 0 || doer == 1 ? Ties.Note(_store.Ties, aId, aName, bId, bName, _placeTown, kind, Bridge.Now(), doer == 0 ? aId : bId)
+                       : Ties.Note(_store.Ties, aId, aName, bId, bName, _placeTown, kind, Bridge.Now());
             if (t != null)
                 Log.Write("TIE " + t.AName + " & " + t.BName + ": " + kind + " (" + (t.Warmth > 0 ? "warm" : t.Warmth < 0 ? "hostile" : "acquainted") + ", " +
                           t.Count + " scene" + (t.Count == 1 ? "" : "s") + " between them)");

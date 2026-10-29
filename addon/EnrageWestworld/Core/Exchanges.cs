@@ -173,6 +173,7 @@ namespace EnrageWestworld.Core
                         string[] back = manner == "kind" ? OwedKind : manner == "cold" ? OwedCold : OwedSharp;
                         s.Add(1, fill(back[st]), manner == "sharp" ? "angry" : "mild", "walkaway");
                         s.Kind = "debt";
+                        s.Doer = 1;   // B calls it in (the worrier A owes)
                     }
                     else if (good)
                     {
@@ -206,12 +207,14 @@ namespace EnrageWestworld.Core
                     {
                         s.Add(0, fill(Court[st]), "flatter", "face").Add(1, fill((good ? CourtWarm : CourtCool)[st]), good ? "cheer" : "mild", good ? null : "walkaway");
                         s.Kind = good ? "sweet" : "brushoff";
+                        s.Doer = good ? -1 : 1;   // B cools
                     }
                     else
                     {
                         string[] end = good ? Yes : No;
                         s.Add(0, fill(end[0]), good ? "flatter" : "shame", "face").Add(1, fill(end[1]), good ? "cheer" : "sorry");
                         s.Kind = good ? "propose" : "brushoff";
+                        s.Doer = good ? -1 : 1;   // B says no
                     }
                     break;
                 default:
@@ -255,6 +258,7 @@ namespace EnrageWestworld.Core
                     if (manner == "sharp")
                         s.Add(0, fill(Voice.Pick(seed + "sb", SnapBack)), "angry", "walkaway");
                     s.Kind = manner == "kind" ? "comfort" : manner == "cold" ? "brushoff" : "snap";
+                    s.Doer = manner == "cold" ? 1 : -1;   // B brushes A off
                     s.Summary = aName + " snapped at " + bName;
                     return s;
                 case "x:goodnews":
@@ -269,6 +273,7 @@ namespace EnrageWestworld.Core
                     else
                         Answer(s, manner, fill, seed, KindToBad, ColdToBad, SharpToBad);
                     s.Kind = manner == "kind" ? (glad ? "cheer" : "comfort") : manner == "cold" ? "brushoff" : (glad ? "envy" : "snap");
+                    s.Doer = manner == "cold" ? 1 : -1;   // B brushes A off
                     s.Summary = aName + " told " + bName + " the news";
                     return s;
                 case "x:quarrel":

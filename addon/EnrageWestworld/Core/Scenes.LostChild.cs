@@ -96,7 +96,7 @@ namespace EnrageWestworld.Core
         public static Scene Lost(SceneCast c, string seed, LostChild.Child k, string manner)
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
-            Scene s = new Scene { Kind = manner == "kind" ? "comfort" : "brushoff", Summary = "a mother asking around for her child" };
+            Scene s = new Scene { Kind = manner == "kind" ? "comfort" : "brushoff", Doer = manner == "kind" ? -1 : 1, Summary = "a mother asking around for her child" };
             s.Add(0, Voice.Pick(seed + "la", "Have you seen my " + k.Kind + ", " + b + "? " + k.Name + ". " + LostChild.Up(k.Years) + ".",
                                 b + ", have you seen " + k.Name + "? " + (k.Boy ? "He" : "She") + " was right beside me.",
                                 "Please, " + b + ". " + k.Name + "'s wandered off. " + (k.Boy ? "He" : "She") + "'s got " + k.Mark + "."), "scared", "face");

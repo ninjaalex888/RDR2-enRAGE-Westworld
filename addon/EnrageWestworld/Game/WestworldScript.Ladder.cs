@@ -66,7 +66,7 @@ namespace EnrageWestworld.InGame
                     GunsBanned = false,   // no town's rule is known to the add-on (For Lex)
                     Warmth = tie != null ? tie.Warmth : 0,
                     History = tie != null && tie.Warmth < 0 ? Math.Min(4, tie.Count) : 0,
-                    Aggrieved = tie != null && tie.Doer != null ? (tie.Doer == aId ? "b" : tie.Doer == bId ? "a" : null) : null
+                    Aggrieved = tie != null && tie.Doer != null && Ties.Trouble(tie.Kind) ? (tie.Doer == aId ? "b" : tie.Doer == bId ? "a" : null) : null   // the trouble kinds only: a debt's or a brush-off's doer (item 17) wrongs nobody the ladder should favour
                 };
                 if (!_cfg.Standoffs)
                     q.ArmedA = q.ArmedB = false;   // [Scenes] Standoffs off: nobody draws, so the ladder stops at the fists
