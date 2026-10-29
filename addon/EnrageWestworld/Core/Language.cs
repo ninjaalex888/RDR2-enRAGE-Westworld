@@ -63,14 +63,28 @@ namespace EnrageWestworld.Core
         private static readonly Regex Inner = new Regex(@"(?<![.!?]\s)(?<!^)\b\p{Lu}\p{Ll}+(?:'\p{Ll}+)?\b", RegexOptions.CultureInvariant);
         private static readonly Regex Words = new Regex(@"\p{L}+", RegexOptions.CultureInvariant);
 
+        /// Three thoughts of the right shape, shown to the model (the 2026-10-29 measurement: told a character limit alone, a
+        /// local model ran long 463 times in 500 and leaned florid; a word cap it can count and examples it can copy the shape
+        /// of are what it follows). An answer too like one of them is held (Check: "copies an example").
+        public static readonly string[] Examples =
+        {
+            "Rain on the hat brim. Hollis talking big again. Let him.",
+            "Note's due Friday. Hands won't keep still.",
+            "Boots wet through. The stove, and nobody talking.",
+        };
+
+        public const int MaxWords = 20;
+
         /// Lex's writing brief for thoughts, as the model is told it, for the year and place of the request.
         public static string Brief(LanguageRequest r)
         {
             int year = r != null && r.Year > 0 ? r.Year : 1899;
-            return "You write one private thought for a person living in " + year + ", in the American West and South. Short fragments, the way people think, not speak. " +
-                   "One thing the body notices or the eye falls on. Plain words of the time: no modern words or phrases. Never name anyone you were not given. " +
+            return "You write one private thought for a person living in " + year + ", in the American West and South. Short fragments, the way people think, not speak: " +
+                   "two or three clipped sentences, " + MaxWords + " words at most, " + MaxChars + " characters at most. One thing the body notices or the eye falls on. " +
+                   "Plain words of the time: no modern words or phrases, no poetry, no similes. Never name anyone you were not given. " +
                    "The thought says what is really felt, even when the face hides it. Never mention video games, being in a story, or being written. " +
-                   "At most " + MaxSentences + " short sentences and " + MaxChars + " characters. Answer with the thought alone: no quotation marks, no name before it, nothing else.";
+                   "The shape, not the words, of these: " + Examples[0] + " | " + Examples[1] + " | " + Examples[2] + " " +
+                   "Answer with the thought alone: no quotation marks, no name before it, nothing else.";
         }
 
         /// The request in words (the prompt's second half; the brief is the first). The same request gives the same text.
@@ -168,6 +182,11 @@ namespace EnrageWestworld.Core
             }
             if (r != null && !string.IsNullOrEmpty(r.AvoidLine) && Alike(a, r.AvoidLine) >= 0.8)
                 return "copies the written line";
+            foreach (string e in Examples)
+                if (Alike(a, e) >= 0.8)
+                    return "copies an example";
+            if (Words.Matches(a).Count > MaxWords + 4)
+                return "too many words (" + Words.Matches(a).Count + ")";
             return null;
         }
 

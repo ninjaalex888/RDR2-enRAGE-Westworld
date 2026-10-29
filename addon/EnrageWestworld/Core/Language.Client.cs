@@ -204,7 +204,7 @@ namespace EnrageWestworld.Core
 
         /// The body for Ollama's /api/generate: the brief as the system prompt, the request as the prompt, no streaming,
         /// a short answer. Written by hand: the add-on references no JSON library.
-        public static string RequestBody(string model, LanguageRequest r, double temperature = 0.9, int maxTokens = 60)
+        public static string RequestBody(string model, LanguageRequest r, double temperature = 0.9, int maxTokens = 40)
         {
             var b = new StringBuilder(1024);
             b.Append("{\"model\":").Append(JsonString(model)).Append(",\"system\":").Append(JsonString(Brief(r))).Append(",\"prompt\":").Append(JsonString(Prompt(r)));
