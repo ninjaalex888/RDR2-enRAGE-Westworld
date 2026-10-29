@@ -94,15 +94,30 @@ namespace EnrageWestworld.InGame
             return false;
         }
 
+        /// Why the last Spawn gave nothing (for the log): "a mission or a fade", "the model isn't loaded", "the game made nobody there".
+        public static string LastSpawnWhy;
+
         public static Ped Spawn(uint model, Vector3 pos, float heading)
         {
-            if (!SafeToSpawn() || !Ready(model))
+            LastSpawnWhy = null;
+            if (!SafeToSpawn())
+            {
+                LastSpawnWhy = "a mission or a fade";
                 return null;
+            }
+            if (!Ready(model))
+            {
+                LastSpawnWhy = "the model isn't loaded (" + model.ToString("x8") + ")";
+                return null;
+            }
             STREAMING.REQUEST_COLLISION_AT_COORD(pos.X, pos.Y, pos.Z);
             Ped p = World.CreatePed((PedHash)model, pos, heading);
             STREAMING.SET_MODEL_AS_NO_LONGER_NEEDED(model);
             if (p == null || !p.Exists())
+            {
+                LastSpawnWhy = "the game made nobody at " + pos.X.ToString("0") + ", " + pos.Y.ToString("0") + ", " + pos.Z.ToString("0") + " (model " + model.ToString("x8") + ")";
                 return null;
+            }
             ENTITY.SET_ENTITY_AS_MISSION_ENTITY(p.Handle, true, true);
             Ours.Add(p.Handle);
             return p;

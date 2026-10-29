@@ -1209,17 +1209,20 @@ namespace EnrageWestworld.InGame
                     why = _kinWhyNot = shortWhy + "; a body for " + pick.r.Name + " is being readied, try again in a moment";
                     return false;
                 }
-                if (!EncounterSpot(me, 14f, 26f, out at))
+                // a spot out of sight behind the player first; a town's street seldom has one in 14-26 m, so then 8-40 m, then
+                // anywhere on the level 10-18 m off, in sight if need be (as the test cast is brought)
+                if (!EncounterSpot(me, 14f, 26f, out at) && !EncounterSpot(me, 8f, 40f, out at) && !TestCastOpenSpot(me, out at))
                 {
-                    Log.Detail("CAST nobody to send (" + counts + ") and no spot out of sight to make " + pick.r.Name);
-                    why = _kinWhyNot = shortWhy + "; and no spot out of sight to make " + pick.r.Name;
+                    Log.Detail("CAST nobody to send (" + counts + ") and no spot to make " + pick.r.Name);
+                    why = _kinWhyNot = shortWhy + "; and no spot to make " + pick.r.Name;
                     return false;
                 }
                 Vector3 mp = me.Position;
                 body = Spawner.Spawn(model, at, (float)(Math.Atan2(-(mp.X - at.X), mp.Y - at.Y) * 180.0 / Math.PI));
                 if (body == null)
                 {
-                    why = _kinWhyNot = shortWhy + "; " + pick.r.Name + " couldn't be made (the spawn failed)";
+                    Log.Detail("CAST " + pick.r.Name + " couldn't be made: " + (Spawner.LastSpawnWhy ?? "the spawn failed") + " (" + counts + ")");
+                    why = _kinWhyNot = shortWhy + "; " + pick.r.Name + " couldn't be made: " + (Spawner.LastSpawnWhy ?? "the spawn failed");
                     return false;
                 }
                 spawned = true;
