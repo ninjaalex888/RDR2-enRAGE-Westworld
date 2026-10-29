@@ -175,9 +175,8 @@ namespace EnrageWestworld.InGame
             {
                 try
                 {
-                    _theft.Blip = p.AddBlip(BlipType.WhiteDot);
-                    MAP.BLIP_ADD_MODIFIER(_theft.Blip.Handle, Natives.Hash("BLIP_MODIFIER_ENEMY"));   // red, as an enemy's
-                    MAP.BLIP_ADD_MODIFIER(_theft.Blip.Handle, Natives.Hash("BLIP_MODIFIER_ENEMY_FLEEING"));
+                    // the game's own small red enemy dot (BLIP_STYLE_ENEMY); a white dot with the enemy modifier showed big and white (Lex, 2026-10-29)
+                    _theft.Blip = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_ENEMY"), h));
                     _theft.Blip.Label = "Pickpocket";
                 }
                 catch (Exception ex)
