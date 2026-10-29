@@ -444,7 +444,7 @@ namespace EnrageWestworld.InGame
                 return;
             if (p.Position.DistanceTo(Game.Player.Character.Position) > _cfg.ScenesOnTickerMetres)
                 return;
-            _ticker.Say(Person.FirstOf(name), words, p.Handle, Math.Min(5000, 1500 + words.Length * 55));
+            SpeechCaption(Person.FirstOf(name), words, p.Handle, Math.Min(5000, 1500 + words.Length * 55));
         }
 
         private void NodGesture(Ped p, Ped toward, string gesture, bool woman, string seed, string name)

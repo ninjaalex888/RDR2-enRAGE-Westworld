@@ -212,7 +212,7 @@ namespace EnrageWestworld.InGame
             catch { }
             Feed.Say(label, line, null, speaker.Handle);
             if (_cfg.ScenesOnTicker && _cfg.Ticker && speaker.Position.DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
-                _ticker.Say(label, line, speaker.Handle, Math.Min(7000, 1600 + line.Length * 55));
+                SpeechCaption(label, line, speaker.Handle, Math.Min(7000, 1600 + line.Length * 55));
             Log.Write("PATIENT   " + label + ": " + line + (voice == null ? " (no voice for it)" : played ? " (voiced)" : " (the game turned the voice down)"));
         }
 

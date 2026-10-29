@@ -273,7 +273,7 @@ namespace EnrageWestworld.InGame
             int take;
             Speech.PlayFirst(p.Handle, new[] { voice, "GENERIC_SHOCKED_HIGH", "GENERIC_CURSE_HIGH" }, 0, out line, out take, out said);
             if (_cfg.ScenesOnTicker && _cfg.Ticker && p.Position.DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
-                _ticker.Say(label, words, p.Handle, Math.Min(5000, 1500 + words.Length * 55));
+                SpeechCaption(label, words, p.Handle, Math.Min(5000, 1500 + words.Length * 55));
             Log.Write("LAWCHASE   " + label + ": " + words + (line != null ? " (" + line + ")" : " (no voice)"));
         }
 

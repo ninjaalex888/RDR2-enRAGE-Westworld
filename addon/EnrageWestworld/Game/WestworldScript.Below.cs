@@ -248,7 +248,7 @@ namespace EnrageWestworld.InGame
             // the plea on the ticker too, in our words (Lex, 2026-10-29: standing at the bar, "I didn't see much happen": the voice
             // from 2.6 m under the boards was too faint to notice)
             if (_cfg.Ticker)
-                _ticker.Say("Under the floor", Grammar.UpperFirst(Below.Overheard(b.Seed + b.Heard)) + ".", b.Keeper.Handle, 4500);
+                SpeechCaption("Under the floor", Grammar.UpperFirst(Below.Overheard(b.Seed + b.Heard)) + ".", b.Keeper.Handle, 4500);
             Log.Write("BELOW a plea through the floor (" + line + "); " + b.KeeperName + " thinks of " + (b.Heard == 1 ? "the stovepipe" : "worse"));
         }
 

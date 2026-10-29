@@ -635,7 +635,7 @@ namespace EnrageWestworld.InGame
             Feed.Say(label, line, null, ped);   // the director plays the speakers' own recorded lines
             // and on the ticker as it is said, while the scene is within earshot (Lex, 2026-10-29: he couldn't tell a woman had stepped in)
             if (_cfg.ScenesOnTicker && _cfg.Ticker && ped != 0 && ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.GET_ENTITY_COORDS(ped, true, true).DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
-                _ticker.Say(label, line, ped, Math.Min(7000, 1600 + line.Length * 55));
+                SpeechCaption(label, line, ped, Math.Min(7000, 1600 + line.Length * 55));
         }
 
         /// Loose talk in a saloon about a gang job nobody's supposed to know about.

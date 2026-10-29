@@ -408,6 +408,20 @@ namespace EnrageWestworld.InGame
             NameCardsStep(now);   // names over heads, last: the least to lose if the frame's text budget runs out (WestworldScript.NameCards.cs)
         }
 
+        // a line being said near you (a scene, the doctor, a hello), drawn on the bar for its own time whatever the ticker's
+        // rotation is doing (2026-10-29: through the ticker's queue Lex saw none of them)
+        private TickerLine _caption;
+        private int _captionUntil;
+
+        private void SpeechCaption(string label, string text, int handle, int ms)
+        {
+            if (string.IsNullOrEmpty(text))
+                return;
+            _caption = new TickerLine { Label = label, Text = text.Trim(), Kind = "scene", Handle = handle, ShownAt = Game.GameTime };
+            _captionUntil = Game.GameTime + Math.Max(1500, ms);
+            Log.Detail("CAPTION " + label + ": " + text);
+        }
+
         private void FrameImpl(int now)
         {
             bool askNext = _tickerNextRequested;   // the ticker key: only counts while the ticker is showing
@@ -442,6 +456,15 @@ namespace EnrageWestworld.InGame
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));
             }
             TickerLine line = _tickerLine;
+            if (_caption != null && now < _captionUntil)
+            {
+                Ticker.Render(_caption, _cfg, now);   // what's being said now takes the bar
+                if (_aOverHead == null)
+                    _aOverHead = () => _overHeadDrawn = DespairOverHead(_now) || ThoughtOverHead(_tickerLine, _now);
+                Safe("thoughts over heads", _aOverHead);
+                return;
+            }
+            _caption = null;
             // a thought goes over its thinker's head (WestworldScript.OverHead.cs), under its own guard, and with
             // ThoughtsOverHeads on never on the bar (Lex, 2026-10-27): one whose thinker is off screen waits, and after
             // a moment the ticker moves on; anything else (the news, the summary) on the bar
