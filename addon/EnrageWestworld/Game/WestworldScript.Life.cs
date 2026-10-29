@@ -1076,30 +1076,16 @@ namespace EnrageWestworld.InGame
                 why = _kinWhyNot = "nobody you know has family in " + _placeTown;
                 return false;
             }
-            string pace = null, skipped;
-            var pick = kin[0];
-            foreach (var k in kin)
-            {
-                pace = Pacing.WhyNot(_store.Pace, "kin", _placeTown, k.r.Name, g, _rng.Next(100), test, out skipped);
-                if (pace == null)
-                {
-                    pick = k;
-                    break;
-                }
-            }
-            if (pace != null)
-            {
-                why = _kinWhyNot = "rests: " + pace;
-                return false;
-            }
-            // every human within range is counted by what kept them out, so the refusal says what the street was made of
-            // (Lex, 2026-10-29: six tries in Valentine refused with every count at 0: the town's walkers are all in the
-            // game's walking scenarios, which were passed over uncounted; now a scenario is let go of first, and someone
-            // in one is taken only when nobody free of one is to hand)
-            int total = 0, theGames = 0, tooClose = 0, ours = 0, riding = 0, inScenario = 0, outOfView = 0, named = 0, notFree = 0, wrongSex = 0, mayNot = 0;
-            Ped body = null;
-            float best = float.MaxValue;
-            bool bestInScenario = false;
+            // the street first: the nearest free body of each sex, counted by what kept the rest out, so the refusal says
+            // what the street was made of (Lex, 2026-10-29: six tries in Valentine refused with every count at 0: the
+            // town's walkers are all in the game's walking scenarios, which were passed over uncounted; then four more
+            // refused "9 the wrong sex": the relative was drawn before the street was looked at, and a sister wanted a
+            // woman on a street of men). Now a scenario is let go of first, someone in one is taken only when nobody
+            // free of one is to hand, and the relative is the first whose sex the street can supply.
+            int total = 0, theGames = 0, tooClose = 0, ours = 0, riding = 0, inScenario = 0, outOfView = 0, named = 0, notFree = 0, mayNot = 0, men = 0, women = 0;
+            Ped[] bodies = new Ped[2];                           // 0 a man, 1 a woman
+            float[] bestD = { float.MaxValue, float.MaxValue };
+            bool[] bodyInScenario = new bool[2];
             foreach (Ped p in World.GetAllPeds())
             {
                 if (p == null || !p.Exists() || p.Handle == me.Handle || ENTITY.IS_ENTITY_DEAD(p.Handle) || !PED.IS_PED_HUMAN(p.Handle))
@@ -1129,11 +1115,6 @@ namespace EnrageWestworld.InGame
                     riding++;
                     continue;
                 }
-                if (PED.IS_PED_MALE(h) == pick.r.Woman)
-                {
-                    wrongSex++;
-                    continue;
-                }
                 if (_bridge.RecordAt(h) != null || _bridge.AcquaintanceAt(h) != null || _resBind.ContainsKey(h))
                 {
                     named++;   // someone with a name of their own already: the kin would be a second name on the same body
@@ -1154,24 +1135,49 @@ namespace EnrageWestworld.InGame
                     mayNot++;
                     continue;
                 }
+                int sex = PED.IS_PED_MALE(h) ? 0 : 1;
+                if (sex == 0) men++; else women++;
                 bool scenario = PED.IS_PED_USING_ANY_SCENARIO(h);
                 if (scenario)
                     inScenario++;
                 // someone free of a scenario first, the nearest of them; else the nearest in one (let go of it first)
-                if (body == null || (bestInScenario && !scenario) || (bestInScenario == scenario && d < best))
+                if (bodies[sex] == null || (bodyInScenario[sex] && !scenario) || (bodyInScenario[sex] == scenario && d < bestD[sex]))
                 {
-                    best = d;
-                    body = p;
-                    bestInScenario = scenario;
+                    bestD[sex] = d;
+                    bodies[sex] = p;
+                    bodyInScenario[sex] = scenario;
+                }
+            }
+            // the relative: the first of them (shuffled) whose sex the street can supply and whose rests allow
+            string pace = null, skipped;
+            var pick = kin[0];
+            Ped body = null;
+            int withBody = 0;
+            foreach (var k in kin)
+            {
+                if (bodies[k.r.Woman ? 1 : 0] == null)
+                    continue;
+                withBody++;
+                pace = Pacing.WhyNot(_store.Pace, "kin", _placeTown, k.r.Name, g, _rng.Next(100), test, out skipped);
+                if (pace == null)
+                {
+                    pick = k;
+                    body = bodies[k.r.Woman ? 1 : 0];
+                    break;
                 }
             }
             if (body == null)
             {
-                why = _kinWhyNot = "no passer-by in view within " + (int)KinFar + " m RealNPCs may send over (" + total + " people in range: " + theGames + " the game's own, lawmen or children, " +
-                                   tooClose + " within 5 m, " + ours + " ours, " + riding + " riding, " + wrongSex + " the wrong sex, " + named + " with a name already, " + outOfView + " out of view, " +
-                                   notFree + " busy, " + mayNot + " not ours to direct)";
+                if (withBody > 0 && pace != null)
+                    why = _kinWhyNot = "rests: " + pace;
+                else
+                    why = _kinWhyNot = "no passer-by in view within " + (int)KinFar + " m RealNPCs may send over for " + KinSexes(kin.Select(k => k.r.Woman)) + " (" + total + " people in range: " +
+                                       men + " men and " + women + " women free; " + theGames + " the game's own, lawmen or children, " + tooClose + " within 5 m, " + ours + " ours, " + riding + " riding, " +
+                                       named + " with a name already, " + outOfView + " out of view, " + notFree + " busy, " + mayNot + " not ours to direct)";
                 return false;
             }
+            float best = bestD[pick.r.Woman ? 1 : 0];
+            bool bestInScenario = bodyInScenario[pick.r.Woman ? 1 : 0];
             int bh = body.Handle;
             _casts[bh] = new KeyValuePair<Relative, string>(pick.r, pick.st.Id);
             int pending = KinOrder(bh, me, now);
@@ -1181,6 +1187,17 @@ namespace EnrageWestworld.InGame
             Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": a passer-by " + (int)best + " m off walks over" +
                       (bestInScenario ? " (let go of what they were doing first; " + inScenario + " of " + total + " in range were busy that way)" : "") + (test ? ", a test" : ""));
             return true;
+        }
+
+        /// "a woman", "a man" or "a man or a woman": the sexes the relatives here would need, for the refusal.
+        private static string KinSexes(IEnumerable<bool> women)
+        {
+            bool w = false, m = false;
+            foreach (bool x in women)
+            {
+                if (x) w = true; else m = true;
+            }
+            return w && m ? "a man or a woman" : w ? "a woman (the relatives here are women)" : "a man (the relatives here are men)";
         }
 
         /// The walk order. Someone in a scenario (leaning, sitting, the game's walking routes) is let go of it first and gets
