@@ -147,6 +147,19 @@ namespace EnrageWestworld.InGame
                             if (d.VictimId == null)
                                 d.VictimId = id;
                         }
+                        else
+                        {
+                            // nobody lasting yet (a passer-by, or a resident never kept): what the player did to them is reason to keep them,
+                            // as a strong deed keeps its witnesses (2026-10-29: a shoved lady had a card and a mind, and felt nothing)
+                            Minds.Party w = PartyOf(new Ped(victim), true);
+                            if (w != null && w.Id != null && _engine.CanRemember(w.Id))
+                            {
+                                vid = w.Id;
+                                vname = w.Name != null ? Person.FirstOf(w.Name) : d.Detail;
+                                if (d.VictimId == null)
+                                    d.VictimId = w.Id;
+                            }
+                        }
                     }
                     RecordEvent("deed:" + d.Kind, "player", "you", vid, vname, pos, Game.Player.Character.Handle, except, victim, d.Unseen ? "unseen" : null);
                 });
