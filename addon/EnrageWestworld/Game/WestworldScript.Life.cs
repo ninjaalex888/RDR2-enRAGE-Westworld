@@ -1051,8 +1051,10 @@ namespace EnrageWestworld.InGame
             _castThisVisit.Add(pick.r.Name);
             _casts[body.Handle] = new KeyValuePair<Relative, string>(pick.r, pick.st.Id);
             TASK.TASK_GO_TO_ENTITY(body.Handle, me.Handle, 20000, 2.2f, 1.2f, 0f, 0);
-            News(pick.r.Name, "is walking toward you - " + (pick.st.Name ?? "someone you know") + "'s " + pick.r.Relation + ".");
-            Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown);
+            // no notice (Lex, 2026-10-28: "get rid of the walking toward you notice altogether"): the name reached the
+            // screen before anyone did, on a body nothing marked, and in one session eight of eight never arrived (the
+            // 20 s walk order ran out on an ambient ped the game took back); the relative is named when they speak
+            Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": a passer-by " + (int)body.Position.DistanceTo(me.Position) + " m off sent over, nothing shown");
         }
 
         /// The player greeted someone special: the stalker, or kin met on the street.

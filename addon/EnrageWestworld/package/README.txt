@@ -26,7 +26,8 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   goes on telling the town how he was questioned when enRAGE missed his death); RealNPCs' own
   avengers come one at a time ([World] AvengersAtOnce, AvengerGapHours; the "X heard you killed
   his friend" notices are enRAGE's, off with [Menu] Messages = 2 in NemesisMod.ini); a townsperson enRAGE
-  takes for someone you greeted, by his look, now says only that your face seems known.
+  takes for someone you greeted, by his look, now says only that your face seems known. The
+  "X is walking toward you" notice is gone: a relative is named when they reach you and speak.
 - Strangers at a campfire: at night out of the towns, men round a fire call you over for
   coffee and a tale; now and then a traveller walks in from the dark. [Encounters] Campfires.
 - The voice below the floor (West World): late at night in a saloon, a muffled plea from under
