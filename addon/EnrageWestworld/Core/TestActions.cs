@@ -113,7 +113,7 @@ namespace EnrageWestworld.Core
             new Entry("showminds", "Tools", "Show minds (a card over people near you)", "TestShowMindsKey", "Ctrl+F2"),   // on and off for the session (Lex, 2026-10-27)
             new Entry("wakestages", "Tools", "Show wake stages (a tag over the waking)", "TestWakeStagesKey"),
             new Entry("replay", "Tools", "Fire the last test again", "TestReplayKey"),
-            new Entry("cast", "Tools", "Bring the test cast here (kept in the save)", "TestCastKey", needs: "a town, out of doors; eight people the tests need (a mother, two old men, a preacher and a listener, three men for a bully) come and stroll about 14-26 m behind you"),
+            new Entry("cast", "Tools", "Bring the test cast here (kept in the save)", "TestCastKey", needs: "a town, out of doors; eight people the tests need (a mother, two old men, a preacher and a listener, three men for a bully) come and stroll about a spot 10 m in front of you"),
             new Entry("cast:go", "Tools", "Let the test cast go (they stay in the save)", "TestCastGoKey"),
         };
 
