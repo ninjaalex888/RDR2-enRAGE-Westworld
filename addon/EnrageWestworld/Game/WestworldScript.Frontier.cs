@@ -32,6 +32,10 @@ namespace EnrageWestworld.InGame
             public string Town;
             public int Started;
             public int ThiefHealth;
+            public Ped Lawman;            // a lawman who gave chase (LawChases)
+            public int LawSince, LawLookAt;
+            public bool LawHeld;          // brought down by the law: held, waiting to be resolved
+            public int LawHeldAt;
         }
 
         private sealed class Pleading
@@ -159,8 +163,115 @@ namespace EnrageWestworld.InGame
                 ResolveTheft(t, dead ? "killed" : "caught", now);
                 return;
             }
+            if (LawChaseStep(t, me, now))
+                return;
             if (now - t.Started > 120000 || dist > 160f)
                 ResolveTheft(t, "escaped", now);
+        }
+
+        // ---- a lawman runs him down (Lex, 2026-10-29: the game's police chased and tackled a man; "could we get this into the mod?") ----
+
+        private int _lawChases, _lawCatches;
+        private string _lawChaseLast;
+
+        /// The law joins the chase: a lawman within 70 m, on his feet and not after you, runs the thief down; within arm's reach
+        /// the thief goes down (a tackle) and the lawman holds him for arrest. True while it has the theft in hand.
+        private bool LawChaseStep(Theft t, Ped me, int now)
+        {
+            if (!_cfg.LawChases)
+                return false;
+            int h = t.Thief.Handle;
+            if (t.Lawman == null)
+            {
+                if (now - t.Started < 2500 || now < t.LawLookAt)
+                    return false;
+                t.LawLookAt = now + 2000;
+                Ped law = World.GetAllPeds().Where(p => p != null && p.Exists() && !p.IsDead && p.Handle != me.Handle && Natives.IsLaw(p) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
+                                                        !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_IN_COMBAT(p.Handle, me.Handle) && p.Position.DistanceTo(t.Thief.Position) < 70f)
+                                            .OrderBy(p => p.Position.DistanceTo(t.Thief.Position)).FirstOrDefault();
+                if (law == null)
+                    return false;
+                t.Lawman = law;
+                t.LawSince = now;
+                _lawChases++;
+                TASK.CLEAR_PED_TASKS(law.Handle, true, false);
+                TASK.TASK_GO_TO_ENTITY(law.Handle, h, -1, 3.0f, 1.2f, 0f, 0);   // at a run
+                LawSay(law, "The deputy", LawChase.Shout(t.Started + "|law"), "SHOUT_STOP");
+                Log.Write("LAWCHASE a lawman " + (int)law.Position.DistanceTo(t.Thief.Position) + " m off gives chase to the pickpocket");
+                return false;
+            }
+            Ped l = t.Lawman;
+            if (!l.Exists() || l.IsDead || PED.IS_PED_IN_COMBAT(l.Handle, me.Handle))
+            {
+                t.Lawman = null;
+                t.LawLookAt = now + 600000;   // no second lawman: the player has it from here
+                return false;
+            }
+            float d = l.Position.DistanceTo(t.Thief.Position);
+            if (!t.LawHeld)
+            {
+                if (d < 1.8f)
+                {
+                    // the tackle: down he goes, and the lawman stands over him
+                    PED.SET_PED_TO_RAGDOLL(h, 4000, 6000, 0, false, false, "");
+                    TASK.CLEAR_PED_TASKS(l.Handle, true, false);
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(l.Handle, h, 6000, 0f, 0f, 0f);
+                    t.LawHeld = true;
+                    t.LawHeldAt = now;
+                    LawSay(l, "The deputy", LawChase.Got(t.Started + "|got"), "WON_FIGHT");
+                    Log.Write("LAWCHASE the lawman brought the pickpocket down after " + (now - t.LawSince) / 1000 + " s");
+                    return true;
+                }
+                if (now - t.LawSince > 45000)
+                {
+                    Log.Write("LAWCHASE the lawman lost him");
+                    TASK.CLEAR_PED_TASKS(l.Handle, true, false);
+                    t.Lawman = null;
+                    t.LawLookAt = now + 600000;
+                    return false;
+                }
+                if ((now - t.LawSince) % 4000 < 60)
+                    TASK.TASK_GO_TO_ENTITY(l.Handle, h, -1, 3.0f, 1.2f, 0f, 0);   // the thief changes course: the order again
+                return false;
+            }
+            if (now - t.LawHeldAt > 2500)
+            {
+                _theft = null;
+                _thieves.Remove(h);
+                _lawCatches++;
+                Ped mark = t.Mark;
+                if (mark != null && mark.Exists() && !mark.IsDead && mark.Position.DistanceTo(me.Position) < 90f)
+                    SayLater(1200, t.MarkName ?? (t.MarkWoman ? "The woman" : "The man"), LawChase.Thanks(t.MarkWoman, t.Started + "|thx"), mark.Handle, "thanks");
+                if (t.Thief.Exists() && !t.Thief.IsDead)
+                {
+                    TASK.CLEAR_PED_TASKS(h, true, false);
+                    TASK.TASK_HANDS_UP(h, 15000, l.Handle, -1, false);   // caught: hands up while he's taken
+                }
+                TASK.TASK_LOOK_AT_ENTITY(l.Handle, h, 15000, 0, 51, 0);
+                WanderLater(l.Handle, now + 15000);
+                _lawChaseLast = "caught" + (t.Town != null ? " in " + t.Town : "");
+                Log.Write("LAWCHASE caught: the pickpocket held by the law" + (t.Town != null ? " in " + t.Town : ""));
+                return true;
+            }
+            return true;
+        }
+
+        /// A line said aloud in the chase: the speaker's own voice (the first of `voice` their bank has), our words on the ticker.
+        private void LawSay(Ped p, string label, string words, string voice)
+        {
+            if (p == null || !p.Exists())
+                return;
+            string line, said;
+            int take;
+            Speech.PlayFirst(p.Handle, new[] { voice, "GENERIC_SHOCKED_HIGH", "GENERIC_CURSE_HIGH" }, 0, out line, out take, out said);
+            if (_cfg.ScenesOnTicker && _cfg.Ticker && p.Position.DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
+                _ticker.Say(label, words, p.Handle, Math.Min(5000, 1500 + words.Length * 55));
+            Log.Write("LAWCHASE   " + label + ": " + words + (line != null ? " (" + line + ")" : " (no voice)"));
+        }
+
+        private string LawChaseStatus()
+        {
+            return (_cfg.LawChases ? "on" : "off ([Scenes] LawChases)") + "; " + _lawChases + " chases this session, " + _lawCatches + " caught" + (_lawChaseLast != null ? "; last: " + _lawChaseLast : "");
         }
 
         private void ResolveTheft(Theft t, string how, int now)
