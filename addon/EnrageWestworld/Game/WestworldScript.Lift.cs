@@ -1,9 +1,9 @@
 // A thief lifts your money (Lex, 2026-10-29, after the game's own: "an NPC that I bumped into took money from me and ran
-// off... this should be able to happen anywhere"; [Scenes] Lifts). In a town, a man near you walks into you, says his
+// off... this should be able to happen anywhere"; [Scenes] Lifts). Anywhere there are people (a town, a camp, a road; Lex: "not just in towns"), a man near you walks into you, says his
 // pardon, and in the bump takes a little of your cash; a moment later he runs. He is the pickpocket from then on
 // (the same Theft as a street pickpocket's, with you as the one robbed): run him down, lasso, hogtie or tackle him and
 // you get it back; a lawman near may chase and bring him down for you (LawChases), and hands it back; if he gets away
-// it's gone. A look every 60 s while you're on foot in a town, Pacing "lift" (25%, two game hours between, a town
+// it's gone. A look every 60 s while you're on foot, Pacing "lift" (25%, two game hours between, a town
 // every four), never in a mission, never with a scene or a theft already on. The Testing row starts one now.
 using System;
 using System.Linq;
@@ -58,8 +58,6 @@ namespace EnrageWestworld.InGame
                 return why = "off ([Scenes] Lifts)";
             if (_lifter != null || _theft != null)
                 return why = "a thief is at work already";
-            if (_placeTown == null && !test)
-                return why = "outside the towns";
             if (MISC.GET_MISSION_FLAG() || PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false))
                 return why = "on a horse, in a wagon or in a mission";
             if (MONEY._MONEY_GET_CASH_BALANCE() < 200)
