@@ -185,16 +185,22 @@ namespace EnrageWestworld.InGame
         }
 
         /// The two swapped places (B won the fight the script gave to A): the lines still to come swap their names too,
-        /// so nobody calls the winner by his own name.
+        /// so nobody calls the winner by his own name. A beat that follows its people (`Beat.Follows`, the ladder's)
+        /// swaps its Who and To instead and keeps its line: the man the ladder had speaking still speaks it, by name.
         private static void SwapNamesInLines(Live l, string x, string y)
         {
-            if (string.IsNullOrEmpty(x) || string.IsNullOrEmpty(y) || x == y)
-                return;
-            Regex both = new Regex(@"\b(" + Regex.Escape(x) + "|" + Regex.Escape(y) + @")\b");
+            Regex both = string.IsNullOrEmpty(x) || string.IsNullOrEmpty(y) || x == y ? null : new Regex(@"\b(" + Regex.Escape(x) + "|" + Regex.Escape(y) + @")\b");
             for (int j = l.Index; j < l.Scene.Beats.Count; j++)
             {
                 Beat b = l.Scene.Beats[j];
-                if (b.Line != null)
+                if (b.Follows)
+                {
+                    if (b.Who < 2)
+                        b.Who = 1 - b.Who;
+                    if (b.To == 0 || b.To == 1)
+                        b.To = 1 - b.To;
+                }
+                else if (b.Line != null && both != null)
                     b.Line = both.Replace(b.Line, m => m.Value == x ? y : x);
             }
         }
@@ -330,7 +336,7 @@ namespace EnrageWestworld.InGame
                     return;
                 }
             }
-            if (l.Cast.Min(p => p.Position.DistanceTo(player.Position)) > 50f || now - l.StartedAt > 90000)
+            if (l.Cast.Min(p => p.Position.DistanceTo(player.Position)) > 50f || now - l.StartedAt > (l.Scene.Ladder != null ? 150000 : 90000))   // a ladder quarrel that climbs the whole way runs past 90 s (the review)
             {
                 Abort("the player left");
                 return;
@@ -664,6 +670,12 @@ namespace EnrageWestworld.InGame
                     // a standoff: guns come out only when the cast is armed and no lawman is close (the game layer checks)
                     if ((who == 0 && l.Info.Armed0) || (who == 1 && l.Info.Armed1))
                     {
+                        // after a fight the fists are still the weapon in hand (the fight act set them, KeepFists held
+                        // them): the sidearm back in the hand first, else the aim would point nothing (the ladder's
+                        // review; the fixed standoff never aims after a fight)
+                        uint best = WEAPON.GET_BEST_PED_WEAPON(h, false, false);
+                        if (best != 0 && best != Natives.Hash("WEAPON_UNARMED"))
+                            WEAPON.SET_CURRENT_PED_WEAPON(h, best, true, 0, false, false);
                         TASK.TASK_AIM_GUN_AT_ENTITY(h, t, 25000, false, 0);
                         l.Aimed[who] = true;
                         return 900;

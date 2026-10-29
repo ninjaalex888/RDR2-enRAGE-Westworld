@@ -221,9 +221,16 @@ namespace EnrageWestworld.Core
         /// The whole ladder from words: every step until it ends (for the tests; the Director takes a rung at a time).
         public static List<Step> Run(Traits a, Traits b, QuarrelContext c, string seed)
         {
+            return RunFrom(0, a, b, c, seed);
+        }
+
+        /// The ladder from a rung already reached (a brawl reason starts at the blows, Scenes.BrawlStartRung): every step
+        /// from there until it ends.
+        public static List<Step> RunFrom(int startRung, Traits a, Traits b, QuarrelContext c, string seed)
+        {
             var steps = new List<Step>(5);
-            int rung = 0;
-            for (int i = 0; i < Rungs.Length; i++)
+            int rung = Math.Max(0, Math.Min(startRung, Rungs.Length - 1));
+            for (int i = rung; i < Rungs.Length; i++)
             {
                 Step s = Next(rung, a, b, c, seed);
                 steps.Add(s);

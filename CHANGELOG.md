@@ -41,6 +41,10 @@ Built in the night run of 2026-10-28 (Lex's brief), on the 0.6.3 release; nothin
 
 - By day in a town, someone whose child has the fever walks to the doctor's and back, thinking it over on the way (hope going, the doctor's word inside, what's left of it coming home). `[Scenes] DoctorsPatient` (on); the Testing row `patient`.
 
+### The quarrel ladder, played (with [Mind] MindLive)
+
+- With `[Mind] MindLive` on, an argument or a fight between two people the mind knows no longer runs on a fixed script: the quarrel ladder (words, a shove, blows, a gun drawn) decides how far it climbs and how it comes down, from the two natures and the surroundings: the hour and the place, drink, the guns on their belts, the law in sight, a friend of either close enough to step in (he does, as the scene's third), the crowd watching, their history and who was wronged, and what it's over (a debt is money, a feud honour, courting a woman; a saloon's drink; the street's a look over nothing). It ends by an apology, a joke, backing down, walking off, a friend's word, a drink stood in a saloon, a man down, or the law looking on. Guns come out only where they did before (both armed, no law near, out of the saloon); the shot is never fired: the standoff breaks off and the log says the ladder called for it. `[Mind] QuarrelLadder` (on, under MindLive); off, or with MindLive off, exactly the fixed scenes. The log's `LADDER` line gives the whole run; F7 `TEST ladder:`. The Testing page's Street scenes row "A quarrel from the ladder (turns: words, blows)" fires one on demand (an argument from words, then a brawl from the blows), needing only `[Mind] MindShadow`.
+
 ### The mind in shadow (continued)
 
 - `[Mind] MindLevels` (off, in testing): the mind's work spread by distance and a budget a frame: the people in view every look, the town around every 10-30 s, everyone saved elsewhere once a game day (counted only: `MIND away:`), and the town around has its choices worked out too, without a line; off, exactly as before. F7 `TEST mind levels:`.

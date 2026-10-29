@@ -56,7 +56,10 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   someone saw never changes who did it, and what you did never drifts. Standing where something
   happened brings it back. The one spoken to in a street scene answers with their body from
   their own mind and the manners of 1899. Off (as it comes), thoughts, memories and reactions
-  are exactly as in 0.6.3.
+  are exactly as in 0.6.3. With it on, a quarrel between two people the mind knows climbs or
+  cools by their natures and the room (words, a shove, fists, a gun drawn; an apology, a joke,
+  a friend stepping in, a drink, the law looking on); the shot is never fired. [Mind]
+  QuarrelLadder (on, under MindLive).
   And the mind now says what each person near you would do (the log's MIND would: lines, the
   card's "would:"): a meal, the work, the saloon of an evening, church on Sunday, a word with a
   friend, stepping clear of a foe. Nobody is moved by it yet. And what each believes: the log

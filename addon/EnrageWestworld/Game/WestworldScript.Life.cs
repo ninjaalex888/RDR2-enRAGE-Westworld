@@ -181,9 +181,11 @@ namespace EnrageWestworld.InGame
                 return;
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
                 AddJobTalk(s, seed);
+            s = LadderScene(s, a, b, null, null, cast, seed, null, people, now);   // a chance meeting's argue or brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
             AddBarkeep(s, people, cast, seed, saloon);
             string stood;
-            StandUpFor(s, people, cast, seed, now, false, out stood);
+            if (s.Ladder == null || s.Cast == 2)
+                StandUpFor(s, people, cast, seed, now, false, out stood);
             AddBystander(s, people, cast, seed, now);
             StartScene(s, people, cast, seed, now);
         }
@@ -320,12 +322,17 @@ namespace EnrageWestworld.InGame
                     _troubleLast = s.Kind + " (" + string.Join(" & ", names.Where(x => x != null)) + ")" + (test ? ", a test" : "");
                 }
                 var p = new Pending { S = s, People = new List<Ped>(people), Names = names };
+                // a ladder quarrel (Scenes.Ladder.cs) is noted by what happened in it, not its top rung: a standoff that came to
+                // blows first is a brawl to the ties, the memories, the rests and the ledger; an argue that ended in an apology
+                // or a drink stood is an apology (the review)
+                string noted = s.Ladder == null ? s.Kind : s.Fight && s.Kind == "standoff" ? "brawl"
+                             : s.Kind == "argue" && s.Ladder.Count > 0 && (s.Ladder[s.Ladder.Count - 1].Ended == "apology" || s.Ladder[s.Ladder.Count - 1].Ended == "drink") ? "apology" : s.Kind;
                 // a face in the bar, a drunk on the floor, a purse gone: noted only once it happens (a walk-over that
                 // never arrives leaves nothing); any other scene counts as soon as it starts, broken up or not
                 _pendingNote = !test && (s.Kind == "rough" || s.Kind == "drunk" || s.Kind == "lift" || s.Kind == "help" || s.Kind == "passby" || s.NoteAtCue) ? p : null;
                 if (_pendingNote == null && !test)
-                    NoteHappened(p, s.Kind);   // a test leaves no tie between them
-                NoteInScene(people, s.Kind, now);
+                    NoteHappened(p, noted);   // a test leaves no tie between them
+                NoteInScene(people, noted, now);
                 Onlookers(people);
             }
         }

@@ -40,6 +40,7 @@ namespace EnrageWestworld.Core
         public string Why;        // for the log and the F7 dump
         public bool BFirst;       // the second person starts it (A in the scene)
         public string Fallback;   // the scene instead, if the game side can't play this one (no surface by him for "rough")
+        public string Matter;     // what the quarrel is over, when the reason knows (drink, money, honour, woman, land); null: the game side works it out (Scenes.Ladder.cs)
     }
 
     public static class Reasons
@@ -216,11 +217,11 @@ namespace EnrageWestworld.Core
             if (twoMen && where.Saloon && Hot(x) && (x.Drunk || y.Drunk) && Voice.Chance(x.Id + gameDay + "drinktemper", Weighted(DrinkTemperChance, where.Trouble)))
             {
                 if (y.Temper == "Coward")
-                    all.Add(new Reason { Kind = "argue", Strength = 46, Why = x.Name + " has drink and temper in him, and " + y.Name + " won't stand up to it" });
+                    all.Add(new Reason { Kind = "argue", Strength = 46, Matter = "drink", Why = x.Name + " has drink and temper in him, and " + y.Name + " won't stand up to it" });
                 else if (Voice.Hash(x.Id + y.Id + gameDay + "drough") % 100 < RoughChance)
-                    all.Add(new Reason { Kind = "rough", Fallback = "brawl", Strength = 57, Why = x.Name + " has drink and temper in him, and does it rough" });
+                    all.Add(new Reason { Kind = "rough", Fallback = "brawl", Strength = 57, Matter = "drink", Why = x.Name + " has drink and temper in him, and does it rough" });
                 else
-                    all.Add(new Reason { Kind = "brawl", Strength = 56, Why = x.Name + " has drink and temper in him, and " + y.Name + " answers it" });
+                    all.Add(new Reason { Kind = "brawl", Strength = 56, Matter = "drink", Why = x.Name + " has drink and temper in him, and " + y.Name + " answers it" });
             }
             else if (x.Temper == "Hothead" && twoMen && where.Saloon && where.Trouble > 0f)
             {
@@ -228,9 +229,9 @@ namespace EnrageWestworld.Core
                 // wins the turn over most things (Lex: fights were too rare to see)
                 int night = where.Night ? 14 : 0;
                 if (Voice.Hash(x.Id + gameDay + "srough") % 100 < Weighted(StrangerRoughChance, where.Trouble))
-                    all.Add(new Reason { Kind = "rough", Fallback = "argue", Strength = 32 + night, Why = x.Name + " is a hothead with drink in him, and " + y.Name + " is in his way" });
+                    all.Add(new Reason { Kind = "rough", Fallback = "argue", Strength = 32 + night, Matter = "drink", Why = x.Name + " is a hothead with drink in him, and " + y.Name + " is in his way" });
                 else
-                    all.Add(new Reason { Kind = "argue", Strength = 30 + night, Why = x.Name + " is a hothead with drink in him" });
+                    all.Add(new Reason { Kind = "argue", Strength = 30 + night, Matter = "drink", Why = x.Name + " is a hothead with drink in him" });
             }
             // two hot-blooded men in each other's way come to blows now and then, by day or night (Lex, 2026-10-28: brawls
             // weren't happening; a reason always came first, so the chance meeting's brawl seldom got a turn). A roll per

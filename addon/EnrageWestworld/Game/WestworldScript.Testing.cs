@@ -441,6 +441,9 @@ namespace EnrageWestworld.InGame
                 return "fewer than two named people free within " + (int)ReasonRange + " m";
             string courtAnswer = kind == "court" ? new[] { "yes", "maybe", "no" }[_courtTurn++ % 3] : null;
             bool standUp = kind == "standup";
+            bool ladder = kind == "ladder";
+            if (ladder)
+                kind = _ladderTestTurn++ % 2 == 0 ? "argue" : "brawl";   // a quarrel from the ladder (WestworldScript.Ladder.cs), from words and then from a brawl's blows, turn about
             if (standUp)
                 kind = "brawl";   // a fistfight, with someone to step in before it
             var reasons = new List<string>();
@@ -485,8 +488,18 @@ namespace EnrageWestworld.InGame
                         last = "the words don't fit " + a.Who.Name + " (" + (kind.StartsWith("x:") ? "no worry at that point" : "nothing to say") + ")";
                         continue;
                     }
-                    AddMeet(s, kind, a.Ped, b.Ped, apart);
                     var cast2 = new List<Ped> { a.Ped, b.Ped };
+                    if (ladder)
+                    {
+                        s = LadderScene(s, a.Ped, b.Ped, a.Who, b.Who, cast, seed, null, cast2, now, force: true);
+                        if (s.Ladder == null)
+                        {
+                            last = _ladderWhyNot ?? "the ladder didn't take";
+                            continue;
+                        }
+                    }
+                    AddMeet(s, kind, a.Ped, b.Ped, apart);
+                    // (cast2 made above, before the ladder)
                     if (standUp)
                     {
                         string stood;
@@ -499,7 +512,7 @@ namespace EnrageWestworld.InGame
                     StartScene(s, cast2, cast, seed, now, true);
                     Log.Write("TEST scene " + kind + (courtAnswer != null ? " (" + courtAnswer + ")" : string.Empty) + ": " + a.Who.Name + " & " + b.Who.Name + ", " + (int)apart + " m apart, " +
                               (int)a.Ped.Position.DistanceTo(me.Position) + " m from you");
-                    TestActions.Entry row = TestActions.Find("scene:" + kind);
+                    TestActions.Entry row = TestActions.Find(ladder ? "scene:ladder" : "scene:" + kind);
                     said = (row != null ? row.Label : kind) + ": " + a.Who.Name + " and " + b.Who.Name + ".";
                     return null;
                 }

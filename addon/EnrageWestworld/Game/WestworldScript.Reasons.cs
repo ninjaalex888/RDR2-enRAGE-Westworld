@@ -229,13 +229,15 @@ namespace EnrageWestworld.InGame
                 Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
                 if (s == null)
                     continue;
-                AddMeet(s, kind, first, second, pr.Apart);
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
                           " (strength " + pr.Why.Strength + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
                 List<Ped> cast2 = new List<Ped> { first, second };
+                s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
+                AddMeet(s, kind, first, second, pr.Apart);
                 AddBarkeep(s, cast2, cast, seed, saloon);
                 string stood;
-                StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs)
+                if (s.Ladder == null || s.Cast == 2)   // (the ladder found no friend of its own: a stranger may still step in, the review)
+                    StandUpFor(s, cast2, cast, seed, now, false, out stood);   // someone may step in before the blow (WestworldScript.StandUp.cs); the ladder has its own friend
                 AddBystander(s, cast2, cast, seed, now);
                 StartScene(s, cast2, cast, seed, now);
                 return true;

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 91;
+        public const int CurrentVersion = 92;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -57,6 +57,7 @@ namespace EnrageWestworld.Core
         public bool MindShadow = true;    // the NPC mind (daytime 2026-10-27): works out traits, needs, feelings and mood and only reports them
         public bool MindLive = false;     // what the mind decides reaches the screen (off while it is tested)
         public bool MindLevels = false;   // the shadow's scan run from the levels scheduler (night 2026-10-28, item 7; settings version 89): a near ring in view, the town around every 10-30 s, the people away one time a game day, a budget of work a frame; off, the scan as it was
+        public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
 
         // [Display] - drawn on screen besides the ticker
         public bool FeelingBars = true;
@@ -633,6 +634,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindShadow = " + B(MindShadow) + "   ; the mind underneath (in testing): works out each nearby person's traits, needs, feelings and mood and writes them to the log, the F7 dump and the Show minds cards; it changes nothing they do or think");
             b.AppendLine("MindLive = " + B(MindLive) + "   ; what that mind decides reaches the screen (their moods, and thoughts of what they really feel and need); off while it is tested");
             b.AppendLine("MindLevels = " + B(MindLevels) + "   ; (in testing) the mind's work spread by distance and a budget a frame: the people in view every look, the town around every 10-30 s, everyone saved elsewhere one time a game day (counted only); off, exactly as before");
+            b.AppendLine("QuarrelLadder = " + B(QuarrelLadder) + "   ; with MindLive on: an argue or a brawl between two people the mind knows climbs or cools by the quarrel ladder (words, a shove, blows, a gun drawn; an apology, a joke, backing down, a friend stepping in, a drink, the law in sight) from their natures and the surroundings; the shot is never fired. Off: the fixed scenes");
             b.AppendLine();
             b.AppendLine("[Ticker]");
             b.AppendLine("Ticker = " + B(Ticker) + "   ; a line at the bottom of the screen: what the people near you are thinking, else news");

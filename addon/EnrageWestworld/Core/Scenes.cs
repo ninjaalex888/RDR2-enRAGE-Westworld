@@ -18,6 +18,7 @@ namespace EnrageWestworld.Core
                                  // drunk, flask, smoke, run, faceplayer, lookplayer, whittle, stoic, cb:<callback>
         public int Ms;           // extra pause after the beat
         public int To = -1;      // who it's said to or done at (-1: the other of A and B, or A for C)
+        public bool Follows;     // Who and To name people, not places: when the Director's endfight swaps the cast by who won, this beat's Who and To swap with them and its line keeps its names (the ladder's beats, but the winner's and loser's own)
 
         public Beat(int who, string line, string voice = null, string act = null, int ms = 0)
         {
@@ -36,6 +37,8 @@ namespace EnrageWestworld.Core
         public bool Fight;
         public string Summary;   // for gossip afterwards: "two men came to blows"
         public bool NoteAtCue;   // its tie and memories wait for the scene's own cue (a cb: act), not its start
+        public List<Escalation.Step> Ladder;   // the quarrel ladder's run this scene was built from (Scenes.Ladder.cs; behind [Mind] MindLive); null for the fixed scenes
+        public string LadderNote;              // what the ladder said that the scene doesn't play (the shot), for the log
         public readonly List<Beat> Beats = new List<Beat>();
 
         public Scene Add(int who, string line, string voice = null, string act = null, int ms = 0)
@@ -82,6 +85,7 @@ namespace EnrageWestworld.Core
             return k < Warmth.Length ? Warmth[k] : 0;
         }
         public string[] Tempers = new string[3];            // A, B and C's temperaments (Reactions.Listener); null: none known
+        public int Friend = -1;                             // the quarrel ladder's friend at hand, the cast's third: 0 a friend of A, 1 of B, -1 nobody (Scenes.Ladder.cs)
     }
 
     public static partial class Scenes
