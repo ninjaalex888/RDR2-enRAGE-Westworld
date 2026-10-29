@@ -1199,8 +1199,10 @@ namespace EnrageWestworld.InGame
 			if (nemesisRecord == null)
 			{
 				int num3 = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);
-				string summary = _engine.Summary() ?? (_recById.Count + " people in the world");
-				Feed.Notice("RealNPCs " + _version, "running. " + summary + ". " + num3 + " who know you, " + _store.TownRumours.Count + " rumours, " + _store.Papers.Count(x => x.Delivered) + " papers in your satchel. Nobody enRAGE knows is close by.");
+				// standing alone the engine's summary is of enRAGE's roster, which is empty: count our own townsfolk instead (Lex, 2026-10-29: "0 people in the world")
+				string summary = (_bridge.Present ? _engine.Summary() : null)
+					?? (_bridge.Present ? _recById.Count + " people in the world" : _store.Residents.Count((Resident r) => !r.Dead) + " townsfolk of its own, " + Regulars.Count(_store.Residents) + " of them town regulars (standing alone, no enRAGE)");
+				Feed.Notice("RealNPCs " + _version, "running. " + summary + ". " + num3 + " who know you, " + _store.TownRumours.Count + " rumours, " + _store.Papers.Count(x => x.Delivered) + " papers in your satchel." + (_bridge.Present ? " Nobody enRAGE knows is close by." : ""));
 				News("RealNPCs", "test: the ticker works. " + summary + ".");
 				return;
 			}
