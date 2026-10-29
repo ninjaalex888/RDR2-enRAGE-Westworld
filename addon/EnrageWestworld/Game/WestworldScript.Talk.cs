@@ -462,7 +462,7 @@ namespace EnrageWestworld.InGame
                 }
                 if (PED.IS_PED_USING_ANY_SCENARIO(b.Handle))
                     TASK.CLEAR_PED_TASKS(b.Handle, true, false);
-                TASK.TASK_GO_TO_ENTITY(b.Handle, a.Handle, TalkWalkMs, 1.4f, 1.3f, 0f, 0);
+                TASK.TASK_GO_TO_ENTITY(b.Handle, a.Handle, TalkWalkMs, Natives.Brisk, 1.3f, 0f, 0);
                 TASK.TASK_LOOK_AT_ENTITY(a.Handle, b.Handle, TalkWalkMs, 0, 51, 0);
             }
             else

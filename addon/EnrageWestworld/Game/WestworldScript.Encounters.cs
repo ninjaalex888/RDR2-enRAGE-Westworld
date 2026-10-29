@@ -595,7 +595,7 @@ namespace EnrageWestworld.InGame
                     if (now >= c.PhaseUntil)
                     {
                         Vector3 away = w.Position + (w.Position - me.Position).Normalized * 70f;
-                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, away.X, away.Y, away.Z, 1f, -1, 1f, 0, 0f);
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, away.X, away.Y, away.Z, Natives.Brisk, -1, 1f, 0, 0f);
                         c.Phase = "leaving";
                         c.PhaseUntil = now + 40000;
                     }

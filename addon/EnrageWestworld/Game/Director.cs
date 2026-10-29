@@ -408,7 +408,7 @@ namespace EnrageWestworld.InGame
                 {
                     l.MeetGoAt = 0;
                     Ped w = l.Cast[l.MeetWalker], o = l.Cast[1 - l.MeetWalker];
-                    TASK.TASK_GO_TO_ENTITY(w.Handle, o.Handle, 20000, 1.4f, 1.3f, 0f, 0);
+                    TASK.TASK_GO_TO_ENTITY(w.Handle, o.Handle, 20000, Natives.Brisk, 1.3f, 0f, 0);
                 }
                 // B is still walking over: the first word waits until they're face to face, or near enough across a bar or a
                 // table when the one waiting sits or leans there (3.6 m: they often stopped short at the counter)
@@ -482,7 +482,7 @@ namespace EnrageWestworld.InGame
                     }
                     return 1400;
                 case "approach":
-                    TASK.TASK_GO_TO_ENTITY(h, l.Cast.Length > 2 && who == 2 ? l.Cast[0].Handle : t, -1, 1.4f, 1.3f, 0f, 0);
+                    TASK.TASK_GO_TO_ENTITY(h, l.Cast.Length > 2 && who == 2 ? l.Cast[0].Handle : t, -1, Natives.Brisk, 1.3f, 0f, 0);
                     return 2600;
                 case "meet":
                     // walks over to the other, who waits; the next line waits until they're close (Tick). Someone sitting or
@@ -498,7 +498,7 @@ namespace EnrageWestworld.InGame
                     }
                     else
                     {
-                        TASK.TASK_GO_TO_ENTITY(h, t, 20000, 1.4f, 1.3f, 0f, 0);
+                        TASK.TASK_GO_TO_ENTITY(h, t, 20000, Natives.Brisk, 1.3f, 0f, 0);
                         l.MeetUntil = Game.GameTime + 15000;
                     }
                     return 300;

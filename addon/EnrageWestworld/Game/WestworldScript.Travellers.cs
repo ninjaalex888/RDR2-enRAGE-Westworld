@@ -324,7 +324,7 @@ namespace EnrageWestworld.InGame
             Vector3 dir = town - t.Man.Position;
             float len = Math.Max(1f, (float)Math.Sqrt(dir.X * dir.X + dir.Y * dir.Y));
             Vector3 go = t.Man.Position + new Vector3(dir.X / len * 120f, dir.Y / len * 120f, 0f);
-            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, go.X, go.Y, go.Z, 1f, 90000, 2f, 0, 0f);
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, go.X, go.Y, go.Z, Natives.Brisk, 90000, 2f, 0, 0f);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             t.Phase = "going";
             t.PhaseAt = now;
@@ -466,7 +466,7 @@ namespace EnrageWestworld.InGame
             Vector3 dir = town - t.Man.Position;
             float len = Math.Max(1f, (float)Math.Sqrt(dir.X * dir.X + dir.Y * dir.Y));
             Vector3 go = t.Man.Position + new Vector3(dir.X / len * 120f, dir.Y / len * 120f, 0f);
-            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, go.X, go.Y, go.Z, 1f, 90000, 2f, 0, 0f);
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, go.X, go.Y, go.Z, Natives.Brisk, 90000, 2f, 0, 0f);
             PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
             t.Phase = "going";
             t.PhaseAt = now;

@@ -440,7 +440,7 @@ namespace EnrageWestworld.InGame
             {
                 TASK.CLEAR_PED_TASKS(m.Handle, false, false);
                 Vector3 away = m.Position + (m.Position - me.Position).Normalized * 150f;
-                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(m.Handle, away.X, away.Y, away.Z, 1.2f, -1, 1f, 0, 0f);
+                TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(m.Handle, away.X, away.Y, away.Z, Natives.Brisk, -1, 1f, 0, 0f);
             }
             e.Phase = "leaving";
             e.PhaseUntil = now + 90000;

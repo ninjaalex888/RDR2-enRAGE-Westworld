@@ -40,6 +40,8 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
 - The doctor's patient: by day, someone whose child has the fever walks to the doctor's and
   back, thinking it over. Now anyone may go for what ails them (a tooth, a back, a cough, ribs after a
   fight, a child's fever), say it to the doctor and hear his word aloud. [Scenes] DoctorsPatient.
+- People walk briskly on their errands (to a scene, to the doctor, to a talk, home again):
+  [Scenes] ErrandPace (2; 1 an ordinary walk, 3 a run).
 - People think of what happened to them in more ways: every memory has four or more lines
   (over a thousand in all, from five hundred), so a brawl or a kindness isn't recalled in the
   same two sentences all week; the weather, the shop they're in and the people in sight too,

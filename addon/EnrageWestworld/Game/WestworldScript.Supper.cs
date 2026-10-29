@@ -185,7 +185,7 @@ namespace EnrageWestworld.InGame
         {
             int h = s.Host.Handle;
             Feed.Say("A stranger", Supper.Lead(s.Seed), Speech.When(h, "greet", Game.Player.Character.Handle), h, toYou: true);
-            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, s.Home.X, s.Home.Y, s.Home.Z, 1f, -1, 0.5f, 0, 0f);
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, s.Home.X, s.Home.Y, s.Home.Z, Natives.Brisk, -1, 0.5f, 0, 0f);
             s.Phase = "leading";
             s.PhaseAt = now;
             Log.Write("SUPPER: " + how + "; he leads you off the road (" + (int)s.Host.Position.DistanceTo(s.Home) + " m)");

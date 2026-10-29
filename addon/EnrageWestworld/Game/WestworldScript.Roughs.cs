@@ -162,7 +162,7 @@ namespace EnrageWestworld.InGame
                     }
                     RoughPlace(r);
                     // round the tables to the spot, facing the way the move starts
-                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(r.Att.Handle, r.AttStart.X, r.AttStart.Y, r.AttStart.Z, 1f, RoughWalkMs, 0.3f, 0, RoughHeading(r.AttStart, r.Vic.Position));
+                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(r.Att.Handle, r.AttStart.X, r.AttStart.Y, r.AttStart.Z, Natives.Brisk, RoughWalkMs, 0.3f, 0, RoughHeading(r.AttStart, r.Vic.Position));
                     TASK.TASK_LOOK_AT_ENTITY(r.Vic.Handle, r.Att.Handle, RoughWalkMs, 0, 51, 0);
                     r.Stage = 1;
                     r.Until = now + RoughWalkMs;

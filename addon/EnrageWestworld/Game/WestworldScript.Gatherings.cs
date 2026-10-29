@@ -246,7 +246,7 @@ namespace EnrageWestworld.InGame
                     if (step <= 0f)
                         continue;
                     Vector3 to = mp + (pos - mp).Normalized * step;
-                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(m.Ped.Handle, to.X, to.Y, to.Z, 1f, -1, 0.3f, 0, 0f);
+                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(m.Ped.Handle, to.X, to.Y, to.Z, Natives.Brisk, -1, 0.3f, 0, 0f);
                     g.Moving = true;
                 }
             }

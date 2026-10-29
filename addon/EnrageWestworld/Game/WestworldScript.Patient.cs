@@ -188,7 +188,7 @@ namespace EnrageWestworld.InGame
         {
             int h = r.Walker.Handle;
             TASK.CLEAR_PED_TASKS(h, true, false);
-            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, 1.2f, 120000, 1.5f, 0, 0f);
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, Natives.Brisk, 120000, 1.5f, 0, 0f);
         }
 
         /// A line said aloud in the visit: the box with their recorded voice, and the ticker while it's within earshot.
@@ -251,7 +251,7 @@ namespace EnrageWestworld.InGame
                         r.Retried = true;
                         r.StillSince = 0;
                         r.PhaseAt = now;
-                        TASK.TASK_GO_TO_ENTITY(h, r.Doctor.Handle, 30000, 1.6f, 1.0f, 0f, 0);
+                        TASK.TASK_GO_TO_ENTITY(h, r.Doctor.Handle, 30000, Natives.Brisk, 1.0f, 0f, 0);
                         return;
                     }
                     if (d < 2.6f || stopped || now - r.PhaseAt > 120000)

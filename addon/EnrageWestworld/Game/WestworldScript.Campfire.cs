@@ -287,7 +287,7 @@ namespace EnrageWestworld.InGame
             PED.SET_PED_KEEP_TASK(h, true);
             double ang = (20.0 + 180.0 / Math.Max(1, c.Sitters.Count)) * Math.PI / 180.0;   // the middle of the first gap between the men
             Vector3 seat = c.At + new Vector3((float)Math.Cos(ang) * 1.5f, (float)Math.Sin(ang) * 1.5f, 0f);
-            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, seat.X, seat.Y, seat.Z, 1f, 60000, 1f, 0, (float)((ang * 180.0 / Math.PI + 90.0) % 360.0));
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, seat.X, seat.Y, seat.Z, Natives.Brisk, 60000, 1f, 0, (float)((ang * 180.0 / Math.PI + 90.0) % 360.0));
             c.Walker = w;
             c.Joiner = false;   // once
             _encounterPeds.Add(h);

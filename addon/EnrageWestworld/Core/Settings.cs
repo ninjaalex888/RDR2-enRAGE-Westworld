@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 102;
+        public const int CurrentVersion = 103;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -185,6 +185,7 @@ namespace EnrageWestworld.Core
         public bool Vices = true;
         public bool Grudges = true;
         public bool DoctorsPatient = true;   // [Scenes] someone goes to the doctor for what ails them, tells him, hears his word, and walks home (night 2026-10-28, item 14; widened 2026-10-29; settings version 90)
+        public float ErrandPace = 2.0f;   // [Scenes] how fast people walk on errands for RealNPCs: 1 a walk, 2 brisk (was about 1-1.4), 3 a run (Lex, 2026-10-29)
         public bool EnragePeopleJoinIn = true;
         public bool Standoffs = true;
         public bool Songs = true;
@@ -623,6 +624,7 @@ namespace EnrageWestworld.Core
             // one set at a time); the old on (and matched, game) read as game
             string sm = (Subtitles ?? "").Trim().ToLowerInvariant();
             Subtitles = sm == "off" || sm == "ours" || sm == "both" ? sm : "game";
+            ErrandPace = Math.Max(1f, Math.Min(3f, ErrandPace));
             FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
             string nc = (NameCards ?? "known").Trim().ToLowerInvariant();
             NameCards = nc == "off" || nc == "everyone" ? nc : "known";
@@ -806,6 +808,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Reactions = " + B(Reactions) + "   ; street scenes: the one spoken to reacts to the words by their nature (bristles, flinches, shakes their head, nods), and a man whose face goes into the bar reels");
             b.AppendLine("Grudges = " + B(Grudges) + "   ; grudges that travel: a friend of someone wronged has it out with the one who did it; and someone whose friend you killed may come up and say so to your face (never violent)");
             b.AppendLine("DoctorsPatient = " + B(DoctorsPatient) + "   ; by day in a town with its doctor (Valentine, Rhodes, Saint Denis), someone near you walks to him for what ails them (a child's fever, a tooth, ribs after a fight, a back, a cough...), tells him, hears his word, and walks home thinking it over");
+            b.AppendLine("ErrandPace = " + F(ErrandPace) + "   ; how fast people walk on their errands here (to a scene, to the doctor, to a talk, to a camp seat, home again): 1 an ordinary walk, 2 brisk, 3 a run");
             b.AppendLine("Vices = " + B(Vices) + "   ; habits and vices: someone in a saloon whose trouble ended badly today, or who has just heard a friend has died, drinks the night away (and a friend may sit with them); drunk for the rest of the night");
             b.AppendLine("Kindnesses = " + B(Kindnesses) + "   ; small kindnesses between people: someone who trips in the street is helped up by a friend or a kind passer-by, or left lying by the cold and their enemies (and you can give them a hand up yourself); remembered either way");
             b.AppendLine("SightReactions = " + B(SightReactions) + "   ; people near you notice how you look (bloodied, drunk, filthy, soaked) and take it by their nature: the timid afraid, the hard sizing you up, the kind concerned; and a man walking off bloodied from a street fight gets looked at");

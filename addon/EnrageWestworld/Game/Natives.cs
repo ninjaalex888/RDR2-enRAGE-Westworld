@@ -11,6 +11,10 @@ namespace EnrageWestworld.InGame
 {
     internal static class Natives
     {
+        /// How fast people walk on their errands for RealNPCs (a scene's approach, the doctor, a talk, a camp seat...): the move
+        /// blend ratio, 1 a walk, 2 a brisk jog, 3 a run ([Scenes] ErrandPace; Lex, 2026-10-29: "double their current walking pace").
+        public static float Brisk = 2.0f;
+
         private static readonly Dictionary<string, uint> Hashes = new Dictionary<string, uint>();
         private static readonly Regex Childlike = new Regex("kid|child|teen|(?<!cow)boy|(?<!show|saloon|cow|bar)girl");
         private static readonly string[] LawWords = { "law", "police", "sheriff", "sherriff", "deputy", "marshal", "pinkerton", "ranger", "army", "soldier" };
