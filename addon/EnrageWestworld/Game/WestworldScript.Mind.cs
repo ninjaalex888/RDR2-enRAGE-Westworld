@@ -648,6 +648,7 @@ namespace EnrageWestworld.InGame
                 return;
             f.Shows = Display.Shows(f, ae, w.Traits);   // kept with the feeling, so a masked one's thought can say the mask too
             _engine.Shadow.Feel(id, f, ev.At);
+            LanguageAskAhead(w, id, now);   // the language layer asks the model now, so the line is ready when the thought comes (WestworldScript.Language.cs)
             _mindFelt++;
             string about = ae.Doer == "player" && f.About == ev.DoerName ? "you" : f.About;
             _mindLastFelt = w.Name + ": " + f.Kind + (about != null ? " at " + about : "");
@@ -960,10 +961,33 @@ namespace EnrageWestworld.InGame
             }
             if (w == null)
                 return "nobody RealNPCs knows within " + (int)MindMetres + " m";
+            string why;
+            LanguageRequest r = MindRequestOf(w, handle, now, out why);
+            if (r == null)
+                return why;
+            Log.Write("LANGUAGE request for " + w.Name + " (key " + Language.CacheKey(r) + "):");
+            foreach (string line in Language.Prompt(r).Split('\n'))
+                if (line.Trim().Length > 0)
+                    Log.Write("LANGUAGE   " + line.TrimEnd('\r'));
+            Log.Write("LANGUAGE   the written fallback: " + (r.AvoidLine ?? "(none: with MindLive off the old thought stands, and it isn't worked out here)"));
+            _mindRequests++;
+            _mindRequestLast = w.Name;
+            said = "the language request for " + w.Name + " is in the log (LANGUAGE lines)";
+            return null;
+        }
+
+        /// The language request for someone the shadow knows, from its cached state (the Testing row and the language
+        /// layer's ask-ahead share it): traits, needs, the beliefs held now, the first names in sight they'd call by name.
+        private LanguageRequest MindRequestOf(MindWho w, int handle, int now, out string why)
+        {
+            why = null;
             if (w.Traits == null)
                 w.Traits = _engine.Shadow.TraitsOf(w.Src);
             if (w.Traits == null)
-                return w.Name + "'s traits couldn't be worked out";
+            {
+                why = w.Name + "'s traits couldn't be worked out";
+                return null;
+            }
             if (w.Needs == null || now - w.NeedsAt >= NeedsMs || now < w.NeedsAt)
                 MindNeeds(w, handle, now);
             // what they hold now: the baseline from who they are and what they remember, plus what the appraisals moved
@@ -1005,16 +1029,8 @@ namespace EnrageWestworld.InGame
             LanguageRequest r = _engine.LanguageRequestFor(w.P, w.Traits, w.Needs, w.Concerns, near, _bridge.TownOnly(Game.Player.Character.Position), _engine.NowPlace,
                                                            CLOCK.GET_CLOCK_HOURS(), CLOCK.GET_CLOCK_YEAR(), _engine.NowWeather, held);
             if (r == null)
-                return "no request could be built for " + w.Name;
-            Log.Write("LANGUAGE request for " + w.Name + " (key " + Language.CacheKey(r) + "):");
-            foreach (string line in Language.Prompt(r).Split('\n'))
-                if (line.Trim().Length > 0)
-                    Log.Write("LANGUAGE   " + line.TrimEnd('\r'));
-            Log.Write("LANGUAGE   the written fallback: " + (r.AvoidLine ?? "(none: with MindLive off the old thought stands, and it isn't worked out here)"));
-            _mindRequests++;
-            _mindRequestLast = w.Name;
-            said = "the language request for " + w.Name + " is in the log (LANGUAGE lines)";
-            return null;
+                why = "no request could be built for " + w.Name;
+            return r;
         }
 
         private string MindShadowStatus()

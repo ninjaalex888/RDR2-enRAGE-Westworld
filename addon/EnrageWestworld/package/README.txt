@@ -62,6 +62,9 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   QuarrelLadder (on, under MindLive). No two people near you think the same shape of thought within an hour,
   and a kind of thought that has had the last few turns gives way to the others ([Mind]
   ThoughtVariety, on).
+  With Ollama on your PC and [Mind] Language on (off as it comes), the mind's own thoughts are
+  worded by a local model and checked line by line; the written line shows whenever the model's
+  won't do. Nothing leaves the machine.
   And the mind now says what each person near you would do (the log's MIND would: lines, the
   card's "would:"): a meal, the work, the saloon of an evening, church on Sunday, a word with a
   friend, stepping clear of a foe. Nobody is moved by it yet. And what each believes: the log
@@ -784,6 +787,8 @@ in the file. The new ones:
             climbs or cools by their natures and the room; the shot is never fired.
             ThoughtVariety (true): no two people near you think the same shape of thought within an hour,
             and a kind of thought that has had the last few turns gives way to the others.
+            Language (false, in testing): the mind's own thoughts worded by a local model (Ollama at
+            LanguageUrl, running LanguageModel); every answer checked, the written line the fallback.
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left

@@ -123,7 +123,7 @@ namespace EnrageWestworld.Core
                     if (line != null)
                     {
                         pull = 40f + 50f * Math.Min(1f, most);
-                        return new KeyValuePair<string, string>(line, "mind:feeling:" + kind);
+                        return new KeyValuePair<string, string>(Worded(p, "mind:feeling:" + kind, line), "mind:feeling:" + kind);
                     }
                 }
             }
@@ -147,7 +147,34 @@ namespace EnrageWestworld.Core
             if (need == null)
                 return default(KeyValuePair<string, string>);
             pull = 38f;
-            return new KeyValuePair<string, string>(need, "mind:need:" + NeedState.Names[top]);
+            return new KeyValuePair<string, string>(Worded(p, "mind:need:" + NeedState.Names[top], need), "mind:need:" + NeedState.Names[top]);
+        }
+
+        // ---- the language layer (2026-10-29; roadmap 15; Core/Language.Client.cs, Game/WestworldScript.Language.cs) ----
+        /// The answers the local model has given, by situation, and the asks waiting for it.
+        public readonly LanguageStore LanguageAnswers = new LanguageStore();
+        /// The game side's hand: given the person, the thought's source and the written line, the model's checked line for this
+        /// situation if one is kept (else it asks ahead and gives null, so the written line shows now and the model's next time).
+        public Func<Person, string, string, string> LanguageSwap;
+        private bool _languageSwapFailed;
+
+        /// The mind's own line, worded by the model when [Mind] Language is on and a checked answer is kept for this situation;
+        /// else the written line. A fault gives the written line and is logged once.
+        private string Worded(Person p, string source, string written)
+        {
+            if (written == null || Cfg == null || !Cfg.Language || LanguageSwap == null || _languageSwapFailed)
+                return written;
+            try
+            {
+                string line = LanguageSwap(p, source, written);
+                return line ?? written;
+            }
+            catch (Exception ex)
+            {
+                _languageSwapFailed = true;
+                Log("LANGUAGE the swap failed once, the written lines from here: " + ex.Message);
+                return written;
+            }
         }
 
         // feelings toward someone that a foe's name doesn't fit ("Good friend, {who}"): a foe's kindness is a stranger's

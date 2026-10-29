@@ -188,6 +188,7 @@ namespace EnrageWestworld.InGame
                 PatientAbort("the add-on stopped");
                 GrudgesAbort();      // someone walking up to have it out with you stops (their walk order cleared)
                 KinAbort();
+                LanguageStop();      // the language layer's worker thread
                 SoberVoices(true);   // the drink goes out of every voice we put it in
                 WakeVoiceEnd(_now, "the add-on stopped");
                 AnimTestEnd("the add-on stopped");
@@ -833,6 +834,7 @@ namespace EnrageWestworld.InGame
             GrudgesStep(now);   // someone grieving one you killed (WestworldScript.Grudges.cs)
             BelowStep(now);     // the voice below the saloon floor, late at night (WestworldScript.Below.cs)
             MindShadowStep(now);   // the mind in shadow mode: traits, needs, feelings and mood, reported only (WestworldScript.Mind.cs)
+            LanguageStep(now);     // the language layer's worker and the engine's hand (WestworldScript.Language.cs; its own try/catch)
             TestCastStep(now);     // the Testing page's test cast, while they're about (WestworldScript.TestCast.cs)
             if (_drinkVoice != 0 || _drunkVoices.Count > 0)
                 Safe("vices", _aDrinkVoice ?? (_aDrinkVoice = () => { DrinkVoiceStep(_now); SoberVoices(false); }));   // a drinker's voice, and sober again at 4 (WestworldScript.Vices.cs)

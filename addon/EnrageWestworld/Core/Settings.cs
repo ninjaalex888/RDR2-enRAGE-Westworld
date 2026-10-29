@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 93;
+        public const int CurrentVersion = 94;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -59,6 +59,9 @@ namespace EnrageWestworld.Core
         public bool MindLevels = false;   // the shadow's scan run from the levels scheduler (night 2026-10-28, item 7; settings version 89): a near ring in view, the town around every 10-30 s, the people away one time a game day, a budget of work a frame; off, the scan as it was
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
         public bool ThoughtVariety = true;   // no two people near you think the same frame within an hour, and a source that gave the last few thoughts gives way to the others (Lex, 2026-10-29; settings version 93; Engine.Minds.cs)
+        public bool Language = false;        // the language layer (2026-10-29; roadmap 15): with MindLive, the mind's own thoughts worded by a local model (Ollama at LanguageUrl, LanguageModel) through Language.Check, the written line always the fallback; off until the generated thoughts pass the checks at scale (settings version 94)
+        public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
+        public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
 
         // [Display] - drawn on screen besides the ticker
         public bool FeelingBars = true;
@@ -576,6 +579,10 @@ namespace EnrageWestworld.Core
             PadStatus = PadChord.Normal(PadStatus) ?? "None";
             PadLetters = PadChord.Normal(PadLetters) ?? "None";
             PadTickerNext = PadChord.Normal(PadTickerNext) ?? "None";
+            if (string.IsNullOrWhiteSpace(LanguageUrl)) LanguageUrl = "http://127.0.0.1:11434";
+            if (string.IsNullOrWhiteSpace(LanguageModel)) LanguageModel = "llama3.1:8b";
+            LanguageUrl = LanguageUrl.Trim().TrimEnd('/');
+            LanguageModel = LanguageModel.Trim();
             WillingSingle = Math.Max(0, Math.Min(100, WillingSingle));
             WillingTaken = Math.Max(0, Math.Min(100, WillingTaken));
             TickerGapSeconds = Math.Max(0, Math.Min(20, TickerGapSeconds));
@@ -637,6 +644,9 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindLevels = " + B(MindLevels) + "   ; (in testing) the mind's work spread by distance and a budget a frame: the people in view every look, the town around every 10-30 s, everyone saved elsewhere one time a game day (counted only); off, exactly as before");
             b.AppendLine("QuarrelLadder = " + B(QuarrelLadder) + "   ; with MindLive on: an argue or a brawl between two people the mind knows climbs or cools by the quarrel ladder (words, a shove, blows, a gun drawn; an apology, a joke, backing down, a friend stepping in, a drink, the law in sight) from their natures and the surroundings; the shot is never fired. Off: the fixed scenes");
             b.AppendLine("ThoughtVariety = " + B(ThoughtVariety) + "   ; no two people near you think the same thought-shape within an hour (the names aside), and a kind of thought that has had the last few turns gives way to the others (the weather, the place, the day), so a town doesn't read as one worried chorus; false: the old choice");
+            b.AppendLine("Language = " + B(Language) + "   ; (in testing) with MindLive on, the mind's own thoughts are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do");
+            b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
+            b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");
             b.AppendLine();
             b.AppendLine("[Ticker]");
             b.AppendLine("Ticker = " + B(Ticker) + "   ; a line at the bottom of the screen: what the people near you are thinking, else news");
