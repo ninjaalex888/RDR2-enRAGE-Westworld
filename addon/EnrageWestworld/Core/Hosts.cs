@@ -167,6 +167,8 @@ namespace EnrageWestworld.Core
         /// Something odd said aloud to the player. Marks it so it isn't repeated soon.
         public static string Aloud(Person p, PersonState st, PlayerRef you, string seed)
         {
+            if (st == null || st.WakeStage <= 0)
+                return null;   // the unreal said aloud is for the awake only (Lex, 2026-10-29)
             if (st != null && st.WakeStage > 0 && Voice.Chance(seed + "wk", 75))
             {
                 string w = Awakening.Aloud(p, st, you, seed);
@@ -179,6 +181,8 @@ namespace EnrageWestworld.Core
 
         public static string Thought(Person p, PersonState st, PlayerRef you, string seed)
         {
+            if (st == null || st.WakeStage <= 0)
+                return null;   // the world feeling unreal is for the awake only (Lex, 2026-10-29)
             if (st != null && st.WakeStage > 0 && Voice.Chance(seed + "wk", 80))
             {
                 string w = Awakening.Thought(p, st, you, seed);
@@ -286,7 +290,7 @@ namespace EnrageWestworld.Core
         /// An aware person returning, again and again, to one day of their past ("cornerstone").
         public static string Cornerstone(Person p, PersonState st, string seed)
         {
-            if (p == null || Tier(Awareness(p, st)) < 1 || p.Past == null)
+            if (p == null || st == null || st.WakeStage <= 0 || Tier(Awareness(p, st)) < 1 || p.Past == null)
                 return null;
             PastItem e = p.Past.Where(x => !string.IsNullOrEmpty(x.Text) && (x.Kind == "loss" || x.Kind == "war" || x.Kind == "crime" || x.Kind == "family") && Grammar.StartsWithPastVerb(x.Text))
                 .OrderBy(x => Voice.Hash(p.Id + x.Text)).FirstOrDefault();

@@ -98,7 +98,7 @@ namespace EnrageWestworld.Core
                 "Should've stayed in this morning. Knew it. Felt it.",
                 "The way he carries himself. Like the men who came for the horses that time.",
                 "Mouth dry. Palms wet. Don't let it show.",
-                "{you}'s eyes don't blink enough.",
+                "{you} looks at a man like he's pricing him.",
                 "Blood on his cuff. Whose?",
                 "Stay by somebody. Anybody. Don't be alone with him.",
                 "Knees. Hold, knees." } },

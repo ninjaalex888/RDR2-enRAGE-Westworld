@@ -983,9 +983,15 @@ namespace EnrageWestworld.Core
             Reverie rv;
             if (Cfg.WestWorld && Store.Reveries.TryGetValue(p.Id, out rv) && rv.Woke && Voice.Chance(seed + "rv", 60))
                 return Hosts.ReverieThought(rv, you, seed);
-            if (Cfg.HostsQuestionReality && Voice.Chance(seed + "host", Math.Min(60, Cfg.RealityChance / 2 + Hosts.Awareness(p, st) / 3)))
-                return Hosts.Thought(p, st, you, seed);
-            if (Cfg.HostsQuestionReality && Voice.Chance(seed + "corner", 12))
+            // the world feeling unreal is for the awake only (Lex, 2026-10-29: "West World type thoughts don't show for non-awake NPCs")
+            bool awake = StageOf(p) > 0;
+            if (awake && Cfg.HostsQuestionReality && Voice.Chance(seed + "host", Math.Min(60, Cfg.RealityChance / 2 + Hosts.Awareness(p, st) / 3)))
+            {
+                string unrealThought = Hosts.Thought(p, st, you, seed);
+                if (unrealThought != null)
+                    return unrealThought;
+            }
+            if (awake && Cfg.HostsQuestionReality && Voice.Chance(seed + "corner", 12))
             {
                 string c = Hosts.Cornerstone(p, st, seed);
                 if (c != null)
@@ -1036,9 +1042,9 @@ namespace EnrageWestworld.Core
         }
 
         /// A stranger's passing thought, for the ticker when nobody enRAGE knows is near.
-        public string StrangerThought(string seed, string town, bool woman, bool everyday = true)
+        public string StrangerThought(string seed, string town, bool woman, bool everyday = true, bool awake = false)
         {
-            if (Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance))
+            if (awake && Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance))   // the unreal only for the awake (2026-10-29)
                 return Hosts.StrangerAloud(Store.Reveries.Values.Count(x => x.Woke) >= 2 ? 1 : 0, seed);
             List<string> rumours = RumourPool(town, 3);
             if (rumours.Count > 0 && Voice.Chance(seed + "r", 50))
@@ -1066,9 +1072,9 @@ namespace EnrageWestworld.Core
             if (Cfg.Minds)
             {
                 // the world feeling unreal keeps its full RealityChance, first, as before
-                if (Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance))
+                if (StageOf(p) > 0 && Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance))
                 {
-                    string unreal = Varied("unreal", StrangerThought(seed, p.Home, p.Woman, false));   // through the frame rule (ThoughtVariety)
+                    string unreal = Varied("unreal", StrangerThought(seed, p.Home, p.Woman, false, true));   // through the frame rule (ThoughtVariety)
                     if (unreal != null)
                         return unreal;
                 }
@@ -1088,8 +1094,8 @@ namespace EnrageWestworld.Core
                 return after;
             // the world feeling unreal keeps its full RealityChance; town rumours and the player's fame get a third of
             // the rest, so their own life (InnerLife) has most of it
-            bool reality = Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance);
-            string big = reality || Voice.Chance(seed + "talk", 35) ? StrangerThought(seed, p.Home, p.Woman, false) : null;
+            bool reality = StageOf(p) > 0 && Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance);
+            string big = reality || Voice.Chance(seed + "talk", 35) ? StrangerThought(seed, p.Home, p.Woman, false, reality) : null;
             return big ?? InnerLife.Thought(p, hour, seed, st != null ? st.Musings : null, look, ThoughtDay(p.Home, p.Id));
         }
 
@@ -1348,8 +1354,12 @@ namespace EnrageWestworld.Core
                 if (r != null)
                     lines.Add(r);
             }
-            if (Cfg.HostsQuestionReality && lines.Count < 4 && Voice.Chance(seed + "host", Cfg.RealityChance / 2 + Hosts.Awareness(p, st) / 3))
-                lines.Add(Hosts.Aloud(p, st, you, seed));
+            if (StageOf(p) > 0 && Cfg.HostsQuestionReality && lines.Count < 4 && Voice.Chance(seed + "host", Cfg.RealityChance / 2 + Hosts.Awareness(p, st) / 3))
+            {
+                string a = Hosts.Aloud(p, st, you, seed);
+                if (a != null)
+                    lines.Add(a);
+            }
             // temper colours one line of the conversation, not every line
             List<int> spoken = Enumerable.Range(0, lines.Count).Where(i => !lines[i].StartsWith("YOU:")).ToList();
             if (spoken.Count > 0)
@@ -1381,10 +1391,14 @@ namespace EnrageWestworld.Core
                 if (r != null)
                     return new Remark { Key = "deed:" + d.Id, Text = r, Muttered = p.Fear >= 40 || p.Personality == "Coward" };
             }
-            if (Cfg.HostsQuestionReality && now - st.LastMusingAt > 720 && Voice.Chance(seed + "m" + now / 60, Cfg.RealityChance / 2 + Hosts.Awareness(p, st) / 4))
+            if (StageOf(p) > 0 && Cfg.HostsQuestionReality && now - st.LastMusingAt > 720 && Voice.Chance(seed + "m" + now / 60, Cfg.RealityChance / 2 + Hosts.Awareness(p, st) / 4))
             {
-                st.LastMusingAt = now;
-                return new Remark { Key = "musing", Text = Hosts.Aloud(p, st, you, seed + now), Uncanny = true };
+                string a = Hosts.Aloud(p, st, you, seed + now);
+                if (a != null)
+                {
+                    st.LastMusingAt = now;
+                    return new Remark { Key = "musing", Text = a, Uncanny = true };
+                }
             }
             return null;
         }

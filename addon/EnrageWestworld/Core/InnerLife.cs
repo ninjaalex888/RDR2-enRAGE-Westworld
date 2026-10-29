@@ -246,7 +246,7 @@ namespace EnrageWestworld.Core
 
         private static readonly string[] Seen =
         {
-            "Doesn't blink enough.", "Carries his weight low, like a man ready to move.", "Smells of woodsmoke and horse.", "Eyes don't rest on one thing. Counts the exits like I do.",
+            "Doesn't look away first. Never does, I'd wager.", "Carries his weight low, like a man ready to move.", "Smells of woodsmoke and horse.", "Eyes don't rest on one thing. Counts the exits like I do.",
             "Dust on him from three days' road, not three miles.", "Quiet. The kind of quiet that's decided something.",
             "Boots he's walked the soles off. Not a man who rides everywhere.", "Keeps his hat low and his eyes up. Opposite of most.", "Stands where he can see the door. Habit, that. A bad one or a good one.", "Hands still when he talks. Still hands are the ones to watch.",
             "Spurs that have seen use. Most spurs in town are for the look of them.", "Looks at a man's hands before his face. Learned that somewhere hard.", "Walks the middle of the street, not the boards. Wants room.", "Clean-shaven under all that dust. Takes trouble over something, then."

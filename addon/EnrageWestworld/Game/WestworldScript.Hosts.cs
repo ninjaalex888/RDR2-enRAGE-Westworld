@@ -83,7 +83,11 @@ namespace EnrageWestworld.InGame
 
         private bool StrangerMusing()
         {
-            Ped p = Bystander(3f, 14f, true);
+            // only someone who has begun to wake mutters about the world (Lex, 2026-10-29: West World thoughts not for the unawake)
+            Ped me = Game.Player.Character;
+            Ped p = World.GetAllPeds().Where(x => Natives.Bystander(x, me.Handle) && !Spawner.IsOurs(x.Handle) && x.Position.DistanceTo(me.Position) >= 3f && x.Position.DistanceTo(me.Position) <= 14f &&
+                                                  _resBind.ContainsKey(x.Handle) && !_resBind[x.Handle].R.Dead && _engine.StageOf(_resBind[x.Handle].R.Id) > 0 &&
+                                                  ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, x.Handle, 17)).OrderBy(x => _rng.Next()).FirstOrDefault();
             if (p == null)
                 return false;
             bool woman = !PED.IS_PED_MALE(p.Handle);

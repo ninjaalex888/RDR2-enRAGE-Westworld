@@ -184,11 +184,13 @@ namespace EnrageWestworld.InGame
             Log.Write("PATIENT " + r.Name + ": " + why);
         }
 
-        private static void PatientWalk(PatientRun r, Vector3 to)
+        /// Briskly there (an errand), at an ordinary walk home again (Lex, 2026-10-29: "once he is done talking to the doctor, they
+        /// should return back to normal speed").
+        private static void PatientWalk(PatientRun r, Vector3 to, bool home = false)
         {
             int h = r.Walker.Handle;
             TASK.CLEAR_PED_TASKS(h, true, false);
-            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, Natives.Brisk, 120000, 1.5f, 0, 0f);
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, home ? 1f : Natives.Brisk, 120000, 1.5f, 0, 0f);
         }
 
         /// A line said aloud in the visit: the box with their recorded voice, and the ticker while it's within earshot.
@@ -299,7 +301,7 @@ namespace EnrageWestworld.InGame
                         r.Phase = "back";
                         r.PhaseAt = now;
                         r.StillSince = 0;
-                        PatientWalk(r, r.From);
+                        PatientWalk(r, r.From, true);
                         r.Pending = Fill(Patient.Back(r.Complaint, r.Stage, r.Seed), r);
                         Log.Write("PATIENT " + r.Name + " heads home");
                     }
