@@ -182,7 +182,7 @@ namespace EnrageWestworld.Core
                 return null;   // the dead feel nothing
             switch (k)
             {
-                case "rough": case "deed:assault": kind = "shove"; break;
+                case "rough": case "deed:assault": case "deed:shove": kind = "shove"; break;
                 case "brawl": case "standoff": case "drunk": kind = id == target ? "challenge" : "brawl"; break;
                 case "pickpocket": case "deed:theft": case "deed:robbery": case "deed:looting": case "deed:horsetheft": kind = "theft"; break;
                 case "argue": case "x:quarrel": case "snap": case "x:snap": case "brushoff": case "faced": kind = "slight"; break;

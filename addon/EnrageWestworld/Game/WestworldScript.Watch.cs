@@ -192,6 +192,7 @@ namespace EnrageWestworld.InGame
             slot = 0;
             if (PLAYER.GET_PLAYER_TARGET_ENTITY(Game.Player.Handle, (int*)&slot) && (int)slot != 0)
                 _aimedAt[(int)slot] = now;
+            ShoveScan(now, me, player);
             Vector3 pos = me.Position;
             foreach (Ped ped in World.GetAllPeds())
             {
@@ -218,6 +219,57 @@ namespace EnrageWestworld.InGame
             if (_defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs && FoeStillIn(now, player, pos))
                 _lastDefenceAt = now;
             DefenceBounty(now);
+        }
+
+        // ---- the player's shoves (2026-10-29, checklist 7: a shove raises no damage or crime event, so the mind never saw one) ----
+
+        private readonly Dictionary<int, int> _shovedAt = new Dictionary<int, int>();
+        private int _shoves;
+
+        /// A shove of the player's, from the game's own melee state (the melee action, its target, and the target's shoved flag):
+        /// a light deed with the victim known, so the appraisal gives him his shove and the street its slight; once per
+        /// victim in ten seconds; never during a fight he is already in (that's the damage events' business).
+        private void ShoveScan(int now, Ped me, int player)
+        {
+            // the game's melee target first; else whoever within arm's reach the game says was shoved in the last half second
+            int t = PED.GET_MELEE_TARGET_FOR_PED(player);
+            if (t == player || (t != 0 && (!ENTITY.DOES_ENTITY_EXIST(t) || !PED.IS_PED_HUMAN(t) || ENTITY.IS_ENTITY_DEAD(t) || !PED._HAS_PED_BEEN_SHOVED_RECENTLY(t, 600))))
+                t = 0;
+            if (t == 0)
+            {
+                Vector3 here = me.Position;
+                foreach (Ped near in World.GetAllPeds())
+                {
+                    int h = near.Handle;
+                    if (h == player || !PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h) || near.Position.DistanceTo(here) > 2.5f || !PED._HAS_PED_BEEN_SHOVED_RECENTLY(h, 600))
+                        continue;
+                    t = h;
+                    break;
+                }
+                if (t == 0)
+                    return;
+            }
+            int at;
+            if (_shovedAt.TryGetValue(t, out at) && now - at < 10000)
+                return;
+            _shovedAt[t] = now;
+            if (MISC.GET_MISSION_FLAG() || PED.IS_PED_IN_COMBAT(t, player) || _cameAtYouSeen.ContainsKey(t))
+                return;
+            if (!_youStarted.ContainsKey(t))
+                _youStarted[t] = now;   // however they answer it, he started it
+            _lastOffenceAt = now;
+            _shoves++;
+            Ped victim = new Ped(t);
+            Vector3 pos = me.Position;
+            long gameMin = Bridge.Now();
+            string detail = Director.Kind(victim, !PED.IS_PED_MALE(t));
+            int seen = CountPeopleNear(pos, 0, 35f);
+            Log.Write("SHOVE " + detail + " (" + NameToShow(t) + "), " + seen + " near" + (_cfg.Deeds ? "" : " (Deeds off: not noted)"));
+            if (_cfg.Deeds)
+                NoteDeedEyes(_engine.OnDeed(Deeds.Make("shove", detail, _bridge.TownAt(pos), ZoneAt(pos), gameMin, pos.X, pos.Y, pos.Z, seen), WitnessesNear(pos, 0, 35f), gameMin), pos, 0, t);
+            if (_shovedAt.Count > 200)
+                foreach (int old in _shovedAt.Where(kv => now - kv.Value > 60000).Select(kv => kv.Key).ToList())
+                    _shovedAt.Remove(old);
         }
 
         /// Someone who came at him is still in the fight: alive, within 50 m, and fighting him or held at his gunpoint.
