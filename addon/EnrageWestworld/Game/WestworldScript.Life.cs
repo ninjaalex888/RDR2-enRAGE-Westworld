@@ -1023,6 +1023,18 @@ namespace EnrageWestworld.InGame
             public bool Test;
         }
 
+        /// A relative waiting to be made out of sight (nobody free on the street): made on a tick with the panel closed and the
+        /// model streamed in, then walked up as any passer-by (KinSpawnStep).
+        private sealed class KinPending
+        {
+            public Relative R;
+            public string StateId, StateName, Town, Counts;
+            public uint Model;
+            public int Since, Tries;
+            public bool Test;
+        }
+
+        private KinPending _kinPending;
         private KinWalk _kinWalk;
         private int _kinNotBefore, _kinWalks, _kinArrived, _kinGaveUp;
         private string _kinLast, _kinWhyNot;
@@ -1055,6 +1067,11 @@ namespace EnrageWestworld.InGame
             if (_kinWalk != null)
             {
                 why = _kinWalk.R.Name + " is coming up to you already";
+                return false;
+            }
+            if (_kinPending != null)
+            {
+                why = _kinPending.R.Name + " is being made out of sight already";
                 return false;
             }
             if (_placeTown == null || me == null || !me.Exists())
@@ -1202,33 +1219,14 @@ namespace EnrageWestworld.InGame
                     why = _kinWhyNot = "rests: " + pace;
                     return false;
                 }
+                // made on a later tick, as the test cast is (KinSpawnStep): a spawn from the Testing page's own key press, with
+                // the panel open and the clock slowed, gave nobody twice (the game made nobody at the spot, two models)
                 uint model = Spawner.ModelFor(_placeTown, pick.r.Woman, Voice.Hash(pick.r.Name + "|kin|" + now / 60000));
-                Vector3 at;
-                if (!Spawner.Ready(model))
-                {
-                    why = _kinWhyNot = shortWhy + "; a body for " + pick.r.Name + " is being readied, try again in a moment";
-                    return false;
-                }
-                // a spot out of sight behind the player first; a town's street seldom has one in 14-26 m, so then 8-40 m, then
-                // anywhere on the level 10-18 m off, in sight if need be (as the test cast is brought)
-                if (!EncounterSpot(me, 14f, 26f, out at) && !EncounterSpot(me, 8f, 40f, out at) && !TestCastOpenSpot(me, out at))
-                {
-                    Log.Detail("CAST nobody to send (" + counts + ") and no spot to make " + pick.r.Name);
-                    why = _kinWhyNot = shortWhy + "; and no spot to make " + pick.r.Name;
-                    return false;
-                }
-                Vector3 mp = me.Position;
-                body = Spawner.Spawn(model, at, (float)(Math.Atan2(-(mp.X - at.X), mp.Y - at.Y) * 180.0 / Math.PI));
-                if (body == null)
-                {
-                    Log.Detail("CAST " + pick.r.Name + " couldn't be made: " + (Spawner.LastSpawnWhy ?? "the spawn failed") + " (" + counts + ")");
-                    why = _kinWhyNot = shortWhy + "; " + pick.r.Name + " couldn't be made: " + (Spawner.LastSpawnWhy ?? "the spawn failed");
-                    return false;
-                }
-                spawned = true;
-                bestD[pick.r.Woman ? 1 : 0] = body.Position.DistanceTo(mp);
-                bodyInScenario[pick.r.Woman ? 1 : 0] = false;
-                Log.Detail("CAST nobody to send (" + counts + "): " + pick.r.Name + " made out of sight instead");
+                Spawner.Ready(model);   // streaming starts now
+                _kinPending = new KinPending { R = pick.r, StateId = pick.st.Id, StateName = pick.st.Name, Town = _placeTown, Model = model, Since = now, Test = test, Counts = counts };
+                Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": nobody free on the street (" + counts + "); being made out of sight" + (test ? ", a test" : ""));
+                why = null;
+                return true;
             }
             float best = bestD[pick.r.Woman ? 1 : 0];
             bool bestInScenario = bodyInScenario[pick.r.Woman ? 1 : 0];
@@ -1254,6 +1252,64 @@ namespace EnrageWestworld.InGame
             return w && m ? "a man or a woman" : w ? "a woman (the relatives here are women)" : "a man (the relatives here are men)";
         }
 
+        /// The relative waiting to be made: on a tick with the panel closed and the model in, a spot (out of sight behind the player
+        /// first, then the open street as the test cast is brought) and the body; three tries, then given up with the spawner's reason.
+        private void KinSpawnStep(int now)
+        {
+            KinPending k = _kinPending;
+            if (k == null)
+                return;
+            Ped me = Game.Player.Character;
+            if (me == null || !me.Exists() || _placeTown != k.Town)
+            {
+                _kinPending = null;
+                Log.Write("CAST " + k.R.Name + " not made: the town changed");
+                return;
+            }
+            if (PanelOpen || MISC.GET_MISSION_FLAG())
+                return;
+            if (!Spawner.Ready(k.Model))
+            {
+                if (now - k.Since > 15000)
+                {
+                    _kinPending = null;
+                    Log.Write("CAST " + k.R.Name + " not made: the body (model " + k.Model.ToString("x8") + ") never streamed in");
+                }
+                return;
+            }
+            Vector3 at;
+            if (!EncounterSpot(me, 14f, 26f, out at) && !EncounterSpot(me, 8f, 40f, out at) && !TestCastOpenSpot(me, out at))
+            {
+                if (++k.Tries >= 3)
+                {
+                    _kinPending = null;
+                    Log.Write("CAST " + k.R.Name + " not made: no spot for them");
+                }
+                return;
+            }
+            Vector3 mp = me.Position;
+            Ped body = Spawner.Spawn(k.Model, at, (float)(Math.Atan2(-(mp.X - at.X), mp.Y - at.Y) * 180.0 / Math.PI));
+            if (body == null)
+            {
+                if (++k.Tries >= 3)
+                {
+                    _kinPending = null;
+                    _kinWhyNot = k.R.Name + " couldn't be made: " + (Spawner.LastSpawnWhy ?? "the spawn failed");
+                    Log.Write("CAST " + k.R.Name + " not made: " + (Spawner.LastSpawnWhy ?? "the spawn failed") + " (three tries)");
+                }
+                return;
+            }
+            _kinPending = null;
+            int bh = body.Handle;
+            float d = body.Position.DistanceTo(mp);
+            _casts[bh] = new KeyValuePair<Relative, string>(k.R, k.StateId);
+            int pending = KinOrder(bh, me, now);
+            _kinWalk = new KinWalk { Ped = body, R = k.R, StateId = k.StateId, StateName = k.StateName, Town = k.Town, Model = ENTITY.GET_ENTITY_MODEL(bh),
+                                     Since = now, Until = now + KinWalkMs, LastOrder = now, LastDist = d, StartDist = d, Test = k.Test, Pending = pending, Spawned = true };
+            _kinWalks++;
+            Log.Write("CAST " + k.R.Name + " (" + k.R.Relation + " of " + k.StateName + ") in " + k.Town + ": made out of sight " + (int)d + " m off, walks over" + (k.Test ? ", a test" : ""));
+        }
+
         /// The walk order. Someone in a scenario (leaning, sitting, the game's walking routes) is let go of it first and gets
         /// the order a moment later (as the Director's "meet" does: a walk order alone never moves them); returns when that
         /// order is due, else 0.
@@ -1274,6 +1330,8 @@ namespace EnrageWestworld.InGame
         /// (they speak first if the player doesn't greet them), given up when they can't reach him.
         private void KinWalkStep(int now)
         {
+            if (_kinPending != null)
+                KinSpawnStep(now);
             KinWalk w = _kinWalk;
             if (w == null)
                 return;
@@ -1393,6 +1451,7 @@ namespace EnrageWestworld.InGame
         /// A mission, a load, the wipe or shutdown: the relative on their way is let go, and the next waits two minutes.
         private void KinAbort()
         {
+            _kinPending = null;
             if (_kinWalk != null)
             {
                 if (_kinWalk.Ped != null && _kinWalk.Ped.Exists() && !_kinWalk.Ped.IsDead)
