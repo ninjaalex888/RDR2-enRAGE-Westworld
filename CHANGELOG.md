@@ -24,7 +24,7 @@ Built in the night run of 2026-10-28 (Lex's brief) and the morning after it, on 
 
 ### The mind sees your shoves (2026-10-29, from the in-game pass)
 
-- A shove of yours now counts: the game raises no damage or crime event for one, so the mind had never seen the player shove anybody, and no "assault" deed had ever been noted. Now the game's own melee state (its target, and the shoved flag it sets on them) makes a light deed of it, `shove`, with the victim known: he feels the shove, whoever saw it feels the slight, word of it goes round lightly ("shoved a townsman out of his way"), and the man you shoved counts as someone you started on if he fights back. `SHOVE a townsman (Abe Cobb), 6 near` in the log. Never during a fight you are already in.
+- A shove of yours now counts: the game raises no damage or crime event for one, so the mind had never seen the player shove anybody, and no "assault" deed had ever been noted. Now a shove is read from the one thing the game shows of it, the shoved one going into a ragdoll right beside you (nothing else marks it: no event, no melee target, no flag), and it makes a light deed, `shove`, with the victim known: he feels the shove, whoever saw it feels the slight, word of it goes round lightly ("shoved a townsman out of his way"), and the man you shoved counts as someone you started on if he fights back. `SHOVE a townsman (Abe Cobb), 6 near` in the log. Never during a fight you are already in.
 
 ### Fixes from a review of the day's work
 

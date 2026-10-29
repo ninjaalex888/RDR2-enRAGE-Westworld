@@ -193,6 +193,8 @@ namespace EnrageWestworld.InGame
             if (PLAYER.GET_PLAYER_TARGET_ENTITY(Game.Player.Handle, (int*)&slot) && (int)slot != 0)
                 _aimedAt[(int)slot] = now;
             ShoveScan(now, me, player);
+            if (_eventProbeOn)
+                MeleeProbe(now, me, player);
             Vector3 pos = me.Position;
             foreach (Ped ped in World.GetAllPeds())
             {
@@ -221,9 +223,42 @@ namespace EnrageWestworld.InGame
             DefenceBounty(now);
         }
 
+        /// While the event probe runs: the game's melee state around the player every 400 ms, whenever any of it is set
+        /// (which native sees a shove: the first run of ShoveScan saw none, 2026-10-29 17:00).
+        private void MeleeProbe(int now, Ped me, int player)
+        {
+            try
+            {
+                int target = PED.GET_MELEE_TARGET_FOR_PED(player);
+                bool meleeMe = PED.IS_PED_IN_MELEE_COMBAT(player);
+                bool action = PED.IS_PED_PERFORMING_MELEE_ACTION(player, 0, 0u);
+                System.Text.StringBuilder b = new System.Text.StringBuilder();
+                Vector3 here = me.Position;
+                foreach (Ped near in World.GetAllPeds())
+                {
+                    int h = near.Handle;
+                    if (h == player || !PED.IS_PED_HUMAN(h) || near.Position.DistanceTo(here) > 3f)
+                        continue;
+                    bool shoved = PED._HAS_PED_BEEN_SHOVED_RECENTLY(h, 2000), ragdoll = PED.IS_PED_RAGDOLL(h), ragTask = PED.IS_PED_RUNNING_RAGDOLL_TASK(h),
+                         stunned = PED.IS_PED_BEING_STUNNED(h, 0), melee = PED.IS_PED_IN_MELEE_COMBAT(h);
+                    if (shoved || ragdoll || ragTask || stunned || melee)
+                        b.Append(" ").Append(h).Append(" at ").Append(near.Position.DistanceTo(here).ToString("0.0")).Append(" m:").Append(shoved ? " shoved" : "").Append(ragdoll ? " ragdoll" : "")
+                         .Append(ragTask ? " ragdoll-task" : "").Append(stunned ? " stunned" : "").Append(melee ? " in-melee" : "");
+                }
+                if (target != 0 || meleeMe || action || b.Length > 0)
+                    Log.Write("MELEE probe: target " + target + (meleeMe ? ", you in melee" : "") + (action ? ", you in a melee action" : "") + (b.Length > 0 ? ";" + b : ""));
+            }
+            catch (Exception ex)
+            {
+                Log.Write("MELEE probe failed: " + ex.Message);
+                _eventProbeOn = false;
+            }
+        }
+
         // ---- the player's shoves (2026-10-29, checklist 7: a shove raises no damage or crime event, so the mind never saw one) ----
 
         private readonly Dictionary<int, int> _shovedAt = new Dictionary<int, int>();
+        private readonly HashSet<int> _ragdolling = new HashSet<int>();   // who was ragdolling at the last look (a fresh ragdoll beside the player is the shove)
         private int _shoves;
 
         /// A shove of the player's, from the game's own melee state (the melee action, its target, and the target's shoved flag):
@@ -231,24 +266,37 @@ namespace EnrageWestworld.InGame
         /// victim in ten seconds; never during a fight he is already in (that's the damage events' business).
         private void ShoveScan(int now, Ped me, int player)
         {
-            // the game's melee target first; else whoever within arm's reach the game says was shoved in the last half second
-            int t = PED.GET_MELEE_TARGET_FOR_PED(player);
-            if (t == player || (t != 0 && (!ENTITY.DOES_ENTITY_EXIST(t) || !PED.IS_PED_HUMAN(t) || ENTITY.IS_ENTITY_DEAD(t) || !PED._HAS_PED_BEEN_SHOVED_RECENTLY(t, 600))))
-                t = 0;
-            if (t == 0)
+            // the probe of 2026-10-29 17:04: a shove shows as the shoved one going into a ragdoll within a metre or two of the player,
+            // and in nothing else (no melee target, no shoved flag, no melee action, no event); so: a human within 2 m who starts
+            // ragdolling this look (not last look), while the player is on foot, upright and not fighting them
+            if (PED.IS_PED_RAGDOLL(player) || PED.IS_PED_ON_MOUNT(player) || PED.IS_PED_IN_ANY_VEHICLE(player, false))
             {
-                Vector3 here = me.Position;
-                foreach (Ped near in World.GetAllPeds())
-                {
-                    int h = near.Handle;
-                    if (h == player || !PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h) || near.Position.DistanceTo(here) > 2.5f || !PED._HAS_PED_BEEN_SHOVED_RECENTLY(h, 600))
-                        continue;
-                    t = h;
-                    break;
-                }
-                if (t == 0)
-                    return;
+                _ragdolling.Clear();
+                return;
             }
+            int t = 0;
+            Vector3 here = me.Position;
+            HashSet<int> now_ = new HashSet<int>();
+            foreach (Ped near in World.GetAllPeds())
+            {
+                int h = near.Handle;
+                if (h == player || !PED.IS_PED_HUMAN(h) || ENTITY.IS_ENTITY_DEAD(h))
+                    continue;
+                float d = near.Position.DistanceTo(here);
+                if (d > 4f)
+                    continue;
+                bool rag = PED.IS_PED_RAGDOLL(h) || PED.IS_PED_RUNNING_RAGDOLL_TASK(h);
+                if (!rag)
+                    continue;
+                now_.Add(h);
+                if (t == 0 && d <= 2f && !_ragdolling.Contains(h))
+                    t = h;   // fresh this look, within arm's reach
+            }
+            _ragdolling.Clear();
+            foreach (int h in now_)
+                _ragdolling.Add(h);
+            if (t == 0)
+                return;
             int at;
             if (_shovedAt.TryGetValue(t, out at) && now - at < 10000)
                 return;
