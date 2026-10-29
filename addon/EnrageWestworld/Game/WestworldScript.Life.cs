@@ -1017,6 +1017,7 @@ namespace EnrageWestworld.InGame
             public string StateId, StateName, Town;
             public uint Model;   // the body's model at the pick: a handle the game reused for someone else is seen
             public int Since, Until, LastOrder, Said, Reorders;
+            public int Pending;  // the walk order still to send (the body was let go of a scenario first), 0 none
             public float LastDist, StartDist;
             public bool Test;
         }
@@ -1091,20 +1092,43 @@ namespace EnrageWestworld.InGame
                 why = _kinWhyNot = "rests: " + pace;
                 return false;
             }
-            int near = 0, outOfView = 0, named = 0, notFree = 0, wrongSex = 0, mayNot = 0;
+            // every human within range is counted by what kept them out, so the refusal says what the street was made of
+            // (Lex, 2026-10-29: six tries in Valentine refused with every count at 0: the town's walkers are all in the
+            // game's walking scenarios, which were passed over uncounted; now a scenario is let go of first, and someone
+            // in one is taken only when nobody free of one is to hand)
+            int total = 0, theGames = 0, tooClose = 0, ours = 0, riding = 0, inScenario = 0, outOfView = 0, named = 0, notFree = 0, wrongSex = 0, mayNot = 0;
             Ped body = null;
             float best = float.MaxValue;
+            bool bestInScenario = false;
             foreach (Ped p in World.GetAllPeds())
             {
-                if (!Natives.Bystander(p, me.Handle))
+                if (p == null || !p.Exists() || p.Handle == me.Handle || ENTITY.IS_ENTITY_DEAD(p.Handle) || !PED.IS_PED_HUMAN(p.Handle))
                     continue;
                 int h = p.Handle;
                 float d = p.Position.DistanceTo(me.Position);
-                if (d <= 5f || d >= KinFar)
+                if (d >= KinFar)
                     continue;
-                near++;
-                if (Spawner.IsOurs(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_USING_ANY_SCENARIO(h))
+                total++;
+                if (d <= 5f)
+                {
+                    tooClose++;
                     continue;
+                }
+                if (!Natives.Bystander(p, me.Handle))
+                {
+                    theGames++;   // the game's own scripts' people (mission entities), lawmen, children, anyone fighting or fleeing
+                    continue;
+                }
+                if (Spawner.IsOurs(h))
+                {
+                    ours++;
+                    continue;
+                }
+                if (PED.IS_PED_IN_ANY_VEHICLE(h, false))
+                {
+                    riding++;
+                    continue;
+                }
                 if (PED.IS_PED_MALE(h) == pick.r.Woman)
                 {
                     wrongSex++;
@@ -1130,32 +1154,49 @@ namespace EnrageWestworld.InGame
                     mayNot++;
                     continue;
                 }
-                if (d < best)
+                bool scenario = PED.IS_PED_USING_ANY_SCENARIO(h);
+                if (scenario)
+                    inScenario++;
+                // someone free of a scenario first, the nearest of them; else the nearest in one (let go of it first)
+                if (body == null || (bestInScenario && !scenario) || (bestInScenario == scenario && d < best))
                 {
                     best = d;
                     body = p;
+                    bestInScenario = scenario;
                 }
             }
             if (body == null)
             {
-                why = _kinWhyNot = "no passer-by in view within " + (int)KinFar + " m RealNPCs may send over (" + near + " near: " + wrongSex + " the wrong sex, " + named +
-                                   " with a name already, " + outOfView + " out of view, " + notFree + " busy, " + mayNot + " not ours to direct)";
+                why = _kinWhyNot = "no passer-by in view within " + (int)KinFar + " m RealNPCs may send over (" + total + " people in range: " + theGames + " the game's own, lawmen or children, " +
+                                   tooClose + " within 5 m, " + ours + " ours, " + riding + " riding, " + wrongSex + " the wrong sex, " + named + " with a name already, " + outOfView + " out of view, " +
+                                   notFree + " busy, " + mayNot + " not ours to direct)";
                 return false;
             }
             int bh = body.Handle;
             _casts[bh] = new KeyValuePair<Relative, string>(pick.r, pick.st.Id);
-            KinOrder(bh, me);
+            int pending = KinOrder(bh, me, now);
             _kinWalk = new KinWalk { Ped = body, R = pick.r, StateId = pick.st.Id, StateName = pick.st.Name, Town = _placeTown, Model = ENTITY.GET_ENTITY_MODEL(bh),
-                                     Since = now, Until = now + KinWalkMs, LastOrder = now, LastDist = best, StartDist = best, Test = test };
+                                     Since = now, Until = now + KinWalkMs, LastOrder = now, LastDist = best, StartDist = best, Test = test, Pending = pending };
             _kinWalks++;
-            Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": a passer-by " + (int)best + " m off walks over" + (test ? ", a test" : ""));
+            Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": a passer-by " + (int)best + " m off walks over" +
+                      (bestInScenario ? " (let go of what they were doing first; " + inScenario + " of " + total + " in range were busy that way)" : "") + (test ? ", a test" : ""));
             return true;
         }
 
-        private static void KinOrder(int h, Ped me)
+        /// The walk order. Someone in a scenario (leaning, sitting, the game's walking routes) is let go of it first and gets
+        /// the order a moment later (as the Director's "meet" does: a walk order alone never moves them); returns when that
+        /// order is due, else 0.
+        private static int KinOrder(int h, Ped me, int now)
         {
+            if (PED.IS_PED_USING_ANY_SCENARIO(h))
+            {
+                TASK.CLEAR_PED_TASKS(h, true, false);
+                TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, KinWalkMs, 0, 51, 0);
+                return now + 1800;
+            }
             TASK.TASK_GO_TO_ENTITY(h, me.Handle, -1, 2.2f, 1.4f, 0f, 0);
             TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, KinWalkMs, 0, 51, 0);
+            return 0;
         }
 
         /// The relative on their way: the order re-sent while they aren't getting nearer, the meeting when they're close
@@ -1215,11 +1256,19 @@ namespace EnrageWestworld.InGame
                     KinEnd(w, now, "never reached you in " + KinWalkMs / 1000 + " s (" + (int)d + " m off, from " + (int)w.StartDist + ")");
                     return;
                 }
+                if (w.Pending > 0 && now >= w.Pending)
+                {
+                    // let go of a scenario a moment ago: the walk order now (a second clear if the game put them straight back)
+                    w.Pending = KinOrder(h, me, now);
+                    w.LastOrder = now;
+                    w.LastDist = d;
+                    return;
+                }
                 if (now - w.LastOrder >= KinReorderMs)
                 {
                     if (d > w.LastDist - 0.5f)
                     {
-                        KinOrder(h, me);   // not getting nearer: the game's own script may have given them something else to do
+                        w.Pending = KinOrder(h, me, now);   // not getting nearer: the game's own script may have given them something else to do
                         w.Reorders++;
                     }
                     w.LastOrder = now;
