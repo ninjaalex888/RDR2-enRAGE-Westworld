@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace EnrageWestworld.Core
 {
@@ -601,11 +602,105 @@ namespace EnrageWestworld.Core
         private bool _thinkFailed, _retellFailed, _spotFailed, _passingFailed;
         private long _thinkClock = -1;   // the latest game minute thought at: earlier means an older save was loaded
 
+        // Thoughts that vary ([Mind] ThoughtVariety; Lex, 2026-10-29: "a lot of the same types of thoughts": in his log the
+        // sameness was the same frame worn by different people, "Next word from X gets answered with my hands" four times
+        // over, and worries 42% of everything shown). Two rules at the one place every thought passes: no two people think
+        // the same frame (the line with its names stripped) within an hour, whoever thinks it; and a source that gave the
+        // last few thoughts pulls less, so the weather, the place, the trade and the small day get their turn. In memory,
+        // capped, cleared with the rest; off, exactly the old choice.
+        public const int FrameMinutes = 60, SpreadWindow = 8;
+        public const double SpreadPerHit = 0.35;   // each of the last eight thoughts from the same source divides its pull by (1 + this)
+        private readonly Dictionary<string, long> _recentFrames = new Dictionary<string, long>();
+        private readonly List<KeyValuePair<string, long>> _recentSources = new List<KeyValuePair<string, long>>();
+        public int FramesHeld, SourcesSpread;   // for F7: frames held back within the hour, choices where a source's pull was spread
+        private static readonly Regex NameWord = new Regex(@"\b[A-Z][a-z']+\b");
+
+        /// A thought's frame: the line with every name (any capitalised word) as X, lowercased, so "Next word from Abe" and
+        /// "Next word from Dalton" are the same frame.
+        public static string FrameKey(string text)
+        {
+            return text == null ? string.Empty : NameWord.Replace(text, "X").ToLowerInvariant();
+        }
+
+        /// The source's family: "filler:body" and "filler:hour" are both the filler, "worry:debt" the worries.
+        public static string SourceGroup(string source)
+        {
+            if (string.IsNullOrEmpty(source))
+                return string.Empty;
+            int i = source.IndexOf(':');
+            return i < 0 ? source : source.Substring(0, i);
+        }
+
+        private bool FrameHeard(string text, long now)
+        {
+            long at;
+            return _recentFrames.TryGetValue(FrameKey(text), out at) && now - at >= 0 && now - at < FrameMinutes;
+        }
+
+        private void NoteShown(string source, string text, long now)
+        {
+            if (_recentFrames.Count > 2000)
+                _recentFrames.Clear();
+            _recentFrames[FrameKey(text)] = now;
+            _recentSources.Add(new KeyValuePair<string, long>(SourceGroup(source), now));
+            while (_recentSources.Count > SpreadWindow)
+                _recentSources.RemoveAt(0);
+        }
+
+        /// A thought that comes before the Minds' own choice (the world feeling unreal, what one of enRAGE's townsfolk feels
+        /// about the player), through the same frame rule: held back (null) when anyone thought its frame within the hour,
+        /// else noted as shown. Off, the text as it was.
+        private string Varied(string source, string text)
+        {
+            if (text == null || Cfg == null || !Cfg.ThoughtVariety)
+                return text;
+            long now = Store.LastGameMin;
+            if (FrameHeard(text, now))
+            {
+                FramesHeld++;
+                return null;
+            }
+            NoteShown(source, text, now);
+            return text;
+        }
+
+        /// The candidates with each source's pull divided by how many of the last few thoughts (within the hour) came from
+        /// its family; the candidates themselves are left as they were.
+        private List<Minds.Candidate> Spread(List<Minds.Candidate> all, long now)
+        {
+            if (_recentSources.Count == 0)
+                return all;
+            var spread = new List<Minds.Candidate>(all.Count);
+            bool any = false;
+            foreach (Minds.Candidate k in all)
+            {
+                if (k == null)
+                    continue;
+                string g = SourceGroup(k.Source);
+                int hits = 0;
+                foreach (KeyValuePair<string, long> r in _recentSources)
+                    if (r.Key == g && now - r.Value >= 0 && now - r.Value < FrameMinutes)
+                        hits++;
+                if (hits == 0)
+                {
+                    spread.Add(k);
+                    continue;
+                }
+                any = true;
+                spread.Add(new Minds.Candidate { Source = k.Source, Make = k.Make, M = k.M, Pull = k.Pull / (1.0 + SpreadPerHit * hits) });
+            }
+            if (any)
+                SourcesSpread++;
+            return spread;
+        }
+
         /// An older save was loaded (or the clock stepped back): what was thought after it hasn't happened either.
         internal void ForgetThinking()
         {
             _thought.Clear();
             _today.Clear();
+            _recentFrames.Clear();
+            _recentSources.Clear();
             _worryWear.Clear();
             _dossierWear.Clear();
             _toldSet.Clear();
@@ -635,21 +730,35 @@ namespace EnrageWestworld.Core
                 all = all.Where(k => k.M != null && k.Pull > memoriesOver).ToList();
             Minds.Choice c = null;
             HashSet<string> said = SaidToday(p.Id, now);
-            foreach (Minds.Candidate k in Minds.Order(all, seed))
+            bool variety = Cfg != null && Cfg.ThoughtVariety;
+            List<Minds.Candidate> ordered = Minds.Order(variety ? Spread(all, now) : all, seed);
+            for (int pass = 0; pass < 2 && c == null; pass++)
             {
-                string text = k.Make();
-                if (string.IsNullOrEmpty(text) || said.Contains(text))
-                    continue;
-                said.Add(text);
-                c = new Minds.Choice { Text = text, Source = k.Source, Pull = (int)Math.Round(k.Pull) };
-                if (k.M != null)
+                // the first pass holds back a frame anyone thought within the hour (ThoughtVariety); the second takes it
+                // rather than nothing
+                foreach (Minds.Candidate k in ordered)
                 {
-                    k.M.Times++;
-                    k.M.LastAt = now;
+                    string text = k.Make();
+                    if (string.IsNullOrEmpty(text) || said.Contains(text))
+                        continue;
+                    if (pass == 0 && variety && FrameHeard(text, now))
+                    {
+                        FramesHeld++;
+                        continue;
+                    }
+                    said.Add(text);
+                    c = new Minds.Choice { Text = text, Source = k.Source, Pull = (int)Math.Round(k.Pull) };
+                    if (k.M != null)
+                    {
+                        k.M.Times++;
+                        k.M.LastAt = now;
+                    }
+                    else if (k.Source.StartsWith("worry:"))
+                        WearWorry(p.Id, day.GameDay, now);
+                    if (variety)
+                        NoteShown(k.Source, text, now);
+                    break;
                 }
-                else if (k.Source.StartsWith("worry:"))
-                    WearWorry(p.Id, day.GameDay, now);
-                break;
             }
             if (_thought.Count > 3000)
                 _thought.Clear();

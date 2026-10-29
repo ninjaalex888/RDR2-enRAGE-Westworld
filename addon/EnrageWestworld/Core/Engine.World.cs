@@ -1068,7 +1068,7 @@ namespace EnrageWestworld.Core
                 // the world feeling unreal keeps its full RealityChance, first, as before
                 if (Cfg.HostsQuestionReality && Voice.Chance(seed + "h", Cfg.RealityChance))
                 {
-                    string unreal = StrangerThought(seed, p.Home, p.Woman, false);
+                    string unreal = Varied("unreal", StrangerThought(seed, p.Home, p.Woman, false));   // through the frame rule (ThoughtVariety)
                     if (unreal != null)
                         return unreal;
                 }
@@ -1097,7 +1097,8 @@ namespace EnrageWestworld.Core
         /// now and then anyway, their own life (InnerLife: the worry they're going through, the day, their town).
         public string FolkThought(Folk f, Person p, PersonState st, string seed, int hour, InnerLife.PlayerLook look)
         {
-            string about = Folks.Thought(f, st, Player, seed, Cfg.Romance);
+            string aboutRaw = Folks.Thought(f, st, Player, seed, Cfg.Romance);
+            string about = Varied("folk", aboutRaw);   // through the frame rule: "X. We've spoken." came six times in Lex's log (ThoughtVariety); held, it is still the last resort below, rather than nothing
             bool strong = about != null && (st.Heart >= 2 || st.Heart < 0 || f.FavourNotes.Count > 0 || f.Witnessed.Count > 0 || f.Grudge >= 40 || f.Fear >= 40);
             if (about != null && Voice.Chance(seed + "fa", strong ? 70 : 30))
                 return about;
@@ -1111,9 +1112,9 @@ namespace EnrageWestworld.Core
                 if (about != null)
                     extra.Add(new Minds.Candidate { Source = strong ? "folk:strong" : "folk", Pull = (strong ? 50 : 25) + Minds.Jitter(seed, "folk", 6), Make = () => about });
                 Minds.Choice c = Think(p, st, hour, seed, look, extra);
-                return c != null ? c.Text : about;
+                return c != null ? c.Text : aboutRaw;
             }
-            return InnerLife.Thought(p, hour, seed, st.Musings, look, ThoughtDay(p.Home, p.Id)) ?? about;
+            return InnerLife.Thought(p, hour, seed, st.Musings, look, ThoughtDay(p.Home, p.Id)) ?? aboutRaw;
         }
 
         /// The game day, for the worry a life is going through; what the player did in this town in the last three
