@@ -252,7 +252,7 @@ namespace EnrageWestworld.InGame
                     TestCastDrop(b, "gone from the world");
                     continue;
                 }
-                if (b.Ped.IsDead)
+                if (b.Ped.IsDead && KnockedOutWhy(b.Ped.Handle) == null)   // out cold isn't dead (the ledger's rule; 2026-10-29: the bully knocked out in a brawl was "died" here)
                 {
                     TestCastDrop(b, "the next bring makes someone new for the part");
                     continue;

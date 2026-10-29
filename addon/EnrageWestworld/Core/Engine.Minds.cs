@@ -294,11 +294,17 @@ namespace EnrageWestworld.Core
                 return;
             PersonState ts = Store.Find(teller.Id), ls = Store.Find(listener.Id);
             if (ts == null || ls == null || ts.Mind == null || ls.Mind == null)
+            {
+                Detail("MIND told nothing: " + (teller.Name ?? teller.Id) + " to " + (listener.Name ?? listener.Id) + ": " + (ts == null || ts.Mind == null ? "the teller has no saved state" : "the listener has no saved state"));
                 return;
+            }
             string head = teller.Id + ">" + listener.Id + ">";
             MindMemory m = Minds.WorthTelling(ts.Mind, ls.Mind, listener.Id, now, x => _toldSet.Contains(head + x.Key), id => ListenerKnows(listener.Id, id));
             if (m == null)
+            {
+                Detail("MIND told nothing: " + (teller.Name ?? teller.Id) + " to " + (listener.Name ?? listener.Id) + ": nothing worth telling among " + ts.Mind.Count + " memories (fresh, strong, not talk, not theirs, not told before)");
                 return;
+            }
             MindMemory told = Minds.Retold(m, teller.Id, Person.FirstOf(teller.Name ?? "somebody"), now);
             if (how != null)
                 told.Strength = Math.Max(10, told.Strength * 7 / 10);   // a word in passing is half-heard: weaker again than a talk's telling

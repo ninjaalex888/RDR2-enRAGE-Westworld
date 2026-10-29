@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 97;
+        public const int CurrentVersion = 98;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -220,7 +220,7 @@ namespace EnrageWestworld.Core
         public bool ReloadIni = true;
         public bool ReplaceEnrageSettings = true;
         public string SettingsKey = "Ctrl+F7";
-        public string SettingsKey2 = "Alt+F";
+        public string SettingsKey2 = "Alt+R";   // Alt+F until 2026-10-29 (Lex: Alt+R)
         public bool PanelSlowsTime = true;    // the world slows while the settings panel is open, as it does for the game's wheels (Lex, 2026-10-27; settings version 84)
         public float PanelTimeScale = 0.25f;
         // [Controller] (Lex, 2026-10-28; settings version 86): a controller's buttons for RealNPCs' own keys, a button
@@ -524,6 +524,11 @@ namespace EnrageWestworld.Core
                 {
                     s.TestCastReturns = false;   // 2026-10-29 (Lex): the test cast come only on the row's key, not by themselves at every visit
                     log?.Invoke("Settings: TestCastReturns set off (the test cast come only on the Testing row's key now); set it on again if you want them back by themselves).");
+                }
+                if (s.SettingsVersion < 98 && KeyIs(s.SettingsKey2, "Alt+F"))
+                {
+                    s.SettingsKey2 = "Alt+R";   // 2026-10-29 (Lex): the second settings key moves from Alt+F to Alt+R
+                    log?.Invoke("Settings: SettingsKey2 Alt+F -> Alt+R (the second key that opens the settings panel; set it back if you want Alt+F).");
                 }
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;

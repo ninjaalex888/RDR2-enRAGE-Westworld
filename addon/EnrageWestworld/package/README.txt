@@ -152,7 +152,7 @@ NEW IN 0.6.2
   nearest who could.
 - Self-defence lasts as long as the fight: whoever came at you stays fair game while they fight on,
   draw on you or stand at your gunpoint.
-- The settings panel opens with Alt+F too, scrolls with the mouse wheel, and a notice after loading
+- The settings panel opens with Alt+R too, scrolls with the mouse wheel, and a notice after loading
   says which key opens it.
 - Seen working in game: the thoughts above heads, the map marks, the real-voice conversations,
   the bar slam and the reactions to it, Flirt in the lock-on menu, the new subtitles, and the knife
@@ -196,7 +196,7 @@ NEW IN 0.6.1
   at you, as enRAGE keeps them. A "Sore at you" panel in the top right lists the strangers whose
   grudge against you is building, with a mark where they'd become a nemesis, and the nemesis
   after you now. [Display] FeelingBars, FeelingBarsMetres (15), FeelingBarsShowEmpty, GrudgeMeter;
-  in the panel (Ctrl+F7 or Alt+F), "Bars and meter".
+  in the panel (Ctrl+F7 or Alt+R), "Bars and meter".
 - Names over heads, the way enRAGE drew them: people RealNPCs knows (the town regulars, anyone
   who has thought, spoken with you or been in a street scene, the game's own named people such as
   the sheriffs and the story cast; enRAGE's people when it runs) carry
@@ -813,7 +813,7 @@ in the file. The new ones:
                 plays (the game's own Subtitles option has to be on too)
             TestKey (F7), FlirtKey (F2), WakeKey (Y), ReaderKey (N), ReloadIni (true),
             ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel (enRAGE 0.9.5.3 only),
-            SettingsKey (Ctrl+F7) and SettingsKey2 (Alt+F) open and close it with any enRAGE version,
+            SettingsKey (Ctrl+F7) and SettingsKey2 (Alt+R) open and close it with any enRAGE version,
             PanelSlowsTime (true), PanelTimeScale (0.25): the world slows to a quarter speed while the
             panel is open, as it does for the weapon wheel (never in a story mission)
 All the older options are still there and work the same.
@@ -821,7 +821,7 @@ All the older options are still there and work the same.
 
 KEYS
 ----
-Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+F
+Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; SettingsKey). Alt+R
           (SettingsKey2) opens it too, and either closes it again. Its Testing page lists everything
           RealNPCs can make happen near you now, by group: Enter on a row sets its key, Space fires it
           (the panel closes first; on a gamepad, A fires it), Delete leaves it without a key. A key
