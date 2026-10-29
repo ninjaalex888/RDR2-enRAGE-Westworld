@@ -152,6 +152,7 @@ namespace EnrageWestworld.InGame
             _sightState = null;
             if (why != "you died" || any)
                 Log.Detail("SIGHT reset: " + why);
+            _nameCardsHoldUntil = Game.GameTime + 4000;   // the names over heads wait out a load, a death or a shutdown (WestworldScript.NameCards.cs)
         }
 
         /// What someone already thinks of you, for how they take the sight: afraid (enRAGE's fear of you, or a killing

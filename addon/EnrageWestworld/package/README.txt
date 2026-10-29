@@ -197,6 +197,12 @@ NEW IN 0.6.1
   grudge against you is building, with a mark where they'd become a nemesis, and the nemesis
   after you now. [Display] FeelingBars, FeelingBarsMetres (15), FeelingBarsShowEmpty, GrudgeMeter;
   in the panel (Ctrl+F7 or Alt+F), "Bars and meter".
+- Names over heads, the way enRAGE drew them: people RealNPCs knows (the town regulars, anyone
+  who has thought, spoken with you or been in a street scene; enRAGE's people when it runs) carry
+  their name in the game's title type, with a temper, a trade or "Stranger" under it, steadied as
+  they walk, hidden behind walls, fading with distance. [Display] NameCards (known; off, or
+  everyone for a grey "A townsman" over the rest), NameCardsMetres (30), NameCardsKnownMetres (75);
+  while enRAGE draws its own cards ours stay off unless NameCardsBesideEnrage.
 - Standing still no longer holds up enRAGE's funerals or someone's evening at the saloon.
 - Aiming at one of enRAGE's outlaws leaves him to enRAGE (he stands his ground and his crew draws
   on you). Ordinary townsfolk still plead.
@@ -692,7 +698,10 @@ in the file. The new ones:
             above their head in small type instead of on the bar, ThoughtsOverHeadScale (0.24)
 [Display]   FeelingBars (true): bars under people near you for their fear, liking and anger,
             FeelingBarsMetres (15), FeelingBarsShowEmpty (false): the empty part of each bar too,
-            GrudgeMeter (true): the "Sore at you" panel, top right
+            GrudgeMeter (true): the "Sore at you" panel, top right,
+            NameCards (known; off, everyone): names over the heads of people RealNPCs knows, in
+            the game's title type, NameCardsMetres (30), NameCardsKnownMetres (75),
+            NameCardsBesideEnrage (false): ours even while enRAGE draws its own
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
             AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),

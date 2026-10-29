@@ -404,6 +404,7 @@ namespace EnrageWestworld.InGame
             WakeTagsStep(now);    // and its wake stages over heads (WestworldScript.WakeTags.cs)
             NewsStep(now);
             SubtitleDraw(now);
+            NameCardsStep(now);   // names over heads, last: the least to lose if the frame's text budget runs out (WestworldScript.NameCards.cs)
         }
 
         private void FrameImpl(int now)

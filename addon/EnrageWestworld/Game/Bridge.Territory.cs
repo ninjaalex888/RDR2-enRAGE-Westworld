@@ -75,6 +75,22 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// enRAGE's own name cards setting ([Menu] NameCards: 0 off, 1 known, 2 everyone); null when it can't be read or enRAGE is absent.
+        public int? EnrageNameCards()
+        {
+            ResolveNews();
+            try
+            {
+                object cfg = _config != null ? _config.GetValue(Mod) : null;
+                FieldInfo f = cfg != null ? cfg.GetType().GetField("NameCards", Any) : null;
+                return f != null ? (int?)Convert.ToInt32(f.GetValue(cfg)) : null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
         /// enRAGE prints its own copy of territory news on the subtitle line ([Menu] Messages at its highest);
         /// null if that can't be read.
         public bool? PrintsOwnNews

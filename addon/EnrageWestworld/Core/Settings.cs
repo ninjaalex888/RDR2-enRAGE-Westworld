@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 96;
+        public const int CurrentVersion = 97;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -67,6 +67,10 @@ namespace EnrageWestworld.Core
         public bool FeelingBars = true;
         public float FeelingBarsMetres = 15f;
         public bool FeelingBarsShowEmpty;
+        public string NameCards = "known";        // off | known | everyone: names over heads, enRAGE's way (2026-10-29)
+        public float NameCardsMetres = 30f;       // strangers' cards within
+        public float NameCardsKnownMetres = 75f;  // people you know within
+        public bool NameCardsBesideEnrage;        // ours beside enRAGE's own cards too (else left to enRAGE while its are on)
         public bool GrudgeMeter = true;
 
         // [WestWorld] - the master switch and everything under it
@@ -598,6 +602,10 @@ namespace EnrageWestworld.Core
             string sm = (Subtitles ?? "").Trim().ToLowerInvariant();
             Subtitles = sm == "off" || sm == "ours" || sm == "both" ? sm : "game";
             FeelingBarsMetres = Math.Max(3f, Math.Min(40f, FeelingBarsMetres));
+            string nc = (NameCards ?? "known").Trim().ToLowerInvariant();
+            NameCards = nc == "off" || nc == "everyone" ? nc : "known";
+            NameCardsMetres = Math.Max(5f, Math.Min(150f, NameCardsMetres));
+            NameCardsKnownMetres = Math.Max(5f, Math.Min(150f, NameCardsKnownMetres));
         }
 
         private static void Write(string path, Settings s)
@@ -672,6 +680,10 @@ namespace EnrageWestworld.Core
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, liking and anger, as enRAGE keeps them");
             b.AppendLine("FeelingBarsMetres = " + F(FeelingBarsMetres) + "   ; how close they must be (the nearest three in plain view get bars)");
             b.AppendLine("FeelingBarsShowEmpty = " + B(FeelingBarsShowEmpty) + "   ; also show the empty part of each bar, so a low value reads as a little out of a whole bar");
+            b.AppendLine("NameCards = " + NameCards + "   ; names over heads in the game's title type, the way enRAGE drew them: off, known (people RealNPCs knows: enRAGE's records and townsfolk, regulars, anyone who thought or spoke or took part in a scene), everyone (the rest get what they look like, \"A townsman\", in grey). While enRAGE runs with its own cards on, ours stay off unless NameCardsBesideEnrage");
+            b.AppendLine("NameCardsMetres = " + F(NameCardsMetres) + "   ; strangers' names within (metres); they fade out near the edge");
+            b.AppendLine("NameCardsKnownMetres = " + F(NameCardsKnownMetres) + "   ; the names of people you know within (metres)");
+            b.AppendLine("NameCardsBesideEnrage = " + B(NameCardsBesideEnrage) + "   ; draw ours even while enRAGE draws its own (two cards over each head enRAGE knows)");
             b.AppendLine("GrudgeMeter = " + B(GrudgeMeter) + "   ; top right: strangers whose grudge against you is building, with the mark where they'd become a nemesis, and the nemesis after you");
             b.AppendLine();
             b.AppendLine("[WestWorld]");
