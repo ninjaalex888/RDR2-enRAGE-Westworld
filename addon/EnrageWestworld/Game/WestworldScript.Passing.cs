@@ -37,6 +37,7 @@ namespace EnrageWestworld.InGame
             public int At, Step;
             public string Seed, Said;
             public bool Test;               // the Testing row's nod: nothing told on (after item 14)
+            public bool Spoke;              // the first one's greeting played (the answer and the goodbyes follow only then)
         }
 
         private readonly Dictionary<int, NodWho> _nodWho = new Dictionary<int, NodWho>();
@@ -376,6 +377,9 @@ namespace EnrageWestworld.InGame
                         int take;
                         bool spoke = Speech.PlayFirst(r.A.Handle, Passing.Greeting(CLOCK.GET_CLOCK_HOURS()), bHere ? r.B.Handle : 0, out line, out take, out words);
                         Log.Detail("NOD " + r.AName + (spoke ? " says " + line + (take > 0 ? " take " + take : "") : ": the greeting didn't play"));
+                        if (spoke)
+                            NodCaption(r.A, r.AName, Passing.HelloWords(CLOCK.GET_CLOCK_HOURS(), Person.FirstOf(r.BName), r.Seed));
+                        r.Spoke = spoke;
                         if (spoke && bHere && !r.Test)
                             NodWord(r);   // a word in passing tells the freshest thing worth telling (memory v1, MindLive; the engine says nothing with it off)
                     }
@@ -386,6 +390,8 @@ namespace EnrageWestworld.InGame
                         return;
                     if (bHere && r.Act.Answer != "none")
                         NodGesture(r.B, r.A, r.Act.Answer, r.BWoman, r.Seed + "|b", r.BName);
+                    if (bHere && r.Act.Talks && r.Spoke)
+                        NodSay(r.B, r.BName, r.A, Passing.GreetingBack, Passing.HelloBack(Person.FirstOf(r.AName), r.Seed), "answers");
                     r.Step = 3;
                     break;
                 case 3:
@@ -395,12 +401,52 @@ namespace EnrageWestworld.InGame
                         NodThought(r.A, r.AName, r.Act.Thought);
                     else if (bHere)
                         NodThought(r.B, r.BName, r.Act.Thought);
+                    if (!(r.Act.Talks && r.Spoke))
+                        _nod = null;
+                    r.Step = 4;
+                    break;
+                case 4:
+                    // parting: a word each (Lex, 2026-10-29: "Say Hi and Goodbye to each other when greeting and saying goodbye")
+                    if (t < 4800)
+                        return;
+                    NodSay(r.A, r.AName, bHere ? r.B : null, Passing.Goodbye, Passing.ByeWords(r.Seed), "parts");
+                    r.Step = 5;
+                    break;
+                case 5:
+                    if (t < 6300)
+                        return;
+                    if (bHere)
+                        NodSay(r.B, r.BName, r.A, Passing.Goodbye, Passing.ByeBack(r.Seed), "parts");
                     _nod = null;
                     break;
             }
         }
 
         /// One upper-body gesture toward the other (their feet stay where they are); someone in a scenario only looks.
+        /// One of them says something in their own recorded voice (the first line their voice has of `lines`), and the
+        /// words show on the ticker while they're within earshot.
+        private void NodSay(Ped p, string name, Ped to, string[] lines, string words, string what)
+        {
+            if (p == null || !p.Exists() || p.IsDead || !MayDirect(p))
+                return;
+            string line, said;
+            int take;
+            bool spoke = Speech.PlayFirst(p.Handle, lines, to != null && to.Exists() ? to.Handle : 0, out line, out take, out said);
+            Log.Detail("NOD " + name + " " + what + (spoke ? ": " + line + (take > 0 ? " take " + take : "") : ": nothing played"));
+            if (spoke)
+                NodCaption(p, name, words);
+        }
+
+        /// The words of a hello or a goodbye on the ticker (our own words), while the speaker is within ScenesOnTickerMetres.
+        private void NodCaption(Ped p, string name, string words)
+        {
+            if (string.IsNullOrEmpty(words) || p == null || !p.Exists() || !_cfg.ScenesOnTicker || !_cfg.Ticker)
+                return;
+            if (p.Position.DistanceTo(Game.Player.Character.Position) > _cfg.ScenesOnTickerMetres)
+                return;
+            _ticker.Say(Person.FirstOf(name), words, p.Handle, Math.Min(5000, 1500 + words.Length * 55));
+        }
+
         private void NodGesture(Ped p, Ped toward, string gesture, bool woman, string seed, string name)
         {
             if (gesture == null || gesture == "none" || gesture == "look" || MayDirectWhyNot(p) != null || PED.IS_PED_USING_ANY_SCENARIO(p.Handle))

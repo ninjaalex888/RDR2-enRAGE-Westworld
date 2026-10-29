@@ -18,6 +18,7 @@ namespace EnrageWestworld.Core
             public string Gesture;    // hattip, nod, wave, sweet, spit, none (a look only)
             public string Answer;     // the other's gesture back: nod, wave, sweet, look (hostile: a look back), none
             public bool Speaks;       // the first says a greeting in their own voice
+            public bool Talks;        // and the other answers it, and they part with a word each (Lex, 2026-10-29: hello and goodbye in their voices)
             public int LookMs;        // how long the first one's eyes stay on the other
             public bool BThinks;      // the thought is the other's (else the first one's)
             public string Thought;
@@ -48,7 +49,9 @@ namespace EnrageWestworld.Core
                 case "warm":
                     a.Gesture = aWoman ? (r < 50 ? "wave" : "nod") : (r < 60 ? "hattip" : "nod");
                     a.Answer = Voice.Hash(seed + "|ans") % 100 < 70 ? (bWoman && r % 2 == 0 ? "wave" : "nod") : "none";
-                    a.Speaks = Voice.Hash(seed + "|sp") % 100 < 60;
+                    a.Speaks = true;   // friends always pass the time of day (Lex, 2026-10-29); was 60%
+                    a.Answer = a.Answer == "none" ? "nod" : a.Answer;
+                    a.Talks = true;
                     a.LookMs = 1800;
                     break;
                 case "sweet":
@@ -66,7 +69,12 @@ namespace EnrageWestworld.Core
                 default:
                     a.Gesture = "nod";
                     a.Answer = Voice.Hash(seed + "|ans") % 100 < 50 ? "nod" : "none";
-                    a.Speaks = Voice.Hash(seed + "|sp") % 100 < 25;
+                    a.Speaks = Voice.Hash(seed + "|sp") % 100 < 70;   // was 25%: people who know each other say so (Lex, 2026-10-29)
+                    if (a.Speaks)
+                    {
+                        a.Answer = "nod";
+                        a.Talks = true;
+                    }
                     a.LookMs = 1200;
                     break;
             }
@@ -161,6 +169,49 @@ namespace EnrageWestworld.Core
             if (hour >= 18 && hour < 23)
                 return new[] { "GREET_EVENING", familiar, "HOWS_IT_GOING" };
             return new[] { familiar, "HOWS_IT_GOING" };
+        }
+
+        /// The other's answer to a greeting, in their own recorded voice: the first line their voice has.
+        public static readonly string[] GreetingBack = { "GREET_GENERAL_FAMILIAR", "HOWS_IT_GOING", "GREET_GENERAL_STRANGER" };
+
+        /// Parting, in their own recorded voice.
+        public static readonly string[] Goodbye = { "GENERIC_GOODBYE", "GOODBYE_START", "GOODBYE" };
+
+        /// The words of the hello and the goodbye for the ticker, in our own words, never a transcript of the recording (Lex,
+        /// 2026-10-29: "NPCs who know each other use their voicelines to say Hi and Goodbye"). {o}: the other's first name.
+        public static string HelloWords(int hour, string other, string seed)
+        {
+            string w = hour >= 5 && hour < 12 ? Voice.Pick(seed + "|hw", "Morning, {o}.", "Morning to you, {o}.", "{o}. Fine morning.")
+                     : hour >= 18 && hour < 23 ? Voice.Pick(seed + "|hw", "Evening, {o}.", "Evening, {o}. Long day?", "{o}. Getting dark early.")
+                     : Voice.Pick(seed + "|hw", "Afternoon, {o}.", "How do, {o}.", "{o}. Been a while.");
+            return w.Replace("{o}", other ?? "friend");
+        }
+
+        public static string HelloBack(string other, string seed)
+        {
+            return Voice.Pick(seed + "|hb", "{o}.", "And you, {o}.", "Well now, {o}.", "You're looking well, {o}.").Replace("{o}", other ?? "friend");
+        }
+
+        public static string ByeWords(string seed)
+        {
+            return Voice.Pick(seed + "|bw", "I'll let you get on.", "Watch the road home.", "Give my best at home.", "Good day, then.");
+        }
+
+        public static string ByeBack(string seed)
+        {
+            return Voice.Pick(seed + "|bb", "And you.", "Good day.", "So long.", "Same to you.");
+        }
+
+        public static IEnumerable<string> HelloLines()
+        {
+            for (int i = 0; i < 12; i++)
+                foreach (int hour in new[] { 8, 14, 20 })
+                {
+                    yield return HelloWords(hour, "Abe", "pw" + i);
+                    yield return HelloBack("Ruth", "pw" + i);
+                    yield return ByeWords("pw" + i);
+                    yield return ByeBack("pw" + i);
+                }
         }
 
         // keys: kind|role[|temper group or gesture]; a gesture's lines join the role's own
