@@ -29,7 +29,7 @@ namespace EnrageWestworld.Core
             if (!c.Night && !c.Saloon && c.Town != null)
                 w.Add(new KeyValuePair<string, int>("pitch", c.HasCrowd ? 5 : 3));
             if (!c.Night && !c.Saloon && c.Town != null && !c.AWoman)
-                w.Add(new KeyValuePair<string, int>("pickpocket", 3));
+                w.Add(new KeyValuePair<string, int>("pickpocket", 10));   // was 3 (Lex, 2026-10-29: "an exciting feature to show case")
         }
 
         private static Scene MakeFrontier(string kind, SceneCast c, string seed)
