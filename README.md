@@ -68,7 +68,7 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | Y | Wake the person you are facing one stage (West World), so you can see what each stage does |
 | T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
 
-Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings. Only on enRAGE 0.9.5.3 does RealNPCs open its panel there in place of enRAGE's (`ReplaceEnrageSettings = false` gives it back); on other enRAGE versions Alt+F11 opens enRAGE's own panel, and Ctrl+F7 or Alt+F is the way in. About 15 seconds after loading, a notice says which key to use.
+Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings. Only on enRAGE 0.9.5.3 does RealNPCs open its panel there in place of enRAGE's (`ReplaceEnrageSettings = false` gives it back); on other enRAGE versions Alt+F11 opens enRAGE's own panel, and Ctrl+F7 or Alt+R is the way in. About 15 seconds after loading, a notice says which key to use.
 
 ## Settings and log
 
