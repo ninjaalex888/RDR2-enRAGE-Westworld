@@ -76,7 +76,7 @@ namespace EnrageWestworld.Core
             { "traveller", new Rule("traveller", false, 20, 900, 0, 0) },          // a man asking the way is no big moment
             { "campfire", new Rule("campfire", false, 15, 600, 0, 0) },            // strangers at a fire: ten game hours between (night 2026-10-28, item 14)
             { "below", new Rule("below", false, 25, 0, 1440, 0) },                 // the voice below the saloon floor: a saloon once a night (night 2026-10-28, item 14)
-            { "patient", new Rule("patient", false, 20, 720, 0, 1440) },           // the doctor's patient: twelve game hours between, a day a person (night 2026-10-28, item 14)
+            { "patient", new Rule("patient", false, 35, 240, 0, 1440) },           // the doctor's patient: four game hours between, a day a person (widened 2026-10-29: anyone with a complaint)
         };
 
         /// Why this kind can't happen here and now, or null when it may. `roll` is 0-99 (seeded by the caller). With
