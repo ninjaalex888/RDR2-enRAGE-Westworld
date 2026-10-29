@@ -282,6 +282,21 @@ namespace EnrageWestworld.InGame
                 Set(c, b.R.Name, line2, met ? ColourTitle : ColourStranger, ColourDim, true);
                 return true;
             }
+            // the game's own named people: the story characters and the uniques the game names (StoryCast.cs; Lex, 2026-10-29: the
+            // sheriff of Valentine had his name under enRAGE and not under us)
+            string ml = Models.Name(c.Model);
+            StoryCast.Person sp;
+            if (StoryCast.TryGet(ml, out sp))
+            {
+                Set(c, sp.Name, StoryCast.JobFor(ml) ?? sp.Temper ?? "", ColourTitle, ColourDim, true);   // "Valentine sheriff", else the temper
+                return true;
+            }
+            string gameName = StoryCast.NameFor(ml);
+            if (gameName != null)
+            {
+                Set(c, gameName, ml.Contains("_bht_") || ml.Contains("bounty") ? "Wanted" : "", ColourTitle, ColourDim, true);
+                return true;
+            }
             if (!everyone || Natives.StoryModel(p) || !IsGrownUp(p))
                 return false;
             Set(c, Grammar.UpperFirst(Director.Kind(p, woman)), "Stranger", ColourStranger, ColourDim, false);

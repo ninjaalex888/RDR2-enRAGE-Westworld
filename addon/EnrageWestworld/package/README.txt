@@ -198,7 +198,8 @@ NEW IN 0.6.1
   after you now. [Display] FeelingBars, FeelingBarsMetres (15), FeelingBarsShowEmpty, GrudgeMeter;
   in the panel (Ctrl+F7 or Alt+F), "Bars and meter".
 - Names over heads, the way enRAGE drew them: people RealNPCs knows (the town regulars, anyone
-  who has thought, spoken with you or been in a street scene; enRAGE's people when it runs) carry
+  who has thought, spoken with you or been in a street scene, the game's own named people such as
+  the sheriffs and the story cast; enRAGE's people when it runs) carry
   their name in the game's title type, with a temper, a trade or "Stranger" under it, steadied as
   they walk, hidden behind walls, fading with distance. [Display] NameCards (known; off, or
   everyone for a grey "A townsman" over the rest), NameCardsMetres (30), NameCardsKnownMetres (75);
