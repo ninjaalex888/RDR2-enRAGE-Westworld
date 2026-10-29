@@ -160,9 +160,15 @@ namespace EnrageWestworld.Core
 
     public static class Ids
     {
+        /// Where new ids come from: the game's is a GUID; the offline harnesses set a counter, so their goldens hold byte for
+        /// byte (2026-10-29: the frame guard across people made a line's text decide the next choice, and lines seeded by a
+        /// deed's or a rumour's id differed run to run). Null: the GUID.
+        public static Func<string> Source;
+
         public static string New()
         {
-            return Guid.NewGuid().ToString("N").Substring(0, 10);
+            Func<string> s = Source;
+            return s != null ? s() : Guid.NewGuid().ToString("N").Substring(0, 10);
         }
     }
 }

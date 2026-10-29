@@ -1017,6 +1017,7 @@ namespace EnrageWestworld.InGame
             public string StateId, StateName, Town;
             public uint Model;   // the body's model at the pick: a handle the game reused for someone else is seen
             public int Since, Until, LastOrder, Said, Reorders;
+            public bool Spawned; // made for the part (nobody free on the street): let go to the game when they have spoken
             public int Pending;  // the walk order still to send (the body was let go of a scenario first), 0 none
             public float LastDist, StartDist;
             public bool Test;
@@ -1166,15 +1167,65 @@ namespace EnrageWestworld.InGame
                     break;
                 }
             }
+            bool spawned = false;
+            if (body == null && withBody > 0 && pace != null)
+            {
+                why = _kinWhyNot = "rests: " + pace;
+                return false;
+            }
             if (body == null)
             {
-                if (withBody > 0 && pace != null)
+                // the street has nobody to send (in a town enRAGE has named most of the walkers by their looks, and the test cast
+                // carry names of their own): the relative is made out of sight behind the player instead ([World]
+                // CastRelativesSpawn; Lex, 2026-10-29: "8 with a name already" four times running in Valentine), let go to the
+                // game when they've spoken. The full counts go to the log; the ticker gets a line that fits.
+                string counts = total + " people in range: " + men + " men and " + women + " women free; " + theGames + " the game's own, lawmen or children, " + tooClose + " within 5 m, " + ours + " ours, " +
+                                riding + " riding, " + named + " with a name already (enRAGE's townsfolk, the test cast, our regulars), " + outOfView + " out of view, " + notFree + " busy, " + mayNot + " not ours to direct";
+                string shortWhy = "nobody free on the street for " + KinSexes(kin.Select(k => k.r.Woman)) + ": " + total + " in range, " + named + " named already, " + theGames + " the game's own";
+                if (!_cfg.CastRelativesSpawn)
+                {
+                    Log.Detail("CAST nobody to send (" + counts + ")");
+                    why = _kinWhyNot = shortWhy + " (CastRelativesSpawn is off; the counts are in the log)";
+                    return false;
+                }
+                foreach (var k in kin)
+                {
+                    pace = Pacing.WhyNot(_store.Pace, "kin", _placeTown, k.r.Name, g, _rng.Next(100), test, out skipped);
+                    if (pace == null)
+                    {
+                        pick = k;
+                        break;
+                    }
+                }
+                if (pace != null)
+                {
                     why = _kinWhyNot = "rests: " + pace;
-                else
-                    why = _kinWhyNot = "no passer-by in view within " + (int)KinFar + " m RealNPCs may send over for " + KinSexes(kin.Select(k => k.r.Woman)) + " (" + total + " people in range: " +
-                                       men + " men and " + women + " women free; " + theGames + " the game's own, lawmen or children, " + tooClose + " within 5 m, " + ours + " ours, " + riding + " riding, " +
-                                       named + " with a name already, " + outOfView + " out of view, " + notFree + " busy, " + mayNot + " not ours to direct)";
-                return false;
+                    return false;
+                }
+                uint model = Spawner.ModelFor(_placeTown, pick.r.Woman, Voice.Hash(pick.r.Name + "|kin|" + now / 60000));
+                Vector3 at;
+                if (!Spawner.Ready(model))
+                {
+                    why = _kinWhyNot = shortWhy + "; a body for " + pick.r.Name + " is being readied, try again in a moment";
+                    return false;
+                }
+                if (!EncounterSpot(me, 14f, 26f, out at))
+                {
+                    Log.Detail("CAST nobody to send (" + counts + ") and no spot out of sight to make " + pick.r.Name);
+                    why = _kinWhyNot = shortWhy + "; and no spot out of sight to make " + pick.r.Name;
+                    return false;
+                }
+                Vector3 mp = me.Position;
+                body = Spawner.Spawn(model, at, (float)(Math.Atan2(-(mp.X - at.X), mp.Y - at.Y) * 180.0 / Math.PI));
+                if (body == null)
+                {
+                    why = _kinWhyNot = shortWhy + "; " + pick.r.Name + " couldn't be made (the spawn failed)";
+                    return false;
+                }
+                spawned = true;
+                bestD[pick.r.Woman ? 1 : 0] = body.Position.DistanceTo(mp);
+                bodyInScenario[pick.r.Woman ? 1 : 0] = false;
+                Log.Detail("CAST nobody to send (" + counts + "): " + pick.r.Name + " made out of sight instead");
             }
             float best = bestD[pick.r.Woman ? 1 : 0];
             bool bestInScenario = bodyInScenario[pick.r.Woman ? 1 : 0];
@@ -1182,9 +1233,9 @@ namespace EnrageWestworld.InGame
             _casts[bh] = new KeyValuePair<Relative, string>(pick.r, pick.st.Id);
             int pending = KinOrder(bh, me, now);
             _kinWalk = new KinWalk { Ped = body, R = pick.r, StateId = pick.st.Id, StateName = pick.st.Name, Town = _placeTown, Model = ENTITY.GET_ENTITY_MODEL(bh),
-                                     Since = now, Until = now + KinWalkMs, LastOrder = now, LastDist = best, StartDist = best, Test = test, Pending = pending };
+                                     Since = now, Until = now + KinWalkMs, LastOrder = now, LastDist = best, StartDist = best, Test = test, Pending = pending, Spawned = spawned };
             _kinWalks++;
-            Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": a passer-by " + (int)best + " m off walks over" +
+            Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": " + (spawned ? "nobody free on the street, so a passer-by made out of sight " : "a passer-by ") + (int)best + " m off walks over" +
                       (bestInScenario ? " (let go of what they were doing first; " + inScenario + " of " + total + " in range were busy that way)" : "") + (test ? ", a test" : ""));
             return true;
         }
@@ -1243,7 +1294,7 @@ namespace EnrageWestworld.InGame
             float d = w.Ped.Position.DistanceTo(me.Position);
             if (w.Said == 0)
             {
-                string may = MayDirectWhyNot(w.Ped);
+                string may = w.Spawned ? null : MayDirectWhyNot(w.Ped);   // a body made for the part is ours by nature
                 if (may != null || _director.Involves(h))
                 {
                     KinEnd(w, now, may ?? "a scene took them");
@@ -1295,7 +1346,10 @@ namespace EnrageWestworld.InGame
             }
             if (now - w.Said > 8000)
             {
-                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said their piece; goes about their day
+                if (w.Spawned)
+                    Spawner.Release(w.Ped, false);   // made for the part: handed to the game, which clears them out of sight
+                else
+                    TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said their piece; goes about their day
                 _casts.Remove(h);
                 _kinWalk = null;
             }
@@ -1316,7 +1370,12 @@ namespace EnrageWestworld.InGame
         private void KinEnd(KinWalk w, int now, string why)
         {
             if (w.Ped != null && w.Ped.Exists() && !w.Ped.IsDead && ENTITY.GET_ENTITY_MODEL(w.Ped.Handle) == w.Model)
-                TASK.TASK_WANDER_STANDARD(w.Ped.Handle, 10f, 10);
+            {
+                if (w.Spawned)
+                    Spawner.Release(w.Ped, false);
+                else
+                    TASK.TASK_WANDER_STANDARD(w.Ped.Handle, 10f, 10);
+            }
             if (w.Ped != null)
                 _casts.Remove(w.Ped.Handle);
             _kinWalk = null;
@@ -1334,7 +1393,12 @@ namespace EnrageWestworld.InGame
             if (_kinWalk != null)
             {
                 if (_kinWalk.Ped != null && _kinWalk.Ped.Exists() && !_kinWalk.Ped.IsDead)
-                    TASK.TASK_WANDER_STANDARD(_kinWalk.Ped.Handle, 10f, 10);
+                {
+                    if (_kinWalk.Spawned)
+                        Spawner.Release(_kinWalk.Ped, false);
+                    else
+                        TASK.TASK_WANDER_STANDARD(_kinWalk.Ped.Handle, 10f, 10);
+                }
                 _kinWalk = null;
             }
             _casts.Clear();
