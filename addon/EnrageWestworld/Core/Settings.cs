@@ -226,7 +226,7 @@ namespace EnrageWestworld.Core
         // [Testing] (overnight 2026-10-27): the Testing page's keys (Core/TestActions.cs). The ones that were settings
         // already (StalkerKey, WakeKey, ExecutionKey...) stay fields; the rest are kept here by their ini name.
         public bool TestKeys = true;
-        public bool ShowMinds = true;   // on since settings version 77 (Lex, 2026-10-27)
+        public bool ShowMinds = false;   // off as it comes (Lex, 2026-10-28; on from settings version 77 to the night of 10-28)
         public bool ShowWakeStages;   // [Testing] a tag over each person who has begun to wake (2026-10-27)
         public bool TestCastReturns = true;   // [Testing] the test cast kept in the save come back by themselves when you come to their town (night 2026-10-28; settings version 90)
         public Dictionary<string, string> TestKeyMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -420,13 +420,6 @@ namespace EnrageWestworld.Core
                 // 2026-10-27), so an 81 ini's "on" was that default, not a choice
                 s.SupperInvitation = false;
                 raised.Add("SupperInvitation on -> off (until it's been tested)");
-            }
-            if (s.SettingsVersion < 77 && !s.ShowMinds)
-            {
-                // 0.6.3: the mind cards are on as they come (Lex, 2026-10-27); off until now, so an ini's "off" was the old
-                // default, not a choice
-                s.ShowMinds = true;
-                raised.Add("ShowMinds off -> on");
             }
             if (raised.Count > 0)
                 log?.Invoke("Settings: brought up to date: " + string.Join(", ", raised) + ".");

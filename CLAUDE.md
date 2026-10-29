@@ -153,6 +153,7 @@ equests.txt`. `Core/Language.Request.cs` (after item 14): `Language.RequestFor(.
 
 ## Show minds in a crowd (Lex, 2026-10-28)
 
+- Off as it comes since the night of 2026-10-28 (Lex: the Testing page's Switches, "Show Minds", false by default); `Settings.ShowMinds` false, the version-77 migration that forced old inis on removed, no version bump (an ini's value stands either way). Ctrl+F2 and the Switches row turn it on.
 - `ShowMindsFrame`: the nearest known person (cards are built nearest first) gets the full card, the rest `MindCardShown.Short` (the name line plus the mood, the first clause of line two); each card's box is checked against `_cardRects` (this frame's, nearer first) and lifted above the first it crosses (up to 8 lifts), so no two overlap. From Lex's screenshot: four full cards piled over the bar.
 
 ## Testing

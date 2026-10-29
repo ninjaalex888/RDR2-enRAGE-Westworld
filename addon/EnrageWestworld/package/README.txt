@@ -28,6 +28,8 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   his friend" notices are enRAGE's, off with [Menu] Messages = 2 in NemesisMod.ini); a townsperson enRAGE
   takes for someone you greeted, by his look, now says only that your face seems known. The
   "X is walking toward you" notice is gone: a relative is named when they reach you and speak.
+- Show minds (the cards over people near you) is off as it comes; Ctrl+F2 or the Testing page's
+  Switches turn it on, and an ini that already has it on keeps it.
 - Strangers at a campfire: at night out of the towns, men round a fire call you over for
   coffee and a tale; now and then a traveller walks in from the dark. [Encounters] Campfires.
 - The voice below the floor (West World): late at night in a saloon, a muffled plea from under
@@ -797,7 +799,7 @@ Ctrl+F7   the RealNPCs settings panel (all RealNPCs and enRAGE settings; Setting
           another test has already moves to the new one and leaves that test without a key; one of
           enRAGE's keys, or one RealNPCs needs (F7, the flirt key...), is refused, naming whose it is. The keys are in [Testing] in the ini (TestKeys switches
           them all off). Every street scene has a row (the nearest named pair that fits plays it),
-          and so do pleading, arrivals, letters and the strange remarks. Show minds (on as it comes) puts a card over
+          and so do pleading, arrivals, letters and the strange remarks. Show minds (off as it comes) puts a card over
           the people near you: their temper, mood, worry, ties and what is on their mind; Replay fires
           the last test again. "Bring the test cast here" brings eight people the tests need (a mother,
           two old men, a preacher and a listener, three men for a bully) to stroll about a spot out of
