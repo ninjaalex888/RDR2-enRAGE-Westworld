@@ -209,6 +209,12 @@ namespace EnrageWestworld.InGame
                 case "realtalk":
                     skipped = "RealVoiceTalk, the wait between talks, the chance rolls of each kind";
                     return TalkTestStart(now);   // WestworldScript.Talk.cs: null when it started
+                case "lift":
+                    {
+                        skipped = "the town, the roll and the rests (Pacing \"lift\")";
+                        string lw;
+                        return LiftStart(now, true, out lw);   // WestworldScript.Lift.cs
+                    }
                 case "rough":
                     skipped = "the reason (a grudge or a temper); RoughHandling still counts";
                     return RoughTestStart(now);   // WestworldScript.Roughs.cs

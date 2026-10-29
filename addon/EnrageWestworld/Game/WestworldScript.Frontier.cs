@@ -33,6 +33,8 @@ namespace EnrageWestworld.InGame
             public int Started;
             public int ThiefHealth;
             public Ped Lawman;            // a lawman who gave chase (LawChases)
+            public bool PlayerMark;       // your own pocket (the lift, WestworldScript.Lift.cs)
+            public int Amount;            // what he took from you, in cents
             public int LawSince, LawLookAt;
             public bool LawHeld;          // brought down by the law: held, waiting to be resolved
             public int LawHeldAt;
@@ -144,6 +146,7 @@ namespace EnrageWestworld.InGame
 
         private void TheftTick(int now)
         {
+            LiftStep(now);   // a thief who lifts your own money (WestworldScript.Lift.cs)
             Theft t = _theft;
             if (t == null)
                 return;
@@ -250,6 +253,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_LOOK_AT_ENTITY(l.Handle, h, 15000, 0, 51, 0);
                 WanderLater(l.Handle, now + 15000);
                 _lawChaseLast = "caught" + (t.Town != null ? " in " + t.Town : "");
+                LiftResolved(t, "law");
                 Log.Write("LAWCHASE caught: the pickpocket held by the law" + (t.Town != null ? " in " + t.Town : ""));
                 return true;
             }
@@ -277,6 +281,7 @@ namespace EnrageWestworld.InGame
         private void ResolveTheft(Theft t, string how, int now)
         {
             _theft = null;
+            LiftResolved(t, how);
             if (how != "killed" && t.Thief != null)
                 _thieves.Remove(t.Thief.Handle);   // the game reuses handles; don't brand some later stranger a thief
             Ped me = Game.Player.Character;
