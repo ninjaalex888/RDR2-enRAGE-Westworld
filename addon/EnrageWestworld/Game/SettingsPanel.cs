@@ -313,6 +313,7 @@ namespace EnrageWestworld.InGame
             _theirs = !string.IsNullOrEmpty(_theirsPath) && File.Exists(_theirsPath) ? IniDoc.Read(_theirsPath, false) : null;
             // enRAGE's settings only when we know which of its entries are its own bookkeeping, and can ask it to reload
             string why = _bridge == null ? "enRAGE hasn't been found yet (it takes a few seconds after loading a save)."
+                : !_bridge.Present ? "enRAGE isn't installed (RealNPCs is standing alone)."
                 : !_bridge.EnrageHidesKnown || !_bridge.CanReloadEnrage ? "this version of enRAGE isn't laid out the way RealNPCs expects (the log says what was missing). Its own panel still works: set ReplaceEnrageSettings to false."
                 : _theirs == null || _theirs.Error != null ? "enRAGE's settings didn't load from its ini file" + (_theirs != null && _theirs.Error != null ? ": " + _theirs.Error : ".") : null;
             Page enrage = new Page { Title = "enRAGE", Enrage = true };

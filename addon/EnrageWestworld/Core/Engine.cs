@@ -63,11 +63,21 @@ namespace EnrageWestworld.Core
 			return value;
 		}
 
+		/// Whether the last Observe was given the roster (false standing alone, with enRAGE absent: the roster-side work waits).
+		public bool RosterKnown { get; private set; } = true;
+
 		public void Observe(IList<Person> roster, long now)
 		{
 			if (now <= 0)
 			{
 				return;
+			}
+			// standing alone (2026-10-29, roadmap 34): a null roster means none is known, not that everyone is gone; what reads the
+			// roster (the records' memories, deaths and romances, their diaries and word of mouth due) waits for enRAGE
+			RosterKnown = roster != null;
+			if (roster == null)
+			{
+				roster = new Person[0];
 			}
 			if (Store.InstalledAt == 0L)
 			{
@@ -88,7 +98,7 @@ namespace EnrageWestworld.Core
 					_byId[item.Id] = item;
 				}
 			}
-			foreach (Person item2 in roster)
+			foreach (Person item2 in RosterKnown ? roster : new Person[0])
 			{
 				if (item2 == null || item2.Id == null || !item2.IsAlive || item2.Memories == null)
 				{
@@ -128,10 +138,13 @@ namespace EnrageWestworld.Core
 					}
 				}
 			}
-			ObserveDeaths(roster, now);
+			if (RosterKnown)
+			{
+				ObserveDeaths(roster, now);
+			}
 			Deliver(now);
 			DueLater(now);
-			if (Cfg.Romance || Cfg.NpcRomance)
+			if ((Cfg.Romance || Cfg.NpcRomance) && RosterKnown)
 			{
 				RomanceTick(roster, now);
 			}
@@ -156,6 +169,10 @@ namespace EnrageWestworld.Core
 			}
 			foreach (LaterAct a in Store.Later.Where((LaterAct x) => x.DueAt <= now).ToList())
 			{
+				if (a.Kind != "news" && !RosterKnown)
+				{
+					continue;   // a record's diary or word, kept for when enRAGE is back (standing alone)
+				}
 				Store.Later.Remove(a);
 				if (a.Kind == "news")
 				{
@@ -349,6 +366,10 @@ namespace EnrageWestworld.Core
 		{
 			foreach (Rumor item in Store.Rumors.Where((Rumor r) => r.DueAt <= now).ToList())
 			{
+				if (!RosterKnown && item.ToId != null && item.How != "death" && Find(item.ToId) == null)
+				{
+					continue;   // word for one of enRAGE's people, kept for when enRAGE is back (standing alone)
+				}
 				Store.Rumors.Remove(item);
 				if (item.How == "death")
 				{

@@ -8,9 +8,11 @@ travels from town to town and grows in the telling, kin you never met write to y
 revenge, strangers quarrel, sing, haggle, court and square off around you (and you can step in),
 and some people begin to wonder whether any of this is real. A few of the dead don't stay dead.
 
-It's free, and it's not made by the enRAGE author. It needs enRAGE to work and never modifies
-enRAGE's program (it edits enRAGE's settings file only when you change an enRAGE setting in
-its panel, after a backup). enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemption2/mods/10967
+It's free, and it's not made by the enRAGE author. It works best with enRAGE installed and runs
+without it (then the people, ties, memories, scenes and minds are all its own, and enRAGE's
+nemeses, names and bars wait until it is installed). It never modifies enRAGE's program (it edits
+enRAGE's settings file only when you change an enRAGE setting in its panel, after a backup).
+enRAGE is on Nexus Mods: https://www.nexusmods.com/reddeadredemption2/mods/10967
 Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
@@ -618,7 +620,8 @@ REQUIREMENTS
 
 INSTALL
 -------
-1. Copy RealNPCs.dll into your game's "scripts" folder, next to enRAGE's NemesisMod.dll.
+1. Copy RealNPCs.dll into your game's "scripts" folder (next to enRAGE's NemesisMod.dll, if you
+   have enRAGE).
    Coming from enRAGE Westworld (the old name): delete EnrageWestworld.dll from that folder.
    Updating from an earlier RealNPCs: just replace the file. What people remember about you
    carries over, and your ini is updated with the new options (your values are kept).

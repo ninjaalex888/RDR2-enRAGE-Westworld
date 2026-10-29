@@ -46,6 +46,8 @@ namespace EnrageWestworld.InGame
             if (_moreResolved)
                 return;
             _moreResolved = true;
+            if (Mod == null)
+                return;   // standing alone: nothing of enRAGE's to look at
             Type t = Mod.GetType();
             foreach (MethodInfo m in t.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public))
             {
@@ -110,6 +112,8 @@ namespace EnrageWestworld.InGame
             if (!_uiResolved)
             {
                 _uiResolved = true;
+                if (Mod == null)
+                    return false;
                 Type t = Mod.GetType();
                 foreach (string name in new[] { "_menu", "_iniPanel", "_welcome", "_convo", "_tg", "_interro", "_bulletImpact" })
                 {
@@ -216,8 +220,10 @@ namespace EnrageWestworld.InGame
             ResolveMore();
             centre = Vector3.Zero;
             radius = 0f;
-            if (_townCore == null || string.IsNullOrEmpty(town))
+            if (string.IsNullOrEmpty(town))
                 return false;
+            if (_townCore == null)
+                return Places.TownCore(town, out centre, out radius);   // our own table (standing alone, or the method gone)
             try
             {
                 object[] args = { town, Vector3.Zero, 0f };
@@ -237,13 +243,17 @@ namespace EnrageWestworld.InGame
         }
 
         /// The town at pos, or null anywhere outside one. Unlike TownAt, never the region's name ("the Heartlands"):
-        /// enRAGE's own town lookup, else the game's town zone (map zone type 1) if enRAGE's can't be reached.
+        /// enRAGE's own town lookup, else ours (Places.cs: the same nine towns by the game's zone), else "a town" for
+        /// any town zone the tables don't name.
         public string TownOnly(Vector3 pos)
         {
             try
             {
                 if (_townAt != null)
                     return _townAt.Invoke(Mod, new object[] { pos }) as string;
+                string ours = Places.TownAt(pos);
+                if (ours != null)
+                    return ours;
             }
             catch (Exception ex)
             {
@@ -252,10 +262,11 @@ namespace EnrageWestworld.InGame
             return ZONE._GET_MAP_ZONE_AT_COORDS(pos.X, pos.Y, pos.Z, 1) != 0 ? "a town" : null;
         }
 
+        /// The zone's name (a town, a district, a region, "the wilds"): enRAGE's where found, else ours (Places.cs).
         public string ZoneName(Vector3 pos)
         {
             if (_zoneAt == null)
-                return null;
+                return Places.ZoneName(pos);
             try
             {
                 return _zoneAt.Invoke(Mod, new object[] { pos }) as string;

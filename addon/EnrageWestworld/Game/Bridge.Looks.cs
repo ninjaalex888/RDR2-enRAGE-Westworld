@@ -45,6 +45,8 @@ namespace EnrageWestworld.InGame
             if (_looksResolved)
                 return;
             _looksResolved = true;
+            if (Mod == null)
+                return;   // standing alone: nothing of enRAGE's to look at
             try
             {
                 _namedField = Mod.GetType().GetField("_named", Any);

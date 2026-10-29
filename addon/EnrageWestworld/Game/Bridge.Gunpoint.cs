@@ -52,6 +52,8 @@ namespace EnrageWestworld.InGame
             if (_gunpointResolved)
                 return;
             _gunpointResolved = true;
+            if (Mod == null)
+                return;   // standing alone: nothing of enRAGE's to look at
             try
             {
                 _interrogable = Mod.GetType().GetMethod("Interrogable", Any, null, new[] { typeof(Ped), typeof(Ped), typeof(float) }, null);

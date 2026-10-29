@@ -22,6 +22,8 @@ namespace EnrageWestworld.InGame
             if (_panelResolved)
                 return;
             _panelResolved = true;
+            if (Mod == null)
+                return;   // standing alone: nothing of enRAGE's to look at
             List<string> missing = new List<string>();
             try
             {

@@ -117,10 +117,10 @@ namespace EnrageWestworld.InGame
             if (_bridge == null || !_bridge.CanReplaceSettings)
             {
                 _keyNoticed = true;
-                _keyNoticeCase = _bridge == null ? "told (enRAGE not found)" : "told (Alt+F11 can't open this panel)";
-                string line = "RealNPCs settings: " + key + ". With this enRAGE version, Alt+F11 opens enRAGE's own panel.";
+                _keyNoticeCase = _bridge == null ? "told (enRAGE not found)" : !_bridge.Present ? "told (standing alone)" : "told (Alt+F11 can't open this panel)";
+                string line = "RealNPCs settings: " + key + (_bridge != null && !_bridge.Present ? "." : ". With this enRAGE version, Alt+F11 opens enRAGE's own panel.");
                 KeyNoticeOut(line);
-                Log.Write("SETTINGS key: " + (_bridge == null ? "enRAGE not found" : "Alt+F11 can't open the RealNPCs panel with enRAGE " + _bridge.Version)
+                Log.Write("SETTINGS key: " + (_bridge == null ? "enRAGE not found" : !_bridge.Present ? "standing alone (no enRAGE panel to replace)" : "Alt+F11 can't open the RealNPCs panel with enRAGE " + _bridge.Version)
                           + "; told the player " + key + " opens it");
                 return;
             }
@@ -155,7 +155,7 @@ namespace EnrageWestworld.InGame
         /// For the F7 dump: the keys, what Alt+F11 does, and what the player was told.
         private string SettingsStatus()
         {
-            string alt = _bridge == null ? "enRAGE not found" : !_bridge.CanReplaceSettings ? "stays with enRAGE " + _bridge.Version
+            string alt = _bridge == null ? "enRAGE not found" : !_bridge.Present ? "nothing (standing alone)" : !_bridge.CanReplaceSettings ? "stays with enRAGE " + _bridge.Version
                 : _cfg.ReplaceEnrageSettings ? "opens this panel" : "left to enRAGE (ReplaceEnrageSettings off)";
             return "keys " + SettingsKeysText(" and ") + (_settingsKey2.Key == Keys.None ? " (no second key)" : "") + ", Alt+F11 " + alt
                    + ", notice " + (_keyNoticeCase ?? (_keyNoticed ? "given" : "not yet"));

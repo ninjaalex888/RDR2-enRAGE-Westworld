@@ -229,8 +229,8 @@ namespace EnrageWestworld.InGame
         /// whether RealNPCs may direct them (and why not).
         private string RecordsStatus()
         {
-            if (_bridge == null)
-                return "enRAGE not found";
+            if (_bridge == null || !_bridge.Present)
+                return "enRAGE not " + (_bridge == null ? "found" : "installed (standing alone)");
             Ped me = Game.Player.Character;
             var near = World.GetAllPeds().Where(p => p != null && p.Exists() && p.Handle != me.Handle && IsRecord(p.Handle) && p.Position.DistanceTo(me.Position) < 30f)
                                          .OrderBy(p => p.Position.DistanceTo(me.Position)).Take(8).ToList();

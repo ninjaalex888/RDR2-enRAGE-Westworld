@@ -48,8 +48,6 @@ namespace EnrageWestworld.InGame
 
 		private int _nextOldNote;
 
-		private bool _toldMissing;
-
 		private bool _testRequested;
 
 		private bool _snapshotFailed;
@@ -371,27 +369,32 @@ namespace EnrageWestworld.InGame
 			}
 			if (_bridge == null)
 			{
-				if (!_toldMissing && Environment.TickCount - _loadedAt > 120000)
+				// standing alone (roadmap 34, 2026-10-29): at once when enRAGE isn't installed (no NemesisMod.dll beside us), and
+				// after the two minutes it was given when it is installed but never came up (a load failure of its own)
+				bool installed = EnrageInstalled();
+				if (installed && Environment.TickCount - _loadedAt <= 120000)
 				{
-					_toldMissing = true;
-					Log.Write("enRAGE isn't running (not among Script Hook .NET's scripts). The add-on waits for it.");
-					Feed.Notice("RealNPCs", "enRAGE isn't running. This add-on needs enRAGE installed.");
+					return;
 				}
-				return;
+				_bridge = Bridge.Absent();
+				Log.Write((installed ? "enRAGE is installed but isn't running (not among Script Hook .NET's scripts after two minutes)" : "enRAGE isn't installed (no NemesisMod.dll in the scripts folder)")
+				          + ": RealNPCs stands alone. Its own people, ties, memories, street scenes, minds and letters run; nothing of enRAGE's (its nemeses and their"
+				          + " records, its townsfolk's names, the feeling bars, the grudge meter, interrogation, revives, avengers, its newspaper items and its settings page) until it is.");
 			}
-			if (!_bridge.Usable)
+			if (_bridge.Present && !_bridge.Usable)
 			{
 				_off = true;
 				Feed.Notice("RealNPCs", "This enRAGE version isn't supported yet (see RealNPCs.log).");
 				return;
 			}
-			List<RecordRef> list = _bridge.Roster();
-			if (list != null && list.Count != 0 && Bridge.Now() > 0)
+			List<RecordRef> list = _bridge.Present ? _bridge.Roster() : new List<RecordRef>();
+			if (list != null && (list.Count != 0 || !_bridge.Present) && Bridge.Now() > 0)
 			{
 				LoadStore();
 				Observe();
 				int num = _store.People.Values.Count((PersonState s) => s.Talks > 0 || s.Heard.Count > 0);
-				Log.Write("Ready: enRAGE " + _bridge.Version + ", " + list.Count + " people, playing as " + PlayerName() + ", " + _store.People.Count + " people in the add-on's memory.");
+				Log.Write("Ready: " + (_bridge.Present ? "enRAGE " + _bridge.Version + ", " + list.Count + " people" : "standing alone (enRAGE not " + (EnrageInstalled() ? "running" : "installed") + ")")
+				          + ", playing as " + PlayerName() + ", " + _store.People.Count + " people in the add-on's memory.");
 				try
 				{
 					Stalker.ProbeActs();
@@ -403,7 +406,22 @@ namespace EnrageWestworld.InGame
 				Log.Write("REGULARS: " + (_cfg.Regulars ? "kept: " + Regulars.Count(_store.Residents) : "off") + "; " + _store.Residents.Count + " residents saved (up to " + Store.MaxResidents + ")");
 				Log.Write("CLOCK: year " + CLOCK.GET_CLOCK_YEAR() + ", day of the week " + CLOCK.GET_CLOCK_DAY_OF_WEEK() + " (thoughts take 0 as Sunday), " +
 					CLOCK.GET_CLOCK_DAY_OF_MONTH() + "/" + (CLOCK.GET_CLOCK_MONTH() + 1) + ", " + CLOCK.GET_CLOCK_HOURS() + ":" + CLOCK.GET_CLOCK_MINUTES().ToString("00") + (IsJohn() ? ", playing John" : ""));
-				Feed.Notice("RealNPCs", "listening. " + list.Count + " people in the world" + ((num > 0) ? (", " + num + " who know you.") : "."));
+				Feed.Notice("RealNPCs", _bridge.Present ? "listening. " + list.Count + " people in the world" + ((num > 0) ? (", " + num + " who know you.") : ".")
+					: "standing alone: enRAGE isn't " + (EnrageInstalled() ? "running" : "installed") + ", so its people and features are off. Everything of RealNPCs' own runs.");
+			}
+		}
+
+		/// Whether enRAGE's DLL is in the scripts folder beside ours (installed, whether or not it came up).
+		private bool EnrageInstalled()
+		{
+			try
+			{
+				string scripts = Path.GetDirectoryName(base.FileName);
+				return scripts != null && File.Exists(Path.Combine(scripts, "NemesisMod.dll"));
+			}
+			catch
+			{
+				return false;
 			}
 		}
 
@@ -528,7 +546,7 @@ namespace EnrageWestworld.InGame
 			}
 			int od;   // its parts on the frame-time meter (the whole took 15.7 ms every 5 s, 2026-10-27)
 			long ot = StepBegin(out od);
-			List<RecordRef> list = _bridge.Roster();
+			List<RecordRef> list = _bridge.Present ? _bridge.Roster() : new List<RecordRef>();
 			StepEnd("observe: enRAGE's roster (step)", ot, od);
 			long num = Bridge.Now();
 			if (list == null || num <= 0)
@@ -568,7 +586,7 @@ namespace EnrageWestworld.InGame
 			_engine.PlayerY = position.Y;
 			_engine.PlayerZ = position.Z;
 			ot = StepBegin(out od);
-			_engine.Observe(list2, num);
+			_engine.Observe(_bridge.Present ? list2 : null, num);   // null: no roster known (standing alone), its work waits
 			StepEnd("observe: the engine (step)", ot, od);
 			ot = StepBegin(out od);
 			WriteDiaries();

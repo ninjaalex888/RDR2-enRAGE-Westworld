@@ -19,6 +19,8 @@ namespace EnrageWestworld.InGame
             if (_calmResolved)
                 return;
             _calmResolved = true;
+            if (Mod == null)
+                return;   // standing alone: nothing of enRAGE's to look at
             try
             {
                 _grace = Mod.GetType().GetMethod("Grace", Any, null, new[] { typeof(int), typeof(string) }, null);

@@ -172,6 +172,8 @@ namespace EnrageWestworld.InGame
             if (_feelResolved)
                 return;
             _feelResolved = true;
+            if (Mod == null)
+                return;   // standing alone: nothing of enRAGE's to look at
             try
             {
                 Type t = Mod.GetType();

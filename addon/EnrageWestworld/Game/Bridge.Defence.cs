@@ -52,6 +52,8 @@ namespace EnrageWestworld.InGame
             if (_defenceResolved)
                 return;
             _defenceResolved = true;
+            if (Mod == null)
+                return;   // standing alone: nothing of enRAGE's to look at
             try
             {
                 _cameAtYouField = Mod.GetType().GetField("_cameAtYou", Any);

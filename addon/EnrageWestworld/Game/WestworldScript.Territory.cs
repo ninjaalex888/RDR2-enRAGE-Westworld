@@ -70,8 +70,8 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.TerritoryNews)
                 return "off ([Output] TerritoryNews)";
-            if (_bridge == null)
-                return "on; enRAGE not found";
+            if (_bridge == null || !_bridge.Present)
+                return "on; enRAGE not " + (_bridge == null ? "found" : "installed (standing alone)");
             bool? own = _bridge.PrintsOwnNews;
             return "on, to " + _cfg.WarRoute + "; enRAGE's news list " + (_bridge.CanReadNews ? "found" : "NOT found") + "; " + _territoryRelayed + " passed on" +
                    (_territoryLast != null ? ", last: " + _territoryLast : "") + (own == true ? "; enRAGE prints its own white copy too ([Menu] Messages 3)" : own == false ? "; enRAGE prints none of its own" : "");

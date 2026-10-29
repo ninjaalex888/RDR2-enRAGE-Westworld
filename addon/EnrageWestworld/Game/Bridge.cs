@@ -83,6 +83,27 @@ namespace EnrageWestworld.InGame
 
 		public bool CanTellPlans { get; private set; }
 
+		/// The bridge with no enRAGE behind it (standing alone, 2026-10-29, roadmap 34): every lookup finds nothing, every
+		/// write is refused, the places come from our own tables (Places.cs), the clock from GameDate. Mod is null and
+		/// Present false; nothing else in the add-on need test for it, since every method answers as it would when the
+		/// member it wanted wasn't found in enRAGE.
+		public static Bridge Absent()
+		{
+			return new Bridge();
+		}
+
+		private Bridge()
+		{
+			Mod = null;
+			Version = "none";
+		}
+
+		/// Whether enRAGE is behind this bridge (false for Absent()).
+		public bool Present
+		{
+			get { return Mod != null; }
+		}
+
 		private Bridge(object mod)
 		{
 			Mod = mod;
@@ -365,14 +386,21 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
+		/// The town at pos, else the district or region's name ("the Heartlands"), else null in the wilds: enRAGE's own
+		/// lookups where they were found, ours (Places.cs) where not.
 		public string TownAt(Vector3 pos)
 		{
 			try
 			{
-				string text = ((_townAt != null) ? (_townAt.Invoke(Mod, new object[1] { pos }) as string) : null);
-				if (text == null && _zoneAt != null)
+				if (_townAt == null && _zoneAt == null)
 				{
-					text = _zoneAt.Invoke(Mod, new object[1] { pos }) as string;
+					string ours = Places.TownAt(pos) ?? Places.ZoneName(pos);
+					return ours == "the wilds" ? null : ours;
+				}
+				string text = ((_townAt != null) ? (_townAt.Invoke(Mod, new object[1] { pos }) as string) : Places.TownAt(pos));
+				if (text == null)
+				{
+					text = _zoneAt != null ? _zoneAt.Invoke(Mod, new object[1] { pos }) as string : Places.ZoneName(pos);
 					if (text == "the wilds")
 					{
 						text = null;
@@ -669,6 +697,8 @@ namespace EnrageWestworld.InGame
 			if (!_gunButtLooked)
 			{
 				_gunButtLooked = true;
+				if (Mod == null)
+					return false;
 				Type type = Mod.GetType().Assembly.GetType("NemesisSystem.GunMelee");
 				_gunButt = ((type != null) ? type.GetMethod("KnockedOutByGunButt", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic) : null);
 				if (_gunButt == null)
