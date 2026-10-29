@@ -252,6 +252,10 @@ namespace EnrageWestworld.InGame
                 case "mind:ask":
                     skipped = "[Mind] Language (the row asks whether it is on or not; the answer goes to the log, not over a head)";
                     return LanguageAskFire(now, out said);   // WestworldScript.Language.cs
+                case "events:probe":
+                    skipped = "nothing: it only reads the game's event pool and writes to the log";
+                    EventProbeStart(now);   // WestworldScript.Watch.cs
+                    return null;
                 case "mind:request":
                     skipped = "nothing: it reads the shadow's state and writes the request to the log";
                     return MindRequestFire(now, out said);   // WestworldScript.Mind.cs

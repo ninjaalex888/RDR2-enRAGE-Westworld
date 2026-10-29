@@ -68,6 +68,7 @@ namespace EnrageWestworld.InGame
         private unsafe void PollWorldEventsImpl(int now)
         {
             ShieldDefence(now);
+            EventProbeEnd(now);
             int count = SCRIPTS.GET_NUMBER_OF_EVENTS(0);
             if (count <= 0)
                 return;
@@ -76,6 +77,8 @@ namespace EnrageWestworld.InGame
             for (int i = 0; i < count; i++)
             {
                 uint ev = SCRIPTS.GET_EVENT_AT_INDEX(0, i);
+                if (now < _eventProbeUntil)
+                    EventProbeNote(ev, i, player);
                 if (ev != EventDamaged && ev != EventLootComplete && ev != EventCrimeConfirmed)
                     continue;
                 for (int j = 0; j < 12; j++)
@@ -553,6 +556,60 @@ namespace EnrageWestworld.InGame
             int seen = Math.Max(witness != 0 ? 1 : 0, CountPeopleNear(pos, 0, 35f));
             int victim = kind == "assault" || kind == "kidnap" ? HurtVictim(pos, now) : 0;   // the one he laid hands on, when the game knows (the night review's leftover, 2026-10-28)
             NoteDeedEyes(_engine.OnDeed(Deeds.Make(kind, detail, _bridge.TownAt(pos), ZoneAt(pos), gameMin, pos.X, pos.Y, pos.Z, seen), WitnessesNear(pos, 0, 35f), gameMin), pos, 0, victim);
+        }
+
+        // ---- the event probe (the Testing row "events:probe", 2026-10-29: which event a shove of the player's raises) ----
+
+        private int _eventProbeUntil = -100000;
+        private bool _eventProbeOn;
+        private readonly Dictionary<uint, int> _eventProbeSeen = new Dictionary<uint, int>();
+
+        private void EventProbeStart(int now)
+        {
+            _eventProbeUntil = now + 30000;
+            _eventProbeOn = true;
+            _eventProbeSeen.Clear();
+            Log.Write("EVENT probe: on for 30 s: every event id in the game's pool, its first words and whether you are in them; shove, greet or punch someone now");
+        }
+
+        /// One event of the pool while the probe runs: a new id is logged with its first words (the first size that reads).
+        private unsafe void EventProbeNote(uint ev, int index, int player)
+        {
+            int n;
+            _eventProbeSeen.TryGetValue(ev, out n);
+            _eventProbeSeen[ev] = n + 1;
+            if (n > 0)
+                return;
+            ulong* q = stackalloc ulong[16];
+            string words = "no size read";
+            foreach (int size in new[] { 12, 9, 6, 4, 3, 2, 1 })
+            {
+                for (int j = 0; j < 16; j++)
+                    q[j] = 0;
+                if (!SCRIPTS.GET_EVENT_DATA(0, index, q, size))
+                    continue;
+                System.Text.StringBuilder b = new System.Text.StringBuilder();
+                bool me = false;
+                for (int j = 0; j < size; j++)
+                {
+                    int w = (int)q[j];
+                    if (w == player)
+                        me = true;
+                    b.Append(j > 0 ? ", " : "").Append(w);
+                }
+                words = "size " + size + ": [" + b + "]" + (me ? ", you are in it" : "");
+                break;
+            }
+            Log.Write("EVENT probe: 0x" + ev.ToString("X8") + " (" + ev + ") first seen, " + words);
+        }
+
+        /// After the 30 s: the counts, once.
+        private void EventProbeEnd(int now)
+        {
+            if (!_eventProbeOn || now < _eventProbeUntil)
+                return;
+            _eventProbeOn = false;
+            Log.Write("EVENT probe: over; " + _eventProbeSeen.Count + " ids seen: " + string.Join(", ", _eventProbeSeen.OrderByDescending(kv => kv.Value).Select(kv => "0x" + kv.Key.ToString("X8") + " x" + kv.Value)));
         }
 
         /// The living person the player hurt most recently (within 15 s, 15 m of the crime): the victim of an assault,
