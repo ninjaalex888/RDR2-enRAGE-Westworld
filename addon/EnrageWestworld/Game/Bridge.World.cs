@@ -187,6 +187,8 @@ namespace EnrageWestworld.InGame
         public bool AddDeed(string tag, string title, string place, Vector3? pos)
         {
             ResolveMore();
+            if (_chronicleDeed == null)
+                return false;   // before NoParts(), which names enRAGE's types (standing alone it must never be reached)
             return Call(_chronicleDeed, "ChronicleDeed", tag, title, place, pos, null, Typed.NoParts());
         }
 

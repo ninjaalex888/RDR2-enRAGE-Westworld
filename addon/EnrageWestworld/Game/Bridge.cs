@@ -218,6 +218,8 @@ namespace EnrageWestworld.InGame
 		/// True while enRAGE's own clock answers (Ready waits for it with enRAGE present, as before).
 		public bool ClockRuns()
 		{
+			if (Mod == null)
+				return false;
 			if (_clock == null && RDR2.Game.FrameCount - _clockLookedAt > 300)
 			{
 				_clockLookedAt = RDR2.Game.FrameCount;

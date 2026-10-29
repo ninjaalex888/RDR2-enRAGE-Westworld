@@ -28,7 +28,7 @@ namespace EnrageWestworld.InGame
         {
             ResolveLooks();
             if (_namedField == null || _fpOfField == null)
-                return true;
+                return Present;   // standing alone nobody has: the bodies are ours to clean up
             try
             {
                 IDictionary named = _namedField.GetValue(Mod) as IDictionary, prints = _fpOfField.GetValue(Mod) as IDictionary;
