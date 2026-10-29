@@ -123,7 +123,11 @@ namespace EnrageWestworld.InGame
             // 2026-10-28): further out, then in the open near you
             Vector3 home;
             bool inSight = false;
-            if (!EncounterSpot(me, 14f, 26f, out home) && !EncounterSpot(me, 8f, 40f, out home))
+            // the row: 10 m in front of you (Lex, 2026-10-29: "spawn 10m in front of the main character now instead of behind
+            // them"); coming back by themselves: out of sight, as before
+            if (!onlySaved && TestCastFrontSpot(me, out home))
+                inSight = true;
+            else if (!EncounterSpot(me, 14f, 26f, out home) && !EncounterSpot(me, 8f, 40f, out home))
             {
                 if (!TestCastOpenSpot(me, out home))
                     return "nowhere to stand them within 18 m of you";
@@ -157,6 +161,21 @@ namespace EnrageWestworld.InGame
         }
 
         /// A spot to stand on 10-18 m from you, any way round (never indoors: StandSpot), for when nowhere is hidden.
+        /// Ground 10 m in front of you, or a little to either side when that's a wall or a drop.
+        private bool TestCastFrontSpot(Ped me, out Vector3 at)
+        {
+            Vector3 f = me.ForwardVector;
+            double heading = Math.Atan2(f.Y, f.X);
+            foreach (double off in new[] { 0.0, 0.35, -0.35, 0.7, -0.7, 1.05, -1.05 })
+            {
+                double a = heading + off;
+                if (Natives.StandSpot(me.Position + new Vector3((float)Math.Cos(a) * 10f, (float)Math.Sin(a) * 10f, 0f), me.Position.Z, out at) && Math.Abs(at.Z - me.Position.Z) < 3f)
+                    return true;
+            }
+            at = Vector3.Zero;
+            return false;
+        }
+
         private bool TestCastOpenSpot(Ped me, out Vector3 at)
         {
             for (int i = 0; i < 12; i++)
