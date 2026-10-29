@@ -453,6 +453,7 @@ namespace EnrageWestworld.InGame
 			BelowAbort("a save loaded");
 			PatientAbort("a save loaded");
 			GrudgesAbort();
+			KinAbort();
 			_fallWatch = null;
 			try
 			{
@@ -1146,6 +1147,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST kindness: " + KindnessStatus());
 			Log.Write("TEST vices: " + VicesStatus());
 			Log.Write("TEST grudges: " + GrudgesStatus());
+			Log.Write("TEST kin: " + KinStatus());
 			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST visitor: " + VisitorStatus());
 			Log.Write("TEST traveller: " + TravellerStatus());

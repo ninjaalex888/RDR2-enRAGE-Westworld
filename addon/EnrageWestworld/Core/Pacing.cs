@@ -65,6 +65,7 @@ namespace EnrageWestworld.Core
             { "round", new Rule("round", false, 40, 180, 720, 1440) },             // per saloon twice a day
             { "drink", new Rule("drink", false, 55, 60, 300, 1440) },              // a saloon: one drinker in five hours or so
             { "grudge", new Rule("grudge", false, 45, 120, 0, 1440) },             // per pair a day
+            { "kin", new Rule("kin", false, 100, 0, 1440, 10080) },                // one a town a game day; the same relative once a week
             { "callout", new Rule("callout", false, 40, 1440, 1440, 2880) },       // a noon callout: once a day at most
             { "preacher", new Rule("preacher", false, 35, 0, 1440, 2880) },       // a Sunday's street preacher: once a town a day, a person every two
             { "lostchild", new Rule("lostchild", false, 15, 720, 4320, 129600) },  // a mother asking after her child: three days a town, a season a woman

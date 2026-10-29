@@ -17,9 +17,7 @@ namespace EnrageWestworld.InGame
         private int _nextDrama = -1, _nextCeremony, _nextCast;
         private PlanInfo _sceneJob;
         private readonly HashSet<string> _funeralsHeard = new HashSet<string>();
-        private readonly Dictionary<int, KeyValuePair<Relative, string>> _casts = new Dictionary<int, KeyValuePair<Relative, string>>();
-        private readonly HashSet<string> _castThisVisit = new HashSet<string>();
-        private string _castTown;
+        private readonly Dictionary<int, KeyValuePair<Relative, string>> _casts = new Dictionary<int, KeyValuePair<Relative, string>>();   // the body walking up: whose kin
         private WeddingRun _wedding;
 
         private static readonly Dictionary<string, Vector3> Churches = new Dictionary<string, Vector3>
@@ -995,66 +993,289 @@ namespace EnrageWestworld.InGame
 
         // ---- kin in their own town --------------------------------------------------------------------
 
-        private readonly HashSet<int> _castSpoke = new HashSet<int>();
-        private int _nextCastNear;
-
-        /// Kin who walked up to the player speak first if he doesn't greet them.
-        private void CastNear(int now)
+        // One relative at a time walks up to the player in their own town (Lex, 2026-10-28, after eight walk-ups in his log
+        // that never arrived: an ambient passer-by got one 20 s walk order the game's own script overrode, and a notice named
+        // the kin before anyone had reached him). Now: a body RealNPCs may direct, in view, within 18 m, carrying no name of
+        // its own (not a bound resident, not one of enRAGE's townsfolk or records, not ours); the walk order re-sent every
+        // 4 s while they aren't getting nearer; given up after 30 s; one relative a town a game day and the same one once a
+        // week (Pacing "kin"); never in the first two minutes after a start or a load; no notice: they're named when they
+        // reach you and speak (GreetedSpecial). F7 `TEST kin:`; the Testing row `kin` skips the rests and the wait.
+        private sealed class KinWalk
         {
-            if (_casts.Count == 0 || now < _nextCastNear || Feed.Talking)
-                return;
-            _nextCastNear = now + 700;
-            Vector3 pos = Game.Player.Character.Position;
-            foreach (int h in _casts.Keys.ToList())
-            {
-                if (_castSpoke.Contains(h) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h))
-                    continue;
-                if (new Ped(h).Position.DistanceTo(pos) < 3.2f)
-                {
-                    _castSpoke.Add(h);
-                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, Game.Player.Character.Handle, 4000, 0f, 0f, 0f);
-                    GreetedSpecial(h);
-                    return;
-                }
-            }
+            public Ped Ped;
+            public Relative R;
+            public string StateId, StateName, Town;
+            public uint Model;   // the body's model at the pick: a handle the game reused for someone else is seen
+            public int Since, Until, LastOrder, Said, Reorders;
+            public float LastDist, StartDist;
+            public bool Test;
         }
+
+        private KinWalk _kinWalk;
+        private int _kinNotBefore, _kinWalks, _kinArrived, _kinGaveUp;
+        private string _kinLast, _kinWhyNot;
+        private const int KinLookMs = 10000, KinWalkMs = 30000, KinReorderMs = 4000, KinFirstMs = 120000;
+        private const float KinNear = 3.2f, KinFar = 18f;
 
         private void CastTick(int now)
         {
-            CastNear(now);
-            if (!_cfg.CastRelatives || now < _nextCast)
+            KinWalkStep(now);
+            if (!_cfg.CastRelatives || now < _nextCast || _kinWalk != null)
                 return;
-            _nextCast = now + 10000;
-            if (_placeTown != _castTown)
+            _nextCast = now + KinLookMs;
+            if (_kinNotBefore == 0)
+                _kinNotBefore = now + KinFirstMs;   // not in the first two minutes after a start or a load
+            if (_placeTown == null || now < _kinNotBefore || Feed.Busy || _director.Busy)
+                return;
+            string why;
+            KinWalkUp(Game.Player.Character, now, false, out why);
+        }
+
+        /// Sends a relative of someone the player knows walking over, if one lives here and a body will do; why not, else.
+        private bool KinWalkUp(Ped me, int now, bool test, out string why)
+        {
+            why = null;
+            if (!_cfg.CastRelatives)
             {
-                _castTown = _placeTown;
-                _castThisVisit.Clear();
+                why = "[World] CastRelatives is off";
+                return false;
             }
-            if (_placeTown == null || _castThisVisit.Count > 0 || Feed.Busy || _director.Busy)
-                return;
-            foreach (KeyValuePair<int, KeyValuePair<Relative, string>> c in _casts.ToList())
-                if (!ENTITY.DOES_ENTITY_EXIST(c.Key) || ENTITY.IS_ENTITY_DEAD(c.Key))
-                    _casts.Remove(c.Key);
-            var pick = _store.People.Values.Where(st => st.Family != null).SelectMany(st => st.Family.Select(r => new { st, r }))
-                .Where(x => x.r.Town == _placeTown && !_store.Avengers.Any(a => a.Name == x.r.Name && a.Stage < 3) && !_casts.Values.Any(v => v.Key == x.r) &&
+            if (_kinWalk != null)
+            {
+                why = _kinWalk.R.Name + " is coming up to you already";
+                return false;
+            }
+            if (_placeTown == null || me == null || !me.Exists())
+            {
+                why = _kinWhyNot = "you aren't in any town";
+                return false;
+            }
+            if (me.IsDead || PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false) || ENTITY.GET_ENTITY_SPEED(me.Handle) > 2f)
+            {
+                why = _kinWhyNot = "you're riding, driving or moving too fast for anyone on foot to catch up";
+                return false;
+            }
+            long g = _store.LastGameMin;
+            var kin = _store.People.Values.Where(st => st.Family != null).SelectMany(st => st.Family.Select(r => new { st, r }))
+                .Where(x => x.r.Town == _placeTown && !_store.Avengers.Any(a => a.Name == x.r.Name && a.Stage < 3) &&
                             (x.st.Talks > 0 || x.r.Heard.Count > 0 || (_store.Reveries.ContainsKey(x.st.Id) && _store.Reveries[x.st.Id].ByPlayer)))
-                .OrderBy(x => _rng.Next()).FirstOrDefault();
-            if (pick == null)
+                .OrderBy(x => _rng.Next()).ToList();
+            if (kin.Count == 0)
+            {
+                why = _kinWhyNot = "nobody you know has family in " + _placeTown;
+                return false;
+            }
+            string pace = null, skipped;
+            var pick = kin[0];
+            foreach (var k in kin)
+            {
+                pace = Pacing.WhyNot(_store.Pace, "kin", _placeTown, k.r.Name, g, _rng.Next(100), test, out skipped);
+                if (pace == null)
+                {
+                    pick = k;
+                    break;
+                }
+            }
+            if (pace != null)
+            {
+                why = _kinWhyNot = "rests: " + pace;
+                return false;
+            }
+            int near = 0, outOfView = 0, named = 0, notFree = 0, wrongSex = 0, mayNot = 0;
+            Ped body = null;
+            float best = float.MaxValue;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                if (!Natives.Bystander(p, me.Handle))
+                    continue;
+                int h = p.Handle;
+                float d = p.Position.DistanceTo(me.Position);
+                if (d <= 5f || d >= KinFar)
+                    continue;
+                near++;
+                if (Spawner.IsOurs(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_USING_ANY_SCENARIO(h))
+                    continue;
+                if (PED.IS_PED_MALE(h) == pick.r.Woman)
+                {
+                    wrongSex++;
+                    continue;
+                }
+                if (_bridge.RecordAt(h) != null || _bridge.AcquaintanceAt(h) != null || _resBind.ContainsKey(h))
+                {
+                    named++;   // someone with a name of their own already: the kin would be a second name on the same body
+                    continue;
+                }
+                if (!NodInView(me, p))
+                {
+                    outOfView++;
+                    continue;
+                }
+                if (NotFree(h))
+                {
+                    notFree++;
+                    continue;
+                }
+                if (MayDirectWhyNot(p) != null)
+                {
+                    mayNot++;
+                    continue;
+                }
+                if (d < best)
+                {
+                    best = d;
+                    body = p;
+                }
+            }
+            if (body == null)
+            {
+                why = _kinWhyNot = "no passer-by in view within " + (int)KinFar + " m RealNPCs may send over (" + near + " near: " + wrongSex + " the wrong sex, " + named +
+                                   " with a name already, " + outOfView + " out of view, " + notFree + " busy, " + mayNot + " not ours to direct)";
+                return false;
+            }
+            int bh = body.Handle;
+            _casts[bh] = new KeyValuePair<Relative, string>(pick.r, pick.st.Id);
+            KinOrder(bh, me);
+            _kinWalk = new KinWalk { Ped = body, R = pick.r, StateId = pick.st.Id, StateName = pick.st.Name, Town = _placeTown, Model = ENTITY.GET_ENTITY_MODEL(bh),
+                                     Since = now, Until = now + KinWalkMs, LastOrder = now, LastDist = best, StartDist = best, Test = test };
+            _kinWalks++;
+            Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": a passer-by " + (int)best + " m off walks over" + (test ? ", a test" : ""));
+            return true;
+        }
+
+        private static void KinOrder(int h, Ped me)
+        {
+            TASK.TASK_GO_TO_ENTITY(h, me.Handle, -1, 2.2f, 1.4f, 0f, 0);
+            TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, KinWalkMs, 0, 51, 0);
+        }
+
+        /// The relative on their way: the order re-sent while they aren't getting nearer, the meeting when they're close
+        /// (they speak first if the player doesn't greet them), given up when they can't reach him.
+        private void KinWalkStep(int now)
+        {
+            KinWalk w = _kinWalk;
+            if (w == null)
                 return;
             Ped me = Game.Player.Character;
-            Ped body = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null &&
-                                                    !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && PED.IS_PED_MALE(p.Handle) == !pick.r.Woman &&
-                                                    p.Position.DistanceTo(me.Position) > 7f && p.Position.DistanceTo(me.Position) < 28f)
-                .OrderBy(p => p.Position.DistanceTo(me.Position)).FirstOrDefault();
-            if (body == null)
+            if (w.Ped == null || !w.Ped.Exists() || w.Ped.IsDead || me == null || !me.Exists())
+            {
+                KinEnd(w, now, "the body is gone");
                 return;
-            _castThisVisit.Add(pick.r.Name);
-            _casts[body.Handle] = new KeyValuePair<Relative, string>(pick.r, pick.st.Id);
-            TASK.TASK_GO_TO_ENTITY(body.Handle, me.Handle, 20000, 2.2f, 1.2f, 0f, 0);
-            // no notice (Lex, 2026-10-28: "get rid of the walking toward you notice altogether"): the name reached the
-            // screen before anyone did, on a body nothing marked, and in one session eight of eight never arrived (the
-            // 20 s walk order ran out on an ambient ped the game took back); the relative is named when they speak
-            Log.Write("CAST " + pick.r.Name + " (" + pick.r.Relation + " of " + pick.st.Name + ") in " + _placeTown + ": a passer-by " + (int)body.Position.DistanceTo(me.Position) + " m off sent over, nothing shown");
+            }
+            int h = w.Ped.Handle;
+            if (ENTITY.GET_ENTITY_MODEL(h) != w.Model)
+            {
+                KinEnd(w, now, "the body is gone (the handle is someone else's now)");
+                return;
+            }
+            if (w.Said == 0 && !_casts.ContainsKey(h))
+            {
+                w.Said = now;   // the player greeted them first (GreetedSpecial took them, and they spoke)
+                KinArrived(w, now, "you greeted them first");
+            }
+            float d = w.Ped.Position.DistanceTo(me.Position);
+            if (w.Said == 0)
+            {
+                string may = MayDirectWhyNot(w.Ped);
+                if (may != null || _director.Involves(h))
+                {
+                    KinEnd(w, now, may ?? "a scene took them");
+                    return;
+                }
+                if (d > w.StartDist + 6f)
+                {
+                    KinEnd(w, now, "outrun (" + (int)d + " m off, from " + (int)w.StartDist + ")");
+                    return;
+                }
+                if (d < KinNear)
+                {
+                    if (Feed.Talking)
+                    {
+                        if (now > w.Until)
+                            KinEnd(w, now, "a conversation ran on while they stood by");
+                        return;   // waits for the talk to end before speaking
+                    }
+                    TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 4000, 0f, 0f, 0f);
+                    w.Said = now;
+                    KinArrived(w, now, "after " + (now - w.Since) / 1000 + " s from " + (int)w.StartDist + " m" + (w.Reorders > 0 ? ", the order sent again " + w.Reorders + " time" + (w.Reorders == 1 ? "" : "s") : ""));
+                    GreetedSpecial(h);
+                    return;
+                }
+                if (now > w.Until)
+                {
+                    KinEnd(w, now, "never reached you in " + KinWalkMs / 1000 + " s (" + (int)d + " m off, from " + (int)w.StartDist + ")");
+                    return;
+                }
+                if (now - w.LastOrder >= KinReorderMs)
+                {
+                    if (d > w.LastDist - 0.5f)
+                    {
+                        KinOrder(h, me);   // not getting nearer: the game's own script may have given them something else to do
+                        w.Reorders++;
+                    }
+                    w.LastOrder = now;
+                    w.LastDist = d;
+                }
+                return;
+            }
+            if (now - w.Said > 8000)
+            {
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // said their piece; goes about their day
+                _casts.Remove(h);
+                _kinWalk = null;
+            }
+        }
+
+        /// They reached the player (or he greeted them first): counted, and the town's day and the relative's week noted.
+        private void KinArrived(KinWalk w, int now, string how)
+        {
+            _kinArrived++;
+            _kinLast = w.R.Name + " (" + w.R.Relation + " of " + w.StateName + ") reached you, " + how;
+            Log.Write("CAST " + _kinLast);
+            if (!w.Test)
+                Pacing.Note(_store.Pace, "kin", w.Town, w.R.Name, _store.LastGameMin);
+        }
+
+        /// The walk is over without a meeting: the body goes about its day, and the next look waits a minute. After the
+        /// meeting (the body gone in the 8 s tail) nothing is counted.
+        private void KinEnd(KinWalk w, int now, string why)
+        {
+            if (w.Ped != null && w.Ped.Exists() && !w.Ped.IsDead && ENTITY.GET_ENTITY_MODEL(w.Ped.Handle) == w.Model)
+                TASK.TASK_WANDER_STANDARD(w.Ped.Handle, 10f, 10);
+            if (w.Ped != null)
+                _casts.Remove(w.Ped.Handle);
+            _kinWalk = null;
+            if (w.Said > 0)
+                return;
+            _kinGaveUp++;
+            _kinLast = w.R.Name + " gave it up: " + why;
+            Log.Write("CAST " + w.R.Name + " gave it up: " + why);
+            _kinNotBefore = now + 60000;
+        }
+
+        /// A mission, a load, the wipe or shutdown: the relative on their way is let go, and the next waits two minutes.
+        private void KinAbort()
+        {
+            if (_kinWalk != null)
+            {
+                if (_kinWalk.Ped != null && _kinWalk.Ped.Exists() && !_kinWalk.Ped.IsDead)
+                    TASK.TASK_WANDER_STANDARD(_kinWalk.Ped.Handle, 10f, 10);
+                _kinWalk = null;
+            }
+            _casts.Clear();
+            _kinNotBefore = 0;
+        }
+
+        private string KinStatus()
+        {
+            if (!_cfg.CastRelatives)
+                return "off ([World] CastRelatives)";
+            KinWalk w = _kinWalk;
+            Ped me = Game.Player.Character;
+            string coming = w != null && w.Ped != null && w.Ped.Exists() && me != null && me.Exists()
+                ? "; " + w.R.Name + " (" + w.R.Relation + " of " + w.StateName + ") is coming, " + (int)w.Ped.Position.DistanceTo(me.Position) + " m off, " + (_now - w.Since) / 1000 + " s in" + (w.Said > 0 ? ", spoke" : "")
+                : "";
+            return _kinWalks + " walked up this session, " + _kinArrived + " reached you, " + _kinGaveUp + " gave up" + coming +
+                   (_kinLast != null ? "; last: " + _kinLast : "") + (_kinWhyNot != null ? "; the last look: " + _kinWhyNot : "");
         }
 
         /// The player greeted someone special: the stalker, or kin met on the street.

@@ -187,6 +187,7 @@ namespace EnrageWestworld.InGame
                 WakeActsAbort();
                 PatientAbort("the add-on stopped");
                 GrudgesAbort();      // someone walking up to have it out with you stops (their walk order cleared)
+                KinAbort();
                 SoberVoices(true);   // the drink goes out of every voice we put it in
                 WakeVoiceEnd(_now, "the add-on stopped");
                 AnimTestEnd("the add-on stopped");
@@ -752,6 +753,7 @@ namespace EnrageWestworld.InGame
             WanderLaterClear();
             SightsAbort();
             GrudgesAbort();
+            KinAbort();
             SoberVoices(true);
             if (_rough != null)
                 RoughEnd(_rough, "stopped: a mission started", now);
@@ -769,7 +771,6 @@ namespace EnrageWestworld.InGame
             }
             if (_wedding != null)
                 EndWeddingRun("a mission started");
-            _casts.Clear();
             _plea = null;
             _theft = null;
             _arrival = null;

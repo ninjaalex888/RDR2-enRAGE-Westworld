@@ -27,7 +27,8 @@ NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
   avengers come one at a time ([World] AvengersAtOnce, AvengerGapHours; the "X heard you killed
   his friend" notices are enRAGE's, off with [Menu] Messages = 2 in NemesisMod.ini); a townsperson enRAGE
   takes for someone you greeted, by his look, now says only that your face seems known. The
-  "X is walking toward you" notice is gone: a relative is named when they reach you and speak.
+  "X is walking toward you" notice is gone, and the relative who walks up is picked and steered so they
+  reach you (one a town a day); they're named when they speak. Testing page: "Kin of someone you know walks up".
 - Show minds (the cards over people near you) is off as it comes; Ctrl+F2 or the Testing page's
   Switches turn it on, and an ini that already has it on keeps it.
 - Strangers at a campfire: at night out of the towns, men round a fire call you over for

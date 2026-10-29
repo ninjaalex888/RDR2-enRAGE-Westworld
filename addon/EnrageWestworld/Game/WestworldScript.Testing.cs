@@ -318,6 +318,12 @@ namespace EnrageWestworld.InGame
                         skipped = "the rarity and the rests; the mark that it was said is not set";
                         return GrudgeAtYou(Game.Player.Character, now, true, out gy) ? null : gy;
                     }
+                case "kin":
+                    {
+                        string kw;
+                        skipped = "the rests (Pacing \"kin\") and the two minutes after a start";
+                        return KinWalkUp(Game.Player.Character, now, true, out kw) ? null : kw;
+                    }
                 case "drink":
                     {
                         string drinkWhy;

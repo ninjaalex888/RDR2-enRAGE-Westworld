@@ -74,6 +74,7 @@ namespace EnrageWestworld.InGame
             BelowAbort("the wipe");
             PatientAbort("the wipe");
             GrudgesAbort();
+            KinAbort();
             _sightSeen.Clear();
             _sightTown.Clear();
             if (_rough != null)
