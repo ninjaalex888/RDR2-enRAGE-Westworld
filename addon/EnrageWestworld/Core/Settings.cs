@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 95;
+        public const int CurrentVersion = 96;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -234,7 +234,7 @@ namespace EnrageWestworld.Core
         public bool TestKeys = true;
         public bool ShowMinds = false;   // off as it comes (Lex, 2026-10-28; on from settings version 77 to the night of 10-28)
         public bool ShowWakeStages;   // [Testing] a tag over each person who has begun to wake (2026-10-27)
-        public bool TestCastReturns = true;   // [Testing] the test cast kept in the save come back by themselves when you come to their town (night 2026-10-28; settings version 90)
+        public bool TestCastReturns = false;  // [Testing] the test cast kept in the save come back by themselves when you come to their town; off as it comes since 2026-10-29 (Lex: they should come only on the row's key; an ini that says true is set false once, version 96) (night 2026-10-28; settings version 90)
         public Dictionary<string, string> TestKeyMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
         /// The key text a Testing action is set to: its field, its line in [Testing], or its default.
@@ -516,6 +516,11 @@ namespace EnrageWestworld.Core
                     s.StalkerChance = 20;   // the old default: stalkers were too rare to ever meet
                 if (s.SettingsVersion < 8 && (s.StalkerMinutes == 8 || s.StalkerMinutes == 60))
                     s.StalkerMinutes = 120; // the old default and the old ceiling: a stalker now stays up to two hours
+                if (s.SettingsVersion < 96 && s.TestCastReturns)
+                {
+                    s.TestCastReturns = false;   // 2026-10-29 (Lex): the test cast come only on the row's key, not by themselves at every visit
+                    log?.Invoke("Settings: TestCastReturns set off (the test cast come only on the Testing row's key now); set it on again if you want them back by themselves).");
+                }
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
                 Write(path, s);
@@ -830,7 +835,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TestKeys = " + B(TestKeys) + "   ; master switch for the keys below (the settings panel's Testing page fires them with it off too)");
             b.AppendLine("ShowMinds = " + B(ShowMinds) + "   ; a small card over named people within 11 m: temper, mood, worry, ties and what is on their mind");
             b.AppendLine("ShowWakeStages = " + B(ShowWakeStages) + "   ; a tag over each person within 25 m who has begun to wake: stirring, questioning, unravelling or awake, and what holds them back (riding, a counter, had their chance)");
-            b.AppendLine("TestCastReturns = " + B(TestCastReturns) + "   ; the Testing page's test cast, once made and kept in the save, come back by themselves (out of sight) when you come to their town");
+            b.AppendLine("TestCastReturns = " + B(TestCastReturns) + "   ; the Testing page's test cast, once made and kept in the save, come back by themselves (out of sight) when you come to their town; off as it comes: the cast come only on the Testing row's key");
             foreach (TestActions.Entry e in TestActions.All)
                 b.AppendLine(e.KeySetting + " = " + TestKeyOf(e) + "   ; " + e.Label + (e.Needs != null ? " (" + e.Needs + ")" : string.Empty) + "; None: no key");
             return b.ToString();
