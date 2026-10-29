@@ -24,6 +24,7 @@ Built in the night run of 2026-10-28 (Lex's brief) and the morning after it, on 
 
 ### Small things from the in-game pass (2026-10-29)
 
+- A street scene within 30 m is followed on the ticker: each line shows on the bar as it is said, with the speaker's name (`[Ticker] ScenesOnTicker`, `ScenesOnTickerMetres`). Lex, from the pass: with the game's own subtitles on, RealNPCs' subtitle box stays off, so a woman stepping in on a fight nine metres off went unseen.
 - The settings panel opens with Ctrl+F7 and Alt+R (Alt+R was Alt+F; an ini that still says Alt+F for either key is moved, settings versions 98 and 99). The test cast tell a member knocked out in a brawl from one dead, as the ledger does, so the bully comes back after a fistfight instead of being replaced. The log says why a talk told nothing on (`MIND told nothing: ...`), for the memory check.
 
 ### The mind sees your shoves (2026-10-29, from the in-game pass)

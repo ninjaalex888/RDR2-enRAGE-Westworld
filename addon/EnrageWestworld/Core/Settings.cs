@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 99;
+        public const int CurrentVersion = 100;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -50,6 +50,8 @@ namespace EnrageWestworld.Core
         public bool ThoughtMarker = true;
         public bool ThoughtsOverHeads = true;
         public float ThoughtsOverHeadScale = 0.24f;
+        public bool ScenesOnTicker = true;        // a street scene's lines on the ticker while it plays within ScenesOnTickerMetres (2026-10-29, Lex)
+        public float ScenesOnTickerMetres = 30f;
         public bool ShareWithEnrage = true;
         public bool Minds = true;
         public bool RecordMinds = true;
@@ -597,6 +599,7 @@ namespace EnrageWestworld.Core
             TickerWidth = Math.Max(0.2f, Math.Min(1f, TickerWidth));
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             ThoughtsOverHeadScale = Math.Max(0.12f, Math.Min(0.6f, ThoughtsOverHeadScale));
+            ScenesOnTickerMetres = Math.Max(5f, Math.Min(80f, ScenesOnTickerMetres));
             PanelTimeScale = Math.Max(0.05f, Math.Min(1f, PanelTimeScale));
             PadSettings = PadChord.Normal(PadSettings) ?? "RB+DPadUp";   // one that can't be read: the default (the panel is how a controller reaches everything)
             PadStatus = PadChord.Normal(PadStatus) ?? "None";
@@ -688,6 +691,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
             b.AppendLine("ThoughtsOverHeads = " + B(ThoughtsOverHeads) + "   ; the thoughts of people near you show above their head in small type, not on the bar (the news and the rest stay on the bar; a thought whose thinker is out of view is passed over, never put on the bar)");
             b.AppendLine("ThoughtsOverHeadScale = " + F(ThoughtsOverHeadScale) + "   ; text size of thoughts above heads (TickerScale is the bar's)");
+            b.AppendLine("ScenesOnTicker = " + B(ScenesOnTicker) + "   ; what people say in a street scene near you shows on the ticker as they say it (their name, the line), so a scene is followed from the bar; the RealNPCs subtitle box shows it too when [Output] Subtitles lets it");
+            b.AppendLine("ScenesOnTickerMetres = " + F(ScenesOnTickerMetres) + "   ; a scene within this many metres is followed on the ticker");
             b.AppendLine();
             b.AppendLine("[Display]");
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, liking and anger, as enRAGE keeps them");

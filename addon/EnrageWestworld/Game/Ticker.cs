@@ -54,6 +54,9 @@ namespace EnrageWestworld.InGame
                 case "diary":
                     lr = 222; lg = 182; lb = 96;
                     break;
+                case "scene":
+                    lr = 236; lg = 226; lb = 206;   // speech, not a thought: the label in plain light
+                    break;
                 case "summary":
                     lr = 168; lg = 150; lb = 118;
                     break;
@@ -86,7 +89,7 @@ namespace EnrageWestworld.InGame
             _laidOut = line;
             _scale = scale;
             _maxWidth = maxWidth;
-            bool quoted = line.Kind == "near" || line.Kind == "thought" || line.Kind == "diary";
+            bool quoted = line.Kind == "near" || line.Kind == "thought" || line.Kind == "diary" || line.Kind == "scene";
             string text = quoted ? "\"" + line.Text.Trim('"') + "\"" : line.Text;
 
             // a little too long: set it a touch smaller so it fits on the one line

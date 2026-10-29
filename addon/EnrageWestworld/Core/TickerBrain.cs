@@ -47,6 +47,8 @@ namespace EnrageWestworld.Core
         private bool _summaryNext = true;
         private string _lastNearKey;
         private TickerLine _prev;     // the last line shown, through any blank after it
+        private TickerLine _live;     // a line said right now (a street scene within earshot): shown at once, for its own time, never in the history
+        private int _liveMs;
 
         public TickerLine Current { get; private set; }
 
@@ -63,6 +65,16 @@ namespace EnrageWestworld.Core
             _fresh.Add(new TickerLine { Label = label, Text = text, Kind = kind, Fresh = true, Handle = handle });
             if (_fresh.Count > 6)
                 _fresh.RemoveAt(0);
+        }
+
+        /// A line being said now, within earshot (a street scene's beat, 2026-10-29, Lex: "the ticker showing the nearest scene playing out"):
+        /// shown at once in place of whatever is up, for `forMs`, and not kept in the history (it was speech, not news).
+        public void Say(string label, string text, int handle, int forMs)
+        {
+            if (string.IsNullOrEmpty(text))
+                return;
+            _live = new TickerLine { Label = label, Text = text.Trim(), Kind = "scene", Handle = handle };
+            _liveMs = Math.Max(1500, forMs);
         }
 
         /// The player asked for the next line now (TickerNextKey). From someone's thought it moves on to the news,
@@ -86,6 +98,15 @@ namespace EnrageWestworld.Core
         /// Call a few times a second. near: people close to the player, any order.
         public TickerLine Update(int now, IList<NearThought> near, Func<string> summary)
         {
+            if (_live != null)
+            {
+                TickerLine said = _live;
+                _live = null;
+                said.ShownAt = now;
+                Current = _prev = said;
+                _nextAt = now + _liveMs;
+                return Current;
+            }
             bool skip = _skipped;
             _skipped = false;
             List<NearThought> close = (near ?? new List<NearThought>()).Where(n => n != null && n.Key != null)

@@ -697,6 +697,8 @@ in the file. The new ones:
             TickerNextKey (T): the next line now, ThoughtSounds (true): a small sound from someone
             near as their thought shows, ThoughtsOverHeads (true): the thoughts of people near you
             above their head in small type instead of on the bar, ThoughtsOverHeadScale (0.24)
+            ScenesOnTicker (true): what people say in a street scene within ScenesOnTickerMetres (30)
+            shows on the ticker as they say it
 [Display]   FeelingBars (true): bars under people near you for their fear, liking and anger,
             FeelingBarsMetres (15), FeelingBarsShowEmpty (false): the empty part of each bar too,
             GrudgeMeter (true): the "Sore at you" panel, top right,
