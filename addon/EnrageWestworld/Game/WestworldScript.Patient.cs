@@ -29,6 +29,7 @@ namespace EnrageWestworld.InGame
             public uint Model;
             public Vector3 From, DoctorAt;
             public bool Test;
+            public bool Retried;   // stopped short once and sent on again, right up to the doctor
         }
 
         private PatientRun _patient;
@@ -195,10 +196,22 @@ namespace EnrageWestworld.InGame
         {
             if (string.IsNullOrEmpty(line) || speaker == null || !speaker.Exists())
                 return;
-            Feed.Say(label, line, Speech.For(speaker.Handle, line, listener != null && listener.Exists() ? listener.Handle : 0, fallback: "chat"), speaker.Handle);
+            // the voice now, as it is said (through the box's onShow it waited on the box, which stays off while the game's own subtitles are on:
+            // Lex heard nothing, 2026-10-29)
+            Func<string> voice = Speech.For(speaker.Handle, line, listener != null && listener.Exists() ? listener.Handle : 0, fallback: "chat");
+            bool played = false;
+            try
+            {
+                Speech.LastPlayed = false;
+                if (voice != null)
+                    voice();
+                played = Speech.LastPlayed;
+            }
+            catch { }
+            Feed.Say(label, line, null, speaker.Handle);
             if (_cfg.ScenesOnTicker && _cfg.Ticker && speaker.Position.DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
                 _ticker.Say(label, line, speaker.Handle, Math.Min(7000, 1600 + line.Length * 55));
-            Log.Write("PATIENT   " + label + ": " + line);
+            Log.Write("PATIENT   " + label + ": " + line + (voice == null ? " (no voice for it)" : played ? " (voiced)" : " (the game turned the voice down)"));
         }
 
         /// Every tick while one is walking (from the drama tick's top).
@@ -232,6 +245,15 @@ namespace EnrageWestworld.InGame
             switch (r.Phase)
             {
                 case "going":
+                    if (stopped && d >= 2.6f && !r.Retried && doctorHere)
+                    {
+                        // stopped short (at the door): on again, right up to him, once (Lex, 2026-10-29: they stopped at the door)
+                        r.Retried = true;
+                        r.StillSince = 0;
+                        r.PhaseAt = now;
+                        TASK.TASK_GO_TO_ENTITY(h, r.Doctor.Handle, 30000, 1.6f, 1.0f, 0f, 0);
+                        return;
+                    }
                     if (d < 2.6f || stopped || now - r.PhaseAt > 120000)
                     {
                         r.Phase = "talk";
