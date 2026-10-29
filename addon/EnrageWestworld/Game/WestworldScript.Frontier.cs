@@ -35,6 +35,7 @@ namespace EnrageWestworld.InGame
             public Ped Lawman;            // a lawman who gave chase (LawChases)
             public bool PlayerMark;       // your own pocket (the lift, WestworldScript.Lift.cs)
             public int Amount;            // what he took from you, in cents
+            public Blip Blip;             // his red mark on the map (the lift)
             public int LawSince, LawLookAt;
             public bool LawHeld;          // brought down by the law: held, waiting to be resolved
             public int LawHeldAt;
@@ -140,6 +141,7 @@ namespace EnrageWestworld.InGame
                 Thief = thief, Mark = mark, MarkWoman = !PED.IS_PED_MALE(mark.Handle), MarkName = _director.NameAt(1), Town = _placeTown,
                 Started = Game.GameTime, ThiefHealth = Math.Max(1, ENTITY.GET_ENTITY_HEALTH(thief.Handle))
             };
+            MarkThief(thief, Game.GameTime);   // a red dot too, fair game for the catching (2026-10-29)
             _thieves.Add(thief.Handle);
             Log.Write("PICKPOCKET at work" + (_placeTown != null ? " in " + _placeTown : "") + ": catch him (lasso, hogtie, tackle) for the reward of a good name");
         }
@@ -253,6 +255,8 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_LOOK_AT_ENTITY(l.Handle, h, 15000, 0, 51, 0);
                 WanderLater(l.Handle, now + 15000);
                 _lawChaseLast = "caught" + (t.Town != null ? " in " + t.Town : "");
+                if (t.Blip != null && t.Blip.Exists())
+                    t.Blip.Delete();
                 LiftResolved(t, "law");
                 Log.Write("LAWCHASE caught: the pickpocket held by the law" + (t.Town != null ? " in " + t.Town : ""));
                 return true;
@@ -281,6 +285,8 @@ namespace EnrageWestworld.InGame
         private void ResolveTheft(Theft t, string how, int now)
         {
             _theft = null;
+            if (t.Blip != null && t.Blip.Exists())
+                t.Blip.Delete();
             LiftResolved(t, how);
             if (how != "killed" && t.Thief != null)
                 _thieves.Remove(t.Thief.Handle);   // the game reuses handles; don't brand some later stranger a thief

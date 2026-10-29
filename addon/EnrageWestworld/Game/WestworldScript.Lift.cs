@@ -32,6 +32,10 @@ namespace EnrageWestworld.InGame
                 _liftRun = null;
                 if (r.Exists() && !r.IsDead)
                 {
+                    // a red dot, as the game's own pickpocket is: hostile to you, so catching him (or worse) is no crime
+                    // (Lex, 2026-10-29: "he should be a red dot so if the main character catches him, he can kill him or
+                    // beat him up with no Wanted bounty, as well as easier to track on the minimap")
+                    MarkThief(r, Game.GameTime);
                     TASK.CLEAR_PED_TASKS(r.Handle, true, false);
                     TASK.TASK_SMART_FLEE_PED(r.Handle, Game.Player.Character.Handle, 200f, -1, 0, 3f, 0);
                 }
@@ -147,6 +151,40 @@ namespace EnrageWestworld.InGame
                 _liftLast = (how == "law" ? "the law caught him" : how == "killed" ? "killed" : "caught") + ", " + Cents(t.Amount) + " back";
             }
             Log.Write("LIFT " + _liftLast);
+        }
+
+        /// The thief as a hostile on the map: a red blip, his relationship to you hate (the game's law takes no notice of what
+        /// you do to him), and counted as one who came at you for the add-on's own self-defence rule. He still runs: no combat
+        /// attributes are set.
+        private unsafe void MarkThief(Ped p, int now)
+        {
+            int h = p.Handle;
+            int me = Game.Player.Character.Handle;
+            if (_hostileGroup == 0)
+            {
+                ulong slot = 0;   // out-parameters take 8 bytes
+                PED.ADD_RELATIONSHIP_GROUP("REALNPCS_HOSTILE", (uint*)&slot);
+                _hostileGroup = (uint)slot;
+            }
+            uint playerGroup = PED.GET_PED_RELATIONSHIP_GROUP_HASH(me);
+            PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, _hostileGroup, playerGroup);
+            PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, playerGroup, _hostileGroup);
+            PED.SET_PED_RELATIONSHIP_GROUP_HASH(h, _hostileGroup);
+            _cameAtYouSeen[h] = now;
+            if (_theft != null && _theft.Thief != null && _theft.Thief.Handle == h)
+            {
+                try
+                {
+                    _theft.Blip = p.AddBlip(BlipType.WhiteDot);
+                    MAP.BLIP_ADD_MODIFIER(_theft.Blip.Handle, Natives.Hash("BLIP_MODIFIER_ENEMY"));   // red, as an enemy's
+                    MAP.BLIP_ADD_MODIFIER(_theft.Blip.Handle, Natives.Hash("BLIP_MODIFIER_ENEMY_FLEEING"));
+                    _theft.Blip.Label = "Pickpocket";
+                }
+                catch (Exception ex)
+                {
+                    Log.Write("LIFT the red mark failed: " + ex.Message);
+                }
+            }
         }
 
         private string LiftStatus()
