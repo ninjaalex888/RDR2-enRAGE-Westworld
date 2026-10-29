@@ -56,7 +56,7 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 
 | Key | What it does |
 |---|---|
-| Ctrl+F7 or Alt+R | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text. Press either again to close it. Alt+F11 opens it too, but only on enRAGE 0.9.5.3 |
+| Alt+R or Alt+F | The RealNPCs settings panel: RealNPCs, West World, Stalkers and every enRAGE setting in one place, with larger text. Press either again to close it. Alt+F11 opens it too, but only on enRAGE 0.9.5.3 |
 | F7 | Shows what the nearest person enRAGE knows thinks of you, and writes a status line to the log. The town regulars and the fully awake around you show on the map for a minute |
 | F2 | Flirt with the person you're looking at. Locked on to someone, the game's menu also offers Flirt on H |
 | N | Read your letters, diaries and clippings, or take a diary you've just found |
@@ -68,13 +68,13 @@ To uninstall, delete `RealNPCs.dll`. You can also delete the `RealNPCs` folder i
 | Y | Wake the person you are facing one stage (West World), so you can see what each stage does |
 | T | The next line on the ticker now (on a long line, its next part first). T is enRAGE's telegraph key too: near a telegraph clerk, both happen |
 
-Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings. Only on enRAGE 0.9.5.3 does RealNPCs open its panel there in place of enRAGE's (`ReplaceEnrageSettings = false` gives it back); on other enRAGE versions Alt+F11 opens enRAGE's own panel, and Ctrl+F7 or Alt+R is the way in. About 15 seconds after loading, a notice says which key to use.
+Apart from T, none of these clash with enRAGE, Script Hook .NET's console (F8) or [Faster Looting](https://github.com/ninjaalex888/RDR2-FasterLooting). If another mod uses one, change it in the ini or the settings panel. Alt+F11 is enRAGE's own key for its settings. Only on enRAGE 0.9.5.3 does RealNPCs open its panel there in place of enRAGE's (`ReplaceEnrageSettings = false` gives it back); on other enRAGE versions Alt+F11 opens enRAGE's own panel, and Alt+R or Alt+F is the way in. About 15 seconds after loading, a notice says which key to use.
 
 ## Settings and log
 
 Everything is kept in `Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs\`:
 
-- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Ctrl+F7 or Alt+R) edits it too, along with enRAGE's `NemesisMod.ini`, and CasualHookups' settings when that mod is installed.
+- `RealNPCs.ini` holds the settings. Every feature can be turned off or tuned, each option has a comment, and saved changes take effect in game within a few seconds. The settings panel (Alt+R or Alt+F) edits it too, along with enRAGE's `NemesisMod.ini`, and CasualHookups' settings when that mod is installed.
 - `RealNPCs.log` records what happened. Please attach it to bug reports. While the mind underneath is being tested (`[Mind] MindShadow`, on), it also writes `MIND` lines: each nearby person's traits, needs, feelings and mood, what they would do now (`MIND would:`), what they've come to believe (`MIND believes:`) and, with `[Mind] MindLevels` on, the day of the people away (`MIND away:`). They change nothing anyone does; `[Mind] MindLive` (off) lets them reach the screen, as moods and as thoughts of what people really feel.
 - `backup\` holds a copy of `NemesisMod.ini` (and `CasualHookups.ini`) from before the panel first changed it in each session, and CasualHookups' original settings from before RealNPCs first set them.
 - `arthur.json` and `john.json` hold what people know and feel about you. `diaries\` holds the diaries you've found, as text files.

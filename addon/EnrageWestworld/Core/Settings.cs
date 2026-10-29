@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 101;
+        public const int CurrentVersion = 102;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -221,8 +221,8 @@ namespace EnrageWestworld.Core
         public string ReaderKey = "N";
         public bool ReloadIni = true;
         public bool ReplaceEnrageSettings = true;
-        public string SettingsKey = "Ctrl+F7";
-        public string SettingsKey2 = "Alt+R";   // Alt+F until 2026-10-29 (Lex: Alt+R)
+        public string SettingsKey = "Alt+R";   // Ctrl+F7 until 2026-10-29 (Lex: Alt+R first, Alt+F second)
+        public string SettingsKey2 = "Alt+F";   // the second key; Alt+R from 98 to 101, Alt+F before and since 102 (Lex, 2026-10-29)
         public bool PanelSlowsTime = true;    // the world slows while the settings panel is open, as it does for the game's wheels (Lex, 2026-10-27; settings version 84)
         public float PanelTimeScale = 0.25f;
         // [Controller] (Lex, 2026-10-28; settings version 86): a controller's buttons for RealNPCs' own keys, a button
@@ -532,18 +532,19 @@ namespace EnrageWestworld.Core
                     s.TestCastReturns = false;   // 2026-10-29 (Lex): the test cast come only on the row's key, not by themselves at every visit
                     log?.Invoke("Settings: TestCastReturns set off (the test cast come only on the Testing row's key now); set it on again if you want them back by themselves).");
                 }
-                if (s.SettingsVersion < 98 && KeyIs(s.SettingsKey2, "Alt+F"))
+                if (s.SettingsVersion < 102)
                 {
-                    s.SettingsKey2 = "Alt+R";   // 2026-10-29 (Lex): the second settings key moves from Alt+F to Alt+R
-                    log?.Invoke("Settings: SettingsKey2 Alt+F -> Alt+R (the second key that opens the settings panel; set it back if you want Alt+F).");
-                }
-                if (s.SettingsVersion < 99 && KeyIs(s.SettingsKey, "Alt+F"))
-                {
-                    // 2026-10-29 (Lex): Alt+F is to open nothing; an ini whose first key was Alt+F goes to Ctrl+F7 (the default), beside Alt+R
-                    s.SettingsKey = KeyIs(s.SettingsKey2, "Ctrl+F7") ? "Alt+R" : "Ctrl+F7";
-                    if (KeyIs(s.SettingsKey2, "Alt+F") || KeyIs(s.SettingsKey2, s.SettingsKey))
-                        s.SettingsKey2 = "Alt+R";
-                    log?.Invoke("Settings: SettingsKey Alt+F -> " + s.SettingsKey + " (Alt+F opens nothing now; the keys are " + s.SettingsKey + " and " + s.SettingsKey2 + ").");
+                    // 2026-10-29 (Lex): Alt+R opens the settings and Alt+F is the second key; Ctrl+F7 goes. An ini on any of the old
+                    // defaults (Ctrl+F7 and Alt+F, or the afternoon's Ctrl+F7 and Alt+R) is moved; a key of the player's own is kept.
+                    string k1 = s.SettingsKey, k2 = s.SettingsKey2;
+                    bool old1 = KeyIs(k1, "Ctrl+F7") || KeyIs(k1, "Alt+F") || KeyIs(k1, "Alt+R");
+                    bool old2 = KeyIs(k2, "Ctrl+F7") || KeyIs(k2, "Alt+F") || KeyIs(k2, "Alt+R");   // an empty or None second key is the player's choice: kept
+                    if (old1)
+                        s.SettingsKey = "Alt+R";
+                    if (old2 || KeyIs(k2, s.SettingsKey))
+                        s.SettingsKey2 = KeyIs(s.SettingsKey, "Alt+F") ? "Alt+R" : "Alt+F";
+                    if (old1 || old2)
+                        log?.Invoke("Settings: the settings panel's keys are " + s.SettingsKey + " and " + s.SettingsKey2 + " (were " + k1 + " and " + k2 + "; Ctrl+F7 opens nothing now).");
                 }
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
@@ -643,7 +644,7 @@ namespace EnrageWestworld.Core
         public string ToIni()
         {
             StringBuilder b = new StringBuilder();
-            b.AppendLine("; RealNPCs settings (an unofficial add-on for enRAGE). true/false, numbers in seconds unless noted. Ctrl+F7 in game edits them too (Alt+F11 on enRAGE 0.9.5.3).");
+            b.AppendLine("; RealNPCs settings (an unofficial add-on for enRAGE). true/false, numbers in seconds unless noted. Alt+R in game edits them too (Alt+F as well; Alt+F11 on enRAGE 0.9.5.3).");
             b.AppendLine("; Saved changes are picked up in game within a few seconds (ReloadIni).");
             b.AppendLine("SettingsVersion = " + SettingsVersion + "   ; leave this alone");
             b.AppendLine();
