@@ -128,7 +128,7 @@ namespace EnrageWestworld.InGame
                 }
             if (a == null || !(ENTITY.IS_ENTITY_ON_SCREEN(a.Handle) || ENTITY.IS_ENTITY_ON_SCREEN(b.Handle)))
                 return;
-            _nextChance = now + (int)(_cfg.DramaGapSeconds * 3000);
+            _nextChance = now + (int)(_cfg.DramaGapSeconds * 1500);   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk)
             // the older one tells the tales
             if (Director.OldModel(b) && !Director.OldModel(a))
             {

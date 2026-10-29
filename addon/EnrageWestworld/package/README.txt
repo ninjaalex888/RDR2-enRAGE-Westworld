@@ -570,7 +570,7 @@ LIVES IN MOTION
 
 FRONTIER SCENES AND YOU (0.5)
 -----------------------------
-Scenes happen near you between strangers, at most one every couple of minutes (DramaGapSeconds):
+Scenes happen near you between strangers, at most one a minute or so (DramaGapSeconds, 60):
 - Standoff: two men square off, a crowd gathers. Guns come out only when both are armed and no
   lawman is close; it ends with someone backing down, or with fists. Nobody fires.
 - Drunk singing (saloons, nights), tall tales from old-timers, the paper read aloud (your deeds
@@ -743,7 +743,7 @@ in the file. The new ones:
             he lets you go
 [World]    Deeds, SelfDefenceNoBounty (true), TownPosts (true), TownPostsAfterDeath (survive | successor),
             Regulars (true), RegularsPerTown (30), RegularsDress (true), RumoursTravel, Newspaper, Letters, FindDiaries, Avengers (all true),
-            AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (150), SaloonGossip,
+            AvengerChance (35), AvengersAtOnce (2), AvengerGapHours (48), CastRelatives, Drama (true), DramaGapSeconds (60), SaloonGossip,
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
             SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true),

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 100;
+        public const int CurrentVersion = 101;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -161,7 +161,7 @@ namespace EnrageWestworld.Core
         public bool CastRelatives = true;
         public bool CastRelativesSpawn = true;   // when nobody free is on the street (enRAGE has named most walkers in a well-played town), the relative is made out of sight behind you and let go to the game after (Lex, 2026-10-29; settings version 95)
         public bool Drama = true;
-        public int DramaGapSeconds = 90;   // 150 until settings version 87 (Lex, 2026-10-28: the world lively)
+        public int DramaGapSeconds = 60;   // 150 until settings version 87, 90 until 101 (Lex, 2026-10-28 and 10-29: the world lively)
         public bool SaloonGossip = true;
         public bool Weddings = true;
         public bool Funerals = true;
@@ -425,6 +425,11 @@ namespace EnrageWestworld.Core
                 // the old default (Lex, 2026-10-28: scenes between people fairly often); a gap of your own is kept
                 s.DramaGapSeconds = 90;
                 raised.Add("DramaGapSeconds 150 -> 90");
+            }
+            if (s.SettingsVersion < 101 && s.DramaGapSeconds == 90)
+            {
+                s.DramaGapSeconds = 60;   // 2026-10-29 (Lex): "these NPC interactions happening pretty frequently to make the world feel lively"
+                raised.Add("DramaGapSeconds 90 -> 60");
             }
             if (s.SettingsVersion == 81 && s.SupperInvitation)
             {
@@ -785,7 +790,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("CastRelatives = " + B(CastRelatives) + "   ; in their town, folk on the street turn out to be someone's relative");
             b.AppendLine("CastRelativesSpawn = " + B(CastRelativesSpawn) + "   ; when nobody free is on the street (a well-played town: enRAGE has named most walkers by their looks, and the test cast carry names), the relative is made out of sight behind you and let go to the game once they have spoken; false: the walk-up waits for a free passer-by");
             b.AppendLine("Drama = " + B(Drama) + "   ; strangers argue, flirt, brawl, propose and gossip around you");
-            b.AppendLine("DramaGapSeconds = " + DramaGapSeconds + "   ; at most one scene this often");
+            b.AppendLine("DramaGapSeconds = " + DramaGapSeconds + "   ; at most one street scene this often (seconds); a chance meeting between two people with no reason of their own waits one and a half times this. Lower for a livelier street");
             b.AppendLine("SaloonGossip = " + B(SaloonGossip) + "   ; in saloons, strangers trade rumours, some about you");
             b.AppendLine("Weddings = " + B(Weddings) + "   ; couples marry at the church - be there and they'll remember");
             b.AppendLine("Funerals = " + B(Funerals) + "   ; mourners at enRAGE's funerals speak of the dead");

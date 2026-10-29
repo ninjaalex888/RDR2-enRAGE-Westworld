@@ -274,11 +274,16 @@ namespace EnrageWestworld.InGame
             ResBind b;
             if (_resBind.TryGetValue(h, out b) && b.R != null && !b.R.Dead && !string.IsNullOrEmpty(b.R.Name))
             {
+                // met: talked, greeted, flirted, any contact, or they saw you do something; else a stranger, whatever their temper
+                // (Lex, 2026-10-29: "it should show Stranger until the main character has greeted or interacted with the NPC")
                 PersonState st = _store != null ? _store.Find(b.R.Id) : null;
-                bool met = st != null && (st.Talks > 0 || st.Heard.Count > 0);
+                int greetedAt;
+                bool met = (st != null && (st.Talks > 0 || st.KnowsName || st.Flirts > 0 || st.ContactAt > 0 || st.SawDeeds.Count > 0)) || _greetedAt.TryGetValue(h, out greetedAt);
                 string temper = b.R.Personality != null && b.R.Personality.Length > 0 ? b.R.Personality : null;
                 string trade = b.R.Trade != null && b.R.Trade.Length > 0 ? Grammar.UpperFirst(b.R.Trade.StartsWith("a ") ? b.R.Trade.Substring(2) : b.R.Trade.StartsWith("an ") ? b.R.Trade.Substring(3) : b.R.Trade) : null;
                 string line2 = temper != null && trade != null ? temper + " - " + trade : temper ?? trade ?? "";
+                if (!met)
+                    line2 = "Stranger";
                 Set(c, b.R.Name, line2, met ? ColourTitle : ColourStranger, ColourDim, true);
                 return true;
             }
