@@ -288,7 +288,7 @@ namespace EnrageWestworld.InGame
 
         private static string ModelOf(int ped)
         {
-            return ENTITY.DOES_ENTITY_EXIST(ped) ? NemesisSystem.Models.Name(ENTITY.GET_ENTITY_MODEL(ped)) : null;
+            return ENTITY.DOES_ENTITY_EXIST(ped) ? Models.Name(ENTITY.GET_ENTITY_MODEL(ped)) : null;
         }
 
         /// CasualHookups won't take her kind: her yes leads to RealNPCs' own night instead.

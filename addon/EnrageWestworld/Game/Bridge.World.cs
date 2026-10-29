@@ -6,7 +6,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using NemesisSystem;
 using RDR2.Math;
 using RDR2.Native;
 
@@ -78,7 +77,7 @@ namespace EnrageWestworld.InGame
                             _newRecord = m;
                         break;
                     case "FitKinToLife":
-                        if (p.Length == 1 && p[0].ParameterType == typeof(NemesisRecord))
+                        if (p.Length == 1 && IsRecordType(p[0].ParameterType))
                             _fitKin = m;
                         break;
                 }
@@ -184,38 +183,22 @@ namespace EnrageWestworld.InGame
         public bool AddDeed(string tag, string title, string place, Vector3? pos)
         {
             ResolveMore();
-            return Call(_chronicleDeed, "ChronicleDeed", tag, title, place, pos, null, new WorldPart[0]);
+            return Call(_chronicleDeed, "ChronicleDeed", tag, title, place, pos, null, Typed.NoParts());
         }
 
         /// A small item for enRAGE's newspapers ("Around town"), placed at a town so the local paper prints it.
         public bool AddTownItem(string title, string place, Vector3? pos)
         {
-            List<WorldEvent> events = Events();
+            object events = EventsRaw();
             if (events == null || string.IsNullOrEmpty(title))
                 return false;
             try
             {
                 long now = Now();
                 DateTime d = GameDate.FromMinutes(now);
-                WorldEvent e = new WorldEvent
-                {
-                    Id = "ww_" + Guid.NewGuid().ToString("N").Substring(0, 8),
-                    Kind = "LIFE",
-                    GameMin = now,
-                    Day = GameDate.DayKey(d),
-                    When = d.ToString("MMM d  HH:mm", System.Globalization.CultureInfo.InvariantCulture),
-                    Title = title,
-                    Place = place,
-                    Heard = true
-                };
-                if (pos.HasValue)
-                {
-                    e.HasPos = true;
-                    e.X = pos.Value.X;
-                    e.Y = pos.Value.Y;
-                    e.Z = pos.Value.Z;
-                }
-                events.Add(e);
+                if (!Typed.AddTownItem(events, title, place, now, GameDate.DayKey(d), d.ToString("MMM d  HH:mm", System.Globalization.CultureInfo.InvariantCulture),
+                                       pos.HasValue ? pos.Value.X : (float?)null, pos.HasValue ? pos.Value.Y : (float?)null, pos.HasValue ? pos.Value.Z : (float?)null))
+                    return false;
                 Call(_saveWorld, "SaveWorld");
                 return true;
             }
@@ -389,7 +372,7 @@ namespace EnrageWestworld.InGame
         }
 
         /// Marks a gang plan as known (enRAGE then shows it like any other tip).
-        public void RevealPlanAs(object plan, NemesisRecord teller, string how)
+        public void RevealPlanAs(object plan, RecordRef teller, string how)
         {
             if (plan == null || Get<bool>(plan, "Known"))
                 return;
@@ -412,23 +395,13 @@ namespace EnrageWestworld.InGame
         public bool CanRevive { get { return _remember != null && _saveRoster != null; } }
 
         /// Brings a dead person back: alive, "presumed dead" so enRAGE lets him return in his own time.
-        public bool Revive(NemesisRecord r, string emotion, int intensity, string memory, string history, int hate, int fear, int restMinutes)
+        public bool Revive(RecordRef r, string emotion, int intensity, string memory, string history, int hate, int fear, int restMinutes)
         {
             if (r == null || r.IsAlive || !CanRevive)
                 return false;
             try
             {
-                long now = Now();
-                r.IsAlive = true;
-                r.PresumedDead = true;
-                r.PresumedDeadAt = now;
-                r.KilledByPlayer = false;
-                r.Fate = null;
-                r.RestUntil = Math.Max(r.RestUntil, now + restMinutes);
-                r.Hate = Math.Max(0, Math.Min(100, r.Hate + hate));
-                if (fear > 0)
-                    r.AddFear(fear);
-                r.Touch();
+                Typed.ReviveApply(r.Raw, Now(), hate, fear, restMinutes);   // the writes themselves (Typed.cs)
                 Remember(r, emotion, intensity, memory, "you");
                 if (history != null)
                     History(r, history);
@@ -449,17 +422,14 @@ namespace EnrageWestworld.InGame
         /// death: the area unloaded first), IsAlive goes false and PresumedDead with it, as enRAGE's own death writes do
         /// (the caller never asks this of one enRAGE has just decided lived). Fate is left to enRAGE (a Fate keeps a
         /// record out of its funerals and burials). Then SaveRoster. Null when it was written, else why not.
-        public string BookDeath(NemesisRecord r, string history, bool markDead)
+        public string BookDeath(RecordRef r, string history, bool markDead)
         {
             if (r == null || !CanBookDeath)
                 return "enRAGE's history or roster saving wasn't found";
             try
             {
                 if (markDead && r.IsAlive)
-                {
-                    r.IsAlive = false;
-                    r.PresumedDead = false;
-                }
+                    Typed.BookDeathApply(r.Raw);
                 if (history != null)
                     History(r, history);
                 RosterChanged();
@@ -473,23 +443,35 @@ namespace EnrageWestworld.InGame
         }
 
         /// The record with this id on enRAGE's roster now (a save point restored swaps the roster's objects).
-        public NemesisRecord RecordById(string id)
+        public RecordRef RecordById(string id)
         {
-            List<NemesisRecord> roster = id != null ? Roster() : null;
-            return roster != null ? roster.FirstOrDefault(x => x != null && x.Id == id) : null;
+            IList roster = id != null ? RosterRaw() : null;
+            if (roster == null)
+                return null;
+            try
+            {
+                foreach (object o in roster)
+                    if (o != null && Typed.RecId(o) == id)
+                        return Wrap(o);
+            }
+            catch (Exception ex)
+            {
+                Fail("RecordById", ex);
+            }
+            return null;
         }
 
         public bool CanMakePeople { get { ResolveMore(); return _newRecord != null && _roster != null && _saveRoster != null; } }
 
         /// A brand-new person through enRAGE's own generator (name, backstory, traits), not yet on the roster.
-        public NemesisRecord NewPerson(uint model, string zone)
+        public RecordRef NewPerson(uint model, string zone)
         {
             ResolveMore();
             if (_newRecord == null)
                 return null;
             try
             {
-                return _newRecord.Invoke(Mod, new object[] { model, zone, null, 1 }) as NemesisRecord;
+                return Wrap(_newRecord.Invoke(Mod, new object[] { model, zone, null, 1 }));
             }
             catch (Exception ex)
             {
@@ -498,17 +480,17 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        public bool AddToRoster(NemesisRecord r)
+        public bool AddToRoster(RecordRef r)
         {
-            List<NemesisRecord> roster = Roster();
+            IList roster = RosterRaw();
             if (r == null || roster == null)
                 return false;
             try
             {
                 if (_fitKin != null && r.KinId != null)
-                    Call(_fitKin, "FitKinToLife", r);
-                if (!roster.Contains(r))
-                    roster.Add(r);
+                    Call(_fitKin, "FitKinToLife", r.Raw);
+                if (!roster.Contains(r.Raw))
+                    roster.Add(r.Raw);
                 RosterChanged();
                 return true;
             }

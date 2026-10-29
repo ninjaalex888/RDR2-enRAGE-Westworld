@@ -6,7 +6,6 @@ using System.IO;
 using System.Linq;
 using System.Windows.Forms;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -574,7 +573,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 // only people you can see think on the ticker, so it's always clear whose thought it is
                 bool seen = ENTITY.IS_ENTITY_ON_SCREEN(h) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, h, 17);
-                NemesisRecord rec = _bridge.RecordAt(h);
+                RecordRef rec = _bridge.RecordAt(h);
                 if (rec != null)
                 {
                     if (!rec.IsAlive || !seen)
@@ -585,7 +584,7 @@ namespace EnrageWestworld.InGame
                 }
                 // right beside you: a new thought every 15 game minutes (30 s), to match the ticker's quicker turn
                 long every = d < BesideMetres ? 15 : ThoughtEvery;
-                Acquaintance a = _bridge.AcquaintanceAt(h);
+                FolkRef a = _bridge.AcquaintanceAt(h);
                 if (a != null && !string.IsNullOrEmpty(a.Name))
                 {
                     if (!seen)

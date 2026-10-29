@@ -3,7 +3,6 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;

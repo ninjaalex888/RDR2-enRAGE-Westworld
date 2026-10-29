@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -135,10 +134,10 @@ namespace EnrageWestworld.InGame
         private Person KnownPerson(Ped p)
         {
             int h = p.Handle;
-            NemesisRecord rec = _bridge.RecordAt(h);
+            RecordRef rec = _bridge.RecordAt(h);
             if (rec != null && rec.IsAlive)
                 return PersonOf(rec);
-            Acquaintance ac = _bridge.AcquaintanceAt(h);
+            FolkRef ac = _bridge.AcquaintanceAt(h);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
             {
                 Folk f = Snapshot.Of(ac);

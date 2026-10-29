@@ -16,8 +16,9 @@ namespace EnrageWestworld.InGame
 		};
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static Person Of(NemesisRecord r, Bridge bridge, Dictionary<string, NemesisRecord> byId, long now)
+		public static Person Of(RecordRef rr, Bridge bridge, Dictionary<string, RecordRef> byId, long now)
 		{
+			NemesisRecord r = (NemesisRecord)rr.Raw;
 			Person person = new Person
 			{
 				Id = r.Id,
@@ -210,8 +211,9 @@ namespace EnrageWestworld.InGame
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static int MarkKnown(NemesisRecord r, Person p)
+		public static int MarkKnown(RecordRef rr, Person p)
 		{
+			NemesisRecord r = (NemesisRecord)rr.Raw;
 			int num = 0;
 			if (r.Past == null)
 			{
@@ -233,8 +235,9 @@ namespace EnrageWestworld.InGame
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static Folk Of(Acquaintance a)
+		public static Folk Of(FolkRef f)
 		{
+			Acquaintance a = (Acquaintance)f.Raw;
 			return new Folk
 			{
 				Id = a.Id,
@@ -255,8 +258,9 @@ namespace EnrageWestworld.InGame
 		}
 
 		[MethodImpl(MethodImplOptions.NoInlining)]
-		public static LifeEvent Of(WorldEvent e)
+		public static LifeEvent Of(object raw)
 		{
+			WorldEvent e = (WorldEvent)raw;
 			LifeEvent lifeEvent = new LifeEvent
 			{
 				Id = e.Id,

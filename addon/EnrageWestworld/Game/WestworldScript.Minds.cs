@@ -5,7 +5,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -88,7 +87,7 @@ namespace EnrageWestworld.InGame
                 return null;
             if (id.StartsWith("folk:"))
             {
-                Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+                FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
                 return ac != null ? Snapshot.Of(ac).Town : null;
             }
             Resident r = _store.FindResident(id);
@@ -214,7 +213,7 @@ namespace EnrageWestworld.InGame
                                                  .OrderBy(x => x.Position.DistanceTo(me.Position)))
             {
                 Person person = null;
-                Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+                FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
                 ResBind b;
                 if (ac != null && !string.IsNullOrEmpty(ac.Name))
                 {

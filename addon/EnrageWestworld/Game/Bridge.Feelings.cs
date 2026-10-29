@@ -9,7 +9,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2.Math;
 using RDR2.Native;
 
@@ -69,15 +68,15 @@ namespace EnrageWestworld.InGame
                 return false;
             try
             {
-                NemesisRecord rec = RecordAt(handle);
+                RecordRef rec = RecordAt(handle);
                 if (rec != null)
                 {
-                    fear = Convert.ToSingle(_effectiveFear.Invoke(Mod, new object[] { rec }));
+                    fear = Convert.ToSingle(_effectiveFear.Invoke(Mod, new object[] { rec.Raw }));
                     anger = rec.Hate;
                 }
                 else
                 {
-                    Acquaintance a = AcquaintanceAt(handle);
+                    FolkRef a = AcquaintanceAt(handle);
                     object p = ProvocationOf(handle);
                     fear = Math.Max(a != null ? a.Fear : 0, Convert.ToSingle(_uneaseOf.Invoke(Mod, new object[] { handle })));
                     like = a != null ? a.Like : 0;
@@ -114,7 +113,7 @@ namespace EnrageWestworld.InGame
                             continue;
                         rows.Add(new GrudgeRow { Handle = h, Score = score, At = (int)_provAt.GetValue(p) });
                     }
-                NemesisRecord active = _activeRecord != null ? _activeRecord.GetValue(Mod, null) as NemesisRecord : null;
+                RecordRef active = _activeRecord != null ? Wrap(_activeRecord.GetValue(Mod, null)) : null;
                 if (active != null && active.IsAlive)
                     rows.Add(new GrudgeRow { Who = active.Name, Score = active.Hate, Nemesis = true });
             }
@@ -176,7 +175,8 @@ namespace EnrageWestworld.InGame
             try
             {
                 Type t = Mod.GetType();
-                _effectiveFear = t.GetMethod("EffectiveFear", Any, null, new[] { typeof(NemesisRecord) }, null);
+                Type recordType = t.Assembly.GetType("NemesisSystem.NemesisRecord", false);
+                _effectiveFear = recordType != null ? t.GetMethod("EffectiveFear", Any, null, new[] { recordType }, null) : null;
                 _uneaseOf = t.GetMethod("UneaseOf", Any, null, new[] { typeof(int) }, null);
                 _provokedField = t.GetField("_provoked", Any);
                 _overlayField = t.GetField("_debugOn", Any);

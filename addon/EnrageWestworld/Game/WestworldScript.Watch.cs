@@ -6,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -108,9 +107,9 @@ namespace EnrageWestworld.InGame
                                         _lastOffenceAt = now;       // someone who hadn't come at him: any bounty now may be his own doing
                                         _youStarted[victim] = now;  // and however long they fight back, he started it
                                     }
-                                    NemesisRecord who = _bridge.RecordAt(victim);
+                                    RecordRef who = _bridge.RecordAt(victim);
                                     h.RecordId = who != null ? who.Id : null;
-                                    Acquaintance acq = who == null ? _bridge.AcquaintanceAt(victim) : null;
+                                    FolkRef acq = who == null ? _bridge.AcquaintanceAt(victim) : null;
                                     h.AcqName = acq != null && !string.IsNullOrEmpty(acq.Name) ? acq.FullName : null;
                                 }
                                 _hits[victim] = h;
@@ -452,7 +451,7 @@ namespace EnrageWestworld.InGame
             List<string> witnesses = WitnessesNear(pos, h, 35f);
             int seen = CountPeopleNear(pos, h, 35f);
             PostKilled(victim, seen);   // someone who kept a counter: the post passes on
-            NemesisRecord rec = null;
+            RecordRef rec = null;
             if (hit.RecordId == null || !_recById.TryGetValue(hit.RecordId, out rec))
                 rec = _bridge.RecordAt(h);
             if (rec != null)
@@ -467,7 +466,7 @@ namespace EnrageWestworld.InGame
             }
             bool woman = !PED.IS_PED_MALE(h);
             bool law = Natives.IsLaw(victim);
-            Acquaintance a = _bridge.AcquaintanceAt(h);
+            FolkRef a = _bridge.AcquaintanceAt(h);
             string known = a != null && !string.IsNullOrEmpty(a.Name) ? a.FullName : hit.AcqName;
             string label = law ? "a lawman" : Director.Kind(victim, woman);
             bool thief = _thieves.Remove(h);
@@ -512,7 +511,7 @@ namespace EnrageWestworld.InGame
         {
             if (looted == 0 || !ENTITY.DOES_ENTITY_EXIST(looted) || !PED.IS_PED_HUMAN(looted))
                 return;
-            NemesisRecord rec = _bridge.RecordAt(looted);
+            RecordRef rec = _bridge.RecordAt(looted);
             if (rec != null && _cfg.FindDiaries)
             {
                 PersonState st = _store.Find(rec.Id);
@@ -622,7 +621,7 @@ namespace EnrageWestworld.InGame
                 int h = p.Handle;
                 if (h == except || h == Game.Player.Character.Handle || ENTITY.IS_ENTITY_DEAD(h) || p.Position.DistanceTo(pos) > radius)
                     continue;
-                NemesisRecord r = _bridge.RecordAt(h);
+                RecordRef r = _bridge.RecordAt(h);
                 if (r != null && r.IsAlive && r.Id != null)
                     ids.Add(r.Id);
             }
@@ -922,7 +921,7 @@ namespace EnrageWestworld.InGame
             if (_campOffered.Contains(key) || PED.IS_PED_IN_COMBAT(Game.Player.Character.Handle, 0))
                 return;
             _campOffered.Add(key);
-            NemesisRecord owner = (_bridge.Roster() ?? new List<NemesisRecord>()).Where(r => r != null && r.Gang == camp.Gang && r.Id != null)
+            RecordRef owner = (_bridge.Roster() ?? new List<RecordRef>()).Where(r => r != null && r.Gang == camp.Gang && r.Id != null)
                 .Select(r => new { r, st = _store.Find(r.Id) }).Where(x => x.st != null && x.st.Diary.Count >= 2 && !x.st.DiaryFound)
                 .OrderBy(x => x.r.IsAlive ? 1 : 0).Select(x => x.r).FirstOrDefault();
             if (owner == null)

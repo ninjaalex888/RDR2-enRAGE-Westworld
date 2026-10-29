@@ -414,7 +414,7 @@ namespace EnrageWestworld.InGame
             List<string> lines = WakeVoice.AllLines().Where(l => !_wvHeard.Contains(l)).ToList();
             bool all = lines.Count == 0;   // every line heard already: the whole list again, on this voice
             _wvProbe = new WakeVoiceProbe { Handle = p.Handle, Name = name, Lines = all ? WakeVoice.AllLines() : lines, NextAt = now + 800 };
-            Log.Write("WAKE voice probe: " + _wvProbe.Lines.Count + (all ? " lines (all heard before this session: the whole list again)" : " lines not heard yet this session") + " on " + name + " (" + (NemesisSystem.Models.Name(ENTITY.GET_ENTITY_MODEL(p.Handle)) ?? "?") + ", bank " +
+            Log.Write("WAKE voice probe: " + _wvProbe.Lines.Count + (all ? " lines (all heard before this session: the whole list again)" : " lines not heard yet this session") + " on " + name + " (" + (Models.Name(ENTITY.GET_ENTITY_MODEL(p.Handle)) ?? "?") + ", bank " +
                       (Speech.BankOf(p.Handle) ?? "not certain") + "), about 4 s each");
             return null;
         }

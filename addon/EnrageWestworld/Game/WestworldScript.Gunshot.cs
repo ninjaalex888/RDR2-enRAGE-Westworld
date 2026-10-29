@@ -81,7 +81,7 @@ namespace EnrageWestworld.InGame
             WEAPON.SET_CURRENT_PED_WEAPON(h, TestRevolver, true, 0, false, false);
             WEAPON._REQUEST_WEAPON_ASSET(TestRevolver, 31, false);   // for the bullets fired from beside them
             _gunTest.GunGiven = true;
-            Log.Write("GUNSHOT test: " + GunshotWays.Length + " ways on " + _gunTest.Name + " (" + (NemesisSystem.Models.Name(ENTITY.GET_ENTITY_MODEL(h)) ?? "?") + "), at the ground " +
+            Log.Write("GUNSHOT test: " + GunshotWays.Length + " ways on " + _gunTest.Name + " (" + (Models.Name(ENTITY.GET_ENTITY_MODEL(h)) ?? "?") + "), at the ground " +
                       _gunTest.Spot.DistanceTo(pos).ToString("0.0") + " m ahead of them");
             Hint("Gunshots: six ways, a few seconds apart, at the ground in front of " + _gunTest.Name + ". Note which you hear.", 4000);
             return null;

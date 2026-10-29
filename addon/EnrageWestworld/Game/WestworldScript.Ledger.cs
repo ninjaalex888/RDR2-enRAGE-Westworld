@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -120,7 +119,7 @@ namespace EnrageWestworld.InGame
                 }
                 return k.Id != null ? k : null;
             }
-            NemesisRecord rec = _bridge.RecordAt(h);
+            RecordRef rec = _bridge.RecordAt(h);
             if (rec != null)
             {
                 k.Id = rec.Id;
@@ -128,7 +127,7 @@ namespace EnrageWestworld.InGame
                 k.Kind = "record";
                 return k;
             }
-            Acquaintance a = _bridge.AcquaintanceAt(h);
+            FolkRef a = _bridge.AcquaintanceAt(h);
             if (a != null && !string.IsNullOrEmpty(a.Name))
             {
                 Folk f = Snapshot.Of(a);
@@ -219,7 +218,7 @@ namespace EnrageWestworld.InGame
             if (kind == "record" && there && by == "another" && _sceneAtHandle.TryGetValue(h, out sceneAt) && Game.GameTime - sceneAt < 120000 &&
                 _restMsOf.TryGetValue(h, out rest) && rest == FoughtRestMs && _foughtWith.TryGetValue(h, out foe) && foe == source)
             {
-                NemesisRecord fought = _bridge.RecordAt(h);
+                RecordRef fought = _bridge.RecordAt(h);
                 if (fought != null)
                     QueueRecordFate(fought, h, name, "Died after a street fight" + (e.Town != null ? ", in " + e.Town : string.Empty) + ".");
             }

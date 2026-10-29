@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -385,7 +384,7 @@ namespace EnrageWestworld.InGame
                     close++;   // any nearer and he'd be "caught" at once
                     continue;
                 }
-                NemesisRecord rec = _bridge.RecordAt(h);
+                RecordRef rec = _bridge.RecordAt(h);
                 if (rec != null)
                 {
                     // one of enRAGE's people, while it has no use for them (StalkerRecords); one who hates you is likeliest
@@ -424,7 +423,7 @@ namespace EnrageWestworld.InGame
                 Folk folk = null;
                 PersonState st = null;
                 Resident res = null;
-                Acquaintance a = _bridge.AcquaintanceAt(h);
+                FolkRef a = _bridge.AcquaintanceAt(h);
                 if (a != null && !string.IsNullOrEmpty(a.Name))
                 {
                     folk = Snapshot.Of(a);
@@ -460,7 +459,7 @@ namespace EnrageWestworld.InGame
             int h = who.Handle;
             bool woman = !PED.IS_PED_MALE(h);
             string label = null;
-            Acquaintance a = _bridge.AcquaintanceAt(h);
+            FolkRef a = _bridge.AcquaintanceAt(h);
             if (a != null && !string.IsNullOrEmpty(a.Name))
                 label = a.FullName ?? a.Name;
             else
@@ -476,7 +475,7 @@ namespace EnrageWestworld.InGame
             _stalkDueSince = 0;
             _stalkWait = null;
             _stalkFails = 0;
-            NemesisRecord rec = _bridge.RecordAt(h);
+            RecordRef rec = _bridge.RecordAt(h);
             if (rec != null)
                 _stalkerLabel = PersonOf(rec).Name;
             _stalkerRecord = rec != null;

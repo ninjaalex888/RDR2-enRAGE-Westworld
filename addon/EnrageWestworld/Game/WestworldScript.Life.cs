@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -383,7 +382,7 @@ namespace EnrageWestworld.InGame
             id = name = temper = null;
             if (p == null || !p.Exists())
                 return false;
-            NemesisRecord rec = _bridge.RecordAt(p.Handle);
+            RecordRef rec = _bridge.RecordAt(p.Handle);
             if (rec != null && rec.IsAlive)
             {
                 Person rp = PersonOf(rec);   // enRAGE's people are met again by their record
@@ -392,7 +391,7 @@ namespace EnrageWestworld.InGame
                 temper = rp.Personality;
                 return true;
             }
-            Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+            FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
             {
                 Folk f = Snapshot.Of(ac);
@@ -440,10 +439,10 @@ namespace EnrageWestworld.InGame
         {
             if (p == null || !p.Exists())
                 return null;
-            NemesisRecord rec = _bridge.RecordAt(p.Handle);
+            RecordRef rec = _bridge.RecordAt(p.Handle);
             if (rec != null && !string.IsNullOrEmpty(rec.Name))
                 return ShownName(p.Handle, rec.Name);
-            Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+            FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
                 return ac.Name;
             Resident r = ResidentEligible(p) ? ResidentOf(p) : null;
@@ -525,7 +524,7 @@ namespace EnrageWestworld.InGame
             ResBind rb;
             if (_resBind.TryGetValue(p.Handle, out rb) && rb.R != null && !rb.R.Dead)
                 return rb.R.Town;
-            Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+            FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
             return ac != null ? ac.Town : null;
         }
 
@@ -773,7 +772,7 @@ namespace EnrageWestworld.InGame
 
         private uint ModelOfPerson(string id, bool woman, string town, int salt)
         {
-            NemesisRecord r;
+            RecordRef r;
             if (id != null && _recById.TryGetValue(id, out r) && r.ModelHash != 0)
                 return r.ModelHash;
             return Spawner.ModelFor(town, woman, salt + (id ?? "").GetHashCode());
@@ -976,7 +975,7 @@ namespace EnrageWestworld.InGame
                 if (key == null || _funeralsHeard.Contains(key) || f.Pos.DistanceTo2D(pos) > 30f)
                     continue;
                 _funeralsHeard.Add(key);
-                NemesisRecord deadRec = null;
+                RecordRef deadRec = null;
                 if (f.Dead != null)
                     _recById.TryGetValue(f.Dead, out deadRec);
                 Person dead = deadRec != null ? PersonOf(deadRec) : null;
@@ -988,7 +987,7 @@ namespace EnrageWestworld.InGame
                 for (int i = 0; i < lines.Count; i++)
                 {
                     Ped speaker = mourners.Count > 0 ? mourners[i % mourners.Count] : null;
-                    NemesisRecord who = speaker != null ? _bridge.RecordAt(speaker.Handle) : null;
+                    RecordRef who = speaker != null ? _bridge.RecordAt(speaker.Handle) : null;
                     string label = who != null ? who.Name : speaker != null ? "A mourner" : "Someone at the graveside";
                     Feed.Say(label, lines[i], speaker != null ? Speech.For(speaker.Handle, lines[i], fallback: "replybad") : null);
                     if (speaker != null && i == lines.Count - 1 && byYou)
@@ -1611,7 +1610,7 @@ namespace EnrageWestworld.InGame
 
         private void Revive(WorldRequest q)
         {
-            NemesisRecord rec;
+            RecordRef rec;
             if (q.PersonId == null || !_recById.TryGetValue(q.PersonId, out rec))
                 return;
             Reverie r = q.Reverie;
@@ -1630,7 +1629,7 @@ namespace EnrageWestworld.InGame
             }
             Vector3 pos = Game.Player.Character.Position;
             uint model = Spawner.ModelFor(Rumours.Towns.ContainsKey(a.Town ?? "") ? a.Town : null, a.Woman, (a.Name ?? "").GetHashCode());
-            NemesisRecord rec = _bridge.NewPerson(model, _bridge.ZoneName(pos) ?? a.Town);
+            RecordRef rec = _bridge.NewPerson(model, _bridge.ZoneName(pos) ?? a.Town);
             if (rec == null)
             {
                 a.Stage = 3;
@@ -1639,18 +1638,9 @@ namespace EnrageWestworld.InGame
             string deadFirst = Person.FirstOf(a.DeadName ?? "");
             string theirs = a.Woman ? "her" : "his";
             string relDead = Engine.KinWord(a.Relation, a.DeadWoman);
-            rec.Name = a.Name;
-            rec.Title = string.Empty;
-            rec.KinId = a.DeadId;
-            rec.KinRelation = a.Relation;
-            rec.Hate = 80 + _rng.Next(16);
-            rec.Origin = GrudgeOrigin.FriendKilled;
-            rec.HasOrigin = true;
-            rec.OriginX = pos.X;
-            rec.OriginY = pos.Y;
-            rec.OriginZ = pos.Z;
-            rec.RestUntil = Bridge.Now() + 60;
-            Mind.SetGoal(rec, new Goal { Type = "Avenge", Target = "you", Text = "avenge " + theirs + " " + relDead + " " + a.DeadName, Since = Bridge.Now() });
+            // the record's filling in and the goal, the writes themselves (Typed.cs, AvengerFill)
+            Typed.AvengerFill(rec.Raw, a.Name, a.DeadId, a.Relation, 80 + _rng.Next(16), pos.X, pos.Y, pos.Z, Bridge.Now() + 60,
+                              "avenge " + theirs + " " + relDead + " " + a.DeadName, Bridge.Now());
             if (!_bridge.AddToRoster(rec))
             {
                 a.Stage = 3;

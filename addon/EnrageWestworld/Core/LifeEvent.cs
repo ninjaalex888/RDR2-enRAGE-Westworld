@@ -14,6 +14,9 @@ namespace EnrageWestworld.Core
 
 		public long GameMin;
 
+		/// enRAGE's own flag (set when it reads the event as history); never set by Core.
+		public bool IsPast;
+
 		public List<LifePart> People = new List<LifePart>();
 	}
 }

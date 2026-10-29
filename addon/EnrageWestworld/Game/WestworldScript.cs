@@ -8,7 +8,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -91,7 +90,7 @@ namespace EnrageWestworld.InGame
 
 		private readonly List<Toast> _lifeQueue = new List<Toast>();
 
-		private Dictionary<string, NemesisRecord> _recById = new Dictionary<string, NemesisRecord>();
+		private Dictionary<string, RecordRef> _recById = new Dictionary<string, RecordRef>();
 
 		private KeySpec _testKey;
 
@@ -113,7 +112,7 @@ namespace EnrageWestworld.InGame
 
 		private bool _flirtHinted;
 
-		private readonly List<KeyValuePair<object, NemesisRecord>> _pendingPlans = new List<KeyValuePair<object, NemesisRecord>>();
+		private readonly List<KeyValuePair<object, RecordRef>> _pendingPlans = new List<KeyValuePair<object, RecordRef>>();
 
 		private string StorePath => Path.Combine(_dir, _player + ".json");
 
@@ -386,7 +385,7 @@ namespace EnrageWestworld.InGame
 				Feed.Notice("RealNPCs", "This enRAGE version isn't supported yet (see RealNPCs.log).");
 				return;
 			}
-			List<NemesisRecord> list = _bridge.Roster();
+			List<RecordRef> list = _bridge.Roster();
 			if (list != null && list.Count != 0 && Bridge.Now() > 0)
 			{
 				LoadStore();
@@ -529,7 +528,7 @@ namespace EnrageWestworld.InGame
 			}
 			int od;   // its parts on the frame-time meter (the whole took 15.7 ms every 5 s, 2026-10-27)
 			long ot = StepBegin(out od);
-			List<NemesisRecord> list = _bridge.Roster();
+			List<RecordRef> list = _bridge.Roster();
 			StepEnd("observe: enRAGE's roster (step)", ot, od);
 			long num = Bridge.Now();
 			if (list == null || num <= 0)
@@ -537,8 +536,8 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			Voice.NowYear = GameDate.FromMinutes(num).Year;
-			Dictionary<string, NemesisRecord> dictionary = new Dictionary<string, NemesisRecord>();
-			foreach (NemesisRecord item in list)
+			Dictionary<string, RecordRef> dictionary = new Dictionary<string, RecordRef>();
+			foreach (RecordRef item in list)
 			{
 				if (item != null && item.Id != null && !dictionary.ContainsKey(item.Id))
 				{
@@ -548,7 +547,7 @@ namespace EnrageWestworld.InGame
 			_recById = dictionary;
 			List<Person> list2 = new List<Person>(list.Count);
 			ot = StepBegin(out od);
-			foreach (NemesisRecord value in dictionary.Values)
+			foreach (RecordRef value in dictionary.Values)
 			{
 				try
 				{
@@ -576,7 +575,7 @@ namespace EnrageWestworld.InGame
 			StepEnd("observe: diaries (step)", ot, od);
 		}
 
-		private Person PersonOf(NemesisRecord r)
+		private Person PersonOf(RecordRef r)
 		{
 			return Snapshot.Of(r, _bridge, _recById, Bridge.Now());
 		}
@@ -655,7 +654,7 @@ namespace EnrageWestworld.InGame
 						{
 							continue;
 						}
-						NemesisRecord nemesisRecord = _bridge.RecordAt(key);
+						RecordRef nemesisRecord = _bridge.RecordAt(key);
 						if (_cfg.Conversations)
 						{
 							if (nemesisRecord != null && nemesisRecord.IsAlive)
@@ -664,7 +663,7 @@ namespace EnrageWestworld.InGame
 							}
 							else
 							{
-								Acquaintance acquaintance = _bridge.AcquaintanceAt(key);
+								FolkRef acquaintance = _bridge.AcquaintanceAt(key);
 								if (acquaintance != null)
 								{
 									TalkTo(acquaintance, key);
@@ -687,7 +686,7 @@ namespace EnrageWestworld.InGame
 			return false;
 		}
 
-		private void TalkTo(NemesisRecord rec, int ped)
+		private void TalkTo(RecordRef rec, int ped)
 		{
 			if (TalkedRecently(rec.Id))
 			{
@@ -714,7 +713,7 @@ namespace EnrageWestworld.InGame
 			_remarked[person.Id] = Game.GameTime;
 		}
 
-		private void TalkTo(Acquaintance a, int ped)
+		private void TalkTo(FolkRef a, int ped)
 		{
 			Folk folk = Snapshot.Of(a);
 			if (!TalkedRecently(folk.Key))
@@ -768,18 +767,18 @@ namespace EnrageWestworld.InGame
 		private List<Gossip> GossipFor(Person p)
 		{
 			List<Gossip> list = new List<Gossip>();
-			List<WorldEvent> list2 = _bridge.Events();
+			long num = Bridge.Now();
+			List<LifeEvent> list2 = _bridge.RecentEvents(num, 14400, 0);
 			if (list2 == null)
 			{
 				return list;
 			}
-			long num = Bridge.Now();
 			Dictionary<string, string> dictionary = new Dictionary<string, string>();
 			if (p.KinId != null && _recById.TryGetValue(p.KinId, out var value))
 			{
 				dictionary[p.KinId] = "my " + RelationOf(p.KinRelation, value) + " " + Person.FirstOf(value.Name);
 			}
-			foreach (NemesisRecord value4 in _recById.Values)
+			foreach (RecordRef value4 in _recById.Values)
 			{
 				if (value4.KinId == p.Id && !dictionary.ContainsKey(value4.Id))
 				{
@@ -796,10 +795,10 @@ namespace EnrageWestworld.InGame
 			int num2 = list2.Count - 1;
 			while (num2 >= 0 && list.Count < 3)
 			{
-				WorldEvent worldEvent = list2[num2];
-				if (worldEvent != null && worldEvent.Title != null && num - worldEvent.GameMin <= 14400 && worldEvent.People != null)
+				LifeEvent worldEvent = list2[num2];
+				if (worldEvent != null && worldEvent.Title != null && worldEvent.People != null)
 				{
-					foreach (WorldPart person in worldEvent.People)
+					foreach (LifePart person in worldEvent.People)
 					{
 						if (person != null && person.Id != null && !(person.Id == p.Id) && dictionary.TryGetValue(person.Id, out var value3))
 						{
@@ -821,7 +820,7 @@ namespace EnrageWestworld.InGame
 			return list;
 		}
 
-		private static string RelationOf(string pIsToKin, NemesisRecord kin)
+		private static string RelationOf(string pIsToKin, RecordRef kin)
 		{
 			switch (pIsToKin)
 			{
@@ -870,7 +869,7 @@ namespace EnrageWestworld.InGame
 				{
 					continue;
 				}
-				NemesisRecord nemesisRecord = _bridge.RecordAt(handle);
+				RecordRef nemesisRecord = _bridge.RecordAt(handle);
 				if (nemesisRecord != null)
 				{
 					if (!nemesisRecord.IsAlive)
@@ -897,7 +896,7 @@ namespace EnrageWestworld.InGame
 					{
 						continue;
 					}
-					Acquaintance acquaintance = _bridge.AcquaintanceAt(handle);
+					FolkRef acquaintance = _bridge.AcquaintanceAt(handle);
 					if (acquaintance == null)
 					{
 						continue;
@@ -950,18 +949,17 @@ namespace EnrageWestworld.InGame
 
 		private void Life()
 		{
-			List<WorldEvent> list = _bridge.Events();
+			List<LifeEvent> list = _bridge.RecentEvents(Bridge.Now(), 2880, 40);
 			if (list == null)
 			{
 				return;
 			}
-			long num = Bridge.Now();
-			for (int i = Math.Max(0, list.Count - 40); i < list.Count; i++)
+			for (int i = 0; i < list.Count; i++)
 			{
-				WorldEvent worldEvent = list[i];
-				if (worldEvent != null && worldEvent.Id != null && !worldEvent.Id.StartsWith("ww_") && !worldEvent.IsPast && num - worldEvent.GameMin <= 2880)
+				LifeEvent worldEvent = list[i];
+				if (worldEvent != null && worldEvent.Id != null && !worldEvent.Id.StartsWith("ww_") && !worldEvent.IsPast)
 				{
-					Toast toast = _engine.LifeUpdate(Snapshot.Of(worldEvent));
+					Toast toast = _engine.LifeUpdate(worldEvent);
 					if (toast != null)
 					{
 						_lifeQueue.Add(toast);
@@ -1081,7 +1079,7 @@ namespace EnrageWestworld.InGame
 		private void Test()
 		{
 			Ped character = Game.Player.Character;
-			NemesisRecord nemesisRecord = null;
+			RecordRef nemesisRecord = null;
 			int recordHandle = 0;   // so the thought goes over his head, not in a notice (Lex, 2026-10-27)
 			float num = 40f;
 			Ped[] allPeds = World.GetAllPeds();
@@ -1094,7 +1092,7 @@ namespace EnrageWestworld.InGame
 				float num2 = ped.Position.DistanceTo(character.Position);
 				if (!(num2 >= num))
 				{
-					NemesisRecord nemesisRecord2 = _bridge.RecordAt(ped.Handle);
+					RecordRef nemesisRecord2 = _bridge.RecordAt(ped.Handle);
 					if (nemesisRecord2 != null)
 					{
 						nemesisRecord = nemesisRecord2;
@@ -1311,7 +1309,7 @@ namespace EnrageWestworld.InGame
 			long now = Bridge.Now();
 			_engine.PlayerCash = MONEY._MONEY_GET_CASH_BALANCE() / 100;   // what the greedy and the proud look at
 			_engine.GreetedFirst = GreetedFirst(num);   // greeting her first counts (Lex, 2026-10-26)
-			NemesisRecord nemesisRecord = _bridge.RecordAt(num);
+			RecordRef nemesisRecord = _bridge.RecordAt(num);
 			if (nemesisRecord != null && nemesisRecord.IsAlive)
 			{
 				Person person = PersonOf(nemesisRecord);
@@ -1327,7 +1325,7 @@ namespace EnrageWestworld.InGame
 				NoteFlirt(ped, person.Name);
 				return;
 			}
-			Acquaintance acquaintance = _bridge.AcquaintanceAt(num);
+			FolkRef acquaintance = _bridge.AcquaintanceAt(num);
 			if (acquaintance != null)
 			{
 				Folk folk = Snapshot.Of(acquaintance);
@@ -1444,7 +1442,7 @@ namespace EnrageWestworld.InGame
 				int handle = ped.Handle;
 				if (handle != me.Handle && handle != except && !ENTITY.IS_ENTITY_DEAD(handle) && !(ped.Position.DistanceTo(me.Position) > 25f))
 				{
-					NemesisRecord nemesisRecord = _bridge.RecordAt(handle);
+					RecordRef nemesisRecord = _bridge.RecordAt(handle);
 					if (nemesisRecord != null && nemesisRecord.IsAlive && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(handle, me.Handle, 17))
 					{
 						list.Add(PersonOf(nemesisRecord));
@@ -1487,7 +1485,7 @@ namespace EnrageWestworld.InGame
 					}
 					if (_cfg.Romance && ENTITY.DOES_ENTITY_EXIST(key) && !ENTITY.IS_ENTITY_DEAD(key))
 					{
-						NemesisRecord nemesisRecord = _bridge.RecordAt(key);
+						RecordRef nemesisRecord = _bridge.RecordAt(key);
 						if (nemesisRecord != null && nemesisRecord.IsAlive)
 						{
 							Person person = PersonOf(nemesisRecord);
@@ -1524,7 +1522,7 @@ namespace EnrageWestworld.InGame
 				{
 					continue;
 				}
-				NemesisRecord value;
+				RecordRef value;
 				if (item.Kind == "like")
 				{
 					_bridge.LikeMore(item.PersonId.StartsWith("folk:") ? item.PersonId.Substring(5) : item.PersonId, item.Amount);
@@ -1560,27 +1558,11 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
-		private void Marry(NemesisRecord r, EnrageEffect e)
+		private void Marry(RecordRef r, EnrageEffect e)
 		{
-			r.Family = "married";
-			if (r.Past == null)
-			{
-				r.Past = new List<PastEntry>();
-			}
 			DateTime dateTime = GameDate.FromMinutes(Bridge.Now());
-			r.Past.Add(new PastEntry
-			{
-				Year = dateTime.Year,
-				Month = dateTime.Month,
-				Text = "Married " + e.OtherName,
-				Kind = "family",
-				Public = true,
-				Known = true
-			});
-			if (e.OtherId != null && _recById.TryGetValue(e.OtherId, out var _) && r.FriendIds != null && !r.FriendIds.Contains(e.OtherId) && r.FriendIds.Count < 3)
-			{
-				r.FriendIds.Add(e.OtherId);
-			}
+			string friendId = e.OtherId != null && _recById.ContainsKey(e.OtherId) ? e.OtherId : null;
+			Typed.MarryApply(r.Raw, e.OtherName, friendId, dateTime.Year, dateTime.Month);   // the writes themselves (Typed.cs)
 			Log.Write("MARRIED " + r.Name + " and " + e.OtherName + " (written into enRAGE's record)");
 		}
 
@@ -1594,7 +1576,7 @@ namespace EnrageWestworld.InGame
 			string[] array = _bridge.Intel(value, out plan);
 			if (plan != null)
 			{
-				_pendingPlans.Add(new KeyValuePair<object, NemesisRecord>(plan, value));
+				_pendingPlans.Add(new KeyValuePair<object, RecordRef>(plan, value));
 			}
 			Log.Write("INTEL from " + p.Name + ": " + ((array == null) ? "nothing to tell" : ((array[0] ?? "-") + " / " + (array[1] ?? "-"))));
 			return array;
@@ -1606,7 +1588,7 @@ namespace EnrageWestworld.InGame
 			{
 				return;
 			}
-			foreach (KeyValuePair<object, NemesisRecord> pendingPlan in _pendingPlans)
+			foreach (KeyValuePair<object, RecordRef> pendingPlan in _pendingPlans)
 			{
 				_bridge.RevealPlan(pendingPlan.Key, pendingPlan.Value);
 			}
@@ -1637,13 +1619,13 @@ namespace EnrageWestworld.InGame
 			}
 			if (_cfg.NpcRomance && now - _lastCoupleAt > 120000)
 			{
-				List<KeyValuePair<Ped, NemesisRecord>> list2 = new List<KeyValuePair<Ped, NemesisRecord>>();
+				List<KeyValuePair<Ped, RecordRef>> list2 = new List<KeyValuePair<Ped, RecordRef>>();
 				foreach (Ped item in list)
 				{
-					NemesisRecord nemesisRecord = _bridge.RecordAt(item.Handle);
+					RecordRef nemesisRecord = _bridge.RecordAt(item.Handle);
 					if (nemesisRecord != null && nemesisRecord.IsAlive)
 					{
-						list2.Add(new KeyValuePair<Ped, NemesisRecord>(item, nemesisRecord));
+						list2.Add(new KeyValuePair<Ped, RecordRef>(item, nemesisRecord));
 					}
 				}
 				for (int j = 0; j < list2.Count; j++)
@@ -1715,7 +1697,7 @@ namespace EnrageWestworld.InGame
 
 		private string Label(Ped p, bool man, bool second)
 		{
-			Acquaintance acquaintance = _bridge.AcquaintanceAt(p.Handle);
+			FolkRef acquaintance = _bridge.AcquaintanceAt(p.Handle);
 			if (acquaintance != null && !string.IsNullOrEmpty(acquaintance.Name))
 			{
 				return acquaintance.FullName;

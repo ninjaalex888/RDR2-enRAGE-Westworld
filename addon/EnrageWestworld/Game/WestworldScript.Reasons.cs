@@ -7,7 +7,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -68,7 +67,7 @@ namespace EnrageWestworld.InGame
         private Someone SomeoneOf(Ped p)
         {
             int h = p.Handle;
-            NemesisRecord rec = _bridge.RecordAt(h);
+            RecordRef rec = _bridge.RecordAt(h);
             if (rec != null)
             {
                 // one of enRAGE's people: its own name, temper and record (Lex, 2026-10-26: they join in)
@@ -79,7 +78,7 @@ namespace EnrageWestworld.InGame
                 return Heart(new Someone { Id = who.Id, Name = ShownName(h, who.Name), Woman = who.Woman, Temper = who.Personality, P = who, WakeStage = rs != null ? rs.WakeStage : 0,
                                      WellOff = WellOff(p), Drunk = InHisCups(p, who), Hurt = HurtLately(who.Id) });
             }
-            Acquaintance ac = _bridge.AcquaintanceAt(h);
+            FolkRef ac = _bridge.AcquaintanceAt(h);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
             {
                 Folk f = Snapshot.Of(ac);
@@ -539,7 +538,7 @@ namespace EnrageWestworld.InGame
             HashSet<string> around = new HashSet<string>(_resBind.Where(kv => ENTITY.DOES_ENTITY_EXIST(kv.Key) && new Ped(kv.Key).Position.DistanceTo(me.Position) < 60f).Select(kv => kv.Value.R.Id));
             foreach (Ped p in World.GetAllPeds().Where(p => p.Position.DistanceTo(me.Position) < 60f))
             {
-                Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+                FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
                 if (ac != null && !string.IsNullOrEmpty(ac.Name))
                     around.Add(Snapshot.Of(ac).Key);
             }

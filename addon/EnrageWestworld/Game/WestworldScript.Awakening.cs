@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Native;
 
@@ -152,23 +151,23 @@ namespace EnrageWestworld.InGame
 
         /// The enRAGE person to wake: the one you're locked on to, else (locked on to nobody) the nearest within 10 m
         /// that you're roughly facing (any distance up to 5 m).
-        private NemesisRecord WakeTarget(Ped me, int locked, out int handle)
+        private RecordRef WakeTarget(Ped me, int locked, out int handle)
         {
             handle = 0;
             if (locked != 0)
             {
-                NemesisRecord r = _bridge.RecordAt(locked);
+                RecordRef r = _bridge.RecordAt(locked);
                 if (r != null && r.IsAlive)
                     handle = locked;
                 return handle != 0 ? r : null;   // locked on to someone else: them or nobody, never a record beside them
             }
-            NemesisRecord best = null;
+            RecordRef best = null;
             float bestD = float.MaxValue;
             foreach (Ped p in World.GetAllPeds())
             {
                 if (!Near(me, p))
                     continue;
-                NemesisRecord r = _bridge.RecordAt(p.Handle);
+                RecordRef r = _bridge.RecordAt(p.Handle);
                 float d = p.Position.DistanceTo(me.Position);
                 if (r != null && r.IsAlive && d < bestD)
                 {
@@ -190,7 +189,7 @@ namespace EnrageWestworld.InGame
             {
                 if (!Near(me, p) || Natives.StoryModel(p))
                     continue;
-                Acquaintance a = _bridge.AcquaintanceAt(p.Handle);
+                FolkRef a = _bridge.AcquaintanceAt(p.Handle);
                 float d = p.Position.DistanceTo(me.Position);
                 if (a != null && !string.IsNullOrEmpty(a.Name) && d < bestD)
                 {
@@ -239,7 +238,7 @@ namespace EnrageWestworld.InGame
             // locked on to someone (Lex, 2026-10-27: Y woke whoever was nearest, not the woman he was locked on to): that
             // person and nobody else, whether one of enRAGE's records, its townsfolk or anyone ordinary
             int locked = LockedOn(me);
-            NemesisRecord rec = WakeTarget(me, locked, out handle);
+            RecordRef rec = WakeTarget(me, locked, out handle);
             if (rec != null)
                 p = PersonOf(rec);
             else
@@ -250,7 +249,7 @@ namespace EnrageWestworld.InGame
                     folkPed = NearestFolk(me, out folk);
                 else if (!Natives.StoryModel(new Ped(locked)))
                 {
-                    Acquaintance a = _bridge.AcquaintanceAt(locked);
+                    FolkRef a = _bridge.AcquaintanceAt(locked);
                     if (a != null && !string.IsNullOrEmpty(a.Name))
                     {
                         folkPed = new Ped(locked);

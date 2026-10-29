@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -380,7 +379,7 @@ namespace EnrageWestworld.InGame
                 if (!TestCastAlive(b))
                     return b.R.Name + " (" + b.Part.Id + "): gone";
                 int h = b.Ped.Handle;
-                Acquaintance ac = _bridge.AcquaintanceAt(h, true);
+                FolkRef ac = _bridge.AcquaintanceAt(h, true);
                 string named = ac == null ? _bridge.EnrageNameAt(h, true) : null;
                 string why = MayDirectWhyNot(b.Ped) ?? (NotFree(h) ? "in a scene or a test" : "free");
                 return b.R.Name + " (" + b.Part.Id + ", " + (int)b.Ped.Position.DistanceTo(me.Position) + " m): " + why +

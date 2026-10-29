@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -804,7 +803,7 @@ namespace EnrageWestworld.InGame
             Ped p = new Ped(h);
             if (Natives.StoryModel(p) || !IsGrownUp(p))
                 return w;
-            NemesisRecord rec = _bridge.RecordAt(h);
+            RecordRef rec = _bridge.RecordAt(h);
             if (rec != null)
             {
                 if (!rec.IsAlive)
@@ -818,7 +817,7 @@ namespace EnrageWestworld.InGame
             }
             else
             {
-                Acquaintance ac = _bridge.AcquaintanceAt(h);
+                FolkRef ac = _bridge.AcquaintanceAt(h);
                 if (ac != null && !string.IsNullOrEmpty(ac.Name))
                 {
                     Folk f = Snapshot.Of(ac);

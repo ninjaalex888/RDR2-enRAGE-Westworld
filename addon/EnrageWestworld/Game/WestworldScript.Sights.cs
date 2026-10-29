@@ -12,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
-using NemesisSystem;
 using RDR2;
 using RDR2.Math;
 using RDR2.Native;
@@ -159,7 +158,7 @@ namespace EnrageWestworld.InGame
         /// of yours they saw in the last three days), hostile (a grudge or hate), fond, or null.
         private string SightRegard(Ped p, string id)
         {
-            NemesisRecord rec = _bridge.RecordAt(p.Handle);
+            RecordRef rec = _bridge.RecordAt(p.Handle);
             if (rec != null)
             {
                 Person rp = PersonOf(rec);
@@ -167,7 +166,7 @@ namespace EnrageWestworld.InGame
             }
             if (id != null && _engine.SawYouViolent(id, 3))
                 return "afraid";
-            Acquaintance ac = _bridge.AcquaintanceAt(p.Handle);
+            FolkRef ac = _bridge.AcquaintanceAt(p.Handle);
             if (ac != null)
                 return ac.Fear >= 40 ? "afraid" : ac.Grudge >= 40 ? "hostile" : ac.Like >= 40 ? "fond" : null;
             return null;

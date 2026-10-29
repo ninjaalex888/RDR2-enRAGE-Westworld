@@ -3,7 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using NemesisSystem;
+using System.Runtime.CompilerServices;
+using EnrageWestworld.Core;
 using RDR2.Math;
 
 namespace EnrageWestworld.InGame
@@ -58,6 +59,14 @@ namespace EnrageWestworld.InGame
 
 		private FieldInfo _peopleDirty;
 
+		// One ref per raw object of enRAGE's (standing alone, 2026-10-29): reference equality holds as it did on the raw objects,
+		// and the refs go when enRAGE drops the objects (a save point restored swaps the roster's).
+		private readonly ConditionalWeakTable<object, RecordRef> _recs = new ConditionalWeakTable<object, RecordRef>();
+		private readonly ConditionalWeakTable<object, FolkRef> _folks = new ConditionalWeakTable<object, FolkRef>();
+
+		private static Func<long> _clock;
+		private static int _clockLookedAt = -1;
+
 		public bool Usable
 		{
 			get
@@ -78,6 +87,7 @@ namespace EnrageWestworld.InGame
 		{
 			Mod = mod;
 			Type type = mod.GetType();
+			_clock = Typed.ClockOf(mod);
 			Version = type.Assembly.GetName().Version.ToString();
 			_recordAt = type.GetMethod("RecordAt", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public, null, new Type[1] { typeof(int) }, null);
 			_roster = type.GetProperty("Roster", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
@@ -164,12 +174,79 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
+		/// The game minute: enRAGE's clock while its delegate is set (so both count alike), else our own GameDate (standing alone,
+		/// or before enRAGE has set it; the arithmetic is the same, so the saved minutes agree either way).
 		public static long Now()
 		{
-			return NemesisRecord.GameClock?.Invoke() ?? 0;
+			Func<long> clock = _clock;
+			if (clock != null)
+			{
+				try
+				{
+					long n = clock();
+					if (n > 0)
+						return n;
+				}
+				catch
+				{
+				}
+			}
+			return GameDate.MinutesNow();
 		}
 
-		public NemesisRecord RecordAt(int handle)
+		/// True while enRAGE's own clock answers (Ready waits for it with enRAGE present, as before).
+		public bool ClockRuns()
+		{
+			if (_clock == null && RDR2.Game.FrameCount - _clockLookedAt > 300)
+			{
+				_clockLookedAt = RDR2.Game.FrameCount;
+				_clock = Typed.ClockOf(Mod);
+			}
+			Func<long> clock = _clock;
+			if (clock == null)
+				return false;
+			try
+			{
+				return clock() > 0;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+
+		internal RecordRef Wrap(object raw)
+		{
+			if (raw == null)
+				return null;
+			RecordRef r;
+			if (!_recs.TryGetValue(raw, out r))
+			{
+				r = new RecordRef(raw);
+				_recs.Add(raw, r);
+			}
+			return r;
+		}
+
+		internal FolkRef WrapFolk(object raw)
+		{
+			if (raw == null)
+				return null;
+			FolkRef f;
+			if (!_folks.TryGetValue(raw, out f))
+			{
+				f = new FolkRef(raw);
+				_folks.Add(raw, f);
+			}
+			return f;
+		}
+
+		private static bool IsRecordType(Type t)
+		{
+			return t != null && t.FullName == "NemesisSystem.NemesisRecord";
+		}
+
+		public RecordRef RecordAt(int handle)
 		{
 			if (_recordAt == null)
 			{
@@ -177,7 +254,7 @@ namespace EnrageWestworld.InGame
 			}
 			try
 			{
-				return _recordAt.Invoke(Mod, new object[1] { handle }) as NemesisRecord;
+				return Wrap(_recordAt.Invoke(Mod, new object[1] { handle }));
 			}
 			catch (Exception ex)
 			{
@@ -186,7 +263,8 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
-		public List<NemesisRecord> Roster()
+		/// enRAGE's roster list itself (its List<NemesisRecord>, held as a list of objects).
+		internal IList RosterRaw()
 		{
 			if (_roster == null)
 			{
@@ -194,7 +272,7 @@ namespace EnrageWestworld.InGame
 			}
 			try
 			{
-				return _roster.GetValue(Mod, null) as List<NemesisRecord>;
+				return _roster.GetValue(Mod, null) as IList;
 			}
 			catch (Exception ex)
 			{
@@ -203,7 +281,32 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
-		public List<WorldEvent> Events()
+		/// Everyone on enRAGE's roster, wrapped (a new list each call; the refs are the same objects each time).
+		public List<RecordRef> Roster()
+		{
+			IList raw = RosterRaw();
+			if (raw == null)
+			{
+				return null;
+			}
+			try
+			{
+				List<RecordRef> list = new List<RecordRef>(raw.Count);
+				foreach (object o in raw)
+				{
+					list.Add(Wrap(o));
+				}
+				return list;
+			}
+			catch (Exception ex)
+			{
+				Fail("Roster", ex);
+				return null;
+			}
+		}
+
+		/// enRAGE's chronicle's events list itself (its List<WorldEvent>), or null.
+		private object EventsRaw()
 		{
 			if (_chronicle == null)
 			{
@@ -213,7 +316,27 @@ namespace EnrageWestworld.InGame
 			{
 				object value = _chronicle.GetValue(Mod, null);
 				PropertyInfo propertyInfo = value?.GetType().GetProperty("Events");
-				return (propertyInfo != null) ? (propertyInfo.GetValue(value, null) as List<WorldEvent>) : null;
+				return (propertyInfo != null) ? propertyInfo.GetValue(value, null) : null;
+			}
+			catch (Exception ex)
+			{
+				Fail("Chronicle", ex);
+				return null;
+			}
+		}
+
+		/// enRAGE's events within `withinMinutes` of now among the last `lastN` (0: all), oldest first, as our own LifeEvents;
+		/// null when the chronicle wasn't found.
+		public List<LifeEvent> RecentEvents(long now, int withinMinutes, int lastN)
+		{
+			object raw = EventsRaw();
+			if (raw == null)
+			{
+				return null;
+			}
+			try
+			{
+				return Typed.RecentEvents(raw, now, withinMinutes, lastN);
 			}
 			catch (Exception ex)
 			{
@@ -225,7 +348,7 @@ namespace EnrageWestworld.InGame
 		/// enRAGE's townsperson in this body. The test cast are nobody's here (evenCast for F7): enRAGE knows its townsfolk
 		/// by their look, and took the cast for people it had met who looked the same (Lex's test, 2026-10-28 00:08: the
 		/// preacher became an awake townsman, who walked off on a waking act of his).
-		public Acquaintance AcquaintanceAt(int handle, bool evenCast = false)
+		public FolkRef AcquaintanceAt(int handle, bool evenCast = false)
 		{
 			if (_acqOf == null || !evenCast && Spawner.IsCast(handle))
 			{
@@ -233,7 +356,7 @@ namespace EnrageWestworld.InGame
 			}
 			try
 			{
-				return (_acqOf.GetValue(Mod) is IDictionary dictionary && dictionary.Contains(handle)) ? (dictionary[handle] as Acquaintance) : null;
+				return (_acqOf.GetValue(Mod) is IDictionary dictionary && dictionary.Contains(handle)) ? WrapFolk(dictionary[handle]) : null;
 			}
 			catch (Exception ex)
 			{
@@ -301,19 +424,19 @@ namespace EnrageWestworld.InGame
 				switch (methodInfo.Name)
 				{
 				case "AddThought":
-					if (parameters.Length == 7 && parameters[0].ParameterType == typeof(NemesisRecord) && parameters[5].ParameterType == typeof(long))
+					if (parameters.Length == 7 && IsRecordType(parameters[0].ParameterType) && parameters[5].ParameterType == typeof(long))
 					{
 						_addThought = methodInfo;
 					}
 					break;
 				case "Remember":
-					if (parameters.Length == 5 && parameters[0].ParameterType == typeof(NemesisRecord) && parameters[2].ParameterType == typeof(int))
+					if (parameters.Length == 5 && IsRecordType(parameters[0].ParameterType) && parameters[2].ParameterType == typeof(int))
 					{
 						_remember = methodInfo;
 					}
 					break;
 				case "History":
-					if (parameters.Length == 3 && parameters[0].ParameterType == typeof(NemesisRecord) && parameters[1].ParameterType == typeof(string))
+					if (parameters.Length == 3 && IsRecordType(parameters[0].ParameterType) && parameters[1].ParameterType == typeof(string))
 					{
 						_history = methodInfo;
 					}
@@ -406,19 +529,19 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
-		public bool AddThought(NemesisRecord r, string mood, string text, int weight, int hours)
+		public bool AddThought(RecordRef r, string mood, string text, int weight, int hours)
 		{
-			return Call(_addThought, "AddThought", r, mood, text, weight, hours, Now(), null);
+			return Call(_addThought, "AddThought", r?.Raw, mood, text, weight, hours, Now(), null);
 		}
 
-		public bool Remember(NemesisRecord r, string emotion, int intensity, string text, string cause)
+		public bool Remember(RecordRef r, string emotion, int intensity, string text, string cause)
 		{
-			return Call(_remember, "Remember", r, emotion, intensity, text, cause);
+			return Call(_remember, "Remember", r?.Raw, emotion, intensity, text, cause);
 		}
 
-		public bool History(NemesisRecord r, string text)
+		public bool History(RecordRef r, string text)
 		{
-			return Call(_history, "History", r, text, null);
+			return Call(_history, "History", r?.Raw, text, null);
 		}
 
 		public void RosterChanged()
@@ -426,7 +549,7 @@ namespace EnrageWestworld.InGame
 			Call(_saveRoster, "SaveRoster");
 		}
 
-		public string[] Intel(NemesisRecord r, out object plan)
+		public string[] Intel(RecordRef r, out object plan)
 		{
 			plan = null;
 			if (!CanTellPlans || string.IsNullOrEmpty(r.Gang))
@@ -467,7 +590,7 @@ namespace EnrageWestworld.InGame
 			}
 		}
 
-		public void RevealPlan(object plan, NemesisRecord teller)
+		public void RevealPlan(object plan, RecordRef teller)
 		{
 			if (plan == null || Get<bool>(plan, "Known"))
 			{
@@ -497,8 +620,8 @@ namespace EnrageWestworld.InGame
 			try
 			{
 				string id = folkKey.Substring(5);
-				Acquaintance acquaintance = ((_people.GetValue(Mod, null) is List<Acquaintance> source) ? source.FirstOrDefault((Acquaintance x) => x != null && (x.Id ?? x.FullName) == id) : null);
-				return acquaintance != null && acquaintance.Dead;
+				object acquaintance = Typed.FolkById(_people.GetValue(Mod, null), id);
+				return acquaintance != null && Typed.AcqDead(acquaintance);
 			}
 			catch
 			{
@@ -517,12 +640,12 @@ namespace EnrageWestworld.InGame
 			try
 			{
 				string id = folkKey.Substring(5);
-				Acquaintance acquaintance = ((_people.GetValue(Mod, null) is List<Acquaintance> source) ? source.FirstOrDefault((Acquaintance x) => x != null && (x.Id ?? x.FullName) == id) : null);
-				if (acquaintance == null || acquaintance.Dead == dead)
+				object acquaintance = Typed.FolkById(_people.GetValue(Mod, null), id);
+				if (acquaintance == null || Typed.AcqDead(acquaintance) == dead)
 				{
 					return false;
 				}
-				acquaintance.Dead = dead;
+				Typed.AcqSetDead(acquaintance, dead);
 				if (_peopleDirty != null)
 				{
 					_peopleDirty.SetValue(Mod, true);
@@ -572,10 +695,10 @@ namespace EnrageWestworld.InGame
 			}
 			try
 			{
-				Acquaintance acquaintance = ((_people.GetValue(Mod, null) is List<Acquaintance> source) ? source.FirstOrDefault((Acquaintance x) => x != null && x.Id == acquaintanceId) : null);
+				object acquaintance = Typed.FolkByExactId(_people.GetValue(Mod, null), acquaintanceId);
 				if (acquaintance != null)
 				{
-					acquaintance.Like = Math.Max(0, Math.Min(100, acquaintance.Like + delta));
+					Typed.AcqSetLike(acquaintance, Math.Max(0, Math.Min(100, Typed.AcqLike(acquaintance) + delta)));
 					if (_peopleDirty != null)
 					{
 						_peopleDirty.SetValue(Mod, true);

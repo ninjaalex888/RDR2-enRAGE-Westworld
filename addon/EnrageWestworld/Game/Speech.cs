@@ -272,7 +272,7 @@ namespace EnrageWestworld.InGame
             uint model = ENTITY.GET_ENTITY_MODEL(ped);
             string bank;
             if (!BankByModel.TryGetValue(model, out bank))
-                BankByModel[model] = bank = Book.SoleBank((NemesisSystem.Models.Name(model) ?? string.Empty).ToUpperInvariant());
+                BankByModel[model] = bank = Book.SoleBank((Models.Name(model) ?? string.Empty).ToUpperInvariant());
             return bank;
         }
 

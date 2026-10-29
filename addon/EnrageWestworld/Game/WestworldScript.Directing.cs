@@ -5,7 +5,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using NemesisSystem;
 using EnrageWestworld.Core;
 using RDR2;
 using RDR2.Native;
@@ -47,7 +46,7 @@ namespace EnrageWestworld.InGame
             if (p == null || !p.Exists() || ENTITY.IS_ENTITY_DEAD(p.Handle))
                 return "gone";
             int h = p.Handle;
-            NemesisRecord rec = _bridge.RecordAt(h);
+            RecordRef rec = _bridge.RecordAt(h);
             if (rec == null || !rec.IsAlive)
                 return "not one of enRAGE's people now";
             bool busy = PED.IS_PED_IN_COMBAT(h, 0) || (PED.IS_PED_FLEEING(h) && !ourFlight) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false);
@@ -60,7 +59,7 @@ namespace EnrageWestworld.InGame
         /// Free of enRAGE altogether: in no role of its own but a world nemesis going about (a town man coming for you,
         /// a sighting, a survivor are enRAGE's to steer), and no plan of its due within the hour that's his, his gang's or
         /// near him. For what RealNPCs may do with a record beyond a scene: be the stalker, despair.
-        private string RecordFreeWhyNot(Ped p, NemesisRecord rec)
+        private string RecordFreeWhyNot(Ped p, RecordRef rec)
         {
             if (p == null || rec == null)
                 return "not one of enRAGE's people now";
@@ -84,7 +83,7 @@ namespace EnrageWestworld.InGame
 
         private sealed class RecordFate
         {
-            public NemesisRecord Rec;
+            public RecordRef Rec;
             public string Id, Name, History;
             public int Handle, DueAt, Since, Last, Watched;   // Watched: ms with the player in control since (enRAGE's world loop runs then)
             public long GameAt, PresumedAt;
@@ -103,7 +102,7 @@ namespace EnrageWestworld.InGame
         /// so we wait for it. Looked at every second from 5 s on: enRAGE marked the death -> our history line only;
         /// enRAGE decided he lived, or he got up -> nothing; still alive on its books after 30 s of the player in control
         /// (or 10 minutes in all) and the body down or gone -> enRAGE missed it: IsAlive too.
-        private void QueueRecordFate(NemesisRecord rec, int handle, string name, string history)
+        private void QueueRecordFate(RecordRef rec, int handle, string name, string history)
         {
             if (!_cfg.RecordFates || rec == null || _recordFates.Any(f => f.Id == rec.Id))
                 return;
@@ -142,7 +141,7 @@ namespace EnrageWestworld.InGame
                     continue;
                 f.DueAt = now + 1000;
                 string drop = null, booked = null;
-                NemesisRecord rec = _bridge.RecordById(f.Id);   // re-found: a save point restored swaps the roster (never the old object: a booking into a record no longer on the roster writes nothing)
+                RecordRef rec = _bridge.RecordById(f.Id);   // re-found: a save point restored swaps the roster (never the old object: a booking into a record no longer on the roster writes nothing)
                 bool there = ENTITY.DOES_ENTITY_EXIST(f.Handle);
                 long clock = Bridge.Now();
                 if (clock - f.ClockLast > 30)

@@ -139,7 +139,7 @@ namespace EnrageWestworld.InGame
             TASK.CLEAR_PED_TASKS(h, true, false);   // up from a seat or a scenario first
             TASK.TASK_TURN_PED_TO_FACE_ENTITY(h, me.Handle, 1500, 0f, 0f, 0f);
             Log.Write("WAKE anim test (" + which + "): " + _animTest.Clips.Length + " clips on " + _animTest.Name + " (" + (woman ? "a woman" : "a man") + ", " +
-                      (NemesisSystem.Models.Name(ENTITY.GET_ENTITY_MODEL(h)) ?? "?") + ")");
+                      (Models.Name(ENTITY.GET_ENTITY_MODEL(h)) ?? "?") + ")");
             return null;
         }
 
