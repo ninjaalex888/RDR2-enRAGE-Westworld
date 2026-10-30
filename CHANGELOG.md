@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### The settings panel: the world paused, and the mouse (Lex, 2026-10-30)
+
+- The world pauses while the panel is open, clock and all (`[Output] PanelTimeScale` 0; it was 0.25, slowed; an ini still on 0.25 is moved to 0 at settings version 125, a speed of your own is kept).
+- The mouse works on the panel: the game's cursor shows, pointing at a row chooses it, a left click changes it forward (or does it, or sets its key) and a right click back, a click on the page's name turns the page, and a click on the line under the panel switches the essentials and every setting. The wheel still moves up and down. Not yet seen in game.
+
 ## 0.7.1 (2026-10-30)
 
 Built on 0.7.0 during Lex's in-game pass of 2026-10-30, from his tests and a players' request, and seen working in game that day: the name plates (easier to hide, "Stranger" until you've met), self-defence that the law now honours (the pickpocket who robbed you, anyone who comes at you, a bully you step in on), pickpockets on foot and walking straight up, what people say near you as subtitles, Fondness, Reset RealNPCs Memory at a station clerk, the Mod list, and a settings panel that opens on the essentials. None of the night run's mind work is in it (that waits on its own branch).

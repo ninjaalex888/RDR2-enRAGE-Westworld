@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 124;
+        public const int CurrentVersion = 125;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -232,7 +232,7 @@ namespace EnrageWestworld.Core
         public string SettingsKey = "Alt+R";   // Ctrl+F7 until 2026-10-29 (Lex: Alt+R first, Alt+F second)
         public string SettingsKey2 = "Alt+F";   // the second key; Alt+R from 98 to 101, Alt+F before and since 102 (Lex, 2026-10-29)
         public bool PanelSlowsTime = true;    // the world slows while the settings panel is open, as it does for the game's wheels (Lex, 2026-10-27; settings version 84)
-        public float PanelTimeScale = 0.25f;
+        public float PanelTimeScale = 0f;   // 0: paused (Lex, 2026-10-30; 0.25 until settings version 125)
         // [Controller] (Lex, 2026-10-28; settings version 86): a controller's buttons for RealNPCs' own keys, a button
         // held and another pressed (Core/PadChord.cs); read only while a controller is the last thing touched
         public bool PadKeys = true;
@@ -434,6 +434,11 @@ namespace EnrageWestworld.Core
                 s.DramaGapSeconds = 90;
                 raised.Add("DramaGapSeconds 150 -> 90");
             }
+            if (s.SettingsVersion < 125 && Math.Abs(s.PanelTimeScale - 0.25f) < 0.001f)
+            {
+                s.PanelTimeScale = 0f;   // 2026-10-30 (Lex): the panel pauses the world; a speed of your own is kept
+                raised.Add("PanelTimeScale 0.25 -> 0 (paused)");
+            }
             if (s.SettingsVersion < 120 && Math.Abs(s.ScenesOnTickerMetres - 30f) < 0.01f)
             {
                 s.ScenesOnTickerMetres = 12f;   // 2026-10-30 (Lex): the subtitles only for people near you; a distance of your own is kept
@@ -619,7 +624,7 @@ namespace EnrageWestworld.Core
             TickerNearbyMetres = Math.Max(3f, Math.Min(150f, TickerNearbyMetres));
             ThoughtsOverHeadScale = Math.Max(0.12f, Math.Min(0.6f, ThoughtsOverHeadScale));
             ScenesOnTickerMetres = Math.Max(5f, Math.Min(80f, ScenesOnTickerMetres));
-            PanelTimeScale = Math.Max(0.05f, Math.Min(1f, PanelTimeScale));
+            PanelTimeScale = Math.Max(0f, Math.Min(1f, PanelTimeScale));
             PadSettings = PadChord.Normal(PadSettings) ?? "RB+DPadUp";   // one that can't be read: the default (the panel is how a controller reaches everything)
             PadStatus = PadChord.Normal(PadStatus) ?? "None";
             PadLetters = PadChord.Normal(PadLetters) ?? "None";
@@ -875,7 +880,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("SettingsKey2 = " + SettingsKey2 + "   ; a second key that does the same (None: no second key)");
             b.AppendLine("PanelSlowsTime = " + B(PanelSlowsTime) + "   ; the world slows while the settings panel is open, as it does while the game's weapon wheel or satchel is open (never in a story mission)");
             b.AppendLine("PanelShowsAll = " + B(PanelShowsAll) + "   ; the settings panel shows every setting and the Testing page; false: only the essentials, the hotkeys and the mod list (F on the panel switches)");
-            b.AppendLine("PanelTimeScale = " + F(PanelTimeScale) + "   ; how slow: 1 is normal speed, 0.25 a quarter (0.05-1)");
+            b.AppendLine("PanelTimeScale = " + F(PanelTimeScale) + "   ; 0 pauses the world and its clock while the panel is open; 1 is normal speed, 0.25 a quarter (0-1)");
             b.AppendLine("DebugLog = " + B(DebugLog));
             b.AppendLine("PerfMeter = " + B(PerfMeter) + "   ; times every part of RealNPCs each frame: F7 writes the costliest (TEST perf), and the log says when the add-on goes over 1 ms a frame for 10 s or one frame over 4 ms (PERF)");
             b.AppendLine();

@@ -12,7 +12,7 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private bool _panelSlowed;
+        private bool _panelSlowed, _panelClockPaused;
 
         /// Every tick, in or out of the world: slow while the panel is open, normal the moment it isn't.
         private void PanelTimeStep()
@@ -21,8 +21,13 @@ namespace EnrageWestworld.InGame
             if (want)
             {
                 MISC.SET_TIME_SCALE(_cfg.PanelTimeScale);
+                if (_cfg.PanelTimeScale <= 0.001f && !_panelClockPaused)
+                {
+                    CLOCK.PAUSE_CLOCK(true, 0);   // paused: the clock too, as the game's own pause (Lex, 2026-10-30)
+                    _panelClockPaused = true;
+                }
                 if (!_panelSlowed)
-                    Log.Detail("PANEL time: slowed to " + _cfg.PanelTimeScale.ToString("0.00") + " while the settings panel is open");
+                    Log.Detail("PANEL time: " + (_cfg.PanelTimeScale <= 0.001f ? "paused" : "slowed to " + _cfg.PanelTimeScale.ToString("0.00")) + " while the settings panel is open");
                 _panelSlowed = true;
             }
             else if (_panelSlowed)
@@ -37,11 +42,14 @@ namespace EnrageWestworld.InGame
             try
             {
                 MISC.SET_TIME_SCALE(1f);
+                if (_panelClockPaused)
+                    CLOCK.PAUSE_CLOCK(false, 0);
             }
             catch
             {
             }
             _panelSlowed = false;
+            _panelClockPaused = false;
             Log.Detail("PANEL time: normal speed (" + why + ")");
         }
     }
