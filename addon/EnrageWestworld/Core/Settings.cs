@@ -11,12 +11,13 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 122;
+        public const int CurrentVersion = 123;
 
         public int SettingsVersion = CurrentVersion;
 
         // [Features]
         public bool Conversations = true;
+        public bool PanelShowsAll;   // the settings panel shows every setting and the Testing page; off: the essentials (Lex, 2026-10-30; settings version 123)
         public bool ResetAtClerk = true;   // "Reset RealNPCs Memory" in a station clerk's list (Lex, 2026-10-30; settings version 121)
         public bool Remarks = true;
         public bool Thoughts = true;
@@ -899,6 +900,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("SettingsKey = " + SettingsKey + "   ; opens the RealNPCs settings panel (with any enRAGE version), and closes it again");
             b.AppendLine("SettingsKey2 = " + SettingsKey2 + "   ; a second key that does the same (None: no second key)");
             b.AppendLine("PanelSlowsTime = " + B(PanelSlowsTime) + "   ; the world slows while the settings panel is open, as it does while the game's weapon wheel or satchel is open (never in a story mission)");
+            b.AppendLine("PanelShowsAll = " + B(PanelShowsAll) + "   ; the settings panel shows every setting and the Testing page; false: only the essentials, the hotkeys and the mod list (F on the panel switches)");
             b.AppendLine("PanelTimeScale = " + F(PanelTimeScale) + "   ; how slow: 1 is normal speed, 0.25 a quarter (0.05-1)");
             b.AppendLine("DebugLog = " + B(DebugLog));
             b.AppendLine("PerfMeter = " + B(PerfMeter) + "   ; times every part of RealNPCs each frame: F7 writes the costliest (TEST perf), and the log says when the add-on goes over 1 ms a frame for 10 s or one frame over 4 ms (PERF)");
