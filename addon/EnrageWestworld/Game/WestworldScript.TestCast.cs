@@ -58,6 +58,35 @@ namespace EnrageWestworld.InGame
             if (_aTestCast == null)
                 _aTestCast = () => TestCastTick(_now);
             Safe("test cast", _aTestCast);
+            if (_testCastCheckAt != 0 && now >= _testCastCheckAt)
+            {
+                _testCastCheckAt = 0;
+                Safe("test cast check", TestCastAfterArrival);
+            }
+        }
+
+        private int _testCastCheckAt;
+
+        /// Three seconds after the cast is brought: what each is doing, and what about you and the place could have set them
+        /// off (Lex, 2026-10-30: "why the test cast is running from the player when they spawn in"). RealNPCs gives them no
+        /// flee: they stroll about their spot as the game's own people, and react to the world as those do. Read only.
+        private void TestCastAfterArrival()
+        {
+            Ped me = Game.Player.Character;
+            Vector3 at = me.Position;
+            var who = new List<string>();
+            foreach (TestCastBody b in _testCast.Values)
+            {
+                if (!TestCastAlive(b))
+                    continue;
+                int h = b.Ped.Handle;
+                string doing = PED.IS_PED_FLEEING(h) ? "fleeing" : PED.IS_PED_IN_COMBAT(h, 0) ? "fighting" : PED.IS_PED_RAGDOLL(h) ? "down" :
+                               ENTITY.GET_ENTITY_SPEED(h) > 2.5f ? "running" : "calm";
+                who.Add(Person.FirstOf(b.R.Name) + " " + doing);
+            }
+            int bodies = World.GetAllPeds().Count(p => p != null && p.Position.DistanceTo(at) < 30f && p.Exists() && p.IsDead && PED.IS_PED_HUMAN(p.Handle));
+            Log.Write("TESTCAST after arrival: " + (who.Count > 0 ? string.Join(", ", who) : "nobody here") + "; you: " +
+                      (WEAPON.IS_PED_ARMED(me.Handle, 4) ? "a gun in hand" : "no gun out") + "; " + bodies + " dead within 30 m; the law: " + (_lawStage.Length > 0 ? _lawStage : "clear"));
         }
 
         private int _testCastReturnLookAt, _testCastReturns;
@@ -375,6 +404,7 @@ namespace EnrageWestworld.InGame
             run.Failed.AddRange(run.Due.Select(x => x.Id + " (not made in time)"));
             _testCastLast = run.Made + " new, " + run.Back + " back from the save, " + run.Here + " here already" + (run.Failed.Count > 0 ? "; not made: " + string.Join(", ", run.Failed) : "");
             Log.Write("TESTCAST brought: " + _testCastLast);
+            _testCastCheckAt = Game.GameTime + 3000;   // what they make of it (TestCastAfterArrival)
             int until = Game.GameTime + 60000;
             foreach (TestCastBody b in _testCast.Values)
             {

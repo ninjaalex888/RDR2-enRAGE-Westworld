@@ -76,7 +76,7 @@ namespace EnrageWestworld.InGame
             Ped pick = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) &&
                                                      !PED.IS_PED_ON_MOUNT(p.Handle) && PED.IS_PED_MALE(p.Handle) && IsGrownUp(p) && !Natives.StoryModel(p) && !NotFree(p.Handle) &&
                                                      MayDirectWhyNot(p) == null && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
-                                                     p.Position.DistanceTo(me.Position) > 4f && p.Position.DistanceTo(me.Position) < 22f)
+                                                     p.Position.DistanceTo(me.Position) > 4f && p.Position.DistanceTo(me.Position) < 22f && !HorseAtHand(p))
                                          .OrderBy(p => p.Position.DistanceTo(me.Position)).FirstOrDefault();
             if (pick == null)
                 return why = "no man near (4-22 m) free to send";
@@ -95,6 +95,13 @@ namespace EnrageWestworld.InGame
             return null;
         }
 
+        /// A horse of his within 25 m, the last he rode: the game has a man with his horse at hand ride to where he's sent.
+        private static bool HorseAtHand(Ped p)
+        {
+            int horse = PED._GET_LAST_MOUNT(p.Handle);
+            return horse != 0 && ENTITY.DOES_ENTITY_EXIST(horse) && !ENTITY.IS_ENTITY_DEAD(horse) && ENTITY.GET_ENTITY_COORDS(horse, true, true).DistanceTo(p.Position) < 25f;
+        }
+
         /// The walk into you, the bump and the lift, then the run.
         private void LiftApproach(int now)
         {
@@ -110,6 +117,14 @@ namespace EnrageWestworld.InGame
             }
             // sent on again only once his walk has stopped, at most every 3 s: the walk given anew every few frames each
             // 3 s stopped and started him, and from 20 m off he never got there (Lex, 2026-10-30)
+            if (PED.IS_PED_ON_MOUNT(p.Handle) || PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false))
+            {
+                // a pickpocket works on foot (Lex, 2026-10-30: one walked to his horse and rode up to lift the cash)
+                WanderLater(p.Handle, now);
+                _lifter = null;
+                Log.Write("LIFT given up: he got on a horse, and a pickpocket works on foot");
+                return;
+            }
             float dist = p.Position.DistanceTo(me.Position);
             _lifterNearest = Math.Min(_lifterNearest, dist);
             // the walk ends short of you, arm's length off (2026-10-30: walked over and never took it), so standing within 4 m
@@ -126,8 +141,8 @@ namespace EnrageWestworld.InGame
                 if (status != 0 && status != 1 && ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.3f)   // and standing: a wrong task name never stops a walking man
                     TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, -1, 1.3f, 0.4f, 0f, 0);
             }
-            if (dist > 2f)
-                return;
+            if (dist > 2f || PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false))
+                return;   // and you on foot too
             // the bump: his pardon, your cash
             int cash = MONEY._MONEY_GET_CASH_BALANCE();
             int take = Math.Max(100, Math.Min(2500, cash / 5));   // a fifth of it, $1 to $25 (cents)
