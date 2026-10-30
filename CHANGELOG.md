@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Whoever joins a fight is fair game too (the NPC-life run, step 3)
+
+- Only the man who started a street fight carried the bully's red dot and was fair game. Now anyone who joins in on it (Core/JoinIn.cs), and a man firing on another in a quarrel while the gunplay lasts, is the same: a red dot, the `BULLY` log line, no crime to stop them, and the one they went for thanks you.
+
 ### People go to the real saloon, store and church (the NPC-life run, step 2)
 
 - Someone near you who chooses the saloon, the store or church (MindActs) walked off out of the scene, as if home. Now they walk to the real place: the bar (the nearest saloon's, Valentine having two), the store's counter, or the church's door; there they take a seat, the bar rail or a spot nearby for a couple of minutes (the store: a while at the counter), then go their own way.

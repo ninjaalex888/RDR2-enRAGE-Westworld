@@ -59,7 +59,7 @@ namespace EnrageWestworld.InGame
             public float ApproachBest;           // the nearest they've been
             public bool Side;                    // a quiet talk beside the scene (Start with side): voices and near subtitles only
             public bool Ended;                   // End has begun: the joiners are let go for good
-            public List<int[]> Joiners = new List<int[]>();   // those who joined the fight: { handle, side (0 with A, 1 with B) } (Core/JoinIn.cs)
+            public List<int[]> Joiners = new List<int[]>();   // those who joined the fight: { handle, side (0 with A, 1 with B), whom they went for } (Core/JoinIn.cs)
         }
 
         /// What one of the cast does about a line said to them, or about the slam ("hurt"), for the game layer to play.
@@ -1056,6 +1056,24 @@ namespace EnrageWestworld.InGame
 
         public int JoinerCount { get { return _live != null ? _live.Joiners.Count : 0; } }
 
+        /// Who is laying into someone in the scene now besides its starter (FightStarter), and at whom: those who joined the
+        /// fight while fists fly, and a man firing on another while the gunplay lasts (Lex, 2026-10-30: the joiners fair game
+        /// as the bully is). Each { attacker, target }.
+        public List<int[]> Attackers()
+        {
+            var all = new List<int[]>();
+            Live l = _live;
+            if (l == null)
+                return all;
+            if (l.Fighting && l.FightOn)
+                foreach (int[] j in l.Joiners)
+                    if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
+                        all.Add(new[] { j[0], j.Length > 2 ? j[2] : 0 });
+            if (l.ShootUntil > 0 && l.Shooter != 0 && ENTITY.DOES_ENTITY_EXIST(l.Shooter) && !ENTITY.IS_ENTITY_DEAD(l.Shooter))
+                all.Add(new[] { l.Shooter, l.ShotAt });
+            return all;
+        }
+
         /// Someone joins the fight on a side and goes for target, with their fists, as the first two fight; the fight runs
         /// a little longer for it. Their own ways are put back when the fight ends.
         public bool AddFighter(int h, int side, int target)
@@ -1063,7 +1081,7 @@ namespace EnrageWestworld.InGame
             Live l = _live;
             if (l == null || !l.Fighting || !l.FightOn || h == 0 || target == 0 || Involves(h) || !ENTITY.DOES_ENTITY_EXIST(h) || !ENTITY.DOES_ENTITY_EXIST(target))
                 return false;
-            l.Joiners.Add(new[] { h, side });
+            l.Joiners.Add(new[] { h, side, target });
             if (l.FightAttrs == null)
                 l.FightAttrs = new Dictionary<int, bool[]>();
             if (!l.FightAttrs.ContainsKey(h))

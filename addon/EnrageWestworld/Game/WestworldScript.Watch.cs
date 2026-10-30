@@ -237,6 +237,10 @@ namespace EnrageWestworld.InGame
             int against, starter = _director.FightStarter(out against);
             if (starter != 0 && ENTITY.DOES_ENTITY_EXIST(starter) && !ENTITY.IS_ENTITY_DEAD(starter))
                 LayingHands(starter, against, now, player);
+            // and whoever joined in on it, or fires on someone in a quarrel: fair game while they do, the same as the man who
+            // started it (Lex, 2026-10-30)
+            foreach (int[] at in _director.Attackers())
+                LayingHands(at[0], at[1], now, player);
             RescuedStep(now, player);
             if (_bullyDots.Count > 0)
                 foreach (int h in _bullyDots.Keys.Where(x => !LayingHands(x, now) || !ENTITY.DOES_ENTITY_EXIST(x) || ENTITY.IS_ENTITY_DEAD(x)).ToList())
