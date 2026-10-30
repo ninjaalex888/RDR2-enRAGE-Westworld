@@ -67,21 +67,25 @@ namespace EnrageWestworld.InGame
                 foreach (int rh in _mindNear)
                 {
                     MindWho r;
-                    if (!_mindWho.TryGetValue(rh, out r) || r.Id == null || Resident.IsResident(r.Id) || !ENTITY.DOES_ENTITY_EXIST(rh) || ENTITY.IS_ENTITY_DEAD(rh))
+                    if (!_mindWho.TryGetValue(rh, out r) || r.Id == null || Resident.IsResident(r.Id))
                         continue;   // a resident dead on our ledger is never seen again: one walking is a keeper shot and survived (the review)
                     DeathEntry d = _store.DeathOf(r.Id);
                     if (d == null || g - d.At < 10)
                         continue;   // not dead on our own ledger, or the death a moment ago (the body still falling)
+                    if (!ENTITY.DOES_ENTITY_EXIST(rh) || ENTITY.IS_ENTITY_DEAD(rh))
+                        continue;   // the natives after the ledger (the cost audit: the same people pass, nobody near costs none)
                     foreach (int wh in _mindNear)
                     {
                         if (noticed >= 2)
                             return;
                         MindWho w;
-                        if (wh == rh || !_mindWho.TryGetValue(wh, out w) || w.Id == null || w.Traits == null || w.P == null || w.Id == r.Id || !ENTITY.DOES_ENTITY_EXIST(wh) || ENTITY.IS_ENTITY_DEAD(wh) || w.Model != ENTITY.GET_ENTITY_MODEL(wh))
+                        if (wh == rh || !_mindWho.TryGetValue(wh, out w) || w.Id == null || w.Traits == null || w.P == null || w.Id == r.Id)
                             continue;
                         string key = w.Id + "|" + r.Id;
                         if (_revivedNoticed.Contains(key) || !Engine.SawThemDie(_store.Find(w.Id), r.Id))
                             continue;
+                        if (!ENTITY.DOES_ENTITY_EXIST(wh) || ENTITY.IS_ENTITY_DEAD(wh) || w.Model != ENTITY.GET_ENTITY_MODEL(wh))
+                            continue;   // the natives after the pure tests (the cost audit)
                         if (_revivedNoticed.Count >= 500)
                             return;   // full: nothing more this session rather than the same pair every 2 s
                         _revivedNoticed.Add(key);

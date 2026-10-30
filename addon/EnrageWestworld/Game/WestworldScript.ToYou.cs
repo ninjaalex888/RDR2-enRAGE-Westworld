@@ -67,12 +67,14 @@ namespace EnrageWestworld.InGame
                     return;
                 _youNodNext = now + YouNodEveryMs;
                 long g = _store.LastGameMin;
+                Vector3 mePos = me.Position;
                 foreach (int h in _mindNear)
                 {
+                    // the pure tests first, the natives after: the same people pass (the cost audit, night 2026-10-29: about 120
+                    // natives every 1.5 s in a Saint Denis crowd, for the few with a feeling about you)
                     MindWho w;
-                    if (_director.Involves(h) || _director.Leaving(h) || IsOnlooking(h) || IsRescuer(h) || !_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || w.Traits == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) ||
-                        w.Model != ENTITY.GET_ENTITY_MODEL(h))
-                        continue;   // a handle the game gave to someone else since (the review of 6f)
+                    if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || w.Traits == null)
+                        continue;
                     int at;
                     if (_youNodAt.TryGetValue(w.Id, out at) && now - at >= 0 && now - at < YouNodAgainMs)
                         continue;
@@ -81,8 +83,10 @@ namespace EnrageWestworld.InGame
                     Passing.Act a = Passing.ToYou(_engine.Shadow.Felt(w.Id), w.P.Woman, w.Src != null ? w.Src.Temper : null, g, w.Id + "|" + (g / 60), spoke);   // the cheap test first
                     if (a == null)
                         continue;
+                    if (_director.Involves(h) || _director.Leaving(h) || IsOnlooking(h) || IsRescuer(h) || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) || w.Model != ENTITY.GET_ENTITY_MODEL(h))
+                        continue;   // busy, or a handle the game gave to someone else since (the review of 6f)
                     Ped p = new Ped(h);
-                    if (p.Position.DistanceTo(me.Position) > YouNodMetres || !Facing(p, me.Position, 70f) || !NodInView(me, p) || SightCant(p, me) != null)
+                    if (p.Position.DistanceTo(mePos) > YouNodMetres || !Facing(p, mePos, 70f) || !NodInView(me, p) || SightCant(p, me) != null)
                         continue;
                     if (_youNodAt.Count > 500)
                         foreach (string k in _youNodAt.Where(kv => now - kv.Value >= YouNodAgainMs || now < kv.Value).Select(kv => kv.Key).ToList())
