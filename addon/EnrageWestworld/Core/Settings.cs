@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 114;
+        public const int CurrentVersion = 115;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -68,6 +68,7 @@ namespace EnrageWestworld.Core
         public bool MindHelps = true;        // with MindLive: who helps someone up after a fall, and how, comes from what those who saw it feel (Scenes.FallAnswerOf; roadmap 39; night 2026-10-29, item 6b; settings version 112); off, the tie and a roll
         public bool MindRescue = true;       // with MindLive: when someone awake begins their last words, someone near whom it moves (a friend, a kind stranger) may go to them and talk them down (Core/Rescue.cs; roadmap 3's other side; night 2026-10-29, item 6d; settings version 113); off, nobody steps in
         public int RescueChance = 60;        // with MindRescue: of the despairs where someone near is moved to go to them, this share in percent where they do (the rest hesitate too long); seeded (settings version 114)
+        public bool MindMeetings = true;     // with MindLive: the street's chance meetings lean by the two's moods today and how much they want company (Core/Reasons.Mood.cs; roadmaps 18 and 30; night 2026-10-29, item 6e; settings version 115); off, by the reasons alone
         public bool Language = false;        // the language layer (2026-10-29; roadmap 15): with MindLive, the mind's own thoughts worded by a local model (Ollama at LanguageUrl, LanguageModel) through Language.Check, the written line always the fallback; off until the generated thoughts pass the checks at scale (settings version 94)
         public string LanguageUrl = "http://127.0.0.1:11434";   // the local server; nothing leaves the machine
         public string LanguageModel = "llama3.1:8b";           // the model Ollama holds (ollama pull <name>)
@@ -706,6 +707,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("MindHelps = " + B(MindHelps) + "   ; with MindLive on: when someone takes a fall, the one most moved by it of those who saw it is the one who comes, and how they help comes from what they feel (a hand up, a gruff one, or walking past); a foe still sneers; false: the nearest, by the tie and a roll");
             b.AppendLine("MindRescue = " + B(MindRescue) + "   ; with MindLive on (West World): when someone fully awake begins to say their last words, someone near who is moved by it (a friend, or a kind stranger) may walk over and try to talk them down; a friend is heeded more often; false: nobody steps in");
             b.AppendLine("RescueChance = " + RescueChance + "   ; with MindRescue on: of the despairs where someone near is moved to step in, how often in percent they really do before it is too late (0-100); lower it to see more despair, raise it to see more people saved");
+            b.AppendLine("MindMeetings = " + B(MindMeetings) + "   ; with MindLive on: what passes between two people who meet near you leans by the day they are having: two sore people come to words sooner than small talk, two glad ones the other way, and someone lonely stops for a word; false: by their reasons alone");
             b.AppendLine("Language = " + B(Language) + "   ; (in testing) with MindLive on, the mind's own thoughts are worded by a local language model running on your own PC (Ollama; nothing leaves the machine); every answer is checked for the period, the names and the length, and the written line shows whenever the model's won't do");
             b.AppendLine("LanguageUrl = " + LanguageUrl + "   ; where Ollama listens");
             b.AppendLine("LanguageModel = " + LanguageModel + "   ; the model it holds (ollama pull <name>)");

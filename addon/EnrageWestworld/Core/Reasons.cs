@@ -40,10 +40,11 @@ namespace EnrageWestworld.Core
         public string Why;        // for the log and the F7 dump
         public bool BFirst;       // the second person starts it (A in the scene)
         public string Fallback;   // the scene instead, if the game side can't play this one (no surface by him for "rough")
+        public string Leaned;     // the mind's lean on it, for the log (Reasons.MoodLean; with MindMeetings), else null
         public string Matter;     // what the quarrel is over, when the reason knows (drink, money, honour, woman, land); null: the game side works it out (Scenes.Ladder.cs)
     }
 
-    public static class Reasons
+    public static partial class Reasons
     {
         /// Game minutes before the same two people have another scene (about four real minutes).
         public const long PairRest = 120;
