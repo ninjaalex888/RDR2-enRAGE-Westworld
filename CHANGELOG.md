@@ -54,6 +54,7 @@
 ### Where scenes start, and the bar lists them all (Lex, 2026-10-30)
 
 - The street's reasons start a scene within 24 m of you (was 16), the two up to 9 m apart (was 7); the mind's near ring, whose people act on their choices, reaches 25 m (was 20); chance meetings and the quiet talks start within 13 m (was 22: 60% of it, close enough to hear and read); the night's scenes within 21 m (was 16, 30% more). Scenes still start in view, and still stop when you're 50 m off.
+- A scene no longer needs one of its people on screen to start: anywhere within its radius, behind you too, so the street goes on whether you look or not (Lex, 2026-10-30). What costs frame time is how many play at once (`ScenesAtOnce`), not where you look.
 - The Nearby bar lists every scene playing within 40 m, nearest first, each with how far and which way ("Town gossip (Ada and Clem) - 5 m east  ·  Two men came to blows (Simeon and Morgan) - 15 m south"), as many as the bar's width (`TickerWidth`) holds, the rest "(+2 more)", so it never runs off the screen.
 - A gang shootout starts only between men of the two sides within 50 m of each other, and takes in only those near the meeting (one in Rhodes ended before it began, the Grays 90 m off).
 

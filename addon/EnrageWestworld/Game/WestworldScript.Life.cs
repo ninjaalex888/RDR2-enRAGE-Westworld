@@ -146,8 +146,8 @@ namespace EnrageWestworld.InGame
                         b = pool[j];
                     }
                 }
-            if (a == null || !(ENTITY.IS_ENTITY_ON_SCREEN(a.Handle) || ENTITY.IS_ENTITY_ON_SCREEN(b.Handle)))
-                return;
+            if (a == null)
+                return;   // anywhere in the radius, seen or not (Lex, 2026-10-30)
             // the older one tells the tales
             if (Director.OldModel(b) && !Director.OldModel(a))
             {
@@ -249,8 +249,8 @@ namespace EnrageWestworld.InGame
                         b = pool[j];
                     }
                 }
-            if (a == null || !(ENTITY.IS_ENTITY_ON_SCREEN(a.Handle) || ENTITY.IS_ENTITY_ON_SCREEN(b.Handle)))
-                return;
+            if (a == null)
+                return;   // anywhere in the radius, seen or not (Lex, 2026-10-30)
             if (Director.OldModel(b) && !Director.OldModel(a))
             {
                 Ped x = a;

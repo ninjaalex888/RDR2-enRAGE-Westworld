@@ -243,10 +243,8 @@ namespace EnrageWestworld.InGame
                 return false;
             foreach (PairReason pr in PairReasons(people, saloon).Take(4))
             {
-                // where the player can see it: at least one of the two on screen and in plain view
-                bool seen = new[] { pr.A.Ped, pr.B.Ped }.Any(p => ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, p.Handle, 17));
-                if (!seen)
-                    continue;
+                // anywhere within the radius, behind him too: the street goes on whether he looks or not (Lex, 2026-10-30: "we
+                // don't need to be checking the player camera ... just the radius"; once it needed one of the two in plain view)
                 if (side && pr.Apart > 2.6f)
                     continue;   // a talk beside has no walk-over
                 Ped first = pr.Why.BFirst ? pr.B.Ped : pr.A.Ped, second = pr.Why.BFirst ? pr.A.Ped : pr.B.Ped;
