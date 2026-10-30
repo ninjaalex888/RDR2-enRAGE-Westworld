@@ -43,6 +43,8 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, Hit> _hits = new Dictionary<int, Hit>();
         private readonly Dictionary<int, int> _cameAtYouSeen = new Dictionary<int, int>();   // fighting him before he hurt them
         private readonly Dictionary<int, int> _aimedAt = new Dictionary<int, int>();         // he had a gun on them, when
+        private readonly Dictionary<int, int> _layingHandsAt = new Dictionary<int, int>();   // a bully with hold of someone, last seen so
+        private const int LayingHandsGraceMs = 2500;
         private readonly HashSet<int> _noWanted = new HashSet<int>();   // given PCF_DontInfluenceWantedLevel by us, while they count as having come at him
         private const int PcfDontInfluenceWantedLevel = 6;
         private readonly Dictionary<int, int> _youStarted = new Dictionary<int, int>();      // he hurt them before they came at him
@@ -179,6 +181,8 @@ namespace EnrageWestworld.InGame
                 why = "one of enRAGE's fighters, red on your map";
             else if (_cameAtYouSeen.ContainsKey(victim))
                 why = "they were fighting you before you hurt them";
+            else if (LayingHands(victim, Game.GameTime))
+                why = "he had his hands on a man: you stepped in";
             else if (PED.GET_RELATIONSHIP_BETWEEN_PEDS(victim, player) == 5)
                 why = "hostile to you";
             else if (MISC.GET_MISSION_FLAG())
@@ -217,6 +221,18 @@ namespace EnrageWestworld.InGame
                     continue;   // he drew on them first: they're answering him
                 _cameAtYouSeen[h] = now;
             }
+            // a bully laying hands on someone: the rough move stepping in or playing (WestworldScript.Roughs.cs). Stepping in to
+            // stop him is defending the man he has hold of, only while he does it and a moment after (Lex, 2026-10-30: "mark a
+            // bully as fair game only while he's actually laying hands on someone"); a brawl, both swinging, isn't this
+            if (_rough != null && (_rough.Stage == 1 || _rough.Stage == 2) && _rough.Att != null && _rough.Att.Exists() && !_rough.Att.IsDead &&
+                _rough.Att.Handle != player && !_youStarted.ContainsKey(_rough.Att.Handle))
+            {
+                _layingHandsAt[_rough.Att.Handle] = now;
+                if (_cfg.SelfDefenceNoBounty && !_noWanted.Contains(_rough.Att.Handle))
+                    NoWanted(_rough.Att.Handle, true);
+            }
+            foreach (int h in _layingHandsAt.Where(kv => now - kv.Value > 60000 || now < kv.Value).Select(kv => kv.Key).ToList())
+                _layingHandsAt.Remove(h);
             // the game's own way (its pickpocket script, beat_pickpocket, sets it on its thief): someone who came at him doesn't
             // count toward his wanted level, so dealing with them is no murder (2026-10-30: suppressing the crime held nothing
             // back, a witness set off every time); the mark goes after the five minutes, or once he turns out to have started it
@@ -224,7 +240,8 @@ namespace EnrageWestworld.InGame
                 foreach (KeyValuePair<int, int> kv in _cameAtYouSeen)
                     if (now - kv.Value <= 300000 && !_noWanted.Contains(kv.Key) && !_youStarted.ContainsKey(kv.Key) && ENTITY.DOES_ENTITY_EXIST(kv.Key) && !ENTITY.IS_ENTITY_DEAD(kv.Key))
                         NoWanted(kv.Key, true);
-            foreach (int h in _noWanted.Where(x => !_cameAtYouSeen.ContainsKey(x) || now - _cameAtYouSeen[x] > 300000 || _youStarted.ContainsKey(x) || !_cfg.SelfDefenceNoBounty).ToList())
+            foreach (int h in _noWanted.Where(x => ((!_cameAtYouSeen.ContainsKey(x) || now - _cameAtYouSeen[x] > 300000) && !LayingHands(x, now)) || _youStarted.ContainsKey(x) ||
+                                                   !_cfg.SelfDefenceNoBounty).ToList())
                 NoWanted(h, false);
             foreach (int h in _cameAtYouSeen.Where(kv => now - kv.Value > 300000 || !ENTITY.DOES_ENTITY_EXIST(kv.Key)).Select(kv => kv.Key).ToList())
                 _cameAtYouSeen.Remove(h);
@@ -301,6 +318,13 @@ namespace EnrageWestworld.InGame
                 found.Add(new KeyValuePair<float, string>(d, NameToShow(p.Handle) + (Natives.IsLaw(p) ? " (law)" : known ? " (known to RealNPCs)" : " (the game's)") + " " + (int)d + " m"));
             }
             return found.Count == 0 ? "nobody" : string.Join(", ", found.OrderBy(x => x.Key).Take(6).Select(x => x.Value)) + (found.Count > 6 ? " and " + (found.Count - 6) + " more" : "");
+        }
+
+        /// A bully with hold of someone now, or a moment ago (LayingHandsGraceMs: a shot as he lets go still counts).
+        private bool LayingHands(int h, int now)
+        {
+            int at;
+            return _layingHandsAt.TryGetValue(h, out at) && now - at >= 0 && now - at < LayingHandsGraceMs;
         }
 
         /// PCF_DontInfluenceWantedLevel on or off, for someone who came at him (a living body only; the dead keep it).
@@ -602,7 +626,7 @@ namespace EnrageWestworld.InGame
                         aimed = PLAYER.GET_PLAYER_TARGET_ENTITY(Game.Player.Handle, (int*)&slot) ? (int)slot : 0;
                     }
                     on = aimed != 0 && PED.IS_PED_HUMAN(aimed) && !Natives.IsLaw(new Ped(aimed)) && !_youStarted.ContainsKey(aimed) &&
-                         (_cameAtYouSeen.ContainsKey(aimed) || PED.GET_RELATIONSHIP_BETWEEN_PEDS(aimed, Game.Player.Character.Handle) == 5 ||
+                         (_cameAtYouSeen.ContainsKey(aimed) || LayingHands(aimed, now) || PED.GET_RELATIONSHIP_BETWEEN_PEDS(aimed, Game.Player.Character.Handle) == 5 ||
                           (_bridge != null && (_bridge.EnrageSaysCameAtYou(aimed) || _bridge.EnrageFighter(aimed))));
                 }
             }
