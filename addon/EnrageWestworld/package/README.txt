@@ -771,7 +771,7 @@ in the file. The new ones:
             above their head in small type instead of on the bar, ThoughtsOverHeadScale (0.24)
             ScenesOnTicker (true): what people say in a street scene within ScenesOnTickerMetres (30)
             shows on the ticker as they say it
-[Display]   FeelingBars (true): bars under people near you for their fear, liking and anger,
+[Display]   FeelingBars (true): bars under people near you for their fear, fondness and anger,
             FeelingBarsMetres (15), FeelingBarsShowEmpty (false): the empty part of each bar too,
             GrudgeMeter (true): the "Sore at you" panel, top right,
             NameCards (known; off, everyone): names over the heads of people RealNPCs knows, in

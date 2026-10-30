@@ -1,4 +1,4 @@
-// The bars under people near you for how they feel about you (fear, liking, anger), and the meter in the top corner
+// The bars under people near you for how they feel about you (fear, fondness, anger), and the meter in the top corner
 // for the strangers whose grudge against you is building toward the line where they become a nemesis ([Display] in
 // the ini). The choosing and the words are in Core/Feelings.cs; the numbers come from enRAGE (Bridge.Feelings.cs).
 // Who is near and what they feel is looked at a few times a second; the bars are drawn every frame from that.
