@@ -43,7 +43,7 @@ Built on 0.7.0 during Lex's in-game pass of 2026-10-30, from his tests and a pla
 - `[Ticker] TickerShowsScene` (on; settings version 122), on the UI page: while a street scene plays out within 40 m, the bar at the bottom says what is going on and who is in it ("Nearby: Two men came to blows (Gideon and Asa)").
 - The Testing page's Tools have Show a test subtitle, RealNPCs' box for six seconds; the log notes where each subtitle is drawn.
 
-- Someone you haven't met is "Stranger" over their head, with no name under or over it (Lex: "have their name show as Stranger until they are greeted or interacted with"). Met is greeting, talking, flirting, any contact, or their speaking up to you; only seeing you do something no longer counts. enRAGE's nemeses and the game's own named people (sheriffs, the story cast) keep their names.
+- Someone you haven't met is "Stranger" over their head, with no name under or over it (Lex: "have their name show as Stranger until they are greeted or interacted with"). Met is greeting, talking, flirting, any contact, or their speaking up to you; only seeing you do something no longer counts. enRAGE's nemeses and the game's own named people (sheriffs, the story cast) keep their names. `[Display] NameCardsStrangerNames` (off; settings version 124), on the Essentials page: on, a stranger's name shows with "Stranger" under it, as before.
 
 - The middle bar under people is "Fondness" (was "Liking"): how fond of you they are, beside their fear and anger.
 - RealNPCs' subtitles sat on the game's own subtitle line and the two overlapped. Ours now start just under the game's line and grow down toward the news bar.
