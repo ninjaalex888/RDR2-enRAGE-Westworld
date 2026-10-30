@@ -31,6 +31,7 @@ namespace EnrageWestworld.InGame
 
 			public int Ped;         // who says it, when known
 
+			public bool Ahead;      // the player asked for it (a flirt): dropped when a newer one replaces it (DropAhead)
 			public bool ToYou;      // said to the player: the only lines that get a subtitle (SubtitleRule)
 
 			public int Tries;       // times the game turned its voice down (a line said to you is tried again)
@@ -133,6 +134,15 @@ namespace EnrageWestworld.InGame
 			_nextAt = Game.GameTime + ms;
 		}
 
+		/// A new flirt replaces what's still waiting from the last one: a refusal whose voice the game kept turning down
+		/// played seconds later over her next yes (Lex, 2026-10-30).
+		public static void DropAhead()
+		{
+			_first.Clear();
+			if (_again != null && _again.Ahead)
+				_again = null;
+		}
+
 		/// ahead: the player asked for it (a flirt), so it goes before everything already waiting, in the order given.
 		public static void Say(string speaker, string text, Func<string> onShow = null, int ped = 0, bool toYou = false, bool ahead = false)
 		{
@@ -150,6 +160,7 @@ namespace EnrageWestworld.InGame
 					Group = group,
 					Spoken = true,
 					Ped = ped,
+					Ahead = ahead,
 					ToYou = toYou
 				});
 				onShow = null;

@@ -11,6 +11,11 @@
 
 - A hermit at their camp had no name over their head: the body is one of RealNPCs' own people, but it was never tied to the town's, which is where the names over heads look. The hermit now shows as anyone does ("Stranger" until you've met).
 
+### Flirting: her voice matches her answer (Lex, 2026-10-30, in game)
+
+- A willing woman could be heard turning you down: flirting again too soon gets a "slow down" ("One at a time."), and when the game turned its voice down while she was busy it was tried again and played seconds later, over her next yes. A new flirt now drops whatever is still waiting from the last one.
+- "Slow down" sounds like a tease now, not a cold shoulder (no more IGNORING_YOU for it).
+
 ### The flirt keys (Lex, 2026-10-29: "H to flirt, G to engage in the hookup if the NPC is interested")
 
 - H in the lock-on menu is always Flirt now. Before, the moment she said yes the same prompt turned into Hook up, so a second H asked her before her answer had even been heard. Hook up is its own prompt on G, shown only while she is willing and once her answer has been said. F2 is gone as the flirt key (`FlirtKey` None; an ini still on F2, or on the older F6 or 5, is moved to None at settings version 106; a key of your own stays). The notices say Hook up (G). With CasualHookups installed its own Flirt key still finishes it (B, as RealNPCs set it once). Not yet seen in game.

@@ -35,7 +35,8 @@ namespace EnrageWestworld.Core
         private static readonly string[] NoElsewhere = { "GENERIC_NO", "DISMISSIVE_REACT", "CONVO_TAIL_OFF" };
         private static readonly string[] NoHate = { "WHATS_YOUR_PROBLEM", "INSULT_RESPONSE", "LEAVE_ME", "SHAME_ON_YOU" };   // hate, killer, badrep
         private static readonly string[] NoFear = { "GET_AWAY_FROM_ME", "LEAVE_ME", "GENERIC_FRIGHTENED_MED", "GENERIC_FRIGHTENED_HIGH" };
-        private static readonly string[] NoSpam = { "CUT_THAT_OUT", "STOP_THAT", "IGNORING_YOU" };
+        // too many at once: a tease, not a cold shoulder (Lex, 2026-10-30: IGNORING_YOU sounded like a no to a willing woman)
+        private static readonly string[] NoSpam = { "TEASE_RESPONSE", "CUT_THAT_OUT", "STOP_THAT" };
         private static readonly string[] NoScorned = { "IGNORING_YOU", "DISMISSIVE_REACT", "TEASE_RESPONSE" };
         private static readonly string[] NoBeneath = { "GENERIC_MOCK", "DEFUSE_RESPONSE", "DISMISSIVE_REACT" };   // beneath, poor
         private static readonly string[] NoPious = { "SHAME_ON_YOU", "INSULT_RESPONSE", "GENERIC_NO" };

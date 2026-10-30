@@ -1385,6 +1385,7 @@ namespace EnrageWestworld.InGame
 				string seed = num + "|" + Game.GameTime / 20000;
 				string reply = Romance.StrangerReply(flag, drawn, seed);
 				string said = flag ? "A woman" : "A man";
+				Feed.DropAhead();
 				Feed.Say(_engine.Player.FirstName, Romance.PlayerLine(_engine.John, flag, 0, seed), FlirtVoice(_engine.Player.FirstName, Speech.WhenFirst(character.Handle, FlirtVoices.You(flag, seed), num)), ahead: true);
 				Feed.Say(said, reply, FlirtVoice(said, Speech.WhenFirst(num, FlirtVoices.Reply(new Person { Woman = flag }, drawn ? "yes" : "no", drawn ? null : "notdrawn", 0, seed), character.Handle)), toYou: true, ahead: true);
 				_flirtSaidUntil = Game.GameTime + 7000;
@@ -1404,6 +1405,7 @@ namespace EnrageWestworld.InGame
 			// game minutes (Core/FlirtVoices.cs); the first her voice has plays
 			string seed = (r.Who != null ? r.Who.Id : ped.ToString()) + "|" + Bridge.Now() / 10;
 			bool toWoman = r.Who != null ? r.Who.Woman : !PED.IS_PED_MALE(ped);
+			Feed.DropAhead();   // what's left of the last flirt isn't said over this one
 			// the player asked for this: it goes ahead of what's waiting; Arthur's own line gets no subtitle, the reply does
 			Feed.Say(_engine.Player.FirstName, r.YouSay, FlirtVoice(_engine.Player.FirstName, Speech.WhenFirst(me, FlirtVoices.You(toWoman, seed), ped)), ahead: true);
 			if (r.Reply != null)

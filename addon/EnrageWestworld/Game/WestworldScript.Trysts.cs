@@ -71,6 +71,7 @@ namespace EnrageWestworld.InGame
             }
             string seed = o.Who.Id + "|" + Bridge.Now() / 60;
             string ask = Trysts.Ask(seed), yes = Trysts.Yes(o.Kind, seed);
+            Feed.DropAhead();
             Feed.Say(_engine.Player.FirstName, ask, FlirtVoice(_engine.Player.FirstName, Speech.WhenFirst(me.Handle, FlirtVoices.You(true, seed), her.Handle)), ahead: true);
             if (!o.Night)
             {
