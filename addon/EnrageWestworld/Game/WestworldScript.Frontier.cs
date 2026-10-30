@@ -148,8 +148,34 @@ namespace EnrageWestworld.InGame
             Log.Write("PICKPOCKET at work" + (_placeTown != null ? " in " + _placeTown : "") + ": catch him (lasso, hogtie, tackle) for the reward of a good name");
         }
 
+        private Ped _hogtieBy, _hogtieWho;
+        private int _hogtieCheckAt;
+
+        /// The lawman's hogtie, looked at once: tied, or hands up instead.
+        private void HogtieCheck(int now)
+        {
+            if (_hogtieWho == null || now < _hogtieCheckAt)
+                return;
+            Ped w = _hogtieWho, by = _hogtieBy;
+            _hogtieWho = null;
+            _hogtieBy = null;
+            if (!w.Exists() || w.IsDead)
+                return;
+            if (PED.IS_PED_HOGTIED(w.Handle))
+            {
+                Log.Write("LAWCHASE the lawman hogtied him");
+                return;
+            }
+            Log.Write("LAWCHASE the hogtie didn't take: hands up instead");
+            TASK.CLEAR_PED_TASKS(w.Handle, true, false);
+            TASK.TASK_HANDS_UP(w.Handle, 15000, by != null && by.Exists() ? by.Handle : 0, -1, false);
+            if (by != null && by.Exists())
+                TASK.TASK_LOOK_AT_ENTITY(by.Handle, w.Handle, 15000, 0, 51, 0);
+        }
+
         private void TheftTick(int now)
         {
+            HogtieCheck(now);
             LiftStep(now);   // a thief who lifts your own money (WestworldScript.Lift.cs)
             Theft t = _theft;
             if (t == null)
@@ -284,11 +310,17 @@ namespace EnrageWestworld.InGame
                     SayLater(1200, t.MarkName ?? (t.MarkWoman ? "The woman" : "The man"), LawChase.Thanks(t.MarkWoman, t.Started + "|thx"), mark.Handle, "thanks");
                 if (t.Thief.Exists() && !t.Thief.IsDead)
                 {
-                    TASK.CLEAR_PED_TASKS(h, true, false);
-                    TASK.TASK_HANDS_UP(h, 15000, l.Handle, -1, false);   // caught: hands up while he's taken
+                    // caught: the lawman hogties him, the game's own way (Lex, 2026-10-30: "lawmen hogtying"); looked at again in 6 s,
+                    // and hands up if it didn't take
+                    PED.SET_PED_TO_RAGDOLL(h, 1500, 2500, 0, false, false, "");
+                    TASK.TASK_HOGTIE_TARGET_PED(l.Handle, h);
+                    _hogtieBy = l;
+                    _hogtieWho = t.Thief;
+                    _hogtieCheckAt = now + 6000;
                 }
-                TASK.TASK_LOOK_AT_ENTITY(l.Handle, h, 15000, 0, 51, 0);
-                WanderLater(l.Handle, now + 15000);
+                else
+                    TASK.TASK_LOOK_AT_ENTITY(l.Handle, h, 15000, 0, 51, 0);
+                WanderLater(l.Handle, now + 25000);
                 _lawChaseLast = "caught" + (t.Town != null ? " in " + t.Town : "");
                 if (t.Blip != null && t.Blip.Exists())
                     t.Blip.Delete();

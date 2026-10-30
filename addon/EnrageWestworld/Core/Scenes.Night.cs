@@ -26,6 +26,7 @@ namespace EnrageWestworld.Core
                 s.Add(1, Voice.Pick(seed + "mr", "Not one cent. Get your own.", "Find yourself another fool.", "I earned it. You didn't."), "angry");
                 s.Add(0, Voice.Pick(seed + "mn", "Wrong choice, friend.", "Wrong answer.", "Stubborn fool."), "angry", "shove");
             }
+            s.Add(0, null, null, "cb:thief");   // a thief on the run from here: a red dot, the law's chase, yours to catch (as the pickpocket's)
             s.Add(0, null, null, "run");
             s.Add(1, Voice.Pick(seed + "mt", "Thief! Somebody stop him!", "Help! I've been robbed!", "Sheriff! Somebody fetch the sheriff!"), "scared");
             return s;
