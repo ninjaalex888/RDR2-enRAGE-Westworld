@@ -5,7 +5,7 @@
 ### The settings panel: the world paused, and the mouse (Lex, 2026-10-30)
 
 - The world pauses while the panel is open, clock and all (`[Output] PanelTimeScale` 0; it was 0.25, slowed; an ini still on 0.25 is moved to 0 at settings version 125, a speed of your own is kept).
-- The mouse works on the panel: the game's cursor shows, pointing at a row chooses it, a left click changes it forward (or does it, or sets its key) and a right click back, a click on the page's name turns the page, and a click on the line under the panel switches the essentials and every setting. The wheel still moves up and down. Not yet seen in game.
+- The mouse works on the panel: the game's cursor shows, pointing at a row chooses it, a left click changes it forward (or does it, or sets its key) and a right click back, a click on the page's name turns the page, and a click on the line under the panel switches the essentials and every setting. The wheel scrolls the list three rows a notch (the chosen row stays while it's in view), and the scrollbar can be clicked or dragged. The game's own cursor controls read nothing outside its menus, so the pointer and buttons are read from Windows. Seen working in game (Lex, 2026-10-30).
 
 ### The flirt keys (Lex, 2026-10-29: "H to flirt, G to engage in the hookup if the NPC is interested")
 
