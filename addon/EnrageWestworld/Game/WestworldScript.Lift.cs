@@ -17,7 +17,7 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private Ped _lifter;
-        private int _lifterSince, _liftLookAt, _lifts, _liftsBack;
+        private int _lifterSince, _liftLookAt, _lifts, _liftsBack, _lifterWalkAt;
         private uint _lifterModel;
         private Ped _liftRun;
         private int _liftRunAt, _liftRunTake;
@@ -80,6 +80,7 @@ namespace EnrageWestworld.InGame
                 return why = "no man near (4-22 m) free to send";
             _lifter = pick;
             _lifterSince = now;
+            _lifterWalkAt = now;
             _lifterModel = ENTITY.GET_ENTITY_MODEL(pick.Handle);
             Pacing.Note(_store.Pace, "lift", _placeTown, null, g);
             NoteInScene(new[] { pick }, "lift", now);
@@ -103,8 +104,15 @@ namespace EnrageWestworld.InGame
                 Log.Write("LIFT given up: he never reached you");
                 return;
             }
-            if ((now - _lifterSince) % 3000 < 60)
-                TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, -1, 1.3f, 0.4f, 0f, 0);
+            // sent on again only once his walk has stopped, at most every 3 s: the walk given anew every few frames each
+            // 3 s stopped and started him, and from 20 m off he never got there (Lex, 2026-10-30)
+            if (now - _lifterWalkAt >= 3000)
+            {
+                _lifterWalkAt = now;
+                int status = TASK.GET_SCRIPT_TASK_STATUS(p.Handle, Natives.Hash("SCRIPT_TASK_GO_TO_ENTITY"), true);
+                if (status != 0 && status != 1 && ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.3f)   // and standing: a wrong task name never stops a walking man
+                    TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, -1, 1.3f, 0.4f, 0f, 0);
+            }
             if (p.Position.DistanceTo(me.Position) > 1.3f)
                 return;
             // the bump: his pardon, your cash
