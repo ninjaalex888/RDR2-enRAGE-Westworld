@@ -869,6 +869,24 @@ namespace EnrageWestworld.InGame
                         _leaving[h] = Game.GameTime + LeaveHoldMs;
                         return 600;
                     }
+                case "homewith":
+                    {
+                        // two go home together (the drunk carried home): side by side to a spot 30 m off, away from the player
+                        Vector3 mid = (me.Position + them.Position) * 0.5f;
+                        Vector3 dir = _player != 0 ? mid - new Ped(_player).Position : me.Position - them.Position;
+                        dir.Z = 0f;
+                        dir = Math.Abs(dir.X) + Math.Abs(dir.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : dir.Normalized;
+                        Vector3 spot = mid + dir * 30f, side = new Vector3(-dir.Y, dir.X, 0f) * 0.9f;
+                        foreach (Ped p in new[] { me, them })
+                        {
+                            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(p.Handle, false);
+                            Vector3 goTo = p == me ? spot + side : spot - side;
+                            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(p.Handle, goTo.X, goTo.Y, goTo.Z, 1f, -1, 1f, 0, 0f);
+                            _leaving[p.Handle] = Game.GameTime + LeaveHoldMs;
+                        }
+                        l.Downed = false;   // he's up and going: the end doesn't get him up again
+                        return 600;
+                    }
                 case "flee":
                     TASK.TASK_SMART_FLEE_PED(h, t, 40f, -1, 0, 2f, 0);
                     return 600;
@@ -1069,6 +1087,8 @@ namespace EnrageWestworld.InGame
                 foreach (int[] j in l.Joiners)
                     if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
                         all.Add(new[] { j[0], j.Length > 2 ? j[2] : 0 });
+            if (l.Scene.Kind == "mugging" && l.Cast.Length > 1 && l.Cast[0] != null && l.Cast[0].Exists() && !l.Cast[0].IsDead)
+                all.Add(new[] { l.Cast[0].Handle, l.Cast[1] != null ? l.Cast[1].Handle : 0 });   // a man robbing another: stopping him is no crime
             if (l.ShootUntil > 0 && l.Shooter != 0 && ENTITY.DOES_ENTITY_EXIST(l.Shooter) && !ENTITY.IS_ENTITY_DEAD(l.Shooter))
                 all.Add(new[] { l.Shooter, l.ShotAt });
             return all;

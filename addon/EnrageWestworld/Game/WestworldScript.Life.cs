@@ -98,6 +98,8 @@ namespace EnrageWestworld.InGame
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;
+            if (NightScene(me, now))
+                return;   // the night's mugging or a drunk taken home (WestworldScript.Night.cs)
             string fallWhy;
             if (_interiorType == 0 && PreacherScene(me, now, false, out fallWhy))
                 return;   // a Sunday afternoon's street preacher (WestworldScript.Preacher.cs)

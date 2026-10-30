@@ -59,7 +59,7 @@ namespace EnrageWestworld.Core
             {
                 case "argue": case "brawl": case "cheat": case "debt": case "standoff": case "snap": case "envy": case "drunk":
                     return -1;
-                case "rough": case "pickpocket":
+                case "rough": case "pickpocket": case "mugging":
                     return -2;   // a face into the bar, or a hand caught in a coat, isn't soon forgotten
                 case "lift":
                     return 0;    // the mark never saw who: nothing between them that he knows of (the thief knows)
@@ -67,6 +67,8 @@ namespace EnrageWestworld.Core
                     return 1;
                 case "scorn": case "passby": case "faced":
                     return -1;   // asked for a coin and sent off with a flea in the ear; left lying in the street
+                case "carried":
+                    return 1;    // got home on a friend's arm
                 case "makeup":
                     return 2;   // a quarrel mended counts for more than one more kind word
                 case "smalltalk": case "gossip": case "haggle": case "hosts": case "brushoff": case "avoid":
