@@ -479,11 +479,14 @@ namespace EnrageWestworld.InGame
             if (_aOverHead == null)
                 _aOverHead = () => _overHeadDrawn = DespairOverHead(_now) || ThoughtOverHead(_tickerLine, _now);   // despair's words first, while they last (WestworldScript.Despair.cs)
             Safe("thoughts over heads", _aOverHead);
+            TickerLine scene = _cfg.TickerShowsScene ? SceneOnBar() : null;   // the street scene near you takes the bar while it plays
             if (!_overHeadDrawn && OverHeadOnly(line, now))
             {
                 _ticker.Skip();
                 _nextTickerUpdate = 0;
             }
+            if (scene != null)
+                Ticker.Render(scene, _cfg, now);
             else if (!_overHeadDrawn && !IsOverHeadKind(line))
             {
                 Ticker.Render(line, _cfg, now);
@@ -498,6 +501,25 @@ namespace EnrageWestworld.InGame
                 Draw.Rect(0.5f - w / 2f - 0.006f, y - 0.003f, w + 0.012f, Draw.LineHeight(s) + 0.006f, 12, 10, 8, 170);
                 Draw.Text(_hint, 0.5f - w / 2f, y, s, 236, 214, 160);
             }
+        }
+
+        private TickerLine _sceneBar;
+        private const float SceneBarMetres = 40f;
+
+        /// "Nearby: two men came to blows (Gideon and Asa)" while a street scene plays within 40 m (Lex, 2026-10-30: the
+        /// bar shows the nearest scene playing out near you, a switch on the UI page); null when none.
+        private TickerLine SceneOnBar()
+        {
+            Vector3 at;
+            string text = _director.TickerLine(out at);
+            if (text == null || at.DistanceTo(Game.Player.Character.Position) > SceneBarMetres)
+            {
+                _sceneBar = null;
+                return null;
+            }
+            if (_sceneBar == null || !ReferenceEquals(_sceneBar.Text, text))
+                _sceneBar = new TickerLine { Label = "Nearby", Text = text, Kind = "news", ShownAt = Game.GameTime };
+            return _sceneBar;
         }
 
         private bool TickerVisible(int now)

@@ -191,6 +191,11 @@ namespace EnrageWestworld.InGame
                             : a.Id == "campfire" ? "the hour (20:00-04:00), the rest between fires, the roll (not the towns)"
                             : "the hour (midnight to 03:30), the wilds, once a night, the roll";
                     return null;
+                case "subtitle":
+                    // the box RealNPCs draws what people say near you in (Lex, 2026-10-30: "I'm still not able to see our mods
+                    // drawn on subtitles"): one for six seconds, and the log says where it was drawn
+                    skipped = "nothing";
+                    return Feed.Overheard("RealNPCs", "This is how RealNPCs' subtitles look, just under the game's own line.", 6000) ? null : "[Output] Subtitles is off, or a line said to you is showing";
                 case "cast":
                     skipped = "nothing: it brings people, it starts nothing";
                     return TestCastBring(Game.Player.Character, now, out said);   // WestworldScript.TestCast.cs
