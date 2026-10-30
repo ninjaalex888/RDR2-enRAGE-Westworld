@@ -3,7 +3,8 @@
 // Coward) who can't abide it. The bully backs off (the scene ends early, as words) or tells him to keep out and goes on.
 // C is the one who steps in, A the bully, B the one he picked on. Whether he backs off comes from A's temper and C's.
 // (Built tonight: backs off, ignores him. Not built: the bully turning on the one who stepped in, which would need the
-// Director to recast a fight already going; OVERNIGHT.md.) All lines are original to this add-on.
+// Director to recast a fight already going; OVERNIGHT.md.) Night 2026-10-29: with the mind deciding, a bully who holds his
+// ground may see the one who stepped in take the other away instead (TakesAway). All lines are original to this add-on.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,7 +39,14 @@ namespace EnrageWestworld.Core
         /// two. far: C walks over first. backsOff: the bully goes (in a brawl, A gives it up), B thanks C to C's face, and
         /// the rest of the scene is dropped (it was words in the end: kind "argue", noted when C speaks up). Else the
         /// bully waves them off and the scene goes on as it was. False if there's no blow to stand between.
-        public static bool StandUp(Scene s, SceneCast c, string seed, bool backsOff, bool far = false)
+        /// Whether the one who stepped in takes the one picked on away when the bully holds his ground (night 2026-10-29,
+        /// after item 6f; the mind's path only): a friend of B six times in ten, a stranger a little over a third (seeded).
+        public static bool TakesAway(bool friendOfB, string seed)
+        {
+            return Voice.Chance(seed + "|takeaway", friendOfB ? 60 : 35);
+        }
+
+        public static bool StandUp(Scene s, SceneCast c, string seed, bool backsOff, bool far = false, bool takeAway = false, bool cKnowsB = false)
         {
             int at = s.Beats.FindIndex(x => x.Act == "slam" || x.Act == "fight");
             if (at < 0)
@@ -51,10 +59,10 @@ namespace EnrageWestworld.Core
             add.Add(new Beat(2, null, null, "cb:stoodup"));
             // a woman who steps in shames them; she doesn't offer to fight (item 10)
             add.Add(new Beat(2, c.CWoman ? (rough ? Voice.Pick(seed + "su", "Shame on you, " + a + ". Leave " + b + " be.", a + "! For shame. Let " + b + " alone.", "Not in the street, " + a + ". Not before everyone.")
-                                                   : Voice.Pick(seed + "sx", "Shame on the both of you!", "Not here, " + a + ". Not today. " + b + ", you too.", "For shame. The pair of you, in the open street."))
+                                                   : Voice.Pick(seed + "sx", "Shame on the both of you!", "Not here, " + a + ". Not today. " + LostChild.Up(N(c, 1, seed)) + ", you too.", "For shame. The pair of you, in the open street."))
                                          : (rough ? Voice.Pick(seed + "su", "That's enough, " + a + ". Leave " + b + " be.", a + "! Leave " + b + " alone.", "Not here, " + a + ". Not while I'm standing here.",
                                                    "Leave off " + b + ", or deal with me.")
-                                                  : Voice.Pick(seed + "sx", "That's enough! The both of you!", "Not here, " + a + ". Not today. " + b + ", you too.", "Put your hands down, the pair of you.")),
+                                                  : Voice.Pick(seed + "sx", "That's enough! The both of you!", "Not here, " + a + ". Not today. " + LostChild.Up(N(c, 1, seed)) + ", you too.", "Put your hands down, the pair of you.")),
                              "intervene", "face"));
             if (backsOff)
             {
@@ -69,6 +77,34 @@ namespace EnrageWestworld.Core
                 s.Kind = "argue";   // it never came to blows
                 s.NoteAtCue = true; // noted when they speak up (a walk-over that never arrives leaves nothing)
                 s.Summary = rough ? "someone stepped in and the bully backed off" : "someone broke up a fight before it started";
+            }
+            else if (takeAway)
+            {
+                // the bully holds his ground, and the one who stepped in takes the one picked on away instead: the fight never
+                // comes (night 2026-10-29: before, he was waved off and the fight went on as if he had said nothing)
+                add.Add(new Beat(0, c.CWoman ? Voice.Pick(seed + "si", "This is no business for a lady, " + cn + ".", "Go on home, " + cn + ". This ain't for you to see.")
+                                          : rough ? Voice.Pick(seed + "si", "Keep walking, " + cn + ".", "Ain't your quarrel, " + cn + ". Never was.", "Mind your own, " + cn + ", or you're next.")
+                                          : Voice.Pick(seed + "sw", "Step aside, " + cn + ".", "This is ours to settle, " + cn + "."), "angry", "face") { To = 2 });   // said to the one who stepped in
+                // B as C speaks to him (C's own knowing: a friend by name, a stranger mister or ma'am), and as A does
+                string real = c.Names != null && c.Names.Length > 1 ? c.Names[1] : null;
+                string bTo = cKnowsB ? (!string.IsNullOrEmpty(real) ? real : FirstName(c.BWoman, seed + 1)) : c.BWoman ? "ma'am" : "mister";
+                string bA = N(c, 1, seed);
+                add.Add(new Beat(2, null, null, "faceone") { To = 1 });
+                add.Add(new Beat(2, c.CWoman ? Voice.Pick(seed + "ta", "Come with me, " + bTo + ". Now. Don't look back at him.", "Leave it, " + bTo + ". Walk with me.", bTo + ", come away. He isn't worth one more word.")
+                                          : Voice.Pick(seed + "ta", "Come on, " + bTo + ". He ain't worth it.", "Walk away, " + bTo + ". Walk with me.", "Leave it, " + bTo + ". We're going."), "mild") { To = 1 });
+                // the two leave together, away from A (the Director's "leavewith": both walk to one spot past C, side by side)
+                add.Add(new Beat(2, null, null, "leavewith") { To = 0 });
+                add.Add(new Beat(1, null, null, "leavewith") { To = 0 });
+                string hide = c.CWoman ? "Go on, hide behind her skirts." : cKnowsB ? "Go on, then. Hide behind your friend." : "Go on, then. Let him lead you off.";
+                add.Add(new Beat(0, rough ? Voice.Pick(seed + "tj", "That's right. Run along, the pair of you.", hide, "Next time, " + bA + ". Next time.")
+                                          : Voice.Pick(seed + "tj", "Go on, then. Run.", "That's right, " + bA + ". Walk away."), "mock") { To = 1 });
+                s.Beats.RemoveRange(at, s.Beats.Count - at);
+                s.Beats.AddRange(add);
+                s.Kind = "argue";   // it never came to blows
+                s.NoteAtCue = true;
+                s.Summary = rough ? "someone stepped in and took the one picked on away" : "someone stepped in and took one of them away before it came to blows";
+                s.Cast = 3;
+                return true;
             }
             else
             {

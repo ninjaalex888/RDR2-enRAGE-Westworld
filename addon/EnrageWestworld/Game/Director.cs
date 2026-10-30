@@ -705,6 +705,22 @@ namespace EnrageWestworld.InGame
                     if (l.Scene.Kind == "lift" && who == 0)
                         Report(l, "lift");   // the thief walks off with it
                     return 600;
+                case "leavewith":
+                    {
+                        // two leave together (the stand-up's take-away, night 2026-10-29): both walk to one spot 25 m past the third,
+                        // away from the one the beat names, the other a metre to the side; the walk order is the one the encounters'
+                        // and the campfire's walkers use (seen working), so they go side by side instead of wandering apart
+                        Ped lead = l.Cast.Length > 2 && l.Cast[2] != null && l.Cast[2].Exists() ? l.Cast[2] : me;
+                        Vector3 dir = lead.Position.DistanceTo2D(them.Position) >= 0.3f ? lead.Position - them.Position : me.Position - them.Position;
+                        dir.Z = 0f;
+                        dir = Math.Abs(dir.X) + Math.Abs(dir.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : dir.Normalized;
+                        Vector3 spot = lead.Position + dir * 25f;
+                        if (me != lead)
+                            spot += new Vector3(-dir.Y, dir.X, 0f) * 1.2f;
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, spot.X, spot.Y, spot.Z, 1f, -1, 1f, 0, 0f);
+                        return 600;
+                    }
                 case "flee":
                     TASK.TASK_SMART_FLEE_PED(h, t, 40f, -1, 0, 2f, 0);
                     return 600;

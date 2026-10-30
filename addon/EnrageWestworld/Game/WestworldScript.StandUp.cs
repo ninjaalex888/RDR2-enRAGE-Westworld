@@ -20,7 +20,7 @@ namespace EnrageWestworld.InGame
         {
             public Ped C, A, B;
             public string CName, AName, BName;
-            public bool Backs, Test, Rough;
+            public bool Backs, Test, Rough, TookAway;
         }
 
         private StandUpNote _standUp;
@@ -108,10 +108,14 @@ namespace EnrageWestworld.InGame
             bool backs = test ? _standUpTestTurn++ % 2 == 1 : bullyKnown ? mindBacks : Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
             bool rough = s.Kind == "rough";
             bool far = by.Ped.Position.DistanceTo(people[0].Position) > 3.5f;
+            // with the mind deciding: when the bully holds his ground, the one who stepped in may take the one picked on away
+            // (a test takes turns: the fight first, then the backing off, as before)
+            bool cFriend = TieWarmth(by.Who.Id, b) > 0;
+            bool takeAway = took != null && !backs && !test && Scenes.TakesAway(cFriend, seed + "|" + by.Who.Id);
             cast.Names[2] = Person.FirstOf(by.Who.Name);
             cast.Tempers[2] = by.Who.Temper;
             cast.CWoman = by.Who.Woman;
-            if (!Scenes.StandUp(s, cast, seed, backs, far))
+            if (!Scenes.StandUp(s, cast, seed, backs, far, takeAway, cFriend))
             {
                 cast.Names[2] = null;
                 cast.Tempers[2] = null;
@@ -124,9 +128,9 @@ namespace EnrageWestworld.InGame
             if (bullyKnown && !test)
                 _standUpBullyMind++;
             Pacing.Note(_store.Pace, "standup", _placeTown, by.Who.Id, g);
-            _standUp = new StandUpNote { C = by.Ped, A = people[0], B = people[1], CName = by.Who.Name, AName = a.Name, BName = b.Name, Backs = backs, Test = test, Rough = rough };
-            _standUpLast = by.Who.Name + " for " + b.Name + " against " + a.Name + ": " + (backs ? "he backed off" : "he went on") + (test ? " (a test)" : "");
-            Log.Write("KIND stood up: " + by.Who.Name + " steps in for " + b.Name + " against " + a.Name + " -> " + (backs ? "backs off" : "tells them to keep out") + " (" +
+            _standUp = new StandUpNote { C = by.Ped, A = people[0], B = people[1], CName = by.Who.Name, AName = a.Name, BName = b.Name, Backs = backs, Test = test, Rough = rough, TookAway = takeAway };
+            _standUpLast = by.Who.Name + " for " + b.Name + " against " + a.Name + ": " + (backs ? "he backed off" : takeAway ? "they took " + Person.FirstOf(b.Name) + " away" : "he went on") + (test ? " (a test)" : "");
+            Log.Write("KIND stood up: " + by.Who.Name + " steps in for " + b.Name + " against " + a.Name + " -> " + (backs ? "backs off" : takeAway ? "holds his ground, so they take " + Person.FirstOf(b.Name) + " away" : "tells them to keep out") + " (" +
                       (TieWarmth(by.Who.Id, b) > 0 ? "a friend of " + Person.FirstOf(b.Name) : "a " + (by.Who.Temper ?? "plain") + " " + (by.Who.Woman ? "woman" : "man")) + ", " + s.Kind + ")" +
                       (took != null ? "; the mind: " + mindWhy : testPick ? "; the mind: nobody would (" + mindWhy + "), so the test's own pick" : "") +
                       (bullyKnown ? "; " + Person.FirstOf(a.Name) + "'s mind: " + bullyMind : "") +
@@ -135,7 +139,7 @@ namespace EnrageWestworld.InGame
         }
 
         private const float StandUpCrowdMetres = 15f;   // everyone this near the trouble watches it, whether or not RealNPCs could move them
-        private int _standUpByMind, _standUpNobody, _standUpBullyMind;
+        private int _standUpByMind, _standUpNobody, _standUpBullyMind, _standUpTookAway;
         private bool _standUpMindFailed;
 
         /// Who steps in comes from their own minds: with [Mind] MindLive and [Mind] MindStandUp (roadmap 39).
@@ -254,9 +258,12 @@ namespace EnrageWestworld.InGame
             if (n == null)
                 return;
             _standUps++;
-            if (n.Backs)
+            if (n.Backs || n.TookAway)
             {
-                _standUpBacked++;
+                if (n.Backs)
+                    _standUpBacked++;
+                else
+                    _standUpTookAway++;
                 // it came to words: the two who squared up are noted now (not at the start: a walk-over that never got
                 // there leaves nothing), and sit the fight's rest out, so "this ain't over" isn't two minutes later
                 Pending p = _pendingNote;
@@ -310,7 +317,7 @@ namespace EnrageWestworld.InGame
             string who = !_cfg.MindLive || !_cfg.MindStandUp ? "who steps in by the roll ([Mind] " + (!_cfg.MindLive ? "MindLive" : "MindStandUp") + " off)"
                        : _standUpMindFailed ? "who steps in by the roll (the mind's part FAILED this session)"
                        : "who steps in from their minds: " + _standUpByMind + " chosen so, " + _standUpNobody + " times nobody's mind moved them, the bully's own mind " + _standUpBullyMind + " times";
-            return _standUps + " stepped in this session, " + _standUpBacked + " times the bully backed off; " + who + (_standUpLast != null ? "; last: " + _standUpLast : "") +
+            return _standUps + " stepped in this session, " + _standUpBacked + " times the bully backed off, " + _standUpTookAway + " times they took the one picked on away; " + who + (_standUpLast != null ? "; last: " + _standUpLast : "") +
                    (_standUpWhyNot != null ? "; the last time nobody did: " + _standUpWhyNot : "");
         }
     }

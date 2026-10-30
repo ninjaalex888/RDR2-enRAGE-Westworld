@@ -29,7 +29,8 @@ NEW IN THE NEXT VERSION
   to them; a lawman nearby or a church hushes it. Women step in too, half as often as men for
   now. Whether the bully backs down comes from his own nature: a hothead or a proud man faced by
   another man holds his ground, a proud man shamed by a woman before the street mostly backs down.
-  [Mind] MindStandUp turns this part off.
+  When he holds his ground, the one who stepped in may lead the other away instead, and it
+  never comes to blows. [Mind] MindStandUp turns this part off.
 - With [Mind] MindLive on: someone who only watched a quarrel, a fight or something you did
   does something about it by what they feel: the frightened walk off (a man who keeps his fear
   off his face slips away quietly), the pious shake their heads and leave, a gun or something
