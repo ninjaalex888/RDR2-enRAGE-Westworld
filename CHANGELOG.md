@@ -4,7 +4,7 @@
 
 ### Names over heads: easier to hide, or the name alone (players' request, 2026-10-30)
 
-- The names over heads could already be turned off (`[Display] NameCards = off`, Names over heads on the settings panel), but the panel page holding it was called "Bars and meter"; it is now "Names, bars and meter". New: `[Display] NameCardsSecondLine` (on; settings version 117), Personality line under the names on the same page: off shows the name alone, without the temper, trade, "Stranger" or gang under it. Not yet seen in game.
+- The names over heads could already be turned off (`[Display] NameCards = off`, Names over heads on the settings panel), but the panel page holding it was called "Bars and meter"; it is now "Names, bars and meter". With enRAGE installed, the cards over heads are its own (ours stand aside for them), so turning ours off changed nothing (Lex, 2026-10-30, in game): off on the panel now sets enRAGE's `[Menu] NameCards` to 0 too, after the usual copy of NemesisMod.ini (turning ours back on leaves enRAGE's off). New: `[Display] NameCardsSecondLine` (on; settings version 117), Personality line under the names on the same page: off shows the name alone, without the temper, trade, "Stranger" or gang under it. Not yet seen in game.
 
 ### The flirt keys (Lex, 2026-10-29: "H to flirt, G to engage in the hookup if the NPC is interested")
 
