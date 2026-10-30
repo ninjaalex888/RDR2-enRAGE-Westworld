@@ -260,7 +260,7 @@ namespace EnrageWestworld.InGame
                 return;
             string why = "";
             if (now - _lastDefenceHitAt < 30000 || (_defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs))
-                why += "; in a fight with someone who came at you (" + (now - _lastDefenceHitAt) / 1000 + " s since your last hit on them, the shield " + (_shieldOn ? "on" : "off") + ")";
+                why += "; in self-defence (" + (now - _lastDefenceHitAt) / 1000 + " s since your last hit on them, the shield " + (_shieldOn ? "on" : "off") + ")";
             if (now - _lastOffenceAt < DefenceLaw.LookbackMs)
                 why += "; you hurt someone who hadn't come at you " + (now - _lastOffenceAt) / 1000 + " s ago";
             if (now - _lastCrimeEventAt < 30000)
