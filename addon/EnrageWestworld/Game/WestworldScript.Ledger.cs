@@ -225,6 +225,14 @@ namespace EnrageWestworld.InGame
             _ledgerNoted++;
             _ledgerLast = e;
             Log.Write("LEDGER died: " + DeathLedger.Describe(e));
+            // under someone else's hooves or wheels: not his, unless it was his own horse under him close by
+            if (there && how == "a horse's hooves" && by != "player")
+            {
+                int mount = PED.IS_PED_ON_MOUNT(me.Handle) ? PED.GET_MOUNT(me.Handle) : 0;
+                bool his = (mount != 0 && source == mount) || ((PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false)) && pos.DistanceTo(me.Position) < 8f);
+                if (!his)
+                    NoteOthersTrample(name);
+            }
             if (there)
             {
                 AwakeSawDeath(h, pos);   // the fully awake who see it say so

@@ -73,11 +73,13 @@ namespace EnrageWestworld.InGame
             string pace = Pacing.WhyNot(_store.Pace, "lift", _placeTown, null, g, _rng.Next(100), test, out skipped);
             if (pace != null)
                 return why = pace;
-            Ped pick = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) &&
+            // never the Testing page's cast (Lex, 2026-10-30: the old man of the cast was sent, and shot); a known pickpocket near
+            // is the one who goes, before any other man (he keeps to his trade)
+            Ped pick = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && !Spawner.IsCast(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) &&
                                                      !PED.IS_PED_ON_MOUNT(p.Handle) && PED.IS_PED_MALE(p.Handle) && IsGrownUp(p) && !Natives.StoryModel(p) && !NotFree(p.Handle) &&
                                                      MayDirectWhyNot(p) == null && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                      p.Position.DistanceTo(me.Position) > 4f && p.Position.DistanceTo(me.Position) < 22f && !HorseAtHand(p))
-                                         .OrderBy(p => p.Position.DistanceTo(me.Position)).FirstOrDefault();
+                                         .OrderBy(p => KnownPickpocket(p) ? 0 : 1).ThenBy(p => p.Position.DistanceTo(me.Position)).FirstOrDefault();
             if (pick == null)
                 return why = "no man near (4-22 m) free to send";
             _lifter = pick;
@@ -170,6 +172,59 @@ namespace EnrageWestworld.InGame
             _liftRunAt = now + 1200;   // a moment's pause, then he runs
             _liftRunTake = take;
             Log.Write("LIFT the man bumped you and took " + Cents(take) + " (cash was " + Cents(cash) + ")" + (line != null ? "; he said " + line : ""));
+            MarkPickpocket(p);
+        }
+
+        private const string PickpocketMark = "pickpocket";
+
+        /// One who has picked your pocket stays a pickpocket (Lex, 2026-10-30: "NPCs who decide to pickpocket ... should keep
+        /// their pickpocket tag"): one of ours from now on, kept in the save, marked, and met (he's had his hand in your
+        /// pocket), so the name over his head says it.
+        private void MarkPickpocket(Ped p)
+        {
+            try
+            {
+                string id, name;
+                if (!LastingId(p, out id, out name) && ResidentEligible(p))
+                {
+                    Resident r = ResidentOf(p);
+                    if (r != null)
+                    {
+                        _engine.KeepResident(r, Bridge.Now());
+                        id = r.Id;
+                        name = r.Name;
+                    }
+                }
+                PersonState st = id != null ? _store.Find(id) : null;
+                if (st == null)
+                {
+                    ResBind rb;
+                    if (_resBind.TryGetValue(p.Handle, out rb) && rb.R != null && rb.R.Id == id)
+                        st = _store.Get(_engine.PersonOfResident(rb.R));
+                }
+                if (st == null)
+                {
+                    Log.Detail("LIFT the thief couldn't be kept as a pickpocket (nobody RealNPCs can keep)");
+                    return;
+                }
+                bool already = st.Has(PickpocketMark);
+                st.Mark(PickpocketMark);
+                st.ContactAt = Bridge.Now();
+                Log.Write("LIFT " + (name ?? "the thief") + (already ? " is a known pickpocket, at it again" : " is a pickpocket now, and stays one"));
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("LIFT marking the pickpocket failed: " + ex.Message);
+            }
+        }
+
+        private bool KnownPickpocket(Ped p)
+        {
+            string id, name;
+            if (!LastingId(p, out id, out name))
+                return false;
+            PersonState st = _store.Find(id);
+            return st != null && st.Has(PickpocketMark);
         }
 
         /// The money back, or not, when the theft of your own pocket ends (from ResolveTheft and the law's catch).

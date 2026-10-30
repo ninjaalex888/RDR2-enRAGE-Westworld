@@ -297,8 +297,8 @@ namespace EnrageWestworld.InGame
                     // witness set off 3 s after a killing the shield was on for)
                     uint charge = LAW._GET_HUD_PLAYER_CRIME_TYPE(me);
                     string held = string.Join(", ", DefenceCrimes.Select(c => new KeyValuePair<uint, int>(c, LAW.NUM_CRIMES_SUPPRESSED(me, c))).Where(x => x.Value > 0)
-                                                     .Select(x => "0x" + x.Key.ToString("X8") + " x" + x.Value));
-                    Log.Write("LAW stage: the game's charge " + (charge == 0 ? "none shown" : "0x" + charge.ToString("X8") + (Array.IndexOf(DefenceCrimes, charge) >= 0 ? " (one the shield holds back)" : " (not one the shield holds back)")) +
+                                                     .Select(x => Crimes.Name(x.Key) + " x" + x.Value));
+                    Log.Write("LAW stage: the game's charge " + (charge == 0 ? "none shown" : Crimes.Name(charge) + (Array.IndexOf(DefenceCrimes, charge) >= 0 ? " (one the shield holds back)" : " (not one the shield holds back)")) +
                               "; held back so far: " + (held.Length > 0 ? held : "none"));
                 }
                 if (_lawStage.Length > 0 || stage != "clear")
@@ -418,6 +418,46 @@ namespace EnrageWestworld.InGame
                 _noWanted.Remove(h);
         }
 
+        // someone trampled to death by another's horse or wagon (the ledger: not the player's hand, nor his own horse under
+        // him close by): the game may still charge him with it (Lex, 2026-10-30: a two-horse wagon ran a man down and Arthur
+        // was wanted for trampling). For 30 s after, a trampling charge on him is put back to how he stood before it.
+        private int _othersTrampleAt = -1, _trampleBountyBefore, _trampleCleared;
+        private bool _trampleWantedBefore;
+        private string _othersTrampleWho;
+
+        private void NoteOthersTrample(string who)
+        {
+            int me = Game.Player.Handle;
+            _othersTrampleAt = Game.GameTime;
+            _othersTrampleWho = who;
+            _trampleBountyBefore = LAW.GET_BOUNTY(me);
+            _trampleWantedBefore = PlayerWanted(me);
+            Log.Detail("LAW: " + who + " was trampled by someone else's horse or wagon; a trampling charge on you in the next 30 s is put back");
+        }
+
+        private void NotYourTrampling(int me, int now, int level, bool incident, int bounty)
+        {
+            if (_othersTrampleAt < 0)
+                return;
+            if (now - _othersTrampleAt > 30000 || now < _othersTrampleAt)
+            {
+                _othersTrampleAt = -1;
+                return;
+            }
+            if (LAW._GET_HUD_PLAYER_CRIME_TYPE(me) != Crimes.Trample)
+                return;
+            bool raised = bounty > _trampleBountyBefore, newlyWanted = (level > 0 || incident) && !_trampleWantedBefore;
+            if (!raised && !newlyWanted)
+                return;
+            if (raised)
+                LAW.SET_BOUNTY(me, _trampleBountyBefore);
+            if (newlyWanted)
+                LawStandDown(me);
+            _trampleCleared++;
+            Log.Write("LAW: the game charged you with trampling " + (_othersTrampleWho ?? "someone") + ", but another's horse or wagon did it: " +
+                      (raised ? "bounty $" + bounty / 100 + " -> $" + _trampleBountyBefore / 100 : "") + (raised && newlyWanted ? ", " : "") + (newlyWanted ? "no longer wanted" : ""));
+        }
+
         /// Wanted the way the game shows it: a wanted level, or the law after him (an incident) with none yet.
         private static bool PlayerWanted(int me)
         {
@@ -464,6 +504,7 @@ namespace EnrageWestworld.InGame
                 Log.Write("LAW after the clear: " + (wanted ? "still wanted (level " + level + (incident ? ", the law after you" : "") + ")" : "no longer wanted"));
             }
             LawStages(me, now, level, incident);
+            NotYourTrampling(me, now, level, incident, bounty);
             if (wanted == _lawWasWanted && bounty == _lawWasBounty)
                 return;
             bool first = _lawWasBounty < 0;
@@ -478,12 +519,12 @@ namespace EnrageWestworld.InGame
             if (now - _lastOffenceAt < DefenceLaw.LookbackMs)
                 why += "; you hurt someone who hadn't come at you " + (now - _lastOffenceAt) / 1000 + " s ago";
             if (now - _lastCrimeEventAt < 30000)
-                why += "; the game reported crime 0x" + _lastCrimeEvent.ToString("X8") + " " + (now - _lastCrimeEventAt) / 1000 + " s ago";
+                why += "; the game reported crime " + Crimes.Name(_lastCrimeEvent) + " " + (now - _lastCrimeEventAt) / 1000 + " s ago";
             if (now - _despairShotAt < 30000)
                 why += "; a despairing shot " + (now - _despairShotAt) / 1000 + " s ago, " + (int)_despairShotPos.DistanceTo(pos) + " m off";
             uint charged = wanted ? LAW._GET_HUD_PLAYER_CRIME_TYPE(me) : 0u;
             if (charged != 0)
-                why += "; the game's charge 0x" + charged.ToString("X8") + (Array.IndexOf(DefenceCrimes, charged) >= 0 ? " (one the shield holds back)" : " (not one the shield holds back)");
+                why += "; the game's charge " + Crimes.Name(charged) + (Array.IndexOf(DefenceCrimes, charged) >= 0 ? " (one the shield holds back)" : " (not one the shield holds back)");
             Log.Write("LAW: " + (wanted == was ? "bounty now $" + bounty / 100 : wanted ? "wanted (level " + level + (incident ? ", the law after you" : "") + "), bounty $" + bounty / 100 : "no longer wanted, bounty $" + bounty / 100) +
                       (why.Length > 0 ? why : "; nothing RealNPCs saw"));
         }
@@ -921,7 +962,7 @@ namespace EnrageWestworld.InGame
             {
                 // not one RealNPCs knows (a killing, perhaps): during a fight in self-defence, the log says it was seen
                 if (_defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs)
-                    Log.Write("SELF-DEFENCE: the game confirmed a crime 0x" + crime.ToString("X8") + " during the fight with someone who came at you");
+                    Log.Write("SELF-DEFENCE: the game confirmed a crime " + Crimes.Name(crime) + " during the fight with someone who came at you");
                 return;
             }
             if (kind == "assault" && OnlyDefending(now, 30000))

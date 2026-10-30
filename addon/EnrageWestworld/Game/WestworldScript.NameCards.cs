@@ -335,6 +335,8 @@ namespace EnrageWestworld.InGame
                 string temper = b.R.Personality != null && b.R.Personality.Length > 0 ? b.R.Personality : null;
                 string trade = b.R.Trade != null && b.R.Trade.Length > 0 ? Grammar.UpperFirst(b.R.Trade.StartsWith("a ") ? b.R.Trade.Substring(2) : b.R.Trade.StartsWith("an ") ? b.R.Trade.Substring(3) : b.R.Trade) : null;
                 string line2 = temper != null && trade != null ? temper + " - " + trade : temper ?? trade ?? "";
+                if (st != null && st.Has(PickpocketMark))
+                    line2 = "Pickpocket" + (temper != null ? " - " + temper : "");   // the trade he keeps to (Lex, 2026-10-30)
                 if (met)
                     Set(c, b.R.Name, line2, ColourTitle, ColourDim, true);
                 else if (_cfg.NameCardsStrangerNames)
