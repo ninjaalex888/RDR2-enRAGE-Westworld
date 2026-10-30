@@ -361,6 +361,9 @@ namespace EnrageWestworld.InGame
             ShowAll = all == null || all.Value.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
             if (!ShowAll)
                 EssentialsOnly();
+            else if (_pages.Count > 0)
+                _pages[0].Rows.Insert(0, new Row { Action = "panel:essentials", ActionLabel = "Back to just the essentials  (F)",
+                                                   Help = "Enter or F: the panel shows only the Essentials page, the Hotkeys and the Mod list again." });
             if (keepTitle != null)
             {
                 int i = _pages.FindIndex(p => p.Title == keepTitle);
@@ -643,6 +646,11 @@ namespace EnrageWestworld.InGame
             }
             if (r.Action != null)
             {
+                if (r.Action == "panel:all" || r.Action == "panel:essentials")
+                {
+                    ShowEverything(r.Action == "panel:all");   // one Enter: nothing is lost either way
+                    return;
+                }
                 if (_confirm != r)
                 {
                     _confirm = r;
@@ -1375,6 +1383,9 @@ namespace EnrageWestworld.InGame
         private void EssentialsOnly()
         {
             var ess = new Page { Title = "Essentials" };
+            // the way to everything else, where it can't be missed (Lex, 2026-10-30)
+            ess.Rows.Add(new Row { Action = "panel:all", ActionLabel = "Show every setting and the Testing page  (F)",
+                                   Help = "Enter or F: every page of settings, enRAGE's settings and the Testing page with its tests. F again, or the row at the top, brings back the essentials." });
             foreach (string[] group in Essentials)
             {
                 List<Row> rows = group.Skip(1).Select(k => _ours.FindKey(k)).Where(e => e != null).Select(e => new Row { E = e }).ToList();
