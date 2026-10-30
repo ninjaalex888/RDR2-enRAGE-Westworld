@@ -235,6 +235,27 @@ namespace EnrageWestworld.InGame
             return PLAYER.GET_PLAYER_WANTED_LEVEL(me) > 0 || LAW.IS_LAW_INCIDENT_ACTIVE(me);
         }
 
+        /// Self-defence's clear: the wanted level alone left the law after him (2026-10-30: "still wanted (level 1, the law
+        /// after you)" right after it), so the pursuit's score and incident too, and every lawman within 100 m already
+        /// fighting him lets go. The next scan's LAW line says whether it held.
+        private void LawStandDown(int me)
+        {
+            PLAYER.CLEAR_PLAYER_WANTED_LEVEL(me);
+            LAW.CLEAR_WANTED_SCORE(me);
+            LAW.RESET_WANTED_FOR_NEW_INCIDENT(me);
+            Ped my = Game.Player.Character;
+            int calmed = 0;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                if (p == null || p.Handle == my.Handle || p.Position.DistanceTo(my.Position) > 100f || !p.Exists() || p.IsDead || !Natives.IsLaw(p) || !PED.IS_PED_IN_COMBAT(p.Handle, my.Handle))
+                    continue;
+                TASK.CLEAR_PED_TASKS(p.Handle, true, false);
+                calmed++;
+            }
+            if (calmed > 0)
+                Log.Write("LAW stand-down: " + calmed + " lawm" + (calmed == 1 ? "an" : "en") + " fighting you let go");
+        }
+
         /// A LAW line each time he becomes wanted or stops being, or his bounty changes: what the game says and what was
         /// going on (the self-defence shield, the last crime the game reported, a despairing shot near him), so the next
         /// test says which path the law took. Every 400 ms with the defence scan; a line only on a change.
@@ -267,6 +288,9 @@ namespace EnrageWestworld.InGame
                 why += "; the game reported crime 0x" + _lastCrimeEvent.ToString("X8") + " " + (now - _lastCrimeEventAt) / 1000 + " s ago";
             if (now - _despairShotAt < 30000)
                 why += "; a despairing shot " + (now - _despairShotAt) / 1000 + " s ago, " + (int)_despairShotPos.DistanceTo(pos) + " m off";
+            uint charged = wanted ? LAW._GET_HUD_PLAYER_CRIME_TYPE(me) : 0u;
+            if (charged != 0)
+                why += "; the game's charge 0x" + charged.ToString("X8") + (Array.IndexOf(DefenceCrimes, charged) >= 0 ? " (one the shield holds back)" : " (not one the shield holds back)");
             Log.Write("LAW: " + (wanted == was ? "bounty now $" + bounty / 100 : wanted ? "wanted (level " + level + (incident ? ", the law after you" : "") + "), bounty $" + bounty / 100 : "no longer wanted, bounty $" + bounty / 100) +
                       (why.Length > 0 ? why : "; nothing RealNPCs saw"));
         }
@@ -440,7 +464,7 @@ namespace EnrageWestworld.InGame
                     }
                     if (clearWanted)
                     {
-                        PLAYER.CLEAR_PLAYER_WANTED_LEVEL(me);
+                        LawStandDown(me);
                         if (!_defenceWantedNoted)
                         {
                             _defenceWantedNoted = true;
@@ -486,8 +510,11 @@ namespace EnrageWestworld.InGame
                 }
             }
             if (on)
+            {
                 foreach (uint c in DefenceCrimes)
                     LAW.SUPPRESS_CRIME_THIS_FRAME(Game.Player.Handle, c, 0, 0, 0);
+                PLAYER.SUPPRESS_WITNESSES_CALLING_POLICE_THIS_FRAME(Game.Player.Handle);   // the crimes alone let a deputy's own eyes through (2026-10-30)
+            }
             if (on != _shieldOn && now - _lastShieldLog > 5000)
             {
                 _lastShieldLog = now;
