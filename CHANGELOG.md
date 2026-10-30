@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### More of the street at once (Lex, 2026-10-30)
+
+- `[Scenes] ScenesAtOnce` 4 (was 2, at most 6 now, was 3; an ini still on 2 is moved to 4; settings version 140): the scene and three quiet talks beside it. Quiet talks come again sooner (a quarter to under half the scene gap, was 40-70%), chance meetings every scene gap (was one and a half), and up to ten people act on their own choices at once, one new every 1.5 s (was six, every 3 s). Still one scene at a time that needs the Director whole (blows, the bully, the pickpocket).
+
 ### The language layer, measured (Lex, 2026-10-30: Ollama installed, an RTX 5080 at max settings)
 
 - Its first run in game crashed the game (a stack overflow, the CLR's 0xC00000FD): building a request asks for the written line it may not copy, and the written line was worded through the swap, which built the request again, round and round. A request now gets the written line itself, and the swap can never run inside itself. The tests had it off.

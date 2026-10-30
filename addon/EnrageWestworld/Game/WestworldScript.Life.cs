@@ -213,7 +213,7 @@ namespace EnrageWestworld.InGame
                 StandUpFor(s, people, cast, seed, now, false, out stood);
             AddBystander(s, people, cast, seed, now);
             if (StartScene(s, people, cast, seed, now))
-                _nextChance = now + (int)(_cfg.DramaGapSeconds * 1500);   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk); from the start, not the try (2026-10-30)
+                _nextChance = now + (int)(_cfg.DramaGapSeconds * 1000);   // x1.5 until 2026-10-30 (Lex: more at once)   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk); from the start, not the try (2026-10-30)
         }
 
         private int _nextSide;
@@ -409,7 +409,7 @@ namespace EnrageWestworld.InGame
                 // a quiet talk beside the scene: its words are noted at once (Director.Quiet: nothing in it waits for a cue)
                 if (!_director.Start(s, people, names, seed, () => { }, cast, true, _cfg.ScenesAtOnce - 1))
                     return false;
-                _nextSide = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.4 + _rng.NextDouble() * 0.3));
+                _nextSide = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.25 + _rng.NextDouble() * 0.2));   // 0.4-0.7 of the gap until 2026-10-30 (Lex: more at once)
                 var q = new Pending { S = s, People = new List<Ped>(people), Names = names };
                 NoteHappened(q, s.Kind);
                 NoteInScene(people, s.Kind, now);

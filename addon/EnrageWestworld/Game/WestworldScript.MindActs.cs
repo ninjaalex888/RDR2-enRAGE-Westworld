@@ -31,7 +31,7 @@ namespace EnrageWestworld.InGame
         }
 
         private readonly List<MindAct> _mindActs = new List<MindAct>();
-        private const int MindActsAtOnce = 6, MindActGapMs = 3000;
+        private const int MindActsAtOnce = 10, MindActGapMs = 1500;   // 6 and 3 s until 2026-10-30 (Lex: more at once)
         private int _mindActNextAt, _mindActsDone, _mindActsSkipped;
         private string _mindActLast;
         private readonly Dictionary<string, int> _mindActCount = new Dictionary<string, int>();

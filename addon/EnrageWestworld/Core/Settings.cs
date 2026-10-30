@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 139;
+        public const int CurrentVersion = 140;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -201,7 +201,7 @@ namespace EnrageWestworld.Core
         public bool NightScenes = true;   // [Scenes] with MindLive: at night, a mugging by someone whose mind leans to it, and a drunk taken home by a friend (the NPC-life run, step 5; settings version 135)
         public bool Aftermath = true;   // [Scenes] with MindLive: after a street fight near you, a friend tends the one who went down and a lawman near has a word with the one left standing (the NPC-life run, Lex 2026-10-30; settings version 131)
         public float ChanceMeetMetres = 6f;   // [Scenes] two people this far apart may meet by chance, one walking over to the other (3.4, standing together, until settings version 134; Lex, 2026-10-30)
-        public int ScenesAtOnce = 2;   // [Scenes] street scenes playing at once: the one scene, and quiet talks beside it elsewhere on the street (the NPC-life run, Lex 2026-10-30: "several at once"; settings version 127); 1: just the scene, as before
+        public int ScenesAtOnce = 4;   // 2 (at most 3) until settings version 140 (Lex, 2026-10-30: more at once);   // [Scenes] street scenes playing at once: the one scene, and quiet talks beside it elsewhere on the street (the NPC-life run, Lex 2026-10-30: "several at once"; settings version 127); 1: just the scene, as before
         public bool GangShootouts = true;   // [World] men of two rival gangs who meet near you fight it out: words, a standoff, a shootout (Lex, 2026-10-30; settings version 133)
         public bool WomenInFights = true;   // [Scenes] women may come to blows too, at half a man's chance for each woman in it (Lex, 2026-10-29: "we can allow men to trade blows with women in this mod ... 50% less likely than a man getting in a fight until we have the innermind logic take over"; night 2026-10-29, item 2b; settings version 107); false: two men only, as before
         public bool NpcThieves = true;
@@ -457,6 +457,11 @@ namespace EnrageWestworld.Core
                 s.DramaGapSeconds = 90;
                 raised.Add("DramaGapSeconds 150 -> 90");
             }
+            if (s.SettingsVersion < 140 && s.ScenesAtOnce == 2)
+            {
+                s.ScenesAtOnce = 4;   // 2026-10-30 (Lex): more of the street at once; a number of your own is kept
+                raised.Add("ScenesAtOnce 2 -> 4");
+            }
             if (s.SettingsVersion < 138)
             {
                 // 2026-10-30 (Lex): fewer waking, and slowly; a value of your own is kept
@@ -660,7 +665,7 @@ namespace EnrageWestworld.Core
             AvengersAtOnce = Math.Max(1, Math.Min(10, AvengersAtOnce));
             AvengerGapHours = Math.Max(0, Math.Min(720, AvengerGapHours));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
-            ScenesAtOnce = Math.Max(1, Math.Min(3, ScenesAtOnce));
+            ScenesAtOnce = Math.Max(1, Math.Min(6, ScenesAtOnce));
             ChanceMeetMetres = Math.Max(2f, Math.Min(12f, ChanceMeetMetres));
             TroubleWeight = Math.Max(0f, Math.Min(5f, TroubleWeight));
             RescueChance = Math.Max(0, Math.Min(100, RescueChance));
@@ -904,7 +909,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("NightScenes = " + B(NightScenes) + "   ; with MindLive on, at night in town: someone short of money and honest with nobody (or a known thief) robs someone on their own, who hands it over or won't by their nature; and late, a drunk who goes down in the street is got up and taken home by a friend. Each at most once a town a night");
             b.AppendLine("Aftermath = " + B(Aftermath) + "   ; with MindLive on: after a street fight near you, a friend of the one who went down (or a kind soul who saw it) goes to see to him, and a lawman near has a word with the one left standing");
             b.AppendLine("ChanceMeetMetres = " + F(ChanceMeetMetres) + "   ; two people up to this far apart may meet by chance near you, one walking over to the other (2-12; 3.4 was standing together only)");
-            b.AppendLine("ScenesAtOnce = " + ScenesAtOnce + "   ; street scenes playing at once (1-3): one scene, and the rest quiet talks between other people elsewhere on the street (words only, never blows); 1: just the scene");
+            b.AppendLine("ScenesAtOnce = " + ScenesAtOnce + "   ; street scenes playing at once (1-6): one scene, and the rest quiet talks between other people elsewhere on the street (words only, never blows); 1: just the scene");
             b.AppendLine("GangShootouts = " + B(GangShootouts) + "   ; men of two rival gangs who meet within 90 m of you may fight it out (more often where enRAGE reports a war between them): words, a standoff, then a shootout until a side is beaten or gone; at most one in five minutes");
             b.AppendLine("WomenInFights = " + B(WomenInFights) + "   ; women may come to blows in a quarrel too (with a man or another woman), half as often as two men for each woman in it; false: only two men ever fight");
             b.AppendLine("RoughHandling = " + B(RoughHandling) + "   ; street scenes: a man with a grudge (or a hothead with drink in him) grabs another and smashes his face into the nearest table, bar or wall, with the game's own move; with nothing to hand it stays a fistfight");
