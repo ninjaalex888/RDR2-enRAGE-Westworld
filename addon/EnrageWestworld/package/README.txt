@@ -28,10 +28,11 @@ NEW IN 0.7.1
 - What people say near you (a street scene, a hello, the doctor, the law chase) shows as a
   subtitle the game's way, never on the bar at the bottom, which keeps the news. Thoughts stay
   over heads. [Output] Subtitles = off hides it.
-- Self-defence and the law: RealNPCs now sees when the law is after you over a fight with someone
-  who came at you (the pickpocket who robbed you, say), puts the bounty back and has lawmen
-  already fighting you let go, and bumping into someone on the way no longer spoils it. The
-  game's own witnesses may still go to report the killing: that is being worked on.
+- Self-defence the law honours: the pickpocket who robbed you, anyone who comes at you, and a
+  bully laying into someone (a red dot on him while he's fair game) can be dealt with and it's no
+  crime, the way the game marks its own thieves; the man you saved thanks you. Bumping into
+  someone on the way no longer spoils it.
+- Someone you haven't met is "Stranger" over their head, with no name, until you greet them.
 - The settings panel opens on the essentials (a page of key settings, the hotkeys, the mod
   list); F switches to every setting and the Testing page.
 - A Mod list page on the settings panel turns your other mods off and on (scripts with the next
