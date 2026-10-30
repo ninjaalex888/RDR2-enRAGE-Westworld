@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Names in Saint Denis: never left to enRAGE's cards alone (Lex, 2026-10-30, in game: none in the streets or the saloon)
+
+- While enRAGE's own cards are on (its running NameCards above 0, whatever its file says), ours stood aside entirely; enRAGE cards only its own people, so a city of strangers had no names at all. With names always on, ours never stand aside: they card everyone enRAGE doesn't, and leave enRAGE's people to its own card (one a head). The log says when enRAGE's cards come on or go off.
+
 ### Names inside big buildings (Lex, 2026-10-30, in game: none in the Bastille saloon, Saint Denis)
 
 - A card was hidden for anyone whose interior wasn't yours, and a big building is several interiors, so a whole room could go without names. With names always on, only the walls' ray decides now. And each time you go in or out of a building the log says what the cards found: `NAME cards indoors (saloon, Saint Denis): 14 people within 25 m, 9 carded; none for 5 the game's own (...)`, so a room that still shows none says why.

@@ -76,10 +76,19 @@ namespace EnrageWestworld.InGame
             if (now - _enrageCardsAt > 5000)
             {
                 _enrageCardsAt = now;
+                int? was = _enrageCards;
                 _enrageCards = _bridge.EnrageNameCards();
+                bool on = _enrageCards.HasValue && _enrageCards.Value > 0, wasOn = was.HasValue && was.Value > 0;
+                if (on != wasOn)
+                    Log.Write("NAME cards: enRAGE's own cards are " + (on ? "on (its NameCards " + _enrageCards.Value + "): " + (_cfg.NameCardsAlways ? "ours card everyone it doesn't" : "ours stand aside") : "off: ours card everyone"));
             }
-            return _enrageCards.HasValue && _enrageCards.Value > 0;
+            _enrageCardsOn = _enrageCards.HasValue && _enrageCards.Value > 0;
+            // always on, ours never stand aside: enRAGE's cards are only over its own people, and a city of strangers had
+            // none at all (Lex, 2026-10-30, Saint Denis); ours leave those to it (NameCardFillInner)
+            return _enrageCardsOn && !_cfg.NameCardsAlways;
         }
+
+        private bool _enrageCardsOn;
 
         private void NameCardsFrame(int now)
         {
@@ -321,6 +330,8 @@ namespace EnrageWestworld.InGame
             int h = p.Handle;
             bool woman = !PED.IS_PED_MALE(h);
             RecordRef rec = _bridge.RecordAt(h);
+            if (_enrageCardsOn && !_cfg.NameCardsBesideEnrage && (rec != null || _bridge.AcquaintanceAt(h) != null))
+                return false;   // enRAGE draws its own over its people: one card a head
             if (rec != null && rec.IsAlive)
             {
                 Person who = PersonOf(rec);
