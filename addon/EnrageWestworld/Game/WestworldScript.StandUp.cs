@@ -283,8 +283,11 @@ namespace EnrageWestworld.InGame
                         _restMsOf[x.Handle] = FoughtRestMs;
                     }
             }
-            if (n.Test || !n.Rough)
+            if (n.Test || (!n.Rough && !n.TookAway))
                 return;   // a test notes nothing; breaking up a brawl takes nobody's side
+            // taking one of a brawl's two away does take his side (the mind's take-away only, night 2026-10-29): defend with
+            // him, as in a rough, but nothing with the other, who wasn't faced down
+            bool brawlSide = !n.Rough;
             string cId, cName, aId, aName, bId, bName;
             bool c = LastingId(n.C, out cId, out cName), a = LastingId(n.A, out aId, out aName), b = LastingId(n.B, out bId, out bName);
             long g = Bridge.Now();
@@ -294,7 +297,7 @@ namespace EnrageWestworld.InGame
                 if (t != null)
                     Log.Write("TIE " + t.AName + " & " + t.BName + ": defend (" + (t.Warmth > 0 ? "warm" : t.Warmth < 0 ? "hostile" : "acquainted") + ", " + t.Count + " scenes between them)");
             }
-            if (c && a)
+            if (c && a && !brawlSide)
             {
                 SceneTie t = Ties.Note(_store.Ties, cId, cName, aId, aName, _placeTown, "faced", g);
                 if (t != null)
@@ -306,7 +309,7 @@ namespace EnrageWestworld.InGame
                 Minds.Party pc = PartyOf(n.C, false), pa = PartyOf(n.A, false), pb = PartyOf(n.B, false);
                 if (pc != null && pb != null)
                     _engine.RememberScene("defend", pc, pb, null, _placeTown, place);
-                if (pc != null && pa != null)
+                if (pc != null && pa != null && !brawlSide)
                     _engine.RememberScene("faced", pc, pa, null, _placeTown, place);
             });
         }
