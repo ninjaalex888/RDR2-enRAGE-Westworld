@@ -51,7 +51,8 @@ namespace EnrageWestworld.InGame
 
 		private static string _subText;
 		private static int _subFrom, _subUntil;
-		private static bool _subOverheard;   // the line showing was only overheard: a line said to the player may replace it
+		private static bool _subOverheard;
+		private static string _drawnNoted;   // the line showing was only overheard: a line said to the player may replace it
 
 		/// [Output] Subtitles (on, unless "off").
 		public static bool SubtitlesOn = true;
@@ -309,6 +310,11 @@ namespace EnrageWestworld.InGame
 			foreach (string l in lines)
 				w = Math.Max(w, Draw.Width(l, scale));
 			float padX = 0.012f, padY = 0.006f, h = lines.Count * lineH, top = Math.Min(SubtitleTop, SubtitleLowest - h - padY * 2f);
+			if (!ReferenceEquals(_drawnNoted, _subText))
+			{
+				_drawnNoted = _subText;   // once a subtitle: drawn, and where (2026-10-30: Lex couldn't see them)
+				Log.Detail("SUBTITLE drawn: top " + top.ToString("0.000") + ", " + lines.Count + " line(s), " + _subText);
+			}
 			Draw.Rect(0.5f - w / 2f - padX, top, w + padX * 2f, h + padY * 2f, 0, 0, 0, a * 165 / 255);
 			float y = top + padY;
 			foreach (string l in lines)

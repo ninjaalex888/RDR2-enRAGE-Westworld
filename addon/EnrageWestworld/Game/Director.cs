@@ -20,6 +20,7 @@ namespace EnrageWestworld.InGame
             public Scene Scene;
             public Ped[] Cast;
             public string[] Names;
+            public string BarText;               // "Nearby: ..." for the ticker, made once (TickerLine)
             public bool[] Introduced;
             public bool[] Women;
             public string[] Kinds;
@@ -103,6 +104,22 @@ namespace EnrageWestworld.InGame
                 return 0;
             against = l.FightB;
             return l.FightA;
+        }
+
+        /// The street scene playing now, for the bar at the bottom: what it is and who is in it, and where; null when none.
+        public string TickerLine(out Vector3 at)
+        {
+            at = default(Vector3);
+            Live l = _live;
+            if (l == null || l.Scene == null || string.IsNullOrEmpty(l.Scene.Summary) || l.Cast == null || l.Cast.Length == 0 || l.Cast[0] == null || !l.Cast[0].Exists())
+                return null;
+            at = l.Cast[0].Position;
+            if (l.BarText == null)
+            {
+                string who = l.Names != null ? string.Join(" and ", l.Names.Take(2).Where(n => !string.IsNullOrEmpty(n))) : "";
+                l.BarText = Grammar.UpperFirst(l.Scene.Summary) + (who.Length > 0 ? " (" + who + ")" : "");
+            }
+            return l.BarText;
         }
 
         public bool Involves(int handle)
