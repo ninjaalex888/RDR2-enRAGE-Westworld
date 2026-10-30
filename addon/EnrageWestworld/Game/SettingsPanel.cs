@@ -131,7 +131,7 @@ namespace EnrageWestworld.InGame
             { "LawChases", "A lawman runs a pickpocket down" }, { "Lifts", "A thief lifts your money in town" },
             { "ErrandPace", "Walking pace on errands (1 walk, 2 brisk, 3 run)" },
             { "TickerShowsScene", "The bar shows the street scene near you" }, { "ScenesOnTicker", "What people say near you, as subtitles" }, { "ScenesOnTickerMetres", "For people within (metres)" },
-            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "Subtitles for what's said to you" }, { "TroubleWeight", "Fights and quarrels: how often (1 as built)" }, { "WomenInFights", "Women come to blows too (half as often)" }, { "MindLevels", "The mind's work spread by distance (in testing)" }, { "QuarrelLadder", "Quarrels climb or cool by the ladder (with MindLive)" }, { "ThoughtVariety", "Thoughts vary: no frame twice an hour, sources take turns" }, { "MindStandUp", "Who steps into a fight comes from their minds (with MindLive)" }, { "MindOnlookers", "Onlookers act on what they feel (with MindLive)" }, { "MindWakes", "The Awakening follows what they lived through (with MindLive)" }, { "MindPassing", "Greetings follow how they feel about each other (with MindLive)" }, { "MindHelps", "Who helps after a fall comes from their minds (with MindLive)" }, { "MindRescue", "Someone may talk the despairing down (with MindLive)" }, { "RescueChance", "How often those moved get there in time (percent)" }, { "MindMeetings", "Meetings lean by their moods (with MindLive)" }, { "Language", "Thoughts worded by a local model (with MindLive; in testing)" }, { "CastRelativesSpawn", "Kin made out of sight when the street has nobody free" }, { "OwnLooks", "Known again by their look, without enRAGE (in testing)" }, { "LanguageUrl", "The local model server" }, { "LanguageModel", "The model it runs" }, { "Campfires", "Strangers at a campfire at night" }, { "CampfireChance", "Campfire chance (percent a roll)" }, { "VoiceBelow", "The voice below the saloon floor (West World)" }, { "DoctorsPatient", "Someone walks to the doctor for a child's fever" }, { "TestCastReturns", "The test cast come back by themselves in their town" }, { "FlirtPrompt", "Flirt in the lock-on menu (H)" }, { "NpcFlirting", "People flirt and court each other" }, { "TerritoryNews", "enRAGE's territory changes as updates" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "CrudeTalk", "Crude remarks (saloons, sweethearts)" }, { "RoughHandling", "Faces into the bar (rough handling)" }, { "Reactions", "People react to what's done and said to them" }, { "Acknowledge", "People who know each other nod as they pass" }, { "SightReactions", "People react to how you look" }, { "Kindnesses", "Small kindnesses (a hand up, a round, standing up)" }, { "Vices", "Vices (drinking away bad news)" }, { "Grudges", "Grudges that travel (friends take up a wrong)" }, { "NightVisitor", "The night visitor (in town, after midnight)" }, { "NightVisitorChance", "Night visitor chance per roll (percent)" }, { "Travellers", "Travellers asking the way (on the roads)" }, { "TravellerChance", "Traveller chance per roll (percent)" }, { "SupperInvitation", "The supper invitation (at dusk, on the roads)" }, { "SupperChance", "Supper invitation chance per roll (percent)" }, { "RecordMinds", "enRAGE's people think from its own record" }, { "StalkerRecords", "enRAGE's people may be the stalker" }, { "RecordFates", "Deaths RealNPCs caused written into enRAGE" }, { "EnragePeopleJoinIn", "enRAGE's own people join in" }, { "NpcThieves", "Pickpockets among townsfolk" }, { "DrunkChallenges", "Drunks who call men out" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtsOverHeads", "Thoughts above their heads" }, { "ThoughtsOverHeadScale", "Size of thoughts above heads" }, { "ShareWithEnrage", "Tell enRAGE of deaths it missed" }, { "Minds", "People think about what's on their minds" }, { "MindShadow", "The mind underneath, reported only (log, F7, cards)" }, { "MindLive", "The mind's moods reach the screen" }, { "PerfMeter", "Time each part of RealNPCs (F7: TEST perf)" }, { "DebugLog", "Detailed log (for testing)" }, { "ShowMinds", "Show minds (a card over people near you)" }, { "ShowWakeStages", "Wake stages over heads" }, { "WakeVoices", "The waking speak their own lines oddly" }, { "EncountersAtOnce", "Encounters going on at once (a stalker too)" }, { "PanelSlowsTime", "Slow the world while this panel is open" }, { "PanelTimeScale", "How slow (1 normal, 0.25 a quarter)" }, { "Trysts", "A night together (off screen)" }, { "CasualHookupsDecides", "CasualHookups only for women who said yes" }, { "WillingSingle", "Single women willing (percent)" }, { "WillingTaken", "Married women willing (percent)" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
+            { "TickerY", "Ticker height on screen" }, { "TickerGapSeconds", "Pause between thoughts (seconds)" }, { "Subtitles", "Subtitles for what's said to you" }, { "TroubleWeight", "Fights and quarrels: how often (1 as built)" }, { "WomenInFights", "Women come to blows too (half as often)" }, { "MindLevels", "The mind's work spread by distance (in testing)" }, { "QuarrelLadder", "Quarrels climb or cool by the ladder (with MindLive)" }, { "ThoughtVariety", "Thoughts vary: no frame twice an hour, sources take turns" }, { "MindStandUp", "Who steps into a fight comes from their minds (with MindLive)" }, { "MindOnlookers", "Onlookers act on what they feel (with MindLive)" }, { "MindWakes", "The Awakening follows what they lived through (with MindLive)" }, { "MindPassing", "Greetings follow how they feel about each other (with MindLive)" }, { "MindHelps", "Who helps after a fall comes from their minds (with MindLive)" }, { "MindRescue", "Someone may talk the despairing down (with MindLive)" }, { "RescueChance", "How often those moved get there in time (percent)" }, { "MindMeetings", "Meetings lean by their moods (with MindLive)" }, { "Language", "Thoughts worded by a local model (with MindLive; in testing)" }, { "CastRelativesSpawn", "Kin made out of sight when the street has nobody free" }, { "OwnLooks", "Known again by their look, without enRAGE (in testing)" }, { "LanguageUrl", "The local model server" }, { "LanguageModel", "The model it runs" }, { "Campfires", "Strangers at a campfire at night" }, { "CampfireChance", "Campfire chance (percent a roll)" }, { "VoiceBelow", "The voice below the saloon floor (West World)" }, { "DoctorsPatient", "Someone walks to the doctor for a child's fever" }, { "TestCastReturns", "The test cast come back by themselves in their town" }, { "FlirtPrompt", "Flirt in the lock-on menu (H)" }, { "NpcFlirting", "People flirt and court each other" }, { "TerritoryNews", "enRAGE's territory changes as updates" }, { "RealVoiceTalk", "People talk in their real voices" }, { "RealVoiceTalkSeconds", "About every (seconds)" }, { "CrudeTalk", "Crude remarks (saloons, sweethearts)" }, { "RoughHandling", "Faces into the bar (rough handling)" }, { "Reactions", "People react to what's done and said to them" }, { "Acknowledge", "People who know each other nod as they pass" }, { "SightReactions", "People react to how you look" }, { "Kindnesses", "Small kindnesses (a hand up, a round, standing up)" }, { "Vices", "Vices (drinking away bad news)" }, { "Grudges", "Grudges that travel (friends take up a wrong)" }, { "NightVisitor", "The night visitor (in town, after midnight)" }, { "NightVisitorChance", "Night visitor chance per roll (percent)" }, { "Travellers", "Travellers asking the way (on the roads)" }, { "TravellerChance", "Traveller chance per roll (percent)" }, { "SupperInvitation", "The supper invitation (at dusk, on the roads)" }, { "SupperChance", "Supper invitation chance per roll (percent)" }, { "RecordMinds", "enRAGE's people think from its own record" }, { "StalkerRecords", "enRAGE's people may be the stalker" }, { "RecordFates", "Deaths RealNPCs caused written into enRAGE" }, { "EnragePeopleJoinIn", "enRAGE's own people join in" }, { "NpcThieves", "Pickpockets among townsfolk" }, { "DrunkChallenges", "Drunks who call men out" }, { "ThoughtMarker", "Mark who is thinking" }, { "ThoughtsOverHeads", "Thoughts above their heads" }, { "ThoughtsOverHeadScale", "Size of thoughts above heads" }, { "ShareWithEnrage", "Tell enRAGE of deaths it missed" }, { "Minds", "People think about what's on their minds" }, { "MindShadow", "The mind underneath, reported only (log, F7, cards)" }, { "MindLive", "The mind's moods reach the screen" }, { "PerfMeter", "Time each part of RealNPCs (F7: TEST perf)" }, { "DebugLog", "Detailed log (for testing)" }, { "ShowMinds", "Show minds (a card over people near you)" }, { "ShowWakeStages", "Wake stages over heads" }, { "WakeVoices", "The waking speak their own lines oddly" }, { "EncountersAtOnce", "Encounters going on at once (a stalker too)" }, { "PanelSlowsTime", "Pause or slow the world while this panel is open" }, { "PanelTimeScale", "World speed while open (0 paused, 1 normal)" }, { "Trysts", "A night together (off screen)" }, { "CasualHookupsDecides", "CasualHookups only for women who said yes" }, { "WillingSingle", "Single women willing (percent)" }, { "WillingTaken", "Married women willing (percent)" }, { "ThoughtSounds", "A small sound as a thought shows" }, { "NpcRomance", "NPC romance" }, { "RevealToEnrage", "Tell enRAGE what you learn" },
             { "RomanceAffectsEnrage", "Romance changes enRAGE's records" }, { "ReplaceEnrageSettings", "Alt+F11 opens this panel" },
             { "HostsQuestionReality", "People question reality" }, { "StalkerWhenStill", "When you stand still, the stalker" }, { "StalkerActMin", "He does odd things at least (metres)" }, { "StalkerActMax", "... and at most (metres)" },
             { "StalkerKey", "Make a stalker now" }, { "ExecutionKey", "Stage an execution nearby" }, { "CryingWomanKey", "Bring out the crying woman" }, { "HermitKey", "Make a hermit's camp nearby" }, { "GatheringKey", "Stand a gathering nearby" }, { "StalkerEveryMinutes", "Roll for a stalker every (real minutes)" },
@@ -1351,6 +1351,69 @@ namespace EnrageWestworld.InGame
                 Key(Keys.Down, false, false, false);
         }
 
+        // the mouse (Lex, 2026-10-30): the game's cursor while the panel is open; pointing at a row chooses it, a left click
+        // changes it forward (or does it, or sets its key), a right click back; a click on the page's name turns the page
+        // (left half back, right half on), and one on the line under the panel switches the essentials and every setting.
+        // The game's menu cursor controls, and the ordinary buttons in case those don't reach a script's screen.
+        private const uint CursorX = 0xD6C4ECDC, CursorY = 0xE4130778, CursorAccept = 0x9D2AEA88, CursorCancel = 0x27568539, Attack = 0x07CE1E61, Aim = 0xF84FA74F;
+        private float _mouseX = -1f, _mouseY = -1f;
+        private bool _mouseNoted;
+
+        private void MouseInput()
+        {
+            _NAMESPACE30.SET_MOUSE_CURSOR_THIS_FRAME();
+            if (_capture != null || _pages.Count == 0)
+                return;
+            float mx = PAD.GET_DISABLED_CONTROL_NORMAL(0, CursorX), my = PAD.GET_DISABLED_CONTROL_NORMAL(0, CursorY);
+            bool moved = Math.Abs(mx - _mouseX) > 0.002f || Math.Abs(my - _mouseY) > 0.002f;
+            _mouseX = mx;
+            _mouseY = my;
+            bool left = PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, CursorAccept) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, Attack);
+            bool right = PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, CursorCancel) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, Aim);
+            if ((left || right) && !_mouseNoted)
+            {
+                _mouseNoted = true;   // once a session: whether the cursor's place reaches the panel
+                Log.Write("PANEL mouse: a click at " + mx.ToString("0.000") + ", " + my.ToString("0.000"));
+            }
+            Page page = _pages[_page];
+            float pageY = Y + 0.016f + Draw.LineHeight(TitleScale) + 0.006f, rowH = Draw.LineHeight(RowScale) * 1.22f, top = pageY + Draw.LineHeight(PageScale) + 0.014f;
+            bool inside = mx >= X && mx <= X + W;
+            int hit = -1;
+            if (inside && my >= top - 0.002f && my < top - 0.002f + VisibleRows * rowH)
+            {
+                int i = _scroll + (int)((my - (top - 0.002f)) / rowH);
+                if (i >= 0 && i < page.Rows.Count && Pickable(page.Rows[i]))
+                    hit = i;
+            }
+            if (hit >= 0 && moved && hit != _row && _confirm == null)
+                _row = hit;   // pointing chooses
+            if (!left && !right)
+                return;
+            if (inside && my >= pageY && my < pageY + Draw.LineHeight(PageScale) + 0.006f)
+            {
+                Key(mx < X + W / 2f ? Keys.Q : Keys.E, false, false, false);   // the page's name: back or on
+                return;
+            }
+            float sws = SmallScale * 1.05f;
+            if (left && my >= Y + H && my < Y + H + Draw.LineHeight(sws) + 0.016f && Math.Abs(mx - 0.5f) < 0.3f)
+            {
+                ShowEverything(!ShowAll);   // the switch under the panel
+                return;
+            }
+            if (hit < 0)
+                return;
+            _row = hit;
+            Row r = page.Rows[hit];
+            bool keyRow = r.Fire || r.Pad || (r.E != null && ((!r.Theirs && IsOurKey(r.E.Key)) || (r.Theirs && r.E.Section.Equals("Keys", StringComparison.OrdinalIgnoreCase))));
+            if (r.Action != null || keyRow)
+            {
+                if (left)
+                    Key(Keys.Enter, false, false, false);   // do it (twice where it asks), or set its key
+                return;
+            }
+            Key(left ? Keys.Right : Keys.Left, false, false, false);
+        }
+
         private void DrawHints(float left, bool pad)
         {
             if (_note.Length > 0)
@@ -1359,7 +1422,7 @@ namespace EnrageWestworld.InGame
             string keys = pad ? (testing ? "D-pad choose   bumpers turn the page   A: fire it now (set keys with the keyboard)   B: close"
                                          : "D-pad choose and change   hold X: x10, or the next section   LB/RB page   A: set a key (then press it on the keyboard)   B: close")
                 : testing ? "Up/Down or wheel choose   Q/E page   Enter: set a key   Space: fire it now   Delete: no key   Backspace: close"
-                : "Up/Down or wheel choose   Left/Right change   Shift: x10, or the next section   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
+                : "Up/Down, wheel or point choose   Left/Right or click/right-click change   Shift: x10   Q/E or click the page name: page   Enter: set a key   Backspace: close";
             Draw.Text(Draw.Fit(keys, SmallScale * 0.94f, W - 0.04f), left, Y + H - 0.04f, SmallScale * 0.94f, 140, 128, 110);
             // the switch between the essentials and every setting, at the bottom centre of every page (Lex, 2026-10-30)
             string sw = ShowAll ? "Showing every setting   F: just the essentials" : "Showing the essentials   F: every setting and the Testing page";
@@ -1428,7 +1491,10 @@ namespace EnrageWestworld.InGame
             else if (pad && PadInput())
                 return;   // the pad closed it
             else if (!pad)
+            {
                 WheelInput();
+                MouseInput();
+            }
             Draw.Rect(0f, 0f, 1f, 1f, 0, 0, 0, 110);
             Draw.Rect(X, Y, W, H, 18, 15, 12, 238);
             Draw.Rect(X, Y, W, 0.004f, 196, 156, 92, 255);
