@@ -49,6 +49,7 @@ namespace EnrageWestworld.InGame
 
 		private static string _subText;
 		private static int _subFrom, _subUntil;
+		private static bool _subOverheard;   // the line showing was only overheard: a line said to the player may replace it
 
 		/// [Output] Subtitles (on, unless "off").
 		public static bool SubtitlesOn = true;
@@ -258,6 +259,7 @@ namespace EnrageWestworld.InGame
 					if (sub != null)
 					{
 						_subText = Clean(sub);
+						_subOverheard = false;
 						_subFrom = gameTime;
 						_subUntil = gameTime + Math.Max(ms, Duration(sub));
 						SubtitlesShown++;
@@ -268,6 +270,26 @@ namespace EnrageWestworld.InGame
 					_nextAt = gameTime + ms;
 				}
 			}
+		}
+
+		/// What someone says near the player that the game gives no subtitle of its own (a street scene, a hello, the doctor,
+		/// the law chase): in the same box, the game's way, for ms (Lex, 2026-10-30: spoken lines as subtitles, never on the
+		/// bar with the thoughts). Not while the subtitles are off, nor over a line said to the player still showing.
+		public static bool Overheard(string speaker, string text, int ms)
+		{
+			if (!SubtitlesOn || SubtitleMode == "off" || string.IsNullOrEmpty(text))
+				return false;
+			int now = Game.GameTime;
+			if (_subText != null && now < _subUntil && !_subOverheard)
+				return false;
+			string sub = (string.IsNullOrEmpty(speaker) ? "" : speaker + ": ") + "\"" + text.Trim() + "\"";
+			_subText = Clean(sub);
+			_subOverheard = true;
+			_subFrom = now;
+			_subUntil = now + ms;
+			SubtitlesShown++;
+			LastSubtitle = sub;
+			return true;
 		}
 
 		/// Every frame: the subtitle showing now, the game's way: white serif text in a dark box, centred above the ticker,

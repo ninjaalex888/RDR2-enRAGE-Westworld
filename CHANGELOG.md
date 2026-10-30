@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### What people say near you is a subtitle, not a line at the bottom (Lex, 2026-10-30: "There shouldn't be inner thoughts showing at the bottom of the screen")
+
+- The words of a street scene, a hello or goodbye, the doctor's visit, the law chase and the pickpocket's "Pardon me" were drawn on the bar at the bottom, where they read as thoughts (a mourner's "Last night I dreamed he walked in the door"). They now show as they're said in the subtitle box drawn the game's way ("Hermine: \"...\""), within `[Ticker] ScenesOnTickerMetres` (30) of you; `[Output] Subtitles = off` hides them, and a line said to you is never covered by one. The bar keeps the news; thoughts stay over heads. Voicing these lines in the speakers' own voices is roadmap 1. Not yet seen in game.
+
 ### Names over heads: easier to hide, or the name alone (players' request, 2026-10-30)
 
 - The names over heads could already be turned off (`[Display] NameCards = off`, Names over heads on the settings panel), but the panel page holding it was called "Bars and meter"; it is now "Names, bars and meter". With enRAGE installed, the cards over heads are its own (ours stand aside for them), so turning ours off changed nothing (Lex, 2026-10-30, in game): off on the panel now sets enRAGE's `[Menu] NameCards` to 0 too, after the usual copy of NemesisMod.ini (turning ours back on leaves enRAGE's off). New: `[Display] NameCardsSecondLine` (on; settings version 117), Personality line under the names on the same page: off shows the name alone, without the temper, trade, "Stranger" or gang under it. Not yet seen in game.
