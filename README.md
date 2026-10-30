@@ -44,7 +44,7 @@ A mod for Red Dead Redemption 2 that gives the people of the world lives of thei
 
 ## Install
 
-1. Install [enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967) 0.9.5.3 and what it needs (Script Hook RDR2 and Script Hook RDR2 .NET V2), and make sure it works.
+1. Install Script Hook RDR2 and Script Hook RDR2 .NET V2. [enRAGE](https://www.nexusmods.com/reddeadredemption2/mods/10967) 0.9.5.3 is optional: RealNPCs works with it when it's there.
 2. Download **[RealNPCs-0.7.0.zip](https://github.com/ninjaalex888/RealNPCs/releases/latest/download/RealNPCs-0.7.0.zip)** from the [latest release](https://github.com/ninjaalex888/RealNPCs/releases/latest) (it's also in the [release](release) folder). It holds `RealNPCs.dll` and a README.txt that explains every feature and setting.
 3. Copy `RealNPCs.dll` into your game's `scripts` folder. enRAGE is not needed; if you use it, RealNPCs goes beside its `NemesisMod.dll` and works with it. To update, just replace the file: what people remember carries over, and your settings are kept. **Coming from enRAGE Westworld** (the old name): delete `EnrageWestworld.dll` from the scripts folder. RealNPCs won't run next to it, and copies your saves, diaries and settings over from the old folder the first time it starts.
 4. Load your Story Mode save. About 10 seconds after you're in the world, the ticker appears at the bottom of the screen.
@@ -137,7 +137,7 @@ The detailed plan, with the ideas, designs and build steps behind each item, is 
 
 ## Credits
 
-- enRAGE is by its author on [Nexus Mods](https://www.nexusmods.com/reddeadredemption2/mods/10967). This add-on reads what enRAGE already tracks and adds to it, through enRAGE's own functions wherever enRAGE has them. It contains no enRAGE code or content.
+- enRAGE is by its author on [Nexus Mods](https://www.nexusmods.com/reddeadredemption2/mods/10967). With enRAGE installed, RealNPCs reads what enRAGE already tracks and adds to it, through enRAGE's own functions wherever enRAGE has them. It contains no enRAGE code or content.
 - CasualHookups is by its author on [Nexus Mods](https://www.nexusmods.com/reddeadredemption2/mods/7608). RealNPCs works with it when it's installed and contains none of its code or files.
 - Script Hook RDR2 is by Alexander Blade. Script Hook RDR2 .NET V2 is by its authors.
 - All the lines are original, except the songs (cowboy ballads and hymns) and a few quotations (Shakespeare, Poe, Dickinson, Thoreau and others), which are in the public domain.
