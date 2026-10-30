@@ -30,6 +30,7 @@ namespace EnrageWestworld.InGame
         private void DramaTick(int now)
         {
             Ped me = Game.Player.Character;
+            GangStep(now);   // rival gangs who meet near you (WestworldScript.Gangs.cs)
             FallWanderStep(now);
             WanderLaterStep(now);
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)

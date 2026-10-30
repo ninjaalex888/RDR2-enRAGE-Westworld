@@ -938,6 +938,34 @@ namespace EnrageWestworld.Core
 			return t;
 		}
 
+		/// enRAGE's wars, feuds, clashes and rivalries of late, by game minute and headline (not saved).
+		public readonly List<KeyValuePair<long, string>> Wars = new List<KeyValuePair<long, string>>();
+
+		/// Whether enRAGE has said in the last two game days that these two (RealNPCs' gang words: "O'Driscoll", "Lemoyne
+		/// Raider", "the law") are at war, feuding, clashing or rivals.
+		public bool AtWar(string a, string b, long now)
+		{
+			string ta = WarToken(a), tb = WarToken(b);
+			foreach (KeyValuePair<long, string> w in Wars)
+				if (now - w.Key >= 0 && now - w.Key < 2880 && w.Value.IndexOf(ta, StringComparison.OrdinalIgnoreCase) >= 0 && w.Value.IndexOf(tb, StringComparison.OrdinalIgnoreCase) >= 0)
+					return true;
+			return false;
+		}
+
+		private static string WarToken(string member)
+		{
+			switch (member)
+			{
+			case "Lemoyne Raider": return "Raider";
+			case "Del Lobo": return "Lobo";
+			case "Skinner Brother": return "Skinner";
+			case "Bronte man": return "Bronte";
+			case "Braithwaite man": return "Braithwaite";
+			case "the law": return "Pinkerton";
+			default: return member ?? "";
+			}
+		}
+
 		/// enRAGE's gang and faction events: wars, feuds, clashes, rivalries, unrest, rank changes, jobs. They are news about the
 		/// world, not about one person's life, and are shown apart from the ticker (see WarNewsTo).
 		internal static bool IsWarfare(string kind)
@@ -983,6 +1011,12 @@ namespace EnrageWestworld.Core
 			if (Store.Announced.Count > 400)
 			{
 				Store.Announced.RemoveRange(0, 100);
+			}
+			if (IsWarfare(ev.Kind) && !string.IsNullOrEmpty(ev.Title) && (ev.Kind == "WAR" || ev.Kind == "FEUD" || ev.Kind == "CLASH" || ev.Kind == "RIVALRY"))
+			{
+				Wars.Add(new KeyValuePair<long, string>(ev.GameMin, ev.Title));   // which gangs are at each other (AtWar; the gangs' shootouts)
+				if (Wars.Count > 40)
+					Wars.RemoveAt(0);
 			}
 			if (ev.GameMin < Store.InstalledAt || string.IsNullOrEmpty(ev.Title))
 			{

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Rival gangs fight it out (Lex, 2026-10-30: building on enRAGE's gangs attacking each other; staged for now, the MindsEye in time)
+
+- Every 10 s, men of two different gangs within 90 m of you (the O'Driscolls, the Lemoyne Raiders, the Del Lobos, the Laramie, the Murfrees, the Skinners, the Night Folk, Bronte's and the Braithwaites' men, the Grays; the army and the Pinkertons as one side; never the Wapiti, the story's people or men enRAGE has busy) may meet in a fight: 30%, or 70% where enRAGE has reported a war, feud, clash or rivalry between the two in the last two game days. The nearest of each go toward the other, words are shouted ("Raiders! This is our ground!" / "Make us."), a moment's standoff with guns on each other, then every man of both within 50 m fights the nearest of the other side until a side is beaten or gone, or a minute. At most one in five minutes, and two gangs that passed each other by aren't tried again for half a game hour.
+- `[World] GangShootouts` (on; settings version 133). The log's `GANG` lines (who met, the words, how many each side lost); F7 counts them.
+
 ### A quarrel may end in shots (Lex, 2026-10-30: "fights escalate to having the NPCs use guns on each other"; deadly, true to 1899)
 
 - The quarrel ladder's last step was always said and never played ("the mind damages nobody yet"): the one who'd have fired thought better of it and both put up. With `[Mind] LadderShots` (on, with MindLive; settings version 132) the shot is fired: the one who pushed the draw to it says a last word and goes for the other with his own sidearm; the other fires back if he carries a gun, or runs. It runs until one is down or 15 s, then the shooter runs from it. Whoever falls stays dead, and what follows a death follows (the ledger, mourners, kin, vengeance). Only where the gun may come out at all: both armed, no lawman near, never in a saloon; the ladder's own odds keep it rare. The log's `SCENE shots:` line.
