@@ -85,7 +85,7 @@ namespace EnrageWestworld.InGame
         private void LetGoOfEveryone(string why)
         {
             // everyone the features hold, let go first
-            _director.Abort(why);
+            _director.AbortAll(why);
             EndEncounters(why);
             WakeActsAbort();
             TrystAbort();

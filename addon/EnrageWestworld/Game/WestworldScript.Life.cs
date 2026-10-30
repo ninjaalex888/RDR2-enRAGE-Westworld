@@ -35,11 +35,16 @@ namespace EnrageWestworld.InGame
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
             ThrownOutStep(now);   // the card cheat on the boardwalk
             SabbathWatchStep(now);   // the one who saw the kneel thinks of it, a few seconds on
+            if (_director.AnyPlaying)
+            {
+                if (_director.Busy)
+                    FallWatchStep(me, now);   // the player may give the fallen a hand up first (WestworldScript.Kindness.cs)
+                if (_director.AnyPlaying)
+                    _director.Tick(me, SceneSay, SideSay);
+            }
             if (_director.Busy)
             {
-                FallWatchStep(me, now);   // the player may give the fallen a hand up first (WestworldScript.Kindness.cs)
-                if (_director.Busy)
-                    _director.Tick(me, SceneSay);
+                SideScene(me, now);   // a quiet talk elsewhere while the scene plays (the NPC-life run)
                 return;
             }
             _fallWatch = null;
@@ -78,7 +83,11 @@ namespace EnrageWestworld.InGame
             if (_nextDrama < 0)
                 _nextDrama = now + 45000;
             if (!_cfg.Drama || now < _nextDrama || Feed.Busy || _stalker != null || _wedding != null || _theft != null || _plea != null || _visitor != null)
+            {
+                if (_cfg.Drama && now < _nextDrama)
+                    SideScene(me, now);   // between scenes, the street still talks
                 return;   // (and never gossip beside a figure crouched over a corpse)
+            }
             _nextDrama = now + 8000;
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
@@ -107,7 +116,7 @@ namespace EnrageWestworld.InGame
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < 22f &&
-                                                         !Resting(p.Handle, now)).ToList();
+                                                         !Resting(p.Handle, now) && !_director.Involves(p.Handle)).ToList();   // (a quiet talk's two are taken)
             if (pool.Count >= 2 && now >= _nextSpecial && SpecialScene(pool, me, saloon, now))
                 return;
             // first, two people near you who have a reason to have something to do with each other (Reasons.cs)
@@ -131,7 +140,6 @@ namespace EnrageWestworld.InGame
                 }
             if (a == null || !(ENTITY.IS_ENTITY_ON_SCREEN(a.Handle) || ENTITY.IS_ENTITY_ON_SCREEN(b.Handle)))
                 return;
-            _nextChance = now + (int)(_cfg.DramaGapSeconds * 1500);   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk)
             // the older one tells the tales
             if (Director.OldModel(b) && !Director.OldModel(a))
             {
@@ -189,7 +197,74 @@ namespace EnrageWestworld.InGame
             if (s.Ladder == null || s.Cast == 2)
                 StandUpFor(s, people, cast, seed, now, false, out stood);
             AddBystander(s, people, cast, seed, now);
-            StartScene(s, people, cast, seed, now);
+            if (StartScene(s, people, cast, seed, now))
+                _nextChance = now + (int)(_cfg.DramaGapSeconds * 1500);   // was x3 (Lex, 2026-10-29: the chance meetings carry the lively kinds: songs, tales, haggling, small talk); from the start, not the try (2026-10-30)
+        }
+
+        private int _nextSide;
+        private const float SideApart = 10f;   // a quiet talk keeps this far from the scene's people
+
+        /// A quiet talk between two other people elsewhere on the street, while a scene plays or between scenes (the NPC-life
+        /// run, Lex 2026-10-30: "more frequent NPC-to-NPC scenes, including several at once"). Two people with a reason of
+        /// their own first, else the two standing closest; only what Director.Quiet allows (words, never blows), and never
+        /// near the scene. Its lines are voices, and a subtitle when it's near you (SideSay).
+        private void SideScene(Ped me, int now)
+        {
+            if (!_cfg.Drama || _cfg.ScenesAtOnce <= 1 || now < _nextSide || _director.SideCount >= _cfg.ScenesAtOnce - 1 ||
+                _stalker != null || _wedding != null || _theft != null || _plea != null || _visitor != null)
+                return;
+            _nextSide = now + 5000;   // looked again in a few seconds when nobody fits
+            bool saloon = _placeKind == "saloon";
+            if (_interiorType != 0 && !saloon)
+                return;
+            Ped c0 = _director.CastAt(0);
+            Vector3? sceneAt = c0 != null && c0.Exists() ? c0.Position : (Vector3?)null;
+            Func<Ped, bool> clear = p => !_director.Involves(p.Handle) && (sceneAt == null || p.Position.DistanceTo(sceneAt.Value) >= SideApart);
+            if (ReasonScene(me, saloon, now, true, clear))
+                return;
+            List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
+                                                         !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
+                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < 22f &&
+                                                         !Resting(p.Handle, now) && clear(p)).ToList();
+            Ped a = null, b = null;
+            float best = 3.4f;
+            for (int i = 0; i < pool.Count; i++)
+                for (int j = i + 1; j < pool.Count; j++)
+                {
+                    float d = pool[i].Position.DistanceTo(pool[j].Position);
+                    if (d < best)
+                    {
+                        best = d;
+                        a = pool[i];
+                        b = pool[j];
+                    }
+                }
+            if (a == null || !(ENTITY.IS_ENTITY_ON_SCREEN(a.Handle) || ENTITY.IS_ENTITY_ON_SCREEN(b.Handle)))
+                return;
+            if (Director.OldModel(b) && !Director.OldModel(a))
+            {
+                Ped x = a;
+                a = b;
+                b = x;
+            }
+            string seed = a.Handle + "|" + b.Handle + "|" + now / 60000 + "|side";
+            SceneCast cast = BuildCast(a, b, null, saloon, me, now, seed);
+            cast.Off.Add("debt");
+            Scene s = !cast.AWoman && !cast.BWoman && Director.OldModel(a) && Director.OldModel(b) && !cast.Off.Contains("smalltalk") && Voice.Chance(seed + "|olddays", 45)
+                ? Scenes.OldDays(cast, seed) : Scenes.Choose(cast, seed, true);
+            if (s != null && (!Director.Quiet(s) || TroubleKinds.Contains(s.Kind) || s.Kind == "hosts" || s.Kind == "pickpocket" || s.Kind == "debt"))
+                s = cast.Off.Contains("smalltalk") ? null : Scenes.SmallTalk(cast, seed);   // a talk beside is words only
+            if (s == null || !Director.Quiet(s))
+                return;
+            StartScene(s, new List<Ped> { a, b }, cast, seed, now, side: true);
+        }
+
+        /// A quiet talk's line: a subtitle only when it's near you, never the queue the scene's lines take (two talks at once
+        /// would fill it, and its waiting holds the next scene back).
+        private void SideSay(string label, string line, bool uncanny, bool woman, int ped)
+        {
+            if (_cfg.ScenesOnTicker && _cfg.Ticker && ped != 0 && ENTITY.DOES_ENTITY_EXIST(ped) && ENTITY.GET_ENTITY_COORDS(ped, true, true).DistanceTo(Game.Player.Character.Position) <= _cfg.ScenesOnTickerMetres)
+                SpeechCaption(label, line, ped, Math.Min(7000, 1600 + line.Length * 55));
         }
 
         private sealed class Pending
@@ -309,10 +384,22 @@ namespace EnrageWestworld.InGame
                    "; in sight: " + (_engine.Nearby != null ? _engine.Nearby.Count : 0) + " (noted " + (g - _engine.NearbyAt) + " game min ago)";
         }
 
-        private void StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now, bool test = false)
+        private bool StartScene(Scene s, List<Ped> people, SceneCast cast, string seed, int now, bool test = false, bool side = false)
         {
             // the labels over the lines say the names the lines were written with (cast.Names, set by BuildCast)
             string[] names = cast.Names ?? new string[0];
+            if (side)
+            {
+                // a quiet talk beside the scene: its words are noted at once (Director.Quiet: nothing in it waits for a cue)
+                if (!_director.Start(s, people, names, seed, () => { }, cast, true, _cfg.ScenesAtOnce - 1))
+                    return false;
+                _nextSide = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.4 + _rng.NextDouble() * 0.3));
+                var q = new Pending { S = s, People = new List<Ped>(people), Names = names };
+                NoteHappened(q, s.Kind);
+                NoteInScene(people, s.Kind, now);
+                Onlookers(people);
+                return true;
+            }
             if (_director.Start(s, people, names, seed, () => { }, cast))
             {
                 _nextDrama = now + (int)(_cfg.DramaGapSeconds * 1000 * (0.75 + _rng.NextDouble() * 0.5));
@@ -336,7 +423,9 @@ namespace EnrageWestworld.InGame
                     NoteHappened(p, noted);   // a test leaves no tie between them
                 NoteInScene(people, noted, now);
                 Onlookers(people);
+                return true;
             }
+            return false;
         }
 
         /// What a scene leaves: the tie between its two (kind may differ from the scene's: a rough that came to a

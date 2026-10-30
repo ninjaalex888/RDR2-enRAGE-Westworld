@@ -182,7 +182,7 @@ namespace EnrageWestworld.InGame
             {
                 FlirtPromptEnd();
                 ForgetPromptEnd();
-                _director.Abort("stopping");
+                _director.AbortAll("stopping");
                 EndEncounters("the add-on stopped");
                 BelowAbort("the add-on stopped");
                 WakeActsAbort();
@@ -815,7 +815,7 @@ namespace EnrageWestworld.InGame
             if (_missionPaused)
                 return;
             _missionPaused = true;
-            _director.Abort("a mission started");
+            _director.AbortAll("a mission started");
             EndEncounters("a mission started");
             BelowAbort("a mission started");
             PatientAbort("a mission started");

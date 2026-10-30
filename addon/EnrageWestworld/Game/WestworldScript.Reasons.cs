@@ -51,7 +51,7 @@ namespace EnrageWestworld.InGame
                     continue;   // the distance first: IsRecord is a reflection call into enRAGE, too dear for every ped in the world
                 if (!Natives.Bystander(p, me.Handle, IsRecord(h)) || Spawner.IsOurs(h) ||
                     MayDirectWhyNot(p) != null ||   // never the story's own people, grown-ups only; enRAGE's people unless it has them busy
-                    PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) || _wakeActs.Any(w => w.Handle == h) || IsAcknowledging(h) || InTalk(h) ||
+                    PostKindOf(p) != null || IsHermit(h) || IsGatherer(h) || IsExecutionPed(h) || _wakeActs.Any(w => w.Handle == h) || IsAcknowledging(h) || InTalk(h) || _director.Involves(h) ||
                     PED.IS_PED_IN_ANY_VEHICLE(h, false) || PED.IS_PED_ON_MOUNT(h))
                     continue;
                 if (!test && Resting(h, now))
@@ -232,9 +232,13 @@ namespace EnrageWestworld.InGame
         }
 
         /// The strongest reason near the player that he can see, played as a scene. False if there's none.
-        private bool ReasonScene(Ped me, bool saloon, int now)
+        /// side: a quiet talk beside the scene (SideScene): only people clear allows, standing together already, and only a
+        /// scene Director.Quiet allows, without the walk-over, the ladder, the barkeep or anyone stepping in.
+        private bool ReasonScene(Ped me, bool saloon, int now, bool side = false, Func<Ped, bool> clear = null)
         {
             List<Candidate> people = ReasonCandidates(me, now);
+            if (clear != null)
+                people = people.Where(c => clear(c.Ped)).ToList();
             if (people.Count < 2)
                 return false;
             foreach (PairReason pr in PairReasons(people, saloon).Take(4))
@@ -243,6 +247,8 @@ namespace EnrageWestworld.InGame
                 bool seen = new[] { pr.A.Ped, pr.B.Ped }.Any(p => ENTITY.IS_ENTITY_ON_SCREEN(p.Handle) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(me.Handle, p.Handle, 17));
                 if (!seen)
                     continue;
+                if (side && pr.Apart > 2.6f)
+                    continue;   // a talk beside has no walk-over
                 Ped first = pr.Why.BFirst ? pr.B.Ped : pr.A.Ped, second = pr.Why.BFirst ? pr.A.Ped : pr.B.Ped;
                 string seed = first.Handle + "|" + second.Handle + "|" + now / 60000;
                 SceneCast cast = BuildCast(first, second, null, saloon, me, now, seed);
@@ -260,12 +266,20 @@ namespace EnrageWestworld.InGame
                 }
                 if (cast.Off.Contains(kind) || (kind == "debt" && !_cfg.Debts) || (kind == "hosts" && cast.HostTier < 0) || (kind == "gossip" && cast.Rumours.Count == 0))
                     continue;
+                if (side && TroubleKinds.Contains(kind))
+                    continue;
                 Scene s = BuildSceneFor(kind, first, second, doer, done, cast, seed, pr.Apart > 2.6f, true);
-                if (s == null)
+                if (s == null || (side && !Director.Quiet(s)))
                     continue;
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
                           " (strength " + pr.Why.Strength + (pr.Why.Leaned != null ? ", the mind: " + pr.Why.Leaned : "") + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
                 List<Ped> cast2 = new List<Ped> { first, second };
+                if (side)
+                {
+                    if (!StartScene(s, cast2, cast, seed, now, side: true))
+                        continue;
+                    return true;
+                }
                 s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
                 AddMeet(s, kind, first, second, pr.Apart);
                 AddBarkeep(s, cast2, cast, seed, saloon);

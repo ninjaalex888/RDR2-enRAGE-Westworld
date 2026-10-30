@@ -71,7 +71,7 @@ namespace EnrageWestworld.InGame
         {
             { "FlirtPrompt", "Romance" }, { "Trysts", "Romance" }, { "CasualHookupsDecides", "Trysts" }, { "WillingSingle", "Romance" }, { "WillingTaken", "Romance" }, { "NpcFlirting", "Drama" }, { "AwakeningDays", "AwakeningShare" }, { "AwakeningBreakdown", "AwakeningShare" }, { "AwakeningDespair", "AwakeningShare" },
             { "RealityChance", "HostsQuestionReality" }, { "ReturnChance", "Reveries" }, { "StrangerReturnChance", "Reveries" },
-            { "DramaGapSeconds", "Drama" }, { "AvengerChance", "Avengers" }, { "AvengersAtOnce", "Avengers" }, { "AvengerGapHours", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
+            { "DramaGapSeconds", "Drama" }, { "ScenesAtOnce", "Drama" }, { "AvengerChance", "Avengers" }, { "AvengersAtOnce", "Avengers" }, { "AvengerGapHours", "Avengers" }, { "QuietStillSeconds", "QuietWhenStill" },
             { "CryingWomanChance", "CryingWoman" }, { "ExecutionChance", "Executions" }, { "HermitChance", "Hermits" }, { "GatheringChance", "Gatherings" },
             { "Hermits", "WestWorld" }, { "Gatherings", "WestWorld" }, { "RegularsPerTown", "Regulars" }, { "RegularsDress", "Regulars" },
             { "NameCardsMetres", "NameCards" }, { "NameCardsKnownMetres", "NameCards" }, { "NameCardsBesideEnrage", "NameCards" }, { "NameCardsSecondLine", "NameCards" }, { "NameCardsStrangerNames", "NameCards" },
@@ -142,7 +142,7 @@ namespace EnrageWestworld.InGame
             { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" },
             { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
             { "SelfDefenceNoBounty", "No bounty for self-defence" },
-            { "NameCards", "Names over heads (off, known, everyone)" }, { "WhosWho", "Who's who in the papers" }, { "NameCardsMetres", "Strangers' names within (metres)" }, { "NameCardsKnownMetres", "Known people's names within (metres)" }, { "NameCardsBesideEnrage", "Ours beside enRAGE's own cards too" }, { "NameCardsSecondLine", "Personality line under the names" }, { "NameCardsStrangerNames", "Strangers' names (else just Stranger)" },
+            { "NameCards", "Names over heads (off, known, everyone)" }, { "WhosWho", "Who's who in the papers" }, { "NameCardsMetres", "Strangers' names within (metres)" }, { "NameCardsKnownMetres", "Known people's names within (metres)" }, { "NameCardsBesideEnrage", "Ours beside enRAGE's own cards too" }, { "NameCardsSecondLine", "Personality line under the names" }, { "ScenesAtOnce", "Street scenes at once (1-3)" }, { "NameCardsStrangerNames", "Strangers' names (else just Stranger)" },
             { "FeelingBars", "Bars under people: fear, fondness, anger" }, { "ResetAtClerk", "Reset RealNPCs Memory at a station clerk" }, { "PanelShowsAll", "Show every setting (and the Testing page)" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
             { "Encounters", "Encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
             { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" }, { "Executions", "Executions on the road" }, { "ExecutionChance", "An execution's chance on each roll (percent)" },
@@ -1514,7 +1514,7 @@ namespace EnrageWestworld.InGame
         public bool ShowAll;
         private static readonly string[][] Essentials =
         {
-            new[] { "The world", "WestWorld", "Stalkers", "Encounters", "Romance" },
+            new[] { "The world", "WestWorld", "Stalkers", "Encounters", "Romance", "ScenesAtOnce" },
             new[] { "Things that happen to you", "Lifts" },   // the pickpocket (Lex, 2026-10-30: not one of the world's big switches)
             new[] { "On the screen", "NameCards", "NameCardsSecondLine", "NameCardsStrangerNames", "FeelingBars", "GrudgeMeter", "Ticker", "TickerShowsScene", "ThoughtsOverHeads", "Subtitles" },
             new[] { "The law", "SelfDefenceNoBounty" },
