@@ -46,12 +46,12 @@ namespace EnrageWestworld.InGame
                                            Until = Game.GameTime + (hookups ? HookupWillingMs : Trysts.OfferMs) };
             Log.Write("TRYST offered: " + name + " (" + r.TrystKind + ", chance " + r.Chance + "%, the night " + r.NightChance + "% -> " + (r.Night ? "yes" : "no") +
                       (r.Greeted > 0 ? ", greeted first" : r.Greeted < 0 ? ", flirted cold" : "") + "): " +
-                      (!r.Night ? "asking her (Hook up, H) gets a no today" : hookups ? "willing for CasualHookups' Flirt (" + HookupsKeyText + ") for " + HookupWillingMs / 1000 + " s" : "Hook up (H) within " + Trysts.OfferMs / 1000 + " s"));
+                      (!r.Night ? "asking her (Hook up, G) gets a no today" : hookups ? "willing for CasualHookups' Flirt (" + HookupsKeyText + ") for " + HookupWillingMs / 1000 + " s" : "Hook up (G) within " + Trysts.OfferMs / 1000 + " s"));
             if (r.Night && _trystHints < 3)
             {
                 _trystHints++;
-                Feed.Notice("RealNPCs", hookups ? name + " is willing: Hook up (H), then CasualHookups' Flirt (" + HookupsKeyText + "), in the next five minutes."
-                                                : name + " is willing: Hook up (H) within two minutes to go somewhere quieter.");
+                Feed.Notice("RealNPCs", hookups ? name + " is willing: Hook up (G), then CasualHookups' Flirt (" + HookupsKeyText + "), in the next five minutes."
+                                                : name + " is willing: Hook up (G) within two minutes to go somewhere quieter.");
             }
         }
 

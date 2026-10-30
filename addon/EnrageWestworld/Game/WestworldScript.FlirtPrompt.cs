@@ -17,8 +17,10 @@ namespace EnrageWestworld.InGame
         private const uint FlirtControl = 0x84543902;   // INPUT_INTERACT_OPTION2: H, or D-pad down
         private const ulong SetPromptText = 0x5DD02A8318420DD7, VarText = 0xFA925AC00EB830B9;
         private static IntPtr _literalTag, _flirtWord, _hookWord;   // kept for good: the game may hold on to the text
-        private bool _flirtPromptHook;   // it reads "Hook up": she said yes to the flirting (Trysts.cs)
         private int _flirtPrompt, _flirtPromptGroup, _flirtPromptFor, _flirtPresses;
+        private int _hookPrompt, _hookPromptFor, _hookPromptGroup, _hookPresses;
+        private bool _hookAsk;   // the next Flirt() is the Hook up ask (the G prompt), not another flirt
+        private const uint HookControl = 0x760A9C6F;   // INPUT_INTERACT_OPTION1: G (Lex, 2026-10-29: H to flirt, G to hook up)
         private string _flirtPromptWho;
         private Action _aFlirtPrompt;
 
@@ -47,13 +49,15 @@ namespace EnrageWestworld.InGame
                 return;
             }
             int group = HUD._UI_PROMPT_GET_GROUP_ID_FOR_TARGET_ENTITY(target);
-            // after her yes the same prompt asks her somewhere quieter (Lex: greet, flirt, then hook up)
-            bool hook = _trystOffer != null && _trystOffer.Handle == target && Game.GameTime <= _trystOffer.Until;
-            if (_flirtPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_flirtPrompt) || _flirtPromptFor != target || _flirtPromptGroup != group || _flirtPromptHook != hook)
+            // Flirt is always Flirt (H); after her yes, once her answer has been said, Hook up comes beside it on G
+            // (Lex, 2026-10-29: "it will immediately show the hook up interaction as H, when we would expect to wait for a
+            // response"; "H to flirt, G to engage in the hookup if the NPC is interested")
+            bool hook = _trystOffer != null && _trystOffer.Handle == target && Game.GameTime <= _trystOffer.Until && _trystOffer.Night && Game.GameTime > _flirtSaidUntil && _tryst == null;
+            HookPromptStep(target, group, hook);
+            if (_flirtPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_flirtPrompt) || _flirtPromptFor != target || _flirtPromptGroup != group)
             {
                 FlirtPromptEnd();
-                _flirtPrompt = NewFlirtPrompt(group, hook);
-                _flirtPromptHook = hook;
+                _flirtPrompt = NewFlirtPrompt(group, false);
                 _flirtPromptFor = target;
                 _flirtPromptGroup = group;
                 _flirtPromptWho = TalkName(who);
@@ -70,7 +74,7 @@ namespace EnrageWestworld.InGame
 
         /// The game's own prompt: "Flirt" (or "Hook up", after her yes) on INTERACT_OPTION2, pressed (not held), in this
         /// lock-on group.
-        private static int NewFlirtPrompt(int group, bool hook)
+        private static int NewFlirtPrompt(int group, bool hook, uint control = FlirtControl)
         {
             if (_literalTag == IntPtr.Zero)
             {
@@ -79,7 +83,7 @@ namespace EnrageWestworld.InGame
                 _hookWord = Kept("Hook up");
             }
             int prompt = HUD._UI_PROMPT_REGISTER_BEGIN();
-            HUD._UI_PROMPT_SET_CONTROL_ACTION(prompt, FlirtControl);
+            HUD._UI_PROMPT_SET_CONTROL_ACTION(prompt, control);
             ulong word = Function.Call<ulong>(VarText, 10, new InputArgument((ulong)_literalTag.ToInt64()), new InputArgument((ulong)(hook ? _hookWord : _flirtWord).ToInt64()));
             Function.Call(SetPromptText, prompt, new InputArgument(word));
             HUD._UI_PROMPT_SET_STANDARD_MODE(prompt, true);
@@ -99,9 +103,47 @@ namespace EnrageWestworld.InGame
             return at;
         }
 
+        /// The Hook up prompt on G, beside Flirt, only while she's willing and has given her answer.
+        private void HookPromptStep(int target, int group, bool hook)
+        {
+            if (!hook)
+            {
+                HookPromptEnd();
+                return;
+            }
+            if (_hookPrompt == 0 || !HUD._UI_PROMPT_IS_VALID(_hookPrompt) || _hookPromptFor != target || _hookPromptGroup != group)
+            {
+                HookPromptEnd();
+                _hookPrompt = NewFlirtPrompt(group, true, HookControl);
+                _hookPromptFor = target;
+                _hookPromptGroup = group;
+                Log.Detail("FLIRT the Hook up prompt (G) for " + _flirtPromptWho);
+            }
+            if (HUD._UI_PROMPT_HAS_STANDARD_MODE_COMPLETED(_hookPrompt, 0))
+            {
+                _hookPresses++;
+                Log.Write("FLIRT Hook up pressed: " + _flirtPromptWho);
+                _hookAsk = true;
+                _flirtRequested = true;
+                HookPromptEnd();
+            }
+        }
+
+        private void HookPromptEnd()
+        {
+            if (_hookPrompt != 0)
+            {
+                if (HUD._UI_PROMPT_IS_VALID(_hookPrompt))
+                    HUD._UI_PROMPT_DELETE(_hookPrompt);
+                _hookPrompt = 0;
+            }
+            _hookPromptFor = 0;
+        }
+
         /// Takes the prompt out of the menu (the lock-on ended, someone else, or the add-on stopping).
         private void FlirtPromptEnd()
         {
+            HookPromptEnd();
             if (_flirtPrompt != 0)
             {
                 if (HUD._UI_PROMPT_IS_VALID(_flirtPrompt))
@@ -116,7 +158,7 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.FlirtPrompt || !_cfg.Romance)
                 return "off ([Romance] " + (!_cfg.Romance ? "Romance" : "FlirtPrompt") + ")";
-            return "on, H (INTERACT_OPTION2); " + (_flirtPrompt != 0 ? "in the lock-on menu for " + _flirtPromptWho : "not shown (nobody locked on to)") + "; pressed " + _flirtPresses + " times";
+            return "on, Flirt on H (INTERACT_OPTION2), Hook up on G (INTERACT_OPTION1) once she's said yes; " + (_flirtPrompt != 0 ? "in the lock-on menu for " + _flirtPromptWho : "not shown (nobody locked on to)") + "; Flirt pressed " + _flirtPresses + " times, Hook up " + _hookPresses;
         }
     }
 }

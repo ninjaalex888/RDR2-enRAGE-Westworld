@@ -257,8 +257,8 @@ namespace EnrageWestworld.InGame
                     if (_hookupsHints < 3)
                     {
                         _hookupsHints++;
-                        Feed.Notice("RealNPCs", ours ? name + " is willing. CasualHookups won't take her, so Hook up (H) to go somewhere quieter."
-                                                     : flirted ? name + " liked your flirting, but she won't go further today. Hook up (H) to hear it from her."
+                        Feed.Notice("RealNPCs", ours ? name + " is willing. CasualHookups won't take her, so Hook up (G) to go somewhere quieter."
+                                                     : flirted ? name + " liked your flirting, but she won't go further today. Hook up (G) to hear it from her."
                                                      : name + " hasn't said yes to you. Greet her (R), then Flirt (H); CasualHookups follows her answer.");
                     }
                     if (_hookRun == null)

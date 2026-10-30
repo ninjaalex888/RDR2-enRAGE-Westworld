@@ -139,7 +139,7 @@ namespace EnrageWestworld.InGame
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
-            _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F2);
+            _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.None);
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.N);
             _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.OemCloseBrackets);
             _execKey = KeySpec.Parse(_cfg.ExecutionKey, Keys.OemOpenBrackets);

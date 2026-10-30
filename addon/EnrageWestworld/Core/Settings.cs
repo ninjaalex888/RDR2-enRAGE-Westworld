@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 105;
+        public const int CurrentVersion = 106;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -219,7 +219,7 @@ namespace EnrageWestworld.Core
         public string TestKey = "F7";
         public string WarNewsTo = "feed";
         public bool TerritoryNews = true;
-        public string FlirtKey = "F2";
+        public string FlirtKey = "None";   // F2 until 2026-10-29 (Lex: H flirts in the lock-on menu, G hooks up; no keyboard key)
         public string WakeKey = "Y";
         public string ReaderKey = "N";
         public bool ReloadIni = true;
@@ -395,8 +395,8 @@ namespace EnrageWestworld.Core
             {
                 // F6 is the game's camera, and 5 (the default for one version) takes out the melee slot of the item
                 // wheel; a key of your own is kept
-                raised.Add("FlirtKey " + s.FlirtKey + " -> F2");
-                s.FlirtKey = "F2";
+                raised.Add("FlirtKey " + s.FlirtKey + " -> None");
+                s.FlirtKey = "None";   // F2 until 2026-10-29: flirting is H in the lock-on menu now
             }
             if (s.SettingsVersion < 46)
             {
@@ -548,6 +548,11 @@ namespace EnrageWestworld.Core
                         s.SettingsKey2 = KeyIs(s.SettingsKey, "Alt+F") ? "Alt+R" : "Alt+F";
                     if (old1 || old2)
                         log?.Invoke("Settings: the settings panel's keys are " + s.SettingsKey + " and " + s.SettingsKey2 + " (were " + k1 + " and " + k2 + "; Ctrl+F7 opens nothing now).");
+                }
+                if (s.SettingsVersion < 106 && KeyIs(s.FlirtKey, "F2"))
+                {
+                    s.FlirtKey = "None";   // 2026-10-29 (Lex): flirting is H in the lock-on menu, the hook up G; F2 goes
+                    log?.Invoke("Settings: FlirtKey F2 -> None (flirt with H in the lock-on menu, then Hook up with G once she says yes).");
                 }
                 RaiseOldDefaults(s, log);   // 0.6.0: what play-testing settled on, and the stalker's new acts
                 s.SettingsVersion = CurrentVersion;
