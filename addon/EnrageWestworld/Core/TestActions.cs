@@ -79,7 +79,7 @@ namespace EnrageWestworld.Core
             new Entry("nod", "People", "Two who know each other acknowledge it", "TestNodKey", needs: "two people with a tie within 10 m of each other"),
             // ---- street scenes: the nearest named pair that fits plays it now (no tie or memory is noted for a test) --
             new Entry("scene:argue", "Street scenes", "An argument", "TestArgueKey", needs: "two named people within 16 m"),
-            new Entry("scene:brawl", "Street scenes", "A fistfight", "TestBrawlKey", needs: "two named men within 16 m"),
+            new Entry("scene:brawl", "Street scenes", "A fistfight", "TestBrawlKey", needs: "two named people within 16 m; women too with WomenInFights"),
             new Entry("scene:smalltalk", "Street scenes", "Small talk", "TestSmallTalkKey", needs: "two named people within 16 m"),
             new Entry("scene:gossip", "Street scenes", "Gossip", "TestGossipKey", needs: "two named people within 16 m"),
             new Entry("scene:flirt", "Street scenes", "A flirt", "TestFlirtSceneKey", needs: "a named man and woman within 16 m"),

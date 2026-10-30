@@ -59,6 +59,7 @@ namespace EnrageWestworld.Core
             public bool SameSex;    // [Romance] SameSexRomance
             public float Trouble = 1f;   // [Scenes] TroubleWeight: every chance of blows or a quarrel scaled by it (Lex, 2026-10-28)
             public bool WomenFight;      // [Scenes] WomenInFights: a woman may come to blows too, half as often a woman (Lex, 2026-10-29); off (and in the old harnesses), two men only
+            public bool MindDecides;   // the quarrel ladder plays the quarrel (MindLive, QuarrelLadder): MayFight leaves blows to it (Lex, 2026-10-30)
         }
 
         /// For each woman in a fight, this percent of a man's chance (Lex, 2026-10-29: half as likely, until the mind decides it).
@@ -73,6 +74,8 @@ namespace EnrageWestworld.Core
                 return true;
             if (where == null || !where.WomenFight)
                 return false;
+            if (where.MindDecides)
+                return true;   // the quarrel ladder decides whether it comes to blows, by the two of them (a man's hand against a woman at a tenth: Escalation)
             int pct = (a.Woman ? WomanFightPercent : 100) * (b.Woman ? WomanFightPercent : 100) / 100;
             return Voice.Chance(PairKey(a, b) + key + "|womanfight", pct);
         }

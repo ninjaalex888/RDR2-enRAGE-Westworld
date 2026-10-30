@@ -573,7 +573,9 @@ namespace EnrageWestworld.InGame
             bool men = !a.Woman && !b.Woman;
             switch (kind)
             {
-                case "brawl": case "rough": case "drunk": case "cheat": case "standoff":
+                case "brawl":
+                    return men || _cfg.WomenInFights ? null : "it wants two men (WomenInFights is off)";   // any two (Lex, 2026-10-30)
+                case "rough": case "drunk": case "cheat": case "standoff":
                     return men ? null : "it wants two men";
                 case "pickpocket":
                     return a.Woman ? "the thief's lines want a man" : null;

@@ -172,7 +172,7 @@ namespace EnrageWestworld.InGame
             long now = Bridge.Now(), day = now > 0 ? now / 1440 : -1;
             Reasons.Place where = new Reasons.Place
             {
-                Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights,
+                Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights, MindDecides = LadderOn,
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
             };

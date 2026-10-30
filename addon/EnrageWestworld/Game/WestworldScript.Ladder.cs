@@ -157,7 +157,18 @@ namespace EnrageWestworld.InGame
         /// The traits the shadow holds for this body, worked out now if it knows them but hasn't yet; null for nobody.
         private Traits LadderTraits(int h, int now)
         {
+            // every quarrel from the mind (Lex, 2026-10-30: "it can break out between any 2+ NPCs if their inner thoughts lead
+            // to it"): a body the cache last saw as nobody is looked at afresh (Nimrod Hatch, known since the morning, was
+            // "not known yet" from a look ten seconds stale), and a passer-by who can be one of ours is made one on the spot
             MindWho w = MindKnown(h, now);
+            if (w != null && w.Id == null)
+            {
+                Ped p = new Ped(h);
+                if (_bridge.RecordAt(h) == null && _bridge.AcquaintanceAt(h) == null && ResidentEligible(p))
+                    ResidentOf(p);
+                _mindWho.Remove(h);
+                w = MindKnown(h, now);
+            }
             if (w == null || w.Id == null || w.Src == null || w.Model != ENTITY.GET_ENTITY_MODEL(h))
                 return null;
             return w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));

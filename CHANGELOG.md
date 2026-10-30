@@ -8,6 +8,12 @@
 - `[Scenes] ScenesAtOnce` (2; 1-3; settings version 127; on the Essentials page under The world): the scene and up to this many less one quiet talks. 1: just the scene, as before.
 - A chance meeting that came to nothing no longer holds the next one back a minute and a half: the wait starts when one really starts.
 
+### Every quarrel from the mind (Lex, 2026-10-30: "it can break out between any 2+ NPCs if their inner thoughts lead to it")
+
+- With MindLive, an argument or a fistfight between any two people near you is played from the quarrel ladder: whether it stays words, comes to a shove, to blows or worse is theirs, from their natures, drink, what it's over, who's watching and their history. The ladder had passed people over when its last look at them, up to ten seconds stale, found nobody (Nimrod Hatch, known all morning, was "not known yet"); now it looks again.
+- The coin that let a woman into a fight half the time gives way to the ladder when it plays the quarrel; its own 1899 rule stands (a man's hand against a woman at a tenth of his rate, by Lex's word). Without the mind, the coin as before.
+- The fistfight test (`TestBrawlKey`) takes any two named people (women too with WomenInFights), not only two men.
+
 ### No T pose when a fight starts at the bar (Lex, 2026-10-30, in game)
 
 - A man leaning on the bar or sat when a brawl started was pulled out of it at once after 3 s, and went into a T pose before the fight (Ned Fleming, in the Valentine saloon). He's now asked to get up the game's way, again at 4 and 6 s, and pulled out only past 8 s (logged when it happens), with the punches ordered a moment after; a fight has 16 s to start (was 12).
