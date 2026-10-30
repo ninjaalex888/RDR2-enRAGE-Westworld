@@ -9,7 +9,7 @@
 
 ### What people say near you is a subtitle, not a line at the bottom (Lex, 2026-10-30: "There shouldn't be inner thoughts showing at the bottom of the screen")
 
-- The words of a street scene, a hello or goodbye, the doctor's visit, the law chase and the pickpocket's "Pardon me" were drawn on the bar at the bottom, where they read as thoughts (a mourner's "Last night I dreamed he walked in the door"). They now show as they're said in the subtitle box drawn the game's way ("Hermine: \"...\""), within `[Ticker] ScenesOnTickerMetres` (30) of you; `[Output] Subtitles = off` hides them, and a line said to you is never covered by one. The bar keeps the news; thoughts stay over heads. Voicing these lines in the speakers' own voices is roadmap 1. Not yet seen in game.
+- The words of a street scene, a hello or goodbye, the doctor's visit, the law chase and the pickpocket's "Pardon me" were drawn on the bar at the bottom, where they read as thoughts (a mourner's "Last night I dreamed he walked in the door"). They now show as they're said in the subtitle box drawn the game's way ("Hermine: \"...\""), within `[Ticker] ScenesOnTickerMetres` of you (12 m, was 30: Lex saw a mourner's line from 26 m off, out of sight; an ini still on 30 is moved to 12 at settings version 120); `[Output] Subtitles = off` hides them, and a line said to you is never covered by one. The bar keeps the news; thoughts stay over heads. Voicing these lines in the speakers' own voices is roadmap 1. Not yet seen in game.
 
 ### Names over heads: easier to hide, or the name alone (players' request, 2026-10-30)
 
