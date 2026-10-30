@@ -1346,7 +1346,7 @@ namespace EnrageWestworld.InGame
         {
             if (_capture != null)
                 return;
-            // the cursor's own scroll controls only live in the game's menus; out in the world the wheel is the weapon
+            // the cursor's own scroll controls only live in the game's menus; during play the wheel is the weapon
             // and menu-scroll controls (Lex, 2026-10-30: the wheel didn't move the panel)
             if (Pressed(WheelUp) || Pressed(0x81457A1Au) || Pressed(0xCC1075A7u) || Pressed(0xF78D7337u))
                 Key(Keys.Up, false, false, false);
