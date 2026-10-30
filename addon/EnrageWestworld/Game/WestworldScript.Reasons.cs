@@ -172,7 +172,7 @@ namespace EnrageWestworld.InGame
             long now = Bridge.Now(), day = now > 0 ? now / 1440 : -1;
             Reasons.Place where = new Reasons.Place
             {
-                Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight,
+                Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights,
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
             };
@@ -366,7 +366,7 @@ namespace EnrageWestworld.InGame
         /// joins the scene as its third person with one line, after the trouble itself.
         private void AddBarkeep(Scene s, List<Ped> people, SceneCast cast, string seed, bool saloon)
         {
-            string line = saloon && s.Cast == 2 && people.Count == 2 ? Scenes.Barkeep(s.Kind, seed) : null;
+            string line = saloon && s.Cast == 2 && people.Count == 2 ? Scenes.Barkeep(s.Kind, seed, cast != null && (cast.AWoman || cast.BWoman)) : null;
             if (line == null)
                 return;
             Ped me = Game.Player.Character;

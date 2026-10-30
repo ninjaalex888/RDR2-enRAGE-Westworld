@@ -62,6 +62,7 @@ namespace EnrageWestworld.InGame
                     ArmedB = WEAPON.IS_PED_ARMED(second.Handle, 4),
                     WomanA = cast.AWoman,
                     WomanB = cast.BWoman,
+                    WomenFight = _cfg.WomenInFights,
                     LawNear = LawmanNear(first, 30f),
                     GunsBanned = false,   // no town's rule is known to the add-on (For Lex)
                     Warmth = tie != null ? tie.Warmth : 0,

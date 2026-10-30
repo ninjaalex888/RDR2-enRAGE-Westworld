@@ -30,6 +30,8 @@ NEW IN THE NEXT VERSION
   now. Whether the bully backs down comes from his own nature: a hothead or a proud man faced by
   another man holds his ground, a proud man shamed by a woman before the street mostly backs down.
   [Mind] MindStandUp turns this part off.
+- Women come to blows too, with a man or another woman, half as often as two men do for each
+  woman in it ([Scenes] WomenInFights; off: only two men ever fight, as before).
 
 
 NEW IN 0.7.0

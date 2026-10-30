@@ -57,6 +57,23 @@ namespace EnrageWestworld.Core
             public bool Courting;   // [Romance] NpcFlirting: people make eyes at each other
             public bool SameSex;    // [Romance] SameSexRomance
             public float Trouble = 1f;   // [Scenes] TroubleWeight: every chance of blows or a quarrel scaled by it (Lex, 2026-10-28)
+            public bool WomenFight;      // [Scenes] WomenInFights: a woman may come to blows too, half as often a woman (Lex, 2026-10-29); off (and in the old harnesses), two men only
+        }
+
+        /// For each woman in a fight, this percent of a man's chance (Lex, 2026-10-29: half as likely, until the mind decides it).
+        public const int WomanFightPercent = 50;
+
+        /// Whether these two may come to blows at all: two men always, as before; with a woman in it (WomenFight on) on a
+        /// seeded roll of WomanFightPercent for each woman, by the pair and what it's over, so the same quarrel gives the same
+        /// answer. The rough move and the drunk's challenge stay men's (their clips were only ever seen on men).
+        public static bool MayFight(Someone a, Someone b, Place where, string key)
+        {
+            if (!a.Woman && !b.Woman)
+                return true;
+            if (where == null || !where.WomenFight)
+                return false;
+            int pct = (a.Woman ? WomanFightPercent : 100) * (b.Woman ? WomanFightPercent : 100) / 100;
+            return Voice.Chance(PairKey(a, b) + key + "|womanfight", pct);
         }
 
         /// A percent chance scaled by the trouble weight, 0-100.
@@ -112,10 +129,10 @@ namespace EnrageWestworld.Core
                 {
                     bool hot = Hot(a) || Hot(b);
                     // the first quarrel can come to blows too, between two hot men or with drink in one of them
-                    bool blows = twoMen && ((tie.Stage >= 1 && (hot || tie.Warmth <= -3 || tie.Stage >= 2)) || (Hot(a) && Hot(b)) || (hot && (a.Drunk || b.Drunk)));
+                    bool blows = MayFight(a, b, where, "feud" + tie.Count) && ((tie.Stage >= 1 && (hot || tie.Warmth <= -3 || tie.Stage >= 2)) || (Hot(a) && Hot(b)) || (hot && (a.Drunk || b.Drunk)));
                     // blows between a hothead (or a proud or a cold man) and the man he hates: sometimes he grabs him and
                     // smashes his face into whatever is at hand instead of trading punches
-                    if (blows && (Rough(a.Temper) || Rough(b.Temper)) && Voice.Hash(a.Id + b.Id + tie.Count + "rough") % 100 < RoughChance)
+                    if (blows && twoMen && (Rough(a.Temper) || Rough(b.Temper)) && Voice.Hash(a.Id + b.Id + tie.Count + "rough") % 100 < RoughChance)
                         return new Reason { Kind = "rough", Fallback = "brawl", Strength = 72 - 10 * tie.Warmth, BFirst = !Rough(a.Temper),
                                             Why = "their quarrel comes to blows, and " + (Rough(a.Temper) ? a.Name : b.Name) + " has the temper to do it rough" };
                     // the first time words; then it picks up again (and may be made up: Exchanges); two hot men, blows
@@ -184,7 +201,7 @@ namespace EnrageWestworld.Core
             {
                 bool hot = Hot(x);
                 // a hot man at the worst of it snaps at a man who won't take it: it comes to blows
-                if (hot && twoMen && Hot(y) && Voice.Chance(x.Id + gameDay + "snapblows", Weighted(35, where.Trouble)))   // was 20 (Lex, 2026-10-28: brawls often)
+                if (hot && Hot(y) && MayFight(x, y, where, "snap" + gameDay) && Voice.Chance(x.Id + gameDay + "snapblows", Weighted(35, where.Trouble)))   // was 20 (Lex, 2026-10-28: brawls often)
                     all.Add(new Reason { Kind = "brawl", Strength = 56, Matter = "nothing", Why = x.Name + " is at the worst of it (" + kind + ") and snaps at " + y.Name + ", who won't take it" });
                 else
                     all.Add(new Reason { Kind = "x:snap", Strength = hot ? 55 : 45, Why = x.Name + " is at the worst of it (" + kind + ")" });
@@ -214,11 +231,11 @@ namespace EnrageWestworld.Core
             // drink and temper in a saloon, any hour (at night only until Lex asked for saloon fights by day too, 2026-10-28):
             // two men, one of them hot, one of them drunk, come to blows (a coward only gets words); now and then the hot
             // one does it rough
-            if (twoMen && where.Saloon && Hot(x) && (x.Drunk || y.Drunk) && Voice.Chance(x.Id + gameDay + "drinktemper", Weighted(DrinkTemperChance, where.Trouble)))
+            if (where.Saloon && Hot(x) && (x.Drunk || y.Drunk) && MayFight(x, y, where, "drink" + gameDay) && Voice.Chance(x.Id + gameDay + "drinktemper", Weighted(DrinkTemperChance, where.Trouble)))
             {
                 if (y.Temper == "Coward")
                     all.Add(new Reason { Kind = "argue", Strength = 46, Matter = "drink", Why = x.Name + " has drink and temper in him, and " + y.Name + " won't stand up to it" });
-                else if (Voice.Hash(x.Id + y.Id + gameDay + "drough") % 100 < RoughChance)
+                else if (twoMen && Voice.Hash(x.Id + y.Id + gameDay + "drough") % 100 < RoughChance)
                     all.Add(new Reason { Kind = "rough", Fallback = "brawl", Strength = 57, Matter = "drink", Why = x.Name + " has drink and temper in him, and does it rough" });
                 else
                     all.Add(new Reason { Kind = "brawl", Strength = 56, Matter = "drink", Why = x.Name + " has drink and temper in him, and " + y.Name + " answers it" });
@@ -239,7 +256,7 @@ namespace EnrageWestworld.Core
             // Two hot men (or a hot and a cold one) at the full chance; one hot man at half; two ordinary men at a quarter
             // (Lex, 2026-10-28, at the highest weight in Valentine: no fights, since two hot men together are rare in a
             // thin town and the weight had no pair to work on); never a coward
-            if (twoMen && x.Temper != "Coward" && y.Temper != "Coward")
+            if (x.Temper != "Coward" && y.Temper != "Coward" && MayFight(x, y, where, "hotblood" + gameDay))
             {
                 bool hx = Hot(x), hy = Hot(y);
                 int full = where.Saloon ? HotBloodSaloonChance : HotBloodStreetChance;
