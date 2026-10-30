@@ -50,7 +50,7 @@ namespace EnrageWestworld.InGame
             public int ClipIdx, ClipAt;
             public float ShotPoint;         // despair: the shot's point in its clip (0-1): the clip's own event when it names one, else the set point
             public string ShotEvent;        // despair: that event's name, or null
-            public bool ClipOn, ClipSeen, ShotDone, ClipRetried, Borrowed, Sobbed, LeaveOrders;   // LeaveOrders: let be for enRAGE's sake, so its orders stay; Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
+            public bool ClipOn, ClipSeen, ClipSped, ShotDone, ClipRetried, Borrowed, Sobbed, LeaveOrders;   // LeaveOrders: let be for enRAGE's sake, so its orders stay; Borrowed: taken over for despair's last steps (handed back in EndWakeAct); Sobbed: the last words said sobbing
             public Person P;
             public PersonState St;
             public Resident Res;

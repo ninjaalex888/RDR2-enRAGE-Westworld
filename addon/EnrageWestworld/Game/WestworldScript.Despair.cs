@@ -84,15 +84,17 @@ namespace EnrageWestworld.InGame
         }
 
         /// The clips for a way, in order (null: the way has none, the wall and the knife).
+        private const float DespairGunSpeed = 1.5f;   // the gun's clips at half again their speed (2026-10-29)
+
         private static DespairClip[] DespairSequence(string method, string variant, string seed)
         {
             if (method == "gun")
                 return new[]
                 {
-                    DC(JamieDict, "ig6_i_dont_want_to_live_ig_jamie", 5500),
-                    DC(JamieDict, "ig6_gun_to_head_ig_jamie", 3900),
-                    DC(JamieDict, Voice.Chance(seed + "loop", 50) ? "ig6_jamie_loop_ig_jamie" : "ig6_jamie_loop3_ig_jamie", 5600),
-                    DC(JamieDict, "ig6_jamie_shoots_himself_ig_jamie", 3000, 2, 0.15f)   // 30% came too late once the death came with the shot (Lex, 2026-10-27 16:15); the clip's own event wins when it has one
+                    DC(JamieDict, "ig6_i_dont_want_to_live_ig_jamie", 3700),   // the times at DespairGunSpeed (were 5500, 3900, 5600)
+                    DC(JamieDict, "ig6_gun_to_head_ig_jamie", 2600),
+                    DC(JamieDict, Voice.Chance(seed + "loop", 50) ? "ig6_jamie_loop_ig_jamie" : "ig6_jamie_loop3_ig_jamie", 3700),
+                    DC(JamieDict, "ig6_jamie_shoots_himself_ig_jamie", 3000, 2, 0.11f)   // 0.15 still a touch late (Lex, 2026-10-29); 30% came too late once the death came with the shot (Lex, 2026-10-27 16:15); the clip's own event wins when it has one
                 };
             if (method == "poison" && variant == "drink")
                 return new[] { DC(DrinkDict, "trans_to_drink_male_a", 8700), DC(DrinkDict, "die_male_a", 13000, 2) };
@@ -220,6 +222,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_PLAY_ANIM(h, c.Dict, c.Clip, 4f, -4f, -1, c.Flags, 0f, false, 0, false, "", false);
                 act.ClipOn = true;
                 act.ClipSeen = false;
+                act.ClipSped = false;
                 act.ClipRetried = false;
                 act.ClipAt = now;
                 act.PhaseUntil = now + 100;
@@ -236,6 +239,12 @@ namespace EnrageWestworld.InGame
             bool playing = ENTITY.IS_ENTITY_PLAYING_ANIM(h, c.Dict, c.Clip, 3);
             if (playing)
                 act.ClipSeen = true;
+            if (playing && !act.ClipSped && act.Method == "gun")
+            {
+                // the gun's clips run half again as fast (Lex, 2026-10-29: "the animation took a really long time to play through")
+                ENTITY._SET_ENTITY_ANIM_SPEED(h, c.Dict, c.Clip, DespairGunSpeed);
+                act.ClipSped = true;
+            }
             else if (!act.ClipSeen && now - act.ClipAt > 1500)
             {
                 if (!act.ClipRetried)
