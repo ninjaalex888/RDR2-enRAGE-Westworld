@@ -87,6 +87,7 @@ namespace EnrageWestworld.InGame
             for (int k = 0; k < 2 && _mindCursor < _mindNear.Count; k++)
                 MindLook(_mindNear[_mindCursor++], now);
             MindAppraiseStep(now);   // one person a frame from the happening being appraised
+            OnlookStep(now);   // and one onlooker's act a frame, with MindLive and MindOnlookers (WestworldScript.Onlookers.cs)
             if (_aMindChoose == null)
                 _aMindChoose = () => MindChooseStep(_now);
             Safe("mind choosing", _aMindChoose);   // one person a frame, each once a minute: what they would do now (shadow; nobody is tasked); its own guard, so a fault in it can't stop the traits, needs and feelings
@@ -144,6 +145,7 @@ namespace EnrageWestworld.InGame
             {
                 t0 = Stopwatch.GetTimestamp();
                 MindAppraiseStep(now);
+                OnlookStep(now);
                 _mindLevels.Spend(Micros(t0));
             }
             if (_mindLevels.FrameHasRoom)
@@ -595,6 +597,7 @@ namespace EnrageWestworld.InGame
             long g = _store.LastGameMin;
             if (_mindEv == null || _mindEvCursor >= _mindEvPeople.Count)
             {
+                OnlookFlush(_now);   // the last happening's witnesses are all taken: its strongest two may act
                 _mindEv = _engine.Shadow.Next();
                 if (_mindEv == null)
                     return;
@@ -647,6 +650,7 @@ namespace EnrageWestworld.InGame
                 return;
             f.Shows = Display.Shows(f, ae, w.Traits);   // kept with the feeling, so a masked one's thought can say the mask too
             _engine.Shadow.Feel(id, f, ev.At);
+            OnlookNote(ev, id, w, f, ae);   // someone who only watched it may act on it (MindOnlookers; queued, capped)
             LanguageAskAhead(w, id, now);   // the language layer asks the model now, so the line is ready when the thought comes (WestworldScript.Language.cs)
             _mindFelt++;
             string about = ae.Doer == "player" && f.About == ev.DoerName ? "you" : f.About;
@@ -707,6 +711,7 @@ namespace EnrageWestworld.InGame
             _mindCursor = 0;
             _mindEv = null;
             _mindEvPeople.Clear();
+            OnlookForget();
             _mindFelt = 0;
             _mindLastFelt = null;   // nothing from a rewound future in F7
             _mindChooseCursor = 0;

@@ -30,6 +30,11 @@ NEW IN THE NEXT VERSION
   now. Whether the bully backs down comes from his own nature: a hothead or a proud man faced by
   another man holds his ground, a proud man shamed by a woman before the street mostly backs down.
   [Mind] MindStandUp turns this part off.
+- With [Mind] MindLive on: someone who only watched a quarrel, a fight or something you did
+  does something about it by what they feel: the frightened walk off (a man who keeps his fear
+  off his face slips away quietly), the pious shake their heads and leave, a gun or something
+  uncanny roots them to the spot, contempt shakes its head, a keen eye turns to watch. Two
+  people at most each time, never the law or a shopkeeper. [Mind] MindOnlookers.
 - Women come to blows too, with a man or another woman, half as often as two men do for each
   woman in it ([Scenes] WomenInFights; off: only two men ever fight, as before).
 
