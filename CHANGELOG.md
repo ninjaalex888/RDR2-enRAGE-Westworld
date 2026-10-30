@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### The language layer, measured (Lex, 2026-10-30: Ollama installed, an RTX 5080 at max settings)
+
+- Measured beside the game at max settings: llama3.1:8b (4-bit) loads in about 7 s once a session, then words a thought in 0.3 to 0.4 s (20 to 26 tokens); with it loaded the card held 13.8 GB of its 16.3. A request now asks for no more than 1,024 tokens of context (less memory, ample for one thought), and the first 25 answers and swaps a session go to the main log (`LANGUAGE answer for ... in N ms`, `LANGUAGE shown for ...`), so a play session shows what the model wrote and how fast.
+
 ### Plans over days (the NPC-life run, step 6)
 
 - People carry plans about each other over the next few game days, born from what already lies between them (`Core/Plans.cs`): someone wronged lately (a rough-up, a beating, a mugging, a pocket picked) means to get even with whoever did it (4 days); someone helped (tended, taken home, stood up for) means to thank their helper (5); a debtor with a real creditor means to pay them back (4); a sweetheart means to court (3). One of each a pair, two at most a person, kept in the save; one left undone past its days is let go.

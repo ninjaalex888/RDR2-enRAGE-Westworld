@@ -29,6 +29,7 @@ namespace EnrageWestworld.InGame
         private volatile bool _langReady;
         private int _langNextStep, _langFailStreak, _langBackoffUntil, _langChecks, _langAsks;
         private const int LanguageTimeoutMs = 8000, LanguageBackoffMs = 60000;
+        private int _langLoud, _langLoudShown;   // the first 25 answers and swaps a session to the main log (the prototype's look, 2026-10-30)
 
         /// Once a second from the tick: the engine's hand set, the worker started when the setting is on, the server checked
         /// again while it isn't answering.
@@ -89,7 +90,7 @@ namespace EnrageWestworld.InGame
             if (kept != null && kept != written)
             {
                 _engine.LanguageAnswers.Shown("model", kept);
-                Log.Detail("LANGUAGE shown for " + w.Name + " (" + source + "): \"" + kept + "\" in place of \"" + written + "\"");
+                (_langLoudShown++ < 25 ? (Action<string>)Log.Write : Log.Detail)("LANGUAGE shown for " + w.Name + " (" + source + "): \"" + kept + "\" in place of \"" + written + "\"");
                 return kept;
             }
             _engine.LanguageAnswers.Shown("written", written);
@@ -212,7 +213,7 @@ namespace EnrageWestworld.InGame
                     LanguageAnswer a = _engine.LanguageAnswers.Settle(ask, answer, sw.ElapsedMilliseconds);
                     _langFailStreak = 0;
                     if (a != null)
-                        Log.Detail("LANGUAGE answer for " + ask.Name + " in " + sw.ElapsedMilliseconds + " ms: \"" + (Language.Tidy(answer) ?? "(none)") + "\"" +
+                        (_langLoud++ < 25 ? (Action<string>)Log.Write : Log.Detail)("LANGUAGE answer for " + ask.Name + " in " + sw.ElapsedMilliseconds + " ms: \"" + (Language.Tidy(answer) ?? "(none)") + "\"" +
                                    (a.From == "written" ? " -> held (" + a.Why + "), the written line stands" : " -> kept"));
                 }
                 catch (Exception ex)
