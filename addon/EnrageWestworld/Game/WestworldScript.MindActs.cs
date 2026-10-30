@@ -26,6 +26,8 @@ namespace EnrageWestworld.InGame
             public Vector3 To;
             public int Toward;          // the one they walk to (talk, greet), 0 none
             public bool Spot;           // sent to the nearest scenario point
+            public string Arrive;       // at the place: "spot" (take the nearest seat or the bar), "browse" (a while at the counter), null
+            public bool Arrived;
         }
 
         private readonly List<MindAct> _mindActs = new List<MindAct>();
@@ -84,7 +86,11 @@ namespace EnrageWestworld.InGame
                     a.Until = now + 90000;
                     did = Choosing.WordsOf(kind) + " (the nearest spot)";
                     break;
-                case "home": case "shelter": case "saloon": case "store": case "church":
+                case "saloon": case "store": case "church":
+                    if (MindToPlace(a, w, kind, at, now, out did))
+                        break;
+                    goto case "home";   // no place known in this town yet: off out of the scene, as before
+                case "home": case "shelter":
                     {
                         // off out of the scene, away from you, along their own way (seeded by who they are)
                         Vector3 away = at - me.Position;
@@ -192,6 +198,21 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_TURN_PED_TO_FACE_ENTITY(a.Toward, h, 2000, 0f, 0f, 0f);
                 }
                 bool there = !gone && a.To != default(Vector3) && ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(a.To) < 3f;
+                if (there && a.Arrive != null && !a.Arrived && !_director.Involves(h))
+                {
+                    // at the place: a seat, the bar rail or a pew nearby, or a while at the counter, then their own way
+                    a.Arrived = true;
+                    Vector3 p = ENTITY.GET_ENTITY_COORDS(h, true, true);
+                    if (a.Arrive == "spot" && TASK.DOES_SCENARIO_EXIST_IN_AREA(p, 8f, true, 0, false))
+                        TASK._TASK_USE_NEAREST_SCENARIO_TO_COORD(h, p, 8f, 150000, false, true, false, false);
+                    else
+                        TASK.TASK_STAND_STILL(h, 30000);
+                    a.Until = now + (a.Arrive == "spot" ? 150000 : 30000);
+                    Log.Detail("MIND acts: " + a.Name + " is at the " + a.Kind + (PED.IS_PED_USING_ANY_SCENARIO(h) ? ", and took a spot" : ""));
+                    continue;
+                }
+                if (a.Arrived && !gone && now < a.Until && !_director.Involves(h))
+                    continue;   // a while there
                 if (gone || arrived || there || now >= a.Until || _director.Involves(h))
                 {
                     _mindActs.RemoveAt(i);
@@ -199,6 +220,38 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // on their way, beyond the scene
                 }
             }
+        }
+
+        /// To the real place in this town: the bar (the barkeep's spot), the store's counter (the keeper's), the church's door
+        /// (Churches); false when none is known here, or it's far.
+        private bool MindToPlace(MindAct a, MindWho w, string kind, Vector3 at, int now, out string did)
+        {
+            did = null;
+            Vector3 to;
+            string where;
+            if (kind == "church")
+            {
+                if (_placeTown == null || !Churches.TryGetValue(_placeTown, out to))
+                    return false;
+                where = "the church";
+            }
+            else
+            {
+                PlaceSpot s = PlaceSpots.Find(_store.Spots, _placeTown, PlaceSpots.KindFor(kind), at.X, at.Y);
+                if (s == null)
+                    return false;
+                to = new Vector3(s.X, s.Y, s.Z);
+                where = kind == "saloon" ? "the bar" : "the store's counter";
+            }
+            float d = to.DistanceTo(at);
+            if (d > 150f || d < 3f)
+                return false;
+            a.To = to;
+            a.Arrive = kind == "store" ? "browse" : "spot";
+            a.Until = now + 90000;
+            TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(a.Handle, to.X, to.Y, to.Z, 1f, -1, 2.5f, 0, 0f);
+            did = Choosing.WordsOf(kind) + " (" + where + ", " + (int)d + " m)";
+            return true;
         }
 
         private int MindFoeNear(MindWho w, int h)

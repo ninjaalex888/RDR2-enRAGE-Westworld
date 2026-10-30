@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### People go to the real saloon, store and church (the NPC-life run, step 2)
+
+- Someone near you who chooses the saloon, the store or church (MindActs) walked off out of the scene, as if home. Now they walk to the real place: the bar (the nearest saloon's, Valentine having two), the store's counter, or the church's door; there they take a seat, the bar rail or a spot nearby for a couple of minutes (the store: a while at the counter), then go their own way.
+- The places are learned, not typed in: wherever a town's counter keeper is seen at work within 120 m (the barkeep at the bar, the store keeper at the counter, and the gunsmith, the doctor, the butcher and the rest for later) is where that place is, kept in the save (`Spots`), so it's known next time. The log's `PLACE` line says when one is learned. A town whose place isn't known yet: off out of the scene, as before.
+
 ### Rival gangs fight it out (Lex, 2026-10-30: building on enRAGE's gangs attacking each other; staged for now, the MindsEye in time)
 
 - Every 10 s, men of two different gangs within 90 m of you (the O'Driscolls, the Lemoyne Raiders, the Del Lobos, the Laramie, the Murfrees, the Skinners, the Night Folk, Bronte's and the Braithwaites' men, the Grays; the army and the Pinkertons as one side; never the Wapiti, the story's people or men enRAGE has busy) may meet in a fight: 30%, or 70% where enRAGE has reported a war, feud, clash or rivalry between the two in the last two game days. The nearest of each go toward the other, words are shouted ("Raiders! This is our ground!" / "Make us."), a moment's standoff with guns on each other, then every man of both within 50 m fights the nearest of the other side until a side is beaten or gone, or a minute. At most one in five minutes, and two gangs that passed each other by aren't tried again for half a game hour.

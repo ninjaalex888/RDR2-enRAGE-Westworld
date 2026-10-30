@@ -49,6 +49,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public List<DeathEntry> Deaths = new List<DeathEntry>();   // our own record of who has died (see Deaths.cs)
         [DataMember(EmitDefaultValue = false)] public List<LaterAct> Later = new List<LaterAct>();   // diary entries and word of mouth waiting their time (see Knowing.cs)
         [DataMember(EmitDefaultValue = false)] public List<Happening> WorldLog = new List<Happening>();   // what happened and who saw it (WorldEvents.cs), capped
+        [DataMember(EmitDefaultValue = false)] public List<PlaceSpot> Spots = new List<PlaceSpot>();   // where each town's places are, learned from their keepers (Places.cs)
         [DataMember(EmitDefaultValue = false)] public PaceState Pace = new PaceState();                           // when things may happen again (Pacing.cs)
         public List<string> RewoundShares = new List<string>();   // deaths we told enRAGE of that a reload undid; the game side takes them back
         private Dictionary<string, DeathEntry> _deathIndex;
@@ -406,6 +407,7 @@ namespace EnrageWestworld.Core
             if (Later == null) Later = new List<LaterAct>();
             if (WorldLog == null) WorldLog = new List<Happening>();
             if (Pace == null) Pace = new PaceState();
+            if (Spots == null) Spots = new List<PlaceSpot>();
             Papers.RemoveAll(p => p != null && p.Id != null && p.Id.StartsWith("test-"));   // the Testing page's test letters go on load
             Pace.Fix();
             WorldLog.RemoveAll(e => e == null);

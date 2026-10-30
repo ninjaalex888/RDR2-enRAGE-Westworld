@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
+using RDR2.Math;
 using RDR2.Native;
 
 namespace EnrageWestworld.InGame
@@ -30,6 +31,27 @@ namespace EnrageWestworld.InGame
         }
 
         private bool PostsOn { get { return _cfg.TownPosts && !MISC.GET_MISSION_FLAG(); } }
+
+        private int _nextSpotLook;
+
+        /// Where each town's places are: a counter keeper standing still at work, within 120 m, marks his place (Places).
+        private void SpotsLook(Ped me)
+        {
+            if (_store == null)
+                return;
+            Vector3 at = me.Position;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                if (p == null || p.Position.DistanceTo(at) > 120f)
+                    continue;   // the distance first
+                PostKind k = PostKindOf(p);
+                if (k == null || p.IsDead || ENTITY.GET_ENTITY_SPEED(p.Handle) > 0.3f || PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false))
+                    continue;
+                Vector3 pos = p.Position;
+                if (PlaceSpots.Note(_store.Spots, k.Town, k.Kind, k.Model, pos.X, pos.Y, pos.Z, _store.LastGameMin))
+                    Log.Write("PLACE " + k.Town + ": " + k.Role + "'s spot, " + (int)pos.DistanceTo(at) + " m from you (where people who choose it will go)");
+            }
+        }
 
         private static PostKind PostKindOf(Ped p)
         {
@@ -99,6 +121,11 @@ namespace EnrageWestworld.InGame
                 _dressDue.Remove(h);
                 ResBind b;
                 Log.Write("OUTFIT probe: dressed " + (_resBind.TryGetValue(h, out b) ? b.R.Name : "someone") + " in preset " + kv.Value + ", out of sight");
+            }
+            if (now >= _nextSpotLook)
+            {
+                _nextSpotLook = now + 5000;
+                SpotsLook(me);
             }
             if (!PostsOn || now < _nextPostDeaths)
                 return;
