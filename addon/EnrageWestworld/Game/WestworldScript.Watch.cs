@@ -460,7 +460,7 @@ namespace EnrageWestworld.InGame
             if (newlyWanted)
                 LawStandDown(me);
             _sdCleared++;
-            Log.Write("LAW: a witness took your self-defence killing of " + (_sdKillWho ?? "someone who came at you") + " to the law as " + Crimes.Name(charge) + " " +
+            Log.Write("LAW: a witness took your self-defence killing of " + (_sdKillWho ?? "your attacker") + " to the law as " + Crimes.Name(charge) + " " +
                       (now - _sdKillAt) / 1000 + " s on: " + (raised ? "bounty $" + bounty / 100 + " -> $" + _sdBounty / 100 : "") + (raised && newlyWanted ? ", " : "") + (newlyWanted ? "no longer wanted" : ""));
         }
 
