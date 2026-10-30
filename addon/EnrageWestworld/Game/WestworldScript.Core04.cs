@@ -518,16 +518,34 @@ namespace EnrageWestworld.InGame
         /// bar shows the nearest scene playing out near you, a switch on the UI page); null when none.
         private TickerLine SceneOnBar()
         {
-            Vector3 at;
-            string text = _director.TickerLine(out at);
-            if (text == null || at.DistanceTo(Game.Player.Character.Position) > SceneBarMetres)
+            // every scene playing within 40 m, nearest first, as many as the bar's width holds; the rest "(+2 more)" (Lex, 2026-10-30:
+            // "show all scenes happening nearby, try to account for if the text will go off the screen")
+            Vector3 me = Game.Player.Character.Position;
+            var near = _director.TickerLines().Where(kv => kv.Value.DistanceTo(me) <= SceneBarMetres).OrderBy(kv => kv.Value.DistanceTo(me)).ToList();
+            if (near.Count == 0)
             {
                 _sceneBar = null;
                 return null;
             }
+            float room = _cfg.TickerWidth - Draw.Width("Nearby", _cfg.TickerScale) - 0.02f;
+            var parts = new List<string>();
+            for (int i = 0; i < near.Count; i++)
+            {
+                string one = near[i].Key + " - " + Whereabouts(me, near[i].Value);
+                int left = near.Count - i - 1;
+                string tryText = string.Join("  \u00b7  ", parts.Concat(new[] { one })) + (left > 0 ? "  (+" + left + " more)" : "");
+                if (parts.Count > 0 && Draw.Width(tryText, _cfg.TickerScale) > room)
+                {
+                    parts.Add("(+" + (near.Count - i) + " more)");
+                    break;
+                }
+                parts.Add(one);
+            }
+            string text = near[0].Key;   // the line is made anew only when the nearest scene changes
+            string shown0 = string.Join("  \u00b7  ", parts);
             // how far and which way, to the nearest 5 m (Lex, 2026-10-30: "such as 10m South"); the line is made anew only
             // when the scene or that changes
-            string shown = text + " - " + Whereabouts(Game.Player.Character.Position, at);
+            string shown = shown0;
             if (_sceneBar == null || !ReferenceEquals(_sceneBarOf, text))
             {
                 _sceneBarOf = text;

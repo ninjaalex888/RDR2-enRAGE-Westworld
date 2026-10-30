@@ -15,8 +15,8 @@ namespace EnrageWestworld.InGame
 {
     public partial class WestworldScript
     {
-        private const float ReasonRange = 16f;     // from the player
-        private const float ReasonApart = 7f;      // the two at most this far from each other
+        private const float ReasonRange = 24f;     // from the player (16 until 2026-10-30, Lex: "widen the ranges a bit")
+        private const float ReasonApart = 9f;      // the two at most this far from each other (7 until 2026-10-30)
         private const float LinkedApart = 18f;     // ...or this far, when one is at the other end of the other's worry
         private const int PersonRestMs = 120000;   // real time before someone is in another scene
         private const int FoughtRestMs = 900000;   // ...or after coming to blows (a brawl, a rough, a drunk's challenge)

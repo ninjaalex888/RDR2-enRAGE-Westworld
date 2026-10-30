@@ -153,6 +153,24 @@ namespace EnrageWestworld.InGame
             return l.BarText;
         }
 
+        /// Every scene playing now, the scene and the quiet talks, as ("Two men came to blows (Gideon and Asa)", where).
+        public List<KeyValuePair<string, Vector3>> TickerLines()
+        {
+            var all = new List<KeyValuePair<string, Vector3>>();
+            foreach (Live l in new[] { _live }.Concat(_side))
+            {
+                if (l == null || l.Scene == null || string.IsNullOrEmpty(l.Scene.Summary) || l.Cast == null || l.Cast.Length == 0 || l.Cast[0] == null || !l.Cast[0].Exists())
+                    continue;
+                if (l.BarText == null)
+                {
+                    string who = l.Names != null ? string.Join(" and ", l.Names.Take(2).Where(n => !string.IsNullOrEmpty(n))) : "";
+                    l.BarText = Grammar.UpperFirst(l.Scene.Summary) + (who.Length > 0 ? " (" + who + ")" : "");
+                }
+                all.Add(new KeyValuePair<string, Vector3>(l.BarText, l.Cast[0].Position));
+            }
+            return all;
+        }
+
         public bool Involves(int handle)
         {
             if (handle == 0)

@@ -48,7 +48,7 @@ namespace EnrageWestworld.InGame
 
         private const int NeedsMs = 30000;   // needs move by the game hour: worked out again every 30 s (15 game minutes)
 
-        private const float MindMetres = 20f;          // the mind's near ring (the doc's level 0)
+        private const float MindMetres = 25f;          // the mind's near ring (the doc's level 0; 20 until 2026-10-30, Lex: wider)
         private const int MindWhoMs = 10000;           // nobody we know: looked up again after this
         private const int MindKnownMs = 30000;         // somebody: again after this (the game reuses a handle for another of the same model)
         private const int MindLinesAMinute = 20;

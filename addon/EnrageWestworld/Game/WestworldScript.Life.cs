@@ -123,7 +123,7 @@ namespace EnrageWestworld.InGame
                 return;   // a man calls another out at noon (WestworldScript.Callout.cs)
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
-                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < 22f &&
+                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
                                                          !Resting(p.Handle, now) && !_director.Involves(p.Handle)).ToList();   // (a quiet talk's two are taken)
             if (pool.Count >= 2 && now >= _nextSpecial && SpecialScene(pool, me, saloon, now))
                 return;
@@ -211,6 +211,7 @@ namespace EnrageWestworld.InGame
         }
 
         private int _nextSide;
+        private const float StreetMetres = 13f;   // chance meetings and the quiet talks start this near you: 60% of the 22 m it was (Lex, 2026-10-30), close enough to hear and read
         private const float SideApart = 10f;   // a quiet talk keeps this far from the scene's people
 
         /// A quiet talk between two other people elsewhere on the street, while a scene plays or between scenes (the NPC-life
@@ -233,7 +234,7 @@ namespace EnrageWestworld.InGame
                 return;
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
-                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < 22f &&
+                                                         ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
                                                          !Resting(p.Handle, now) && clear(p)).ToList();
             Ped a = null, b = null;
             float best = 3.4f;

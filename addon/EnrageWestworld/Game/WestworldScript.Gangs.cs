@@ -98,7 +98,7 @@ namespace EnrageWestworld.InGame
             // the two sides with men nearest each other
             string bestA = null, bestB = null;
             Ped pa = null, pb = null;
-            float best = 60f;
+            float best = GangJoinMetres;   // the nearest two of the two sides within 50 m of each other, or no meeting
             var sides = byGang.Keys.ToList();
             for (int i = 0; i < sides.Count; i++)
                 for (int j = i + 1; j < sides.Count; j++)
@@ -131,8 +131,10 @@ namespace EnrageWestworld.InGame
                 return;
             }
             var f = new GangFight { A = bestA, B = bestB, LeadA = pa.Handle, LeadB = pb.Handle, Phase = 0, Started = now, At = now, Until = now + 75000 };
-            f.SideA.AddRange(byGang[bestA].Select(p => p.Handle));
-            f.SideB.AddRange(byGang[bestB].Select(p => p.Handle));
+            // only those of each side within reach of the meeting: a shootout of men 90 m apart ended before it began (Rhodes)
+            Vector3 meet = (pa.Position + pb.Position) * 0.5f;
+            f.SideA.AddRange(byGang[bestA].Where(p => p.Position.DistanceTo(meet) < GangJoinMetres).Select(p => p.Handle));
+            f.SideB.AddRange(byGang[bestB].Where(p => p.Position.DistanceTo(meet) < GangJoinMetres).Select(p => p.Handle));
             _gang = f;
             _gangFights++;
             _gangLast = Many(bestA) + " against " + Many(bestB);

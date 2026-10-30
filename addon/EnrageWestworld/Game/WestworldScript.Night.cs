@@ -19,6 +19,7 @@ namespace EnrageWestworld.InGame
         private int _nightNextAt, _muggings, _carried;
         private readonly HashSet<string> _nightDone = new HashSet<string>();   // kind|town|game day
         private const string MuggerMark = "mugger";
+        private const float NightMetres = 21f;   // the night's scenes start this near you (16 until 2026-10-30; Lex: 30% farther)
 
         /// From DramaTick when the street is free: tonight's mugging or drunk taken home, if one fits.
         private bool NightScene(Ped me, int now)
@@ -54,7 +55,7 @@ namespace EnrageWestworld.InGame
         {
             if (LawmanNear(me, 50f))
                 return false;
-            List<Candidate> people = ReasonCandidates(me, now).Where(c => !c.Ped.IsDead && c.Ped.Position.DistanceTo(me.Position) < 30f).ToList();
+            List<Candidate> people = ReasonCandidates(me, now).Where(c => !c.Ped.IsDead && c.Ped.Position.DistanceTo(me.Position) < NightMetres).ToList();
             Candidate robber = null;
             string why = null;
             foreach (Candidate c in people)
@@ -104,7 +105,7 @@ namespace EnrageWestworld.InGame
 
         private bool DrunkHome(Ped me, int now, long day)
         {
-            List<Candidate> people = ReasonCandidates(me, now).Where(c => !c.Ped.IsDead && c.Ped.Position.DistanceTo(me.Position) < 30f).ToList();
+            List<Candidate> people = ReasonCandidates(me, now).Where(c => !c.Ped.IsDead && c.Ped.Position.DistanceTo(me.Position) < NightMetres).ToList();
             foreach (Candidate drunk in people)
             {
                 if (!InHisCups(drunk.Ped, drunk.Who.P) || PED.IS_PED_USING_ANY_SCENARIO(drunk.Ped.Handle))

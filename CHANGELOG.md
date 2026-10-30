@@ -51,6 +51,12 @@
 - People notice when you're naked (nothing over the body or the legs) or undressed (shirtless, or in your drawers), read every 3 s from the game's clothing categories (shirt, coat, vest, dress, cloak, poncho; pants, skirt; the body itself and a hat, boots or a gunbelt never count, and any category not known counts as covering, so a gap can't make a dressed man naked). The log's `SIGHT clothes:` line says what was read each time it changes.
 - In 1899 that was a scandal: a woman is shocked (a gasp, a look away, "Lord above! Cover yourself!") and often turns and goes, as the timid and some plain men do; the bold and your friends laugh at it ("Lose your clothes at cards, mister?"); the cold and those against you are disgusted; anyone who has seen what you do is afraid. Naked is noticed before blood, drink or mud, anywhere (a saloon too, and while a street scene plays), by up to three at once and eight times a town a day; undressed is nothing out in the wilds. New thoughts for each.
 
+### Where scenes start, and the bar lists them all (Lex, 2026-10-30)
+
+- The street's reasons start a scene within 24 m of you (was 16), the two up to 9 m apart (was 7); the mind's near ring, whose people act on their choices, reaches 25 m (was 20); chance meetings and the quiet talks start within 13 m (was 22: 60% of it, close enough to hear and read); the night's scenes within 21 m (was 16, 30% more). Scenes still start in view, and still stop when you're 50 m off.
+- The Nearby bar lists every scene playing within 40 m, nearest first, each with how far and which way ("Town gossip (Ada and Clem) - 5 m east  ·  Two men came to blows (Simeon and Morgan) - 15 m south"), as many as the bar's width (`TickerWidth`) holds, the rest "(+2 more)", so it never runs off the screen.
+- A gang shootout starts only between men of the two sides within 50 m of each other, and takes in only those near the meeting (one in Rhodes ended before it began, the Grays 90 m off).
+
 ### Self-defence holds after the fight too (Lex, 2026-10-30, in game, Rhodes)
 
 - Four men came at him and he killed them, self-defence by every rule; witnesses were held back for the fight and 90 s after, and two minutes on one of them went to the law and the game called it murder ($15, wanted). For ten minutes after a self-defence killing, a murder or assault charge on him, with nobody innocent hurt since, is put back to how he stood before the fight, bounty and wanted alike. The log says `LAW: a witness took your self-defence killing of ... to the law as murder ...: no longer wanted`.
