@@ -4,7 +4,10 @@
 // their memories of him, their fondness and courting, his own deeds and the town's talk of them, the kin riding in for
 // revenge, the word and the diary entries still waiting their time, the dead he killed being his. The people stay, with
 // their families, their diaries already written, their worries, the Awakening and the ties between them. Pure: the game
-// side backs up the save first, lets go of everyone and reloads (WestworldScript.Forget.cs).
+// side backs up the save first, lets go of everyone and reloads (WestworldScript.Forget.cs). After its review: Told and
+// Spread stay (they are marks of what was already said and spread, enRAGE's memories among them: cleared, all of it came
+// round again), news of a death not of his making stays, a death once his is "forgotten" (the ledger fills "unknown" in
+// again from the bodies near), and a revived host no longer knows his killer's name.
 using System.Collections.Generic;
 using System.Linq;
 
@@ -43,9 +46,10 @@ namespace EnrageWestworld.Core
                     p.NameAt = 0;
                     p.Talks = 0;
                     p.LastTalkAt = 0;
-                    p.Told?.Clear();
-                    p.Spread?.Clear();
-                    p.Heard?.RemoveAll(h => h == null || h.Text != "died");   // a relative's death, heard of, is their own news
+                    p.Heard?.Clear();   // what reached them about him (a relative's death is the relative's own, below)
+                    if (p.Family != null)
+                        foreach (Relative rel in p.Family)
+                            rel?.Heard?.RemoveAll(h => h != null && h.Text != "died");
                     p.Sightings = 0;
                     p.FirstSeenTown = null;
                     p.FirstSeenAt = 0;
@@ -73,23 +77,25 @@ namespace EnrageWestworld.Core
                     }
             c.Deeds = s.Deeds != null ? s.Deeds.Count : 0;
             s.Deeds?.Clear();
-            c.Rumours = (s.TownRumours != null ? s.TownRumours.Count : 0) + (s.Rumors != null ? s.Rumors.Count : 0);
-            s.TownRumours?.Clear();
-            s.Rumors?.Clear();
+            c.Rumours = (s.TownRumours != null ? s.TownRumours.Count : 0) + (s.Rumors != null ? s.Rumors.RemoveAll(x => x != null && x.How != "death") : 0);
+            s.TownRumours?.Clear();   // and of the word going round, a death's news stays (an execution's among them)
             c.Avengers = s.Avengers != null ? s.Avengers.Count : 0;
             s.Avengers?.Clear();
             if (s.Deaths != null)
                 foreach (DeathEntry d in s.Deaths)
                     if (d != null && d.By == You)
                     {
-                        d.By = "unknown";
+                        d.By = "forgotten";   // not "unknown": the ledger would make it his again from the body
                         d.ById = null;
                         c.Deaths++;
                     }
             if (s.Reveries != null)
                 foreach (Reverie r in s.Reveries.Values)
-                    if (r != null)
+                    if (r != null && r.ByPlayer)
+                    {
                         r.ByPlayer = false;
+                        r.Killer = null;   // a woken host says "that stranger" again
+                    }
             c.Happenings = s.WorldLog != null ? s.WorldLog.RemoveAll(h => h != null && (h.DoerId == You || h.TargetId == You)) : 0;
             c.Waiting = s.Later != null ? s.Later.RemoveAll(a => a != null && (a.Kind == "word" || a.Kind == "diary")) : 0;   // the town's news stays
             c.Debts = s.Debts != null ? s.Debts.RemoveAll(d => d != null && (d.FromId == You || d.ToId == You)) : 0;

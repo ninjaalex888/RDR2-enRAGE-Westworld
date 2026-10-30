@@ -195,7 +195,24 @@ namespace EnrageWestworld.InGame
             {
                 Fail("forgetting you (the strangers' grudges)", ex);
             }
-            return folk + " townsfolk who knew you and " + grudges + " strangers' grudges";
+            int towns = 0;
+            try
+            {
+                // the word of you in each town, which frightens the newly met (enRAGE's own full reset clears it too)
+                object chron = Mod.GetType().GetProperty("Chronicle", BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)?.GetValue(Mod, null);
+                IDictionary word = chron != null ? chron.GetType().GetProperty("TownWord")?.GetValue(chron, null) as IDictionary : null;
+                if (word != null)
+                {
+                    towns = word.Count;
+                    word.Clear();
+                    Mod.GetType().GetField("_worldDirty", BindingFlags.Instance | BindingFlags.NonPublic)?.SetValue(Mod, true);
+                }
+            }
+            catch (Exception ex)
+            {
+                Fail("forgetting you (the towns' word)", ex);
+            }
+            return folk + " townsfolk who knew you, " + grudges + " strangers' grudges and the word of you in " + towns + " towns";
         }
 
         private bool ProvFields(object p)
