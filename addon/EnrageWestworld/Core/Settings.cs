@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 128;
+        public const int CurrentVersion = 129;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -82,7 +82,8 @@ namespace EnrageWestworld.Core
         public float FeelingBarsMetres = 15f;
         public bool FeelingBarsShowEmpty;
         public string NameCards = "known";        // off | known | everyone: names over heads, enRAGE's way (2026-10-29)
-        public float NameCardsMetres = 30f;       // strangers' cards within
+        public float NameCardsMetres = 25f;       // strangers' cards within (30 until settings version 129; Lex, 2026-10-30: 25)
+        public bool NameCardsAlways = true;       // a card over everyone in range, always: hidden only by walls, not tables or people, sixteen at most, drawn before the Testing overlays (Lex, 2026-10-30; settings version 129)
         public float NameCardsKnownMetres = 75f;  // people you know within
         public bool NameCardsBesideEnrage;        // ours beside enRAGE's own cards too (else left to enRAGE while its are on)
         public bool NameCardsStrangerNames;      // a stranger's own name over "Stranger"; off: "Stranger" alone (Lex, 2026-10-30; settings version 124)
@@ -447,6 +448,11 @@ namespace EnrageWestworld.Core
                 s.DramaGapSeconds = 90;
                 raised.Add("DramaGapSeconds 150 -> 90");
             }
+            if (s.SettingsVersion < 129 && Math.Abs(s.NameCardsMetres - 30f) < 0.01f)
+            {
+                s.NameCardsMetres = 25f;   // 2026-10-30 (Lex): names within 25 m; a distance of your own is kept
+                raised.Add("NameCardsMetres 30 -> 25");
+            }
             if (s.SettingsVersion < 126 && !s.MindLive)
             {
                 s.MindLive = true;   // 0.7.2 (Lex, 2026-10-30): the mind acts for everyone; it was off while it was tested
@@ -763,6 +769,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("NameCardsMetres = " + F(NameCardsMetres) + "   ; strangers' names within (metres); they fade out near the edge");
             b.AppendLine("NameCardsKnownMetres = " + F(NameCardsKnownMetres) + "   ; the names of people you know within (metres)");
             b.AppendLine("NameCardsBesideEnrage = " + B(NameCardsBesideEnrage) + "   ; draw ours even while enRAGE draws its own (two cards over each head enRAGE knows)");
+            b.AppendLine("NameCardsAlways = " + B(NameCardsAlways) + "   ; a name over everyone within NameCardsMetres, always: hidden only by walls (not by a table or someone in the way), up to sixteen people, drawn before the Testing overlays; false: only where the view is clear, the ten nearest");
             b.AppendLine("NameCardsStrangerNames = " + B(NameCardsStrangerNames) + "   ; someone you haven't met shows their name with Stranger under it; false: Stranger alone, until you've greeted them or dealt with them");
             b.AppendLine("NameCardsSecondLine = " + B(NameCardsSecondLine) + "   ; the smaller line under each name: their temper and trade, \"Stranger\", their gang, \"Wanted\", a nemesis's mood. Off shows the name alone; NameCards = off hides the cards altogether");
             b.AppendLine("WhosWho = " + B(WhosWho) + "   ; the papers you carry end with Who's who, the people you have met, the most recent first: who they are, how they take you, who they are friends or at odds with (and, with [Mind] MindLive, how they feel about you lately); read only");

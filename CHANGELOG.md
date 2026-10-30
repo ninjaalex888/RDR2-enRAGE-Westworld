@@ -8,6 +8,11 @@
 - `[Scenes] ScenesAtOnce` (2; 1-3; settings version 127; on the Essentials page under The world): the scene and up to this many less one quiet talks. 1: just the scene, as before.
 - A chance meeting that came to nothing no longer holds the next one back a minute and a half: the wait starts when one really starts.
 
+### Names over heads, always on (Lex, 2026-10-30, in game: "the nameplates are sometimes not showing up")
+
+- In a crowded saloon some people had no name: only the ten nearest were carded, a table, a post or a lamp in the way hid a card as a wall did, cards faded out over the last 12 m, and they were drawn last of all, after the Testing page's cards over people, so a full frame dropped them first. `[Display] NameCardsAlways` (on; settings version 129, on the Essentials page): a card over everyone in range, up to sixteen, hidden only by walls, full until the last 4 m, drawn before the Testing overlays. Off: as before.
+- Names within 25 m (`NameCardsMetres`, was 30; an ini still on 30 is moved to 25, a distance of your own is kept), on the Essentials page too. People you know keep their own distance (`NameCardsKnownMetres`, 75).
+
 ### Fights that spread: onlookers join in on a side (Lex, 2026-10-30: "between any 2+ NPCs if their inner thoughts lead to it")
 
 - While two people trade blows, every few seconds the onlookers within 12 m are weighed by their minds (`Core/JoinIn.cs`): a friend of one fighter, or someone with bad blood against the other, may join on a side and go for the one they hate most, else the one who started on that side; a drunk hothead may wade in, a saloon's most of all. Most watch, and a stranger is less likely to join the bigger the crowd. Nobody joins with a lawman within 30 m, nobody sat or leaning, at work, mounted or already busy. A man's hand against a woman at a tenth of his rate (1899, Lex's word), a woman joins at half and only with WomenInFights. At most three join, a single one each look, so it spreads: the friend of the man just set upon may be next. Each joiner fights with their fists for a fight that runs a little longer, their own ways back when it ends, and leaves a tie with the one they went for.

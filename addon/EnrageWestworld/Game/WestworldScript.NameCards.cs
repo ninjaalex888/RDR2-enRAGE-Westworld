@@ -50,7 +50,7 @@ namespace EnrageWestworld.InGame
         private int? _enrageCards;
         private int _enrageCardsAt = -100000;
         private Action _aNameCards;
-        private const int NameCardsMost = 10, NameCardsRefreshMs = 3000;
+        private const int NameCardsMost = 10, NameCardsMostAlways = 16, NameCardsRefreshMs = 3000;
         private const float NameCardAbove = 0.32f, NameCardSteady = 2.5f, NameCardLead = 1f;
         private static readonly int[] ColourTitle = { 245, 244, 240 }, ColourStranger = { 170, 168, 160 }, ColourDim = { 146, 144, 138 };
 
@@ -174,7 +174,8 @@ namespace EnrageWestworld.InGame
                 if ((c.BlockedAt == 0 || now - c.BlockedAt > 150) && rays < 3)
                 {
                     rays++;
-                    c.Blocked = Natives.Blocked(CAM.GET_FINAL_RENDERED_CAM_COORD(), new Vector3(pos.X, pos.Y, z + 0.05f), me.Handle);
+                    // always on: only a wall hides it (the map's own shapes), not a table, a post or someone in the way (Lex, 2026-10-30)
+                    c.Blocked = Natives.Blocked(CAM.GET_FINAL_RENDERED_CAM_COORD(), new Vector3(pos.X, pos.Y, z + 0.05f), me.Handle, _cfg.NameCardsAlways ? 1 : 1 | 16);
                     c.BlockedAt = now;
                 }
                 bool hidden = c.BlockedAt == 0 || c.Blocked;
@@ -184,7 +185,7 @@ namespace EnrageWestworld.InGame
                     if (interior != 0 && interior != myInterior)
                         hidden = true;
                 }
-                float edge = Math.Max(0f, Math.Min(1f, (c.Range - c.Metres) / 12f));
+                float edge = Math.Max(0f, Math.Min(1f, (c.Range - c.Metres) / (_cfg.NameCardsAlways ? 4f : 12f)));   // always on: full until the last few metres
                 float alpha = _nameCardsFrame - c.SeenFrame <= 3 ? c.Alpha : 0f;
                 alpha = hidden ? Math.Max(0f, alpha - dt * 6f) : Math.Min(edge, alpha + dt * 4f);
                 c.Alpha = alpha;
@@ -262,7 +263,7 @@ namespace EnrageWestworld.InGame
                 if (d <= c.Range)
                     found.Add(c);
             }
-            foreach (NameCard c in found.OrderBy(x => x.Metres).Take(NameCardsMost))
+            foreach (NameCard c in found.OrderBy(x => x.Metres).Take(_cfg.NameCardsAlways ? NameCardsMostAlways : NameCardsMost))
                 _nameCardsNow.Add(c);
         }
 

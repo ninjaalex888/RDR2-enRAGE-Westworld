@@ -111,9 +111,9 @@ namespace EnrageWestworld.InGame
         }
 
         /// True when something solid is between a and b.
-        public static unsafe bool Blocked(Vector3 a, Vector3 b, int ignore)
+        public static unsafe bool Blocked(Vector3 a, Vector3 b, int ignore, int flags = 1 | 16)
         {
-            int handle = SHAPETEST.START_EXPENSIVE_SYNCHRONOUS_SHAPE_TEST_LOS_PROBE(a.X, a.Y, a.Z, b.X, b.Y, b.Z, 1 | 16, ignore, 7);
+            int handle = SHAPETEST.START_EXPENSIVE_SYNCHRONOUS_SHAPE_TEST_LOS_PROBE(a.X, a.Y, a.Z, b.X, b.Y, b.Z, flags, ignore, 7);
             // every out-parameter gets a full 8-byte slot (or 24 bytes for a vector), whatever the game writes
             ulong* slots = stackalloc ulong[10];
             for (int i = 0; i < 10; i++)

@@ -420,11 +420,19 @@ namespace EnrageWestworld.InGame
             _now = now;
             Safe("ticker", _aFrame);
             FeelingsStep(now);
+            if (_cfg.NameCardsAlways)
+            {
+                SubtitleDraw(now);
+                NameCardsStep(now);   // always on: before the Testing overlays, so a crowd's cards aren't the ones the frame's text budget drops (Lex, 2026-10-30)
+            }
             ShowMindsStep(now);   // the Testing page's cards over people (WestworldScript.ShowMinds.cs)
             WakeTagsStep(now);    // and its wake stages over heads (WestworldScript.WakeTags.cs)
             NewsStep(now);
-            SubtitleDraw(now);
-            NameCardsStep(now);   // names over heads, last: the least to lose if the frame's text budget runs out (WestworldScript.NameCards.cs)
+            if (!_cfg.NameCardsAlways)
+            {
+                SubtitleDraw(now);
+                NameCardsStep(now);   // names over heads, last: the least to lose if the frame's text budget runs out (WestworldScript.NameCards.cs)
+            }
         }
 
         // a line being said near you (a scene, the doctor, a hello), as a subtitle in the game's style for its own time, never
