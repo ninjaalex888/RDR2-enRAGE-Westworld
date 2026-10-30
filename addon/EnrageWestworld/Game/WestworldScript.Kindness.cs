@@ -84,9 +84,18 @@ namespace EnrageWestworld.InGame
                 why = _fallWhyNot = "rests: " + pace;
                 return false;
             }
+            // with MindLive and MindHelps: of those who saw it whom the mind knows, the one most moved to help is the one who
+            // sees it, and their answer is their own feeling's (Scenes.FallAnswerOf); else the nearest, by the old pick
+            Feeling byFelt = null;
+            float byCompassion = 0f;
+            string mindWhy = null;
+            bool byMind = by != null && _cfg.MindLive && _cfg.MindHelps && FallByMind(people, faller, ref by, now, out byFelt, out byCompassion, out mindWhy);
             SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(by.Who.Id) && t.Has(faller.Who.Id));
             string seed = by.Who.Id + "|" + faller.Who.Id + "|" + g / 60;
-            string answer = Scenes.FallAnswer(tie != null ? (int?)tie.Warmth : null, Exchanges.Manner(by.Who, by.Who.Hurt != null), by.Who.Temper, seed);
+            if (byMind)
+                _fallByMind++;
+            string answer = byMind ? Scenes.FallAnswerOf(byFelt, tie != null ? (int?)tie.Warmth : null, by.Who.Temper, byCompassion, seed)
+                                   : Scenes.FallAnswer(tie != null ? (int?)tie.Warmth : null, Exchanges.Manner(by.Who, by.Who.Hurt != null), by.Who.Temper, seed);
             bool old = Director.OldModel(faller.Ped);
             SceneCast cast = BuildCast(by.Ped, faller.Ped, null, false, me, now, seed);
             Scene s = Scenes.Fall(cast, seed, answer, old);
@@ -105,9 +114,93 @@ namespace EnrageWestworld.InGame
             _fallLast = faller.Who.Name + " fell; " + by.Who.Name + " " + FallVerb(answer) + (test ? " (a test)" : "");
             Log.Write("KIND fall: " + faller.Who.Name + " fell" + (old ? " (sat down hard)" : "") + "; " + by.Who.Name + " " + FallVerb(answer) + " (" +
                       (tie != null ? (tie.Warmth > 0 ? "a friend" : tie.Warmth < 0 ? "no friend" : "they know each other") : "strangers") + ", " + (by.Who.Temper ?? "no temper") + ", " +
-                      (int)faller.Ped.Position.DistanceTo(me.Position) + " m from you)" + (test ? ", a test" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
+                      (int)faller.Ped.Position.DistanceTo(me.Position) + " m from you)" + (byMind ? "; the mind: " + mindWhy : "") + (test ? ", a test" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
             return true;
         }
+
+        /// Who sees the fall by their own minds: each of those near enough to see it whom the mind already knows takes it
+        /// (Scenes.FallSeenBy: nobody's doing, someone needing a hand) and the one most moved to help is the one; when none
+        /// is, the old pick stays and gives their own answer if the mind knows them. False: the mind knows none of them, or
+        /// its part failed (logged once): the old way.
+        private bool FallByMind(List<Candidate> people, Candidate faller, ref Candidate by, int now, out Feeling felt, out float compassion, out string why)
+        {
+            felt = null;
+            compassion = 0f;
+            why = null;
+            if (_fallMindFailed)
+                return false;
+            try
+            {
+                string place = _engine.NowIndoors ? _engine.NowPlace : null;
+                int seen = 0, bestWarm = 0;
+                bool frail = faller.Who.Woman || Director.OldModel(faller.Ped);   // a woman or an old person down: more hands offered in 1899
+                int seenNear = people.Count(c => c != faller && c.Ped.Position.DistanceTo(faller.Ped.Position) < FallSeen);
+                Candidate best = null, nearest = by;
+                Feeling bestF = null, nearF = null;
+                float bestC = 0f, nearC = 0f;
+                foreach (Candidate c in people)
+                {
+                    if (c == faller || c.Who.Id == faller.Who.Id || c.Ped.Position.DistanceTo(faller.Ped.Position) >= FallSeen || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(c.Ped.Handle, faller.Ped.Handle, 17))
+                        continue;
+                    seen++;
+                    MindWho w = MindKnown(c.Ped.Handle, now);   // only people the add-on already knows (never makes anyone)
+                    if (w != null && w.Id == null && c.Who.Id != null)
+                    {
+                        _mindWho.Remove(c.Ped.Handle);   // made a resident a moment ago by the same scan, while the cache had them as nobody
+                        w = MindKnown(c.Ped.Handle, now);
+                    }
+                    if (w == null || w.Id == null || w.Id != c.Who.Id || w.P == null)
+                        continue;
+                    Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
+                    if (t == null)
+                        continue;
+                    int warm = TieWarmth(c.Who.Id, faller.Who);
+                    AppraisalEvent e = Scenes.FallSeenBy(w.P.Woman, warm, place, w.P.Home != null && w.P.Home == _placeTown, Math.Max(0, seenNear - 1), c.Who.Drunk, c.Who.WakeStage, faller.Who.Id, faller.Who.Name, frail);
+                    Feeling f = Appraisal.Of(e, t);
+                    if (c == nearest)
+                    {
+                        nearF = f;
+                        nearC = t.Z[Traits.Compassion];
+                    }
+                    if (warm < 0 || f.Kind != "pity" || f.Urge != "help")
+                        continue;   // a foe is never the one who comes to help (the tie's own answer for him: a sneer or past)
+                    float d = bestF == null ? 1f : f.Intensity - bestF.Intensity;
+                    bool better = bestF == null || d > StepIn.NearTie ||
+                                  Math.Abs(d) <= StepIn.NearTie && (warm > bestWarm || warm == bestWarm && c.Ped.Position.DistanceTo(faller.Ped.Position) < best.Ped.Position.DistanceTo(faller.Ped.Position));   // near a tie: a friend first, then the nearer
+                    if (better)
+                    {
+                        best = c;
+                        bestF = f;
+                        bestC = t.Z[Traits.Compassion];
+                        bestWarm = warm;
+                    }
+                }
+                if (best != null)
+                {
+                    by = best;
+                    felt = bestF;
+                    compassion = bestC;
+                    why = best.Who.Name + ": pity (" + bestF.Strength + "), urge help, of " + seen + " who saw it";
+                    return true;
+                }
+                if (nearF == null)
+                    return false;   // the mind doesn't know the one nearest: the old way
+                felt = nearF;
+                compassion = nearC;
+                why = "nobody moved to help of " + seen + " who saw it; " + nearest.Who.Name + " felt " + nearF.Kind + (nearF.Kind != "none" ? " (" + nearF.Strength + ")" : "");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _fallMindFailed = true;
+                Log.Write("KIND the mind's part of the fall failed once, the old way from here: " + ex.Message);
+                felt = null;
+                return false;
+            }
+        }
+
+        private bool _fallMindFailed;
+        private int _fallByMind;
 
         private static string FallVerb(string answer)
         {
@@ -260,8 +353,8 @@ namespace EnrageWestworld.InGame
                 return;
             int h = _fallWander;
             _fallWander = 0;
-            if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !_director.Involves(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))
-                TASK.TASK_WANDER_STANDARD(h, 10f, 10);
+            if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !_director.Involves(h) && !PED.IS_PED_USING_ANY_SCENARIO(h) && !(_cfg != null && _cfg.MindLive && IsAcknowledging(h)))
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // with the mind on, not mid-greeting to you or acting on something seen (the collision audit)
         }
 
         /// F7: on or off, the falls this session by how they ended, your hands up, the last, and why nothing now.

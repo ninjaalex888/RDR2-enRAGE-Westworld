@@ -56,6 +56,7 @@ namespace EnrageWestworld.Core
         public bool Saloon;
         public bool Night;
         public float Trouble = 1f;   // [Scenes] TroubleWeight: the brawl's and the argument's share of a chance meeting scaled by it
+        public bool WomenFight;      // [Scenes] WomenInFights: a brawl with a woman in it, at half the share for each woman (Lex, 2026-10-29)
         public int HostTier;     // how strange the town feels (0-2)
         public List<string> Rumours = new List<string>();   // third-person rumours that can be gossiped
         public bool HasCrowd;                               // a third bystander (index 2) to heckle, cheer or call the law
@@ -127,6 +128,8 @@ namespace EnrageWestworld.Core
             w.Add(new KeyValuePair<string, int>("argue", Weighted(16, c.Trouble)));
             if (twoMen && allowFight)
                 w.Add(new KeyValuePair<string, int>("brawl", Weighted(c.Saloon ? 20 : 10, c.Trouble)));   // twice the old 10 and 5 (Lex, 2026-10-28: brawls often)
+            else if (c.WomenFight && allowFight)
+                w.Add(new KeyValuePair<string, int>("brawl", Weighted((c.Saloon ? 20 : 10) * (c.AWoman ? Reasons.WomanFightPercent : 100) * (c.BWoman ? Reasons.WomanFightPercent : 100) / 10000, c.Trouble)));   // a woman in it: half the share for each (Lex, 2026-10-29)
             if (mixed && !c.Night)
                 w.Add(new KeyValuePair<string, int>("propose", 3));
             if (c.Saloon && twoMen)
@@ -261,7 +264,7 @@ namespace EnrageWestworld.Core
         public static Scene Brawl(SceneCast c, string seed)
         {
             string a = N(c, 0, seed), b = N(c, 1, seed);
-            Scene s = new Scene { Kind = "brawl", Fight = true, Summary = "two men came to blows" };
+            Scene s = new Scene { Kind = "brawl", Fight = true, Summary = !c.AWoman && !c.BWoman ? "two men came to blows" : c.AWoman && c.BWoman ? "two women came to blows" : "a man and a woman came to blows" };
             switch (Voice.Hash(seed) % 3)
             {
                 case 0:

@@ -237,8 +237,9 @@ namespace EnrageWestworld.Core
                     s.Add(w, Voice.Pick(k, "I've no more time for this.", "Talk to the wind. I'm done.", "You ain't worth the trouble.", "Say what you like. I'm going."), "storm", "walkaway");
                     break;
                 case "friend":
-                    // the friend (the cast's third) comes between them and talks his man down; the hot one goes with him
-                    s.Add(2, null, null, "approach");
+                    // the friend (the cast's third) comes between them and talks his man down; the hot one goes with him. He
+                    // walks to his own man (before 2026-10-29 to A whoever his man was: NIGHT.md For Lex 21)
+                    s.Beats.Add(new Beat(2, null, null, "approach") { To = w });
                     Beat word = new Beat(2, Voice.Pick(k, "Easy, " + own + ". Easy. It ain't worth it.", "Leave it, " + own + ". Come on, leave it.", "That's enough, " + own + ". Not here.",
                                                         own + ". Walk with me. Now."), "intervene", "faceone") { To = w };
                     s.Beats.Add(word);

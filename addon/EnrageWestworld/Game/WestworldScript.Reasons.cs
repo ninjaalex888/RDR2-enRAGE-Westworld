@@ -172,7 +172,7 @@ namespace EnrageWestworld.InGame
             long now = Bridge.Now(), day = now > 0 ? now / 1440 : -1;
             Reasons.Place where = new Reasons.Place
             {
-                Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight,
+                Saloon = saloon, Night = Natives.Night(), Courting = _cfg.NpcFlirting && _cfg.Romance, SameSex = _cfg.SameSexRomance, Trouble = _cfg.TroubleWeight, WomenFight = _cfg.WomenInFights,
                 Rumours = (!saloon || _cfg.SaloonGossip) && _engine.RumourPool(_placeTown, 1).Count > 0,
                 DeedsHere = _placeTown != null && _engine.ThoughtDay(_placeTown).TownDeeds.Count > 0
             };
@@ -188,12 +188,47 @@ namespace EnrageWestworld.InGame
                         continue;
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(a.Id) && t.Has(b.Id));
                     Reason why = Reasons.Between(a, b, tie, day, now, where, link);
+                    if (why != null && _cfg.MindLive && _cfg.MindMeetings)
+                        MeetLean(why, people[i], people[j]);   // their moods today lean which reason the street plays (Core/Reasons.Mood.cs)
                     if (why != null)
                         found.Add(new PairReason { A = people[i], B = people[j], Why = why, Apart = apart });
                 }
             // the strongest reason, but close together and close to the player counts: a scene 5 m off is one he sees
             Vector3 mp = Game.Player.Character.Position;
             return found.OrderByDescending(x => x.Why.Strength - x.Apart * 2f - Math.Min(x.A.Ped.Position.DistanceTo(mp), x.B.Ped.Position.DistanceTo(mp)) * 2f).ToList();
+        }
+
+        /// The mind's lean on a reason between two people it already knows: their moods today against their nature, and how
+        /// much the lonelier wants company (Reasons.MoodLean). Its own catch: a fault leaves the reason as it was.
+        private void MeetLean(Reason why, Candidate x, Candidate y)
+        {
+            try
+            {
+                long g = _store.LastGameMin;
+                string mx = null, my = null;
+                float cx = -1f, cy = -1f;
+                MindWho w;
+                if (_mindWho.TryGetValue(x.Ped.Handle, out w) && w.Id == x.Who.Id && w.Traits != null)
+                {
+                    mx = Passing.DayMood(_engine.Shadow.MoodOf(w.Id, w.Traits, g), Mood.Baseline(w.Traits));
+                    cx = w.Needs != null ? w.Needs[NeedState.Company] : -1f;
+                }
+                if (_mindWho.TryGetValue(y.Ped.Handle, out w) && w.Id == y.Who.Id && w.Traits != null)
+                {
+                    my = Passing.DayMood(_engine.Shadow.MoodOf(w.Id, w.Traits, g), Mood.Baseline(w.Traits));
+                    cy = w.Needs != null ? w.Needs[NeedState.Company] : -1f;
+                }
+                int lean = Reasons.MoodLean(why.Kind, mx, my, cx, cy);
+                if (lean == 0)
+                    return;
+                why.Strength += lean;
+                why.Leaned = (lean > 0 ? "+" : "") + lean + " (" + Person.FirstOf(x.Who.Name) + " " + (mx ?? "even") + ", " + Person.FirstOf(y.Who.Name) + " " + (my ?? "even") +
+                             (Math.Max(cx, cy) >= 0.5f ? ", one of them lonely" : "") + ")";
+            }
+            catch (Exception ex)
+            {
+                Log.Detail("REASON the mind's lean failed: " + ex.Message);
+            }
         }
 
         /// The strongest reason near the player that he can see, played as a scene. False if there's none.
@@ -229,7 +264,7 @@ namespace EnrageWestworld.InGame
                 if (s == null)
                     continue;
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
-                          " (strength " + pr.Why.Strength + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
+                          " (strength " + pr.Why.Strength + (pr.Why.Leaned != null ? ", the mind: " + pr.Why.Leaned : "") + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
                 List<Ped> cast2 = new List<Ped> { first, second };
                 s = LadderScene(s, first, second, doer, done, cast, seed, pr.Why.Matter, cast2, now);   // an argue or a brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
                 AddMeet(s, kind, first, second, pr.Apart);
@@ -366,7 +401,7 @@ namespace EnrageWestworld.InGame
         /// joins the scene as its third person with one line, after the trouble itself.
         private void AddBarkeep(Scene s, List<Ped> people, SceneCast cast, string seed, bool saloon)
         {
-            string line = saloon && s.Cast == 2 && people.Count == 2 ? Scenes.Barkeep(s.Kind, seed) : null;
+            string line = saloon && s.Cast == 2 && people.Count == 2 ? Scenes.Barkeep(s.Kind, seed, cast != null && (cast.AWoman || cast.BWoman)) : null;
             if (line == null)
                 return;
             Ped me = Game.Player.Character;

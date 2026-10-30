@@ -46,6 +46,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public bool Regular;          // one of their town's regulars (Regulars.cs): met again and again, kept
         [DataMember(EmitDefaultValue = false)] public int Outfit;            // a regular's outfit preset, put on whenever they're cast (read only when Regular or Cast)
         [DataMember(EmitDefaultValue = false)] public string Cast;           // one of the Testing page's test cast, by part (Core/TestCast.cs); null for everyone else
+        [DataMember(EmitDefaultValue = false)] public string Look;           // the look of the body they were met in (Game/Looks.cs), so standing alone the same body is known for them again ([World] OwnLooks; night 2026-10-29, item 5); null for everyone met before, or with it off
 
         public static bool IsResident(string id)
         {

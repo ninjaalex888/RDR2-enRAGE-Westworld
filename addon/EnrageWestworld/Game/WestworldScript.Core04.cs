@@ -139,7 +139,7 @@ namespace EnrageWestworld.InGame
             _ticker.SlotMs = _cfg.TickerSeconds * 1000;
             _ticker.GapMs = _cfg.TickerGapSeconds * 1000;
             _testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
-            _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F2);
+            _flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.None);
             _readerKey = KeySpec.Parse(_cfg.ReaderKey, Keys.N);
             _stalkerKey = KeySpec.Parse(_cfg.StalkerKey, Keys.OemCloseBrackets);
             _execKey = KeySpec.Parse(_cfg.ExecutionKey, Keys.OemOpenBrackets);
@@ -304,6 +304,24 @@ namespace EnrageWestworld.InGame
                 return;
             List<Paper> papers = _store != null ? _store.Papers.Where(p => p.Delivered).OrderByDescending(p => p.At).ToList() : new List<Paper>();
             int unread = papers.FindIndex(p => !p.Read);
+            if (_cfg != null && _cfg.WhosWho && _store != null)
+            {
+                // the people you've met, last among the papers, made now and never kept (Core/WhosWho.cs); for everyone, its
+                // "Lately" (the mind's feelings) only with MindLive (Lex, 2026-10-30)
+                string body = null;
+                try
+                {
+                    body = WhosWho.Body(_store, Bridge.Now(), id => _cfg.MindLive && _engine != null && _engine.Shadow != null ? _engine.Shadow.Felt(id) : null);
+                }
+                catch (Exception ex)
+                {
+                    Log.Write("WHOS WHO failed: " + ex.Message);
+                }
+                if (body != null && papers.Count == 0)
+                    body += "\n\nYou carry no letters, diaries or clippings yet. Letters wait at post offices in town. Diaries can be found on the dead, and in their camps.";   // the reader's own hint, which this page would hide
+                if (body != null)
+                    papers.Add(new Paper { Kind = "note", Title = "Who's who", From = "from memory", Body = body, Delivered = true, Read = true });
+            }
             _reader.Show(papers, unread >= 0 ? unread : 0);
         }
 

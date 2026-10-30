@@ -62,6 +62,7 @@ namespace EnrageWestworld.InGame
                     ArmedB = WEAPON.IS_PED_ARMED(second.Handle, 4),
                     WomanA = cast.AWoman,
                     WomanB = cast.BWoman,
+                    WomenFight = _cfg.WomenInFights,
                     LawNear = LawmanNear(first, 30f),
                     GunsBanned = false,   // no town's rule is known to the add-on (For Lex)
                     Warmth = tie != null ? tie.Warmth : 0,
@@ -133,7 +134,7 @@ namespace EnrageWestworld.InGame
                 string ctx = q.Place + " at " + q.Hour + (q.DrunkA && q.DrunkB ? ", both in drink" : q.DrunkA ? ", " + an + " in drink" : q.DrunkB ? ", " + bn + " in drink" : "") +
                              (q.ArmedA && q.ArmedB ? ", both armed" : q.ArmedA ? ", " + an + " armed" : q.ArmedB ? ", " + bn + " armed" : ", unarmed") + (q.LawNear ? ", the law near" : "") +
                              ", " + q.Witnesses + " watching" + (tie != null ? ", " + (tie.Warmth < 0 ? "foes" : tie.Warmth > 0 ? "friends" : "acquainted") + (q.History > 0 ? " (" + q.History + " quarrels before)" : "") : ", strangers") +
-                             (q.Aggrieved != null ? ", " + (q.Aggrieved == "a" ? an : bn) + " the wronged" : "") + (friend != null ? ", a friend of " + (side == 0 ? an : bn) + " by" : "") +
+                             (q.Aggrieved != null ? ", " + (q.Aggrieved == "a" ? an : bn) + " the wronged" : "") + (friend != null ? ", a friend of " + (side == 0 ? an : bn) + " by" : "") + (_ladderFriendMind != null ? (friend != null ? " (the mind: " : ", no friend stepped in (the mind: ") + _ladderFriendMind + ")" : "") +
                              ", over " + matter + (start > 0 ? ", from the " + Escalation.Rungs[start] : "");
                 _ladderLast = an + " & " + bn + ": " + Escalation.Rungs[start] + " -> " + run + " (" + s.Kind + ")";
                 Log.Write("LADDER " + an + " & " + bn + " (" + ctx + "): " + Escalation.Rungs[start] + " -> " + run + "; played as " + (s.Kind == "argue" ? "an argue" : "a " + s.Kind) +
@@ -168,10 +169,13 @@ namespace EnrageWestworld.InGame
         private Candidate LadderFriend(List<Ped> people, SceneCast cast, Vector3 mid, string aId, string bId, int now, out int side)
         {
             side = -1;
+            _ladderFriendMind = null;
             Ped me = Game.Player.Character;
             string an = cast.Names[0], bn = cast.Names[1];
             Candidate best = null;
             int bestWarmth = 0;
+            bool mind = MindStandUpOn && !_standUpMindFailed;
+            var friends = mind ? new List<Candidate>() : null;
             foreach (Candidate c in ReasonCandidates(me, now))
             {
                 if (c.Ped.Handle == people[0].Handle || c.Ped.Handle == people[1].Handle || c.Who.Id == aId || c.Who.Id == bId || c.Ped.Position.DistanceTo(mid) >= 10f)
@@ -181,15 +185,81 @@ namespace EnrageWestworld.InGame
                     continue;
                 int toA = LadderWarmth(c.Who.Id, aId), toB = LadderWarmth(c.Who.Id, bId);
                 int warmth = Math.Max(toA, toB);
-                if (warmth <= 0 || warmth <= bestWarmth)
-                    continue;
+                if (warmth <= 0 || (friends == null && warmth <= bestWarmth))
+                    continue;   // with the mind, every friend in reach is weighed, not only the warmest so far (the collision audit)
                 if (PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(c.Ped.Handle, people[0].Handle, 17))
+                    continue;
+                if (friends != null)
+                    friends.Add(c);
+                if (warmth <= bestWarmth)
                     continue;
                 best = c;
                 bestWarmth = warmth;
                 side = toA >= toB ? 0 : 1;
             }
+            if (friends != null && friends.Count > 0)
+            {
+                // with MindLive and MindStandUp, the friend who steps in is one whose own mind says to (Core/StepIn.cs, the
+                // stand-up's road): the strongest of them; a friend whose mind only says watch doesn't, so no friend's rung
+                string why;
+                Candidate moved = LadderFriendByMind(people, friends, mid, aId, bId, now, out why);
+                if (!_standUpMindFailed)
+                {
+                    _ladderFriendMind = why;
+                    if (moved == null)
+                    {
+                        side = -1;
+                        return null;
+                    }
+                    int toA = LadderWarmth(moved.Who.Id, aId), toB = LadderWarmth(moved.Who.Id, bId);
+                    side = toA >= toB ? 0 : 1;
+                    return moved;
+                }
+            }
             return best;
+        }
+
+        private string _ladderFriendMind;
+
+        /// Of the friends near a quarrel, the one whose own appraisal of it (a brawl between his friend and another, Core/
+        /// StepIn.Takes) says to step in, the strongest; null when none does. Only people the mind already knows.
+        private Candidate LadderFriendByMind(List<Ped> people, List<Candidate> friends, Vector3 mid, string aId, string bId, int now, out string why)
+        {
+            why = null;
+            try
+            {
+                var watching = new List<Onlooker>();
+                var byHandle = new Dictionary<int, Candidate>();
+                foreach (Candidate c in friends)
+                {
+                    MindWho w = MindKnown(c.Ped.Handle, now);
+                    if (w == null || w.Id == null || w.Id != c.Who.Id || w.P == null)
+                        continue;
+                    Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
+                    if (t == null)
+                        continue;
+                    watching.Add(new Onlooker { P = w.P, T = t, Metres = c.Ped.Position.DistanceTo(mid), Drunk = c.Who.Drunk, WakeStage = c.Who.WakeStage, Handle = c.Ped.Handle });
+                    byHandle[c.Ped.Handle] = c;
+                }
+                if (watching.Count == 0)
+                {
+                    why = "the mind knows none of the " + friends.Count + " friends near";
+                    return null;
+                }
+                Someone a = SomeoneOf(people[0]), b = SomeoneOf(people[1]);
+                Happening h = StepIn.Trouble("brawl", aId, a != null ? a.Name : null, bId, b != null ? b.Name : null, _placeTown, _engine.NowIndoors ? _engine.NowPlace : null, _store.LastGameMin, watching);
+                List<StepInTake> takes = StepIn.Takes(h, watching, LadderWarmth, CrowdAt(mid, 12f, people), LawmanNear(people[0], 30f), aId + "|" + bId + "|" + _store.LastGameMin / 60);
+                StepInTake took = StepIn.Who(takes);
+                why = took != null ? StepIn.Words(took) : string.Join("; ", takes.Take(3).Select(StepIn.Words));
+                return took != null ? byHandle[took.Who.Handle] : null;
+            }
+            catch (Exception ex)
+            {
+                _standUpMindFailed = true;
+                Log.Write("LADDER the mind's part of the friend failed once, the warmest friend from here: " + ex.Message);
+                why = null;
+                return null;
+            }
         }
 
         private int LadderWarmth(string x, string y)

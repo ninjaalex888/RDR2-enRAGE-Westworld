@@ -144,7 +144,7 @@ namespace EnrageWestworld.InGame
 			Log.Debug = _cfg.DebugLog;
 			Feed.SpeechMs = Math.Max(3, _cfg.SubtitleSeconds) * 1000;
 			_testKey = KeySpec.Parse(_cfg.TestKey, Keys.F7);
-			_flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.F2);
+			_flirtKey = KeySpec.Parse(_cfg.FlirtKey, Keys.None);
 			Setup04();
 			_loadedAt = Environment.TickCount;
 			string[] obj2 = new string[9] { "RealNPCs ", _version, " loaded (", base.FileName, "). Test key: ", null, null, null, null };
@@ -1167,9 +1167,14 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST passing: " + PassingStatus());
 			Log.Write("TEST sights: " + SightsStatus());
 			Log.Write("TEST kindness: " + KindnessStatus());
+			Log.Write("TEST onlookers: " + OnlookersStatus());
+			Log.Write("TEST awakening from doubt: " + DoubtStatus());
+			Log.Write("TEST rescue: " + RescueStatus());
+			Log.Write("TEST mind acts: " + MindActsTotals());
 			Log.Write("TEST vices: " + VicesStatus());
 			Log.Write("TEST grudges: " + GrudgesStatus());
 			Log.Write("TEST kin: " + KinStatus());
+			Log.Write("TEST own looks: " + OwnLooksStatus());
 			Log.Write("TEST callout: " + CalloutStatus());
 			Log.Write("TEST visitor: " + VisitorStatus());
 			Log.Write("TEST traveller: " + TravellerStatus());
@@ -1327,8 +1332,14 @@ namespace EnrageWestworld.InGame
 				Log.Write("FLIRT ignored: one of the story's own people.");   // never anyone the story holds
 				return;
 			}
-			if (TrystAsked(ped))
-				return;   // she said yes a moment ago: this flirt asks her somewhere quieter (WestworldScript.Trysts.cs)
+			if (_hookAsk)
+			{
+				// the Hook up prompt (G): the ask, never another flirt (Lex, 2026-10-29); H only ever flirts
+				_hookAsk = false;
+				if (!TrystAsked(ped))
+					Log.Write("TRYST Hook up pressed, but she isn't willing now (or it timed out)");
+				return;
+			}
 			long now = Bridge.Now();
 			_engine.PlayerCash = MONEY._MONEY_GET_CASH_BALANCE() / 100;   // what the greedy and the proud look at
 			_engine.GreetedFirst = GreetedFirst(num);   // greeting her first counts (Lex, 2026-10-26)

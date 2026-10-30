@@ -54,6 +54,11 @@ namespace EnrageWestworld.InGame
             public Person P;
             public PersonState St;
             public Resident Res;
+            // despair's other side (WestworldScript.Rescue.cs): who comes to them while the last words are said
+            public bool RescueTried, SaverFriend, SaverClose, SaverWoman, SaverAnswered, SaverHeeded;
+            public int SaverHandle, SaverUntil, SaverSpokeAt;
+            public string SaverId, SaverName;
+            public uint SaverModel;   // the body the saver was in, so a handle the game gives to someone else is not taken for them
         }
 
         private readonly List<WakeAct> _wakeActs = new List<WakeAct>();
@@ -237,8 +242,8 @@ namespace EnrageWestworld.InGame
                     break;
                 int cool;
                 if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || (_animTest != null && _animTest.Handle == h) || (_gunTest != null && _gunTest.Handle == h) || PED.IS_PED_IN_COMBAT(h, 0) ||
-                    PED.IS_PED_FLEEING(h) || LawBusy(ped))
-                    continue;
+                    PED.IS_PED_FLEEING(h) || LawBusy(ped) || (_cfg != null && _cfg.MindLive && (IsOnlooking(h) || IsRescuer(h) || IsAcknowledgingYou(h) || _director.Leaving(h))))
+                    continue;   // with the mind on, someone acting on what they saw, walking to a despair, greeting you or walking off with someone is busy (the collision audit, night 2026-10-29)
                 bool known = _resBind.ContainsKey(h);
                 if (!known && bound >= 3)
                     continue;
@@ -859,6 +864,8 @@ namespace EnrageWestworld.InGame
             int h = act.Handle;
             if (act.Phase == 3)
             {
+                if (RescueStep(act, me, now))
+                    return;   // someone the mind moved is coming to them, or speaking with them: the last words held (WestworldScript.Rescue.cs)
                 if (!act.Sobbed && now < act.PhaseUntil - 1500 && STREAMING.HAS_ANIM_DICT_LOADED(SobDict))
                 {
                     // the set wasn't in yet when despair began (the Testing row has no awake act before it to ask for it early,
@@ -1414,6 +1421,7 @@ namespace EnrageWestworld.InGame
         {
             if (_despairLine != null && _despairLine.Handle == act.Handle)
                 _despairLine = null;   // despair's words go with the act
+            RescueRelease(act);   // whoever was coming to them goes on their way (WestworldScript.Rescue.cs)
             if (why != null)
                 Log.Write("WAKE act ended: " + act.Name + " " + act.Kind + (act.Ending != null ? " -> " + act.Ending : "") + " (" + why + ")");
             int h = act.Handle;
@@ -1442,7 +1450,11 @@ namespace EnrageWestworld.InGame
             else if (act.Ending == "despair" && act.Method == "gun" && act.Phase >= 4 && !ENTITY.IS_ENTITY_DEAD(h))
                 WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);   // stopped with their own gun out: put away
             if (!act.Passive && !act.LeaveOrders && act.Kind != "glance" && act.Kind != "lookaround" && !ENTITY.IS_ENTITY_DEAD(h))
+            {
                 TASK.CLEAR_PED_TASKS(h, true, false);
+                if (act.SaverHeeded)
+                    TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // talked down: on their way, as the one who came is
+            }
         }
 
         /// Gives everyone back, now (a mission started, or the add-on is stopping).

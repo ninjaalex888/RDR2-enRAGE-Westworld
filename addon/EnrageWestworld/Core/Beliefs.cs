@@ -10,9 +10,10 @@
 // sticks more than blame for the bold (Miller and Ross). Dissonance (a memory against a strong belief) takes one of three
 // roads by nature: the honest or pious take it onto the self, the anxious and the curious move what they believe of the
 // town and others first, the rest rewrite the memory in their own favour (the drift's "he had it coming" slant; v1 only
-// names the road). Read-only against the Awakening and Regard: the game side only notes where they disagree.
+// names the road). Read-only against Regard (the game side notes where they disagree); with [Mind] MindWakes the Awakening
+// reads "as it seems" (Engine.Doubt.cs, night 2026-10-29).
 // Known in v1: "the law here is for folk like me" moves only at the baseline (no appraisal carries a lawman as the doer
-// yet); the buried man walking past ("revived") has no Happening in play yet, so that flip is reachable offline only;
+// yet); the buried man walking past ("revived") is appraised in play since 2026-10-29 (WestworldScript.Doubt.cs);
 // race and ethnicity, the first-order fact of 1899 standing, have no field (trade stands in). Plain C#, no game.
 using System;
 using System.Collections.Generic;

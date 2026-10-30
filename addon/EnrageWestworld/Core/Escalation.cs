@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         public bool DrunkA, DrunkB;          // in his cups
         public bool ArmedA, ArmedB;          // carries a gun (nobody draws what he doesn't carry)
         public bool WomanA, WomanB;
+        public bool WomenFight;              // [Scenes] WomenInFights: a woman's quarrel may come to blows, and a man's to blows with her, at half the heat (Lex, 2026-10-29); never a gun
         public bool LawNear;                 // a lawman within sight
         public bool GunsBanned;              // the town's rule: no guns inside the limits (the men who carry anyway are the ones it worries)
         public bool FriendOfA, FriendOfB;    // a friend at hand who might step in, or egg on
@@ -64,8 +65,8 @@ namespace EnrageWestworld.Core
             bool drunk = sideA ? c.DrunkA : c.DrunkB, armed = sideA ? c.ArmedA : c.ArmedB, friendNear = sideA ? c.FriendOfA : c.FriendOfB;
             bool woman = sideA ? c.WomanA : c.WomanB, otherWoman = sideA ? c.WomanB : c.WomanA, otherArmed = sideA ? c.ArmedB : c.ArmedA;
             bool gun = rung >= 2;
-            if (woman && rung >= 1)
-                return 0f;   // a woman's quarrel stops at the shove
+            if (woman && (rung >= 2 || rung >= 1 && !c.WomenFight))
+                return 0f;   // a woman's quarrel stops at the shove, or with WomenInFights at the blows: never a gun
             // each rung is harder than the last: a shove is cheap, a fist costs, a gun is another world, the shot the last step of it
             float h = rung == 0 ? 0.30f : rung == 1 ? 0.42f : rung == 2 ? 0.10f : 0.30f;
             float nature = gun ? 0.5f : 1f;   // a man's nature moves his fists more than his gun hand; the gun rungs are mostly the surroundings
@@ -118,7 +119,9 @@ namespace EnrageWestworld.Core
             else if (c.LawNear)
                 h -= 0.10f * Clamp(0.8f + 0.5f * t[Traits.Deference]);
             if (otherWoman && rung >= 1)
-                h *= t[Traits.Compassion] < -0.5f && t[Traits.Anger] > 0.5f ? 0.33f : 0.1f;   // a man's hand against a woman
+                h *= c.WomenFight && rung == 1 ? 0.5f : t[Traits.Compassion] < -0.5f && t[Traits.Anger] > 0.5f ? 0.33f : 0.1f;   // a man's hand against a woman: half the heat to blows with WomenInFights (Lex, 2026-10-29), a gun drawn on her as rare as before
+            if (woman && rung == 1)
+                h *= 0.5f;   // her own fists, half as likely as a man's (WomenInFights; the rung above was let through only then)
             // a soft cap: the hottest man still leaves room for the law, a friend and the other man to read
             return h <= 0f ? 0f : 1f - (float)Math.Exp(-h);
         }

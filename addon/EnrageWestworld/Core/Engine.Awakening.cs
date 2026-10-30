@@ -124,7 +124,7 @@ namespace EnrageWestworld.Core
             {
                 // quietly chosen, leaning toward those who already suspect the most
                 Person pick = living.Where(p => StageOf(p) == 0)
-                    .OrderByDescending(p => Hosts.Awareness(p, Store.Find(p.Id)) + _rng.Next(25)).FirstOrDefault();
+                    .OrderByDescending(p => Hosts.Awareness(p, Store.Find(p.Id)) + _rng.Next(25) + WakeLean(p.Id)).FirstOrDefault();   // with MindWakes, what shook them leans it (Engine.Doubt.cs; 0 otherwise)
                 if (pick == null)
                     break;
                 Advance(pick, Store.Get(pick), now);
@@ -135,7 +135,7 @@ namespace EnrageWestworld.Core
         private void AdvanceIfDue(Person p, long now, long perStage)
         {
             PersonState st = Store.Find(p.Id);
-            if (st != null && st.WakeStage >= Awakening.Stirring && st.WakeStage < Awakening.Awake && now - st.WakeStageAt >= perStage && _rng.Next(100) < 60)
+            if (st != null && st.WakeStage >= Awakening.Stirring && st.WakeStage < Awakening.Awake && now - st.WakeStageAt >= perStage && _rng.Next(100) < WakeChance(p.Id))   // 60 as before; with MindWakes, from 30 to 95 by what shook or steadied them (Engine.Doubt.cs)
                 Advance(p, st, now);
         }
 

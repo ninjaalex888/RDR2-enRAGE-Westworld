@@ -145,6 +145,7 @@ namespace EnrageWestworld.InGame
         /// Forgets how you looked and who reacted (death, a load, a long jump, the memory wipe, shutdown).
         private void SightsReset(string why)
         {
+            _looksQuietUntil = Environment.TickCount + LooksQuietMs;   // a body's look read just after a load can change (enRAGE waits too): Looks.cs
             bool any = _sightState != null || _sights.Count > 0 || _hurtAt > -100000;
             _sights.Clear();
             _sightHealth = -1;

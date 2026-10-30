@@ -18,6 +18,53 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 Story Mode only. Don't run script mods in Red Dead Online.
 
 
+NEW IN THE NEXT VERSION
+-----------------------
+- The settings panel pauses the world while it's open (it used to slow it), and the mouse works
+  on it: point at a row, click to change it, scroll with the wheel, drag the scrollbar.
+- Someone who steps into a quarrel near you (to stand up to a bully, to talk a friend down, a
+  jealous husband or wife) walks all the way over and says it to their faces, instead of calling
+  it out from where they stood.
+- With [Mind] MindLive on (in testing): who steps in comes from their own minds. Each onlooker
+  takes it their own way: a friend of the one being picked on, a kind soul, a hothead will often
+  step in, a coward or a cold man seldom; the bigger the crowd, the less each one feels it falls
+  to them; a lawman nearby or a church hushes it. Women step in too, half as often as men for
+  now. Whether the bully backs down comes from his own nature: a hothead or a proud man faced by
+  another man holds his ground, a proud man shamed by a woman before the street mostly backs down.
+  When he holds his ground, the one who stepped in may lead the other away instead, and it
+  never comes to blows. [Mind] MindStandUp turns this part off.
+- With [Mind] MindLive on: someone who only watched a quarrel, a fight or something you did
+  does something about it by what they feel: the frightened walk off (a man who keeps his fear
+  off his face slips away quietly), the pious shake their heads and leave, a gun or something
+  uncanny roots them to the spot, contempt shakes its head, a keen eye turns to watch. Two
+  people at most each time, never the law or a shopkeeper. [Mind] MindOnlookers.
+- With [Mind] MindLive on (and West World): the Awakening follows what people live through.
+  Something uncanny, a killing seen, a man they saw die walking past them again shake their sense
+  that things are as they seem, so they wake sooner; a kindness steadies them. The moment that
+  sense gives way they begin to stir. [Mind] MindWakes.
+- With [Mind] MindLive on: people who feel something about you show it as you pass: a hat tip
+  and a greeting from someone you helped, a hard look from someone you wronged (a sullen look
+  away if they fear you), a glance from the frightened.
+- With [Mind] MindLive on: what passes between people who meet near you leans by the day
+  they're having: sore people come to words sooner, glad and lonely ones stop to talk.
+  [Mind] MindMeetings.
+- With [Mind] MindLive on (West World): despair isn't only an ending. When someone awake begins
+  their last words, a friend or a kind stranger near them may walk over and try to talk them
+  down; a friend is heeded more often. [Mind] MindRescue, RescueChance.
+- With [Mind] MindLive on: when someone falls near you, whoever is most moved by it comes to
+  help, and how they help is theirs: a hand up, a gruff one, or walking on. [Mind] MindHelps.
+- With [Mind] MindLive on: people who know each other greet each other by how they feel
+  lately and the day they're having: sore at a friend, a nod and no word; afraid, eyes away;
+  grateful, a warm word; a glad day, a good day even to a near stranger. Someone who feels
+  something about you from a while back shows it as you pass, the same way. [Mind] MindPassing.
+- With [Mind] MindLive on: your papers end with Who's who, the people you have met, newest
+  first: who they are, how they take you, and who they are friends or at odds with. [Display] WhosWho.
+- (In testing, off as it comes) [World] OwnLooks: without enRAGE, someone you've met is known
+  again by their look (the same clothes on the same build), so yesterday's townsman is the same
+  man today. With enRAGE installed, enRAGE's own knowing by look is used instead.
+- Women come to blows too, with a man or another woman, half as often as two men do for each
+  woman in it ([Scenes] WomenInFights; off: only two men ever fight, as before).
+
 NEW IN 0.7.1
 ------------
 - Names over heads are easier to hide. The settings panel page is now "UI (Nameplates, bars,
@@ -190,8 +237,9 @@ NEW IN 0.6.2
 - People flirt with each other and court. You see it in their thoughts: the one asking working up
   to it, the other as they answer. A yes or a maybe becomes a romance that goes on each time they
   meet. [Romance] NpcFlirting.
-- Flirting: the flirt key is F2 (it was F6, the game's camera), and Flirt is in the game's lock-on
-  menu, on H (FlirtPrompt). Whether they take to it comes from what they think of you and who they
+- Flirting: lock on to her and press H (Flirt in the game's lock-on menu, FlirtPrompt). When she
+  says yes and has said it, Hook up shows beside it on G. There is no keyboard flirt key now
+  (FlirtKey, None; it was F2). Whether they take to it comes from what they think of you and who they
   are: their nature, faith, troubles and mood, against your money and your name in town.
 - enRAGE's own people (its nemeses, gang men and named folk) join in street scenes, reactions,
   talk and waking acts, unless enRAGE has them busy. [Scenes] EnragePeopleJoinIn.
@@ -566,7 +614,7 @@ YOUR DEEDS
 The add-on notices what you do and where:
 - Towns you ride into, and shops: the gunsmith, general store, saloon, church, bank, doctor,
   barber, bath, hotel, sheriff, station, tailor, fence, theatre, photographer, stable.
-- Who you sweet-talk (F2), and the people enRAGE knows that you beat and then let go.
+- Who you sweet-talk (Flirt, H), and the people enRAGE knows that you beat and then let go.
 - Hunting (what you bring down), killing (strangers, lawmen, people enRAGE knows), and the crimes
   the game itself sees: robbery, bank, coach and train robbery, theft, horse theft, assault,
   looting, grave robbing, kidnapping, arson, cheating.
@@ -833,7 +881,7 @@ in the file. The new ones:
             WillingSingle (70), WillingTaken (20): percent chance a single, or a married or
             spoken-for, woman takes to your flirting before what she thinks of you tips it (the
             saloon's women always do); greeting her first (R) helps by 15, flirting cold costs 15
-            Trysts (true): when she says yes, Flirt becomes Hook up (H) for two minutes; her answer
+            Trysts (true): when she says yes, Hook up shows on G (once she's said it) for two minutes; her answer
             to that is its own (better after a greeting), then the screen goes dark, an hour passes
             CasualHookupsDecides (true): with CasualHookups installed, its Flirt works only on a
             woman who has said yes to you, and RealNPCs doesn't fade to black itself
@@ -865,7 +913,7 @@ in the file. The new ones:
                 them as white text while its own [Menu] Messages is 3 (2 or 4 stops that)
             Subtitles (on | off): what people say to you, on the game's subtitle line while their voice
                 plays (the game's own Subtitles option has to be on too)
-            TestKey (F7), FlirtKey (F2), WakeKey (Y), ReaderKey (N), ReloadIni (true),
+            TestKey (F7), FlirtKey (None), WakeKey (Y), ReaderKey (N), ReloadIni (true),
             ReplaceEnrageSettings (true): Alt+F11 opens the RealNPCs panel (enRAGE 0.9.5.3 only),
             SettingsKey (Alt+R) and SettingsKey2 (Alt+F) open and close it with any enRAGE version,
             PanelSlowsTime (true), PanelTimeScale (0.25): the world slows to a quarter speed while the
@@ -900,8 +948,8 @@ RB+D-pad  on a controller: hold RB and press D-pad up for the settings panel, le
           how often people come to blows or quarrel (1 as built, 2 twice as often, 0 never by chance).
 F7  what the nearest person enRAGE knows thinks of you (and a status line in the log); the town
           regulars and the fully awake around you show on the map for a minute
-F2        flirt with the person you're looking at (FlirtKey; it was F6, the game's camera).
-          Locked on to someone, the game's menu also offers Flirt, on H (FlirtPrompt).
+H         locked on to someone, Flirt (FlirtPrompt); after her yes, G is Hook up. FlirtKey can set
+          a keyboard key as well (None; it was F2).
 N         read your letters, diaries and clippings (or take a diary you've just found; ReaderKey)
 ]         make a stalker now: someone near you, or a stranger (StalkerKey)
 [         stage an execution on the road near you, out of sight, to see one now (ExecutionKey)

@@ -50,6 +50,11 @@ namespace EnrageWestworld.InGame
             public int ReactBy, ReactTo;         // who reacts, and to whom
             public string ReactTone;             // the tone of the line they react to
             public int Sat = -1;                 // "sitdown": who is sitting on the ground after a fall, until "getup" (or the end gets them up)
+            public int ApproachUntil;            // "approach" by the third: the next beat waits until they're at the one they walk to, or goes on then
+            public int ApproachTo;               // whom the third walks to
+            public int ApproachGoAt;             // the third was sitting or leaning: they set off once they're up (0: on their way)
+            public int ApproachCheckAt;          // when the walk was last seen getting nearer, or last sent again
+            public float ApproachBest;           // the nearest they've been
         }
 
         /// What one of the cast does about a line said to them, or about the slam ("hurt"), for the game layer to play.
@@ -85,6 +90,10 @@ namespace EnrageWestworld.InGame
         public Action<Reaction> React;
         /// "meet" gave up: the two never got close enough, so nothing happened between them.
         public Action<Ped, Ped> NeverMet;
+        /// Asked as the third sets off to walk over (the one who steps in, a friend, a spouse): why they mayn't be moved
+        /// now, or null. They were free when the scene was built; a story mission, enRAGE or a fight may have taken them
+        /// up since (night 2026-10-29: the mind moves people, checked at the roll and again at the moment).
+        public Func<Ped, string> ThirdFree;
 
         // the drunk who calls a man out (Scenes.Drunk): the game's own drunk-dueler moves, one ped at a time
         public const string DrunkDict = "script_re@drunk_dueler";
@@ -127,6 +136,24 @@ namespace EnrageWestworld.InGame
             Live l = _live;
             return l != null && handle != 0 && l.Cast.Any(p => p != null && p.Handle == handle);
         }
+
+        private readonly Dictionary<int, int> _leaving = new Dictionary<int, int>();   // handle -> until: walking off together ("leavewith")
+
+        /// Still walking off together after a scene's "leavewith" (the take-away, night 2026-10-29): busy for everything
+        /// else for 30 s, though the scene itself has ended (the collision audit: an onlooker's wander or a wake act cut it).
+        public bool Leaving(int handle)
+        {
+            int until;
+            if (handle == 0 || !_leaving.TryGetValue(handle, out until))
+                return false;
+            int now = Game.GameTime;
+            if (now < until && until - now <= LeaveHoldMs)
+                return true;
+            _leaving.Remove(handle);
+            return false;
+        }
+
+        private const int LeaveHoldMs = 30000;
 
         public Ped CastAt(int i)
         {
@@ -263,6 +290,9 @@ namespace EnrageWestworld.InGame
             if ((l.Scene.Kind == "help" || l.Scene.Kind == "passby") && l.Cast.Length > 1 && l.Cast[1] != null && l.Cast[1].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[1].Handle) &&
                 !PED.IS_PED_USING_ANY_SCENARIO(l.Cast[1].Handle))
                 TASK.TASK_WANDER_STANDARD(l.Cast[1].Handle, 10f, 10);
+            // a third still walking over when it ended (the player left, someone in it was hurt) is let go on their way
+            if (l.ApproachUntil > 0 && l.Cast.Length > 2 && l.Cast[2] != null && l.Cast[2].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[2].Handle))
+                TASK.TASK_WANDER_STANDARD(l.Cast[2].Handle, 10f, 10);
             if (l.FightAttrs != null)
                 foreach (KeyValuePair<int, bool[]> fa in l.FightAttrs)
                     if (ENTITY.DOES_ENTITY_EXIST(fa.Key))
@@ -460,6 +490,44 @@ namespace EnrageWestworld.InGame
                 else
                     return;
             }
+            if (l.ApproachUntil > 0 && l.Cast.Length > 2)
+            {
+                // the third is still walking over: the next beat waits until they're there, or the time is up
+                Ped w = l.Cast[2], o = l.Cast[l.ApproachTo];
+                if (l.ApproachGoAt > 0)
+                {
+                    if (now < l.ApproachGoAt)
+                        return;
+                    l.ApproachGoAt = 0;
+                    TASK.TASK_GO_TO_ENTITY(w.Handle, o.Handle, 20000, Natives.Brisk, 1.3f, 0f, 0);
+                    l.ApproachCheckAt = now;
+                    return;
+                }
+                float d = w.Position.DistanceTo(o.Position);
+                if (d <= ApproachNear)
+                    l.ApproachUntil = 0;
+                else if (now > l.ApproachUntil)
+                {
+                    l.ApproachUntil = 0;
+                    Log.Write("SCENE   " + l.Names[2] + " never got there (still " + d.ToString("0.0") + " m off" +
+                              (PED.IS_PED_USING_ANY_SCENARIO(w.Handle) ? ", a scenario held them" : "") + "): goes on from there");
+                }
+                else
+                {
+                    if (d < l.ApproachBest - 0.3f)
+                    {
+                        l.ApproachBest = d;
+                        l.ApproachCheckAt = now;
+                    }
+                    else if (now - l.ApproachCheckAt > 3000)
+                    {
+                        // no nearer in 3 s (knocked off the walk, or it never took): the order again, as the kin walk-up does
+                        TASK.TASK_GO_TO_ENTITY(w.Handle, o.Handle, 20000, Natives.Brisk, 1.3f, 0f, 0);
+                        l.ApproachCheckAt = now;
+                    }
+                    return;
+                }
+            }
             if (l.Index >= l.Scene.Beats.Count)
             {
                 Log.Write("SCENE over: " + l.Scene.Kind + " (" + string.Join(" & ", l.Names) + "), played to the end");
@@ -468,6 +536,23 @@ namespace EnrageWestworld.InGame
             }
             Beat b = l.Scene.Beats[l.Index++];
             int who = Math.Min(b.Who, l.Cast.Length - 1);
+            if (b.Act == "approach" && who == 2 && l.Cast.Length > 2 && ThirdFree != null)
+            {
+                string taken = null;
+                try
+                {
+                    taken = ThirdFree(l.Cast[2]);
+                }
+                catch (Exception ex)
+                {
+                    taken = "the check failed: " + ex.Message;
+                }
+                if (taken != null)
+                {
+                    Abort(l.Names[2] + " can't come over now (" + taken + ")");
+                    return;
+                }
+            }
             int other = b.To >= 0 && b.To < l.Cast.Length && b.To != who ? b.To : who == 0 ? 1 : 0;   // said to the other, or to whom the beat names
             Ped me = l.Cast[who], them = l.Cast[other];
             int wait = 900;
@@ -511,7 +596,28 @@ namespace EnrageWestworld.InGame
                     }
                     return 1400;
                 case "approach":
-                    TASK.TASK_GO_TO_ENTITY(h, l.Cast.Length > 2 && who == 2 ? l.Cast[0].Handle : t, -1, Natives.Brisk, 1.3f, 0f, 0);
+                    if (who == 2 && l.Cast.Length > 2)
+                    {
+                        // the third walks over to the pair (the one who steps in, a friend, a spouse) to the one the beat names
+                        // (else A), and the next beat waits until they're there (Tick), as "meet" does. Before 2026-10-29 the
+                        // walk had 2.6 s and the next beat's face turned them where they stood: the one who stepped in said it
+                        // from 9 m off (Lex)
+                        l.ApproachTo = other;
+                        l.ApproachBest = me.Position.DistanceTo(them.Position);
+                        l.ApproachCheckAt = Game.GameTime;
+                        l.ApproachUntil = Game.GameTime + Math.Min(ApproachMaxMs, 4000 + (int)(l.ApproachBest * 800f));
+                        if (PED.IS_PED_USING_ANY_SCENARIO(h))
+                        {
+                            // a walk order alone never moves someone sitting or leaning (seen 2026-10-25): let go of it first
+                            TASK.CLEAR_PED_TASKS(h, true, false);
+                            l.ApproachGoAt = Game.GameTime + 1800;
+                            l.ApproachUntil += 1800;
+                        }
+                        else
+                            TASK.TASK_GO_TO_ENTITY(h, t, 20000, Natives.Brisk, 1.3f, 0f, 0);
+                        return 300;
+                    }
+                    TASK.TASK_GO_TO_ENTITY(h, t, -1, Natives.Brisk, 1.3f, 0f, 0);
                     return 2600;
                 case "meet":
                     // walks over to the other, who waits; the next line waits until they're close (Tick). Someone sitting or
@@ -646,6 +752,25 @@ namespace EnrageWestworld.InGame
                     if (l.Scene.Kind == "lift" && who == 0)
                         Report(l, "lift");   // the thief walks off with it
                     return 600;
+                case "leavewith":
+                    {
+                        // two leave together (the stand-up's take-away, night 2026-10-29): both walk to one spot 25 m past the third,
+                        // away from the one the beat names, the other a metre to the side; the walk order is the one the encounters'
+                        // and the campfire's walkers use (seen working), so they go side by side instead of wandering apart
+                        Ped lead = l.Cast.Length > 2 && l.Cast[2] != null && l.Cast[2].Exists() ? l.Cast[2] : me;
+                        Vector3 dir = lead.Position.DistanceTo2D(them.Position) >= 0.3f ? lead.Position - them.Position : me.Position - them.Position;
+                        dir.Z = 0f;
+                        dir = Math.Abs(dir.X) + Math.Abs(dir.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : dir.Normalized;
+                        Vector3 spot = lead.Position + dir * 25f;
+                        if (me != lead)
+                            spot += new Vector3(-dir.Y, dir.X, 0f) * 1.2f;
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, spot.X, spot.Y, spot.Z, 1f, -1, 1f, 0, 0f);
+                        if (_leaving.Count > 50)
+                            _leaving.Clear();   // only ever two at a time; a guard against a session that never checks
+                        _leaving[h] = Game.GameTime + LeaveHoldMs;
+                        return 600;
+                    }
                 case "flee":
                     TASK.TASK_SMART_FLEE_PED(h, t, 40f, -1, 0, 2f, 0);
                     return 600;
@@ -775,6 +900,10 @@ namespace EnrageWestworld.InGame
             int start = l.StartHealth != null ? l.StartHealth[i] : Math.Max(1, ENTITY.GET_ENTITY_MAX_HEALTH(l.Cast[i].Handle, false));
             return ENTITY.GET_ENTITY_HEALTH(l.Cast[i].Handle) / (float)start;
         }
+
+        /// The third's walk over: there within 2.4 m (as "meet"), and given at most 12 s (4 s and 0.8 s a metre).
+        private const float ApproachNear = 2.4f;
+        private const int ApproachMaxMs = 12000;
 
         /// A brawl stays a brawl: if a fighter reaches for a gun or a knife, it goes back in the holster.
         private const int FightStartMs = 12000;

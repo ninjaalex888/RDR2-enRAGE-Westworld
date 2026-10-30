@@ -157,12 +157,13 @@ namespace EnrageWestworld.Core
         }
 
         /// The barkeep's word when trouble breaks out in his saloon (C in the scene), or null for a kind he lets be.
-        public static string Barkeep(string kind, string seed)
+        public static string Barkeep(string kind, string seed, bool aWoman = false)
         {
             switch (kind)
             {
                 case "rough": return Voice.Pick(seed + "bk", "Not in my saloon! Take it outside or I fetch the sheriff!", "That's my bar you're breaking! Out, the both of you!");
-                case "brawl": return Voice.Pick(seed + "bk", "Take it outside! The both of you!", "Not on my floor, gentlemen. Outside!");
+                case "brawl": return aWoman ? Voice.Pick(seed + "bk", "Take it outside! The both of you!", "Not on my floor! Outside, the pair of you!")
+                                                                  : Voice.Pick(seed + "bk", "Take it outside! The both of you!", "Not on my floor, gentlemen. Outside!");
                 case "drunk": return Voice.Pick(seed + "bk", "Somebody drag him out before he bleeds on my floor.", "That's the last drink he gets in here.");
                 default: return null;
             }
