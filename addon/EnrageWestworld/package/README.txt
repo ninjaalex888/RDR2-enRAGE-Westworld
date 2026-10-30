@@ -20,7 +20,8 @@ Story Mode only. Don't run script mods in Red Dead Online.
 
 NEW IN 0.7.1
 ------------
-- Names over heads are easier to hide. The settings panel page is now "Names, bars and meter",
+- Names over heads are easier to hide. The settings panel page is now "UI (Nameplates, bars,
+  etc)", with every on-screen setting on it,
   and turning Names over heads off there also hides enRAGE's own cards when enRAGE is installed
   (its [Menu] NameCards set to 0, after a copy of NemesisMod.ini). New: Personality line under
   the names ([Display] NameCardsSecondLine): off shows the name alone.

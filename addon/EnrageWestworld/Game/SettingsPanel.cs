@@ -62,7 +62,7 @@ namespace EnrageWestworld.InGame
         private static readonly Dictionary<string, string> OurTitles = new Dictionary<string, string>
         {
             { "WestWorld", "West World" }, { "Stalkers", "Stalkers" }, { "Encounters", "Encounters" }, { "Quiet", "Quiet (enRAGE)" }, { "Features", "People" }, { "World", "The world" }, { "Scenes", "Street scenes" },
-            { "Romance", "Romance" }, { "Mind", "The mind" }, { "Ticker", "The ticker" }, { "Display", "Names, bars and meter" }, { "Pacing", "Pacing" }, { "Output", "Notices and the panel" }
+            { "Romance", "Romance" }, { "Mind", "The mind" }, { "Ticker", "The ticker" }, { "Display", "UI (Nameplates, bars, etc)" }, { "Pacing", "Pacing" }, { "Output", "Files and the log" }
         };
 
         // a setting that only matters while another is on
@@ -246,8 +246,13 @@ namespace EnrageWestworld.InGame
                 {
                     if (s.Name.Equals("Testing", StringComparison.OrdinalIgnoreCase) || s.Name.Equals("Controller", StringComparison.OrdinalIgnoreCase))
                         continue;   // the Testing page is built from its catalogue, below; the controller's buttons are on the Hotkeys page
+                    if (s.Name.Equals("Ticker", StringComparison.OrdinalIgnoreCase))
+                        continue;   // on the UI page, below
+                    bool output = s.Name.Equals("Output", StringComparison.OrdinalIgnoreCase);
                     // the keys are all on the Hotkeys page instead
-                    List<Row> rows = s.Entries.Where(e => !IsOurKey(e.Key)).Select(e => new Row { E = e }).ToList();
+                    List<Row> rows = s.Entries.Where(e => !IsOurKey(e.Key) && !(output && UiFromOutput.Contains(e.Key, StringComparer.OrdinalIgnoreCase))).Select(e => new Row { E = e }).ToList();
+                    if (s.Name.Equals("Display", StringComparison.OrdinalIgnoreCase))
+                        rows = UiRows(rows);
                     if (rows.Count > 0)
                         _pages.Add(new Page { Title = OurTitles.ContainsKey(s.Name) ? OurTitles[s.Name] : s.Name, Rows = rows });
                 }
@@ -681,6 +686,37 @@ namespace EnrageWestworld.InGame
                 return;
             }
             _note = "Left and Right change this one.";
+        }
+
+        // ---- the UI page (Lex, 2026-10-30: "UI (Nameplates, bars, etc)", and have all UI related settings here") ----
+        // The ini keeps its sections; the panel gathers what is on the screen onto one page: [Display]'s names, bars and meter,
+        // [Ticker]'s bar and the thoughts over heads, and [Output]'s subtitles, notices and the panel's own ways.
+        private static readonly string[] UiFromOutput = { "Subtitles", "NewsTo", "WarNewsTo", "TerritoryNews", "UseGameFeed", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" };
+
+        private List<Row> UiRows(List<Row> display)
+        {
+            var rows = new List<Row> { new Row { Heading = "Names over heads, bars and the meter" } };
+            rows.AddRange(display);
+            IniSection ticker = _ours.Sections.FirstOrDefault(x => x.Name.Equals("Ticker", StringComparison.OrdinalIgnoreCase));
+            List<Row> t = ticker != null ? ticker.Entries.Where(e => !IsOurKey(e.Key)).Select(e => new Row { E = e }).ToList() : new List<Row>();
+            if (t.Count > 0)
+            {
+                rows.Add(new Row { Heading = "The ticker and thoughts over heads" });
+                rows.AddRange(t);
+            }
+            Func<string[], List<Row>> from = keys => keys.Select(k => _ours.FindKey(k)).Where(e => e != null && !IsOurKey(e.Key)).Select(e => new Row { E = e }).ToList();
+            List<Row> said = from(new[] { "Subtitles", "NewsTo", "WarNewsTo", "TerritoryNews", "UseGameFeed" }), panel = from(new[] { "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" });
+            if (said.Count > 0)
+            {
+                rows.Add(new Row { Heading = "Subtitles and notices" });
+                rows.AddRange(said);
+            }
+            if (panel.Count > 0)
+            {
+                rows.Add(new Row { Heading = "This panel" });
+                rows.AddRange(panel);
+            }
+            return rows;
         }
 
         // ---- the Mod list (Lex, 2026-10-30: "a mod list Page menu ... to be able to turn on/off other mods") ----
