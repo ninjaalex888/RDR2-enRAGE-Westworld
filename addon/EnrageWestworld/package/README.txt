@@ -39,6 +39,9 @@ NEW IN THE NEXT VERSION
   Something uncanny, a killing seen, a man they saw die walking past them again shake their sense
   that things are as they seem, so they wake sooner; a kindness steadies them. The moment that
   sense gives way they begin to stir. [Mind] MindWakes.
+- With [Mind] MindLive on (West World): despair isn't only an ending. When someone awake begins
+  their last words, a friend or a kind stranger near them may walk over and try to talk them
+  down; a friend is heeded more often. [Mind] MindRescue, RescueChance.
 - With [Mind] MindLive on: when someone falls near you, whoever is most moved by it comes to
   help, and how they help is theirs: a hand up, a gruff one, or walking on. [Mind] MindHelps.
 - With [Mind] MindLive on: people who know each other greet each other by how they feel
