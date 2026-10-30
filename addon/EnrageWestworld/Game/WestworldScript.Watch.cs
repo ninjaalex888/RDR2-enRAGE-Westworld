@@ -587,7 +587,7 @@ namespace EnrageWestworld.InGame
             if (on)
             {
                 foreach (uint c in DefenceCrimes)
-                    LAW.SUPPRESS_CRIME_THIS_FRAME(Game.Player.Handle, c, 0, 0, 0);
+                    LAW.SUPPRESS_CRIME_THIS_FRAME(Game.Player.Handle, c, 0, 0, -1);   // -1 last, as the game's own scripts call it (0 held back nothing, 2026-10-30)
                 PLAYER.SUPPRESS_WITNESSES_CALLING_POLICE_THIS_FRAME(Game.Player.Handle);   // the crimes alone let a deputy's own eyes through (2026-10-30)
             }
             else if (hold)
