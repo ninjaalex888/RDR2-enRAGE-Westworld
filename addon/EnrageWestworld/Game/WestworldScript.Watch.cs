@@ -49,7 +49,7 @@ namespace EnrageWestworld.InGame
         private int _defendSince = -1, _bountyBase;
         private bool _wantedBefore, _defenceTaintNoted, _defenceWantedNoted;
         // the law watch (Lex, 2026-10-30: wanted for shooting a pickpocket, and again as a despairing man's shot went off)
-        private bool _lawWasWanted, _lawClearCheck;
+        private bool _lawWasWanted, _lawClearCheck, _defenceBountyNoted, _standDownNoted, _witnessHoldOn;
         private int _lawWasBounty = -1, _lastCrimeEventAt = -1000000, _despairShotAt = -1000000;
         private uint _lastCrimeEvent;
         private Vector3 _despairShotPos;
@@ -252,8 +252,11 @@ namespace EnrageWestworld.InGame
                 TASK.CLEAR_PED_TASKS(p.Handle, true, false);
                 calmed++;
             }
-            if (calmed > 0)
-                Log.Write("LAW stand-down: " + calmed + " lawm" + (calmed == 1 ? "an" : "en") + " fighting you let go");
+            if (calmed > 0 && !_standDownNoted)
+                _standDownNoted = true;
+            else
+                return;
+            Log.Write("LAW stand-down: " + calmed + " lawm" + (calmed == 1 ? "an" : "en") + " fighting you let go");
         }
 
         /// A LAW line each time he becomes wanted or stops being, or his bounty changes: what the game says and what was
@@ -459,7 +462,9 @@ namespace EnrageWestworld.InGame
                     if (bounty > _bountyBase)
                     {
                         LAW.SET_BOUNTY(me, _bountyBase);
-                        Log.Write("SELF-DEFENCE: bounty $" + bounty / 100 + " -> $" + _bountyBase / 100 + ": you were fighting off " + (_lastDefenceWho ?? "someone") + " who came at you");
+                        if (!_defenceBountyNoted)
+                            Log.Write("SELF-DEFENCE: bounty $" + bounty / 100 + " -> $" + _bountyBase / 100 + ": you were fighting off " + (_lastDefenceWho ?? "someone") + " who came at you" + " (any rise again is put back too, without another line)");
+                        _defenceBountyNoted = true;
                         bounty = _bountyBase;
                     }
                     if (clearWanted)
@@ -489,10 +494,14 @@ namespace EnrageWestworld.InGame
         /// minutes before the fight on) or a crime of his was confirmed; never in story missions (SelfDefenceNoBounty).
         private unsafe void ShieldDefence(int now)
         {
-            bool on = false;
+            bool on = false, hold = false;
             if (_cfg.SelfDefenceNoBounty && !MISC.GET_MISSION_FLAG() && now - _lastOffenceAt > DefenceLaw.LookbackMs && now - _lastRealCrimeAt > DefenceLaw.LookbackMs &&
                 (_defendSince < 0 || (_lastOffenceAt < _defendSince - DefenceLaw.LookbackMs && _lastRealCrimeAt < _defendSince - DefenceLaw.LookbackMs)))
             {
+                // a witness's report comes half a minute after the shot, when the shield is long off, and once the game has a
+                // pursuit going nothing calls it off (2026-10-30: cleared 18 times in 10 s, back each time): so while the fight's
+                // window is open and clean, nobody who saw it may call the law
+                hold = _defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs;
                 on = now - _lastDefenceHitAt < 1500 || _hits.Values.Any(x => x.CameAtYou && !x.Done && now - x.At < 20000) ||
                      (_defendSince >= 0 && now - _lastDefenceAt < 1500);   // the fight still on (FoeStillIn renews it every scan)
                 if (!on)
@@ -514,6 +523,13 @@ namespace EnrageWestworld.InGame
                 foreach (uint c in DefenceCrimes)
                     LAW.SUPPRESS_CRIME_THIS_FRAME(Game.Player.Handle, c, 0, 0, 0);
                 PLAYER.SUPPRESS_WITNESSES_CALLING_POLICE_THIS_FRAME(Game.Player.Handle);   // the crimes alone let a deputy's own eyes through (2026-10-30)
+            }
+            else if (hold)
+                PLAYER.SUPPRESS_WITNESSES_CALLING_POLICE_THIS_FRAME(Game.Player.Handle);   // only the reports: a new crime of his is still seen, and ends the hold
+            if (hold != _witnessHoldOn)
+            {
+                _witnessHoldOn = hold;
+                Log.Detail("SELF-DEFENCE: " + (hold ? "witnesses kept from calling the law while the fight's window is open" : "witnesses may call the law again"));
             }
             if (on != _shieldOn && now - _lastShieldLog > 5000)
             {
@@ -541,6 +557,8 @@ namespace EnrageWestworld.InGame
             _defendSince = now;
             _defenceTaintNoted = false;
             _defenceWantedNoted = false;
+            _defenceBountyNoted = false;
+            _standDownNoted = false;
             _defendAt = Game.Player.Character.Position;
             _defendState = StateAt(_defendAt);
             int me = Game.Player.Handle;
