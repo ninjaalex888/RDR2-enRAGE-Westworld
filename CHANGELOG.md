@@ -7,6 +7,10 @@
 - The world pauses while the panel is open, clock and all (`[Output] PanelTimeScale` 0; it was 0.25, slowed; an ini still on 0.25 is moved to 0 at settings version 125, a speed of your own is kept).
 - The mouse works on the panel: the game's cursor shows, pointing at a row chooses it, a left click changes it forward (or does it, or sets its key) and a right click back, a click on the page's name turns the page, and a click on the line under the panel switches the essentials and every setting. The wheel scrolls the list three rows a notch (the chosen row stays while it's in view), and the scrollbar can be clicked or dragged. The game's own cursor controls read nothing outside its menus, so the pointer and buttons are read from Windows. Seen working in game (Lex, 2026-10-30).
 
+### A hermit's name over their head (Lex, 2026-10-30, in game)
+
+- A hermit at their camp had no name over their head: the body is one of RealNPCs' own people, but it was never tied to the town's, which is where the names over heads look. The hermit now shows as anyone does ("Stranger" until you've met).
+
 ### The flirt keys (Lex, 2026-10-29: "H to flirt, G to engage in the hookup if the NPC is interested")
 
 - H in the lock-on menu is always Flirt now. Before, the moment she said yes the same prompt turned into Hook up, so a second H asked her before her answer had even been heard. Hook up is its own prompt on G, shown only while she is willing and once her answer has been said. F2 is gone as the flirt key (`FlirtKey` None; an ini still on F2, or on the older F6 or 5, is moved to None at settings version 106; a key of your own stays). The notices say Hook up (G). With CasualHookups installed its own Flirt key still finishes it (B, as RealNPCs set it once). Not yet seen in game.

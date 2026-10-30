@@ -315,7 +315,9 @@ namespace EnrageWestworld.InGame
                 return true;
             }
             ResBind b;
-            if (_resBind.TryGetValue(h, out b) && b.R != null && !b.R.Dead && !string.IsNullOrEmpty(b.R.Name))
+            if (!_resBind.TryGetValue(h, out b) && IsHermit(h))
+                b = new ResBind { R = _hermit.R, Model = _hermit.Model };   // the hermit at their camp is one of ours, never bound to the town (Lex, 2026-10-30: no name over her)
+            if (b != null && b.R != null && !b.R.Dead && !string.IsNullOrEmpty(b.R.Name))
             {
                 // met: talked, greeted, flirted, any contact, or they saw you do something; else a stranger, whatever their temper
                 // (Lex, 2026-10-29: "it should show Stranger until the main character has greeted or interacted with the NPC")
