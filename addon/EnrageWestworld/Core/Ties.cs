@@ -67,7 +67,7 @@ namespace EnrageWestworld.Core
                     return 1;
                 case "scorn": case "passby": case "faced":
                     return -1;   // asked for a coin and sent off with a flea in the ear; left lying in the street
-                case "carried":
+                case "carried": case "thanks":
                     return 1;    // got home on a friend's arm
                 case "makeup":
                     return 2;   // a quarrel mended counts for more than one more kind word

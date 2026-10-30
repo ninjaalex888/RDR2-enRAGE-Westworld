@@ -32,6 +32,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             GangStep(now);   // rival gangs who meet near you (WestworldScript.Gangs.cs)
             JoinYouStep(now);   // onlookers who join a fistfight of yours (WestworldScript.JoinYou.cs)
+            PlansStep(me, now);   // plans over days (WestworldScript.Plans.cs)
             HorseThiefStep(me, now);   // a horse thief on his way to it, or away on it (WestworldScript.HorseThief.cs)
             FallWanderStep(now);
             WanderLaterStep(now);
@@ -449,6 +450,7 @@ namespace EnrageWestworld.InGame
         {
             NoteSceneTie(kind, p.People, p.S != null ? p.S.Doer : -1);
             NoteMinds(kind, p.People, p.Names);   // what they and those watching remember of it (Minds)
+            Safe("plans", () => PlanSettled(p.People, kind));   // a plan between them carried out
             Safe("world events", () => RecordSceneEvent(kind, p.People));   // and the plain record, with its witnesses (WorldEvents.cs)
             if (kind != "lift" && p.People.Count >= 2)
             {

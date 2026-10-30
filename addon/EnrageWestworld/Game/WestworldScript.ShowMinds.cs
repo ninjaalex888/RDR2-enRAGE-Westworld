@@ -117,6 +117,9 @@ namespace EnrageWestworld.InGame
                 IEnumerable<string> card = _engine.MindCard(who, clockHour);
                 if (mind != null)
                     card = card.Concat(new[] { mind });
+                string plan = PlanCardLine(who.Id);
+                if (plan != null)
+                    card = card.Concat(new[] { plan });
                 string[] lines = card.Select(l => Draw.Fit(l, MindCardScale, MindCardWidth)).ToArray();
                 // the one line: the name line, and the mood (the first clause of the second line) when there is one
                 string mood = lines.Length > 1 ? lines[1].Split(';')[0].Trim() : null;

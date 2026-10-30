@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Plans over days (the NPC-life run, step 6)
+
+- People carry plans about each other over the next few game days, born from what already lies between them (`Core/Plans.cs`): someone wronged lately (a rough-up, a beating, a mugging, a pocket picked) means to get even with whoever did it (4 days); someone helped (tended, taken home, stood up for) means to thank their helper (5); a debtor with a real creditor means to pay them back (4); a sweetheart means to court (3). One of each a pair, two at most a person, kept in the save; one left undone past its days is let go.
+- Near you, with the one it's about also near, the holder goes to find them (`PLAN X goes to find Y`); close, the street's reasons lean to the scene the plan wants (a quarrel from the ladder to get even, a new thanks scene, the debt's own meetings, courting), and a scene of that kind between them carries it out (`PLAN done`). Now and then the holder thinks of it over their head ("I'll find Wade. Today, or tomorrow."), and the Show minds card says it ("plan: get even with Wade (3 days left)"); F7 counts them. Made in the game, each game hour, so the Core's tests stand. `[Mind] MindPlans` (on, with MindLive; settings version 139).
+
 ### Fewer wake, and slowly (Lex, 2026-10-30: "slightly turn down the amount of people waking up, and very slow how fast they progress")
 
 - `[WestWorld] AwakeningShare` takes a part of a percent now (0.6), and is 3 by default (was 5; an ini still on 5 is moved to 3). `AwakeningDays` is 5 by default (was 1; an ini still on 1 is moved to 5): at least five game days on each of the first three stages, then a better than even chance each day of the next, so from stirring to fully awake takes three or four weeks of game time, not five days. Settings version 138.

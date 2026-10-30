@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 138;
+        public const int CurrentVersion = 139;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -65,6 +65,7 @@ namespace EnrageWestworld.Core
         public bool QuarrelLadder = true;  // with MindLive: an argue or a brawl between two people the mind knows is played from the quarrel ladder (Core/Escalation.cs, Scenes.Ladder.cs; night 2026-10-28, item 16; settings version 92): how far it goes and how it ends from their traits and the surroundings; the shot is never played
         public bool ThoughtVariety = true;   // no two people near you think the same frame within an hour, and a source that gave the last few thoughts gives way to the others (Lex, 2026-10-29; settings version 93; Engine.Minds.cs)
         public bool MindStandUp = true;      // with MindLive: who steps into a rough or a brawl between two others comes from the onlookers' own minds, and whether the bully backs down from his (Core/StepIn.cs; roadmap 39; night 2026-10-29, item 2; settings version 107); off, the old roll
+        public bool MindPlans = true;   // with MindLive: plans over days, from a wrong done them, a kindness, a debt, a sweetheart; the holder seeks the other out and the street leans to the scene (the NPC-life run, step 6; settings version 139)
         public bool MindActs = true;   // with MindLive: someone near and in view does what their mind just chose: a stroll, the nearest bench, chair, bar or work spot, a walk off home, clear of you or of a foe, over to a friend (the NPC-life run, Lex 2026-10-30; settings version 130)
         public bool LadderShots = true;   // with MindLive and QuarrelLadder: a quarrel the ladder takes to the shot is fired, deadly as in 1899 (Lex, 2026-10-30; settings version 132); off: the standoff breaks off, as before
         public bool MindJoinFights = true;   // with MindLive: an onlooker may join a fistfight on a side, by their nature, drink, and ties to those fighting (Core/JoinIn.cs; the NPC-life run, Lex 2026-10-30; settings version 128)
@@ -747,6 +748,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("QuarrelLadder = " + B(QuarrelLadder) + "   ; with MindLive on: an argue or a brawl between two people the mind knows climbs or cools by the quarrel ladder (words, a shove, blows, a gun drawn; an apology, a joke, backing down, a friend stepping in, a drink, the law in sight) from their natures and the surroundings; the shot is never fired. Off: the fixed scenes");
             b.AppendLine("ThoughtVariety = " + B(ThoughtVariety) + "   ; no two people near you think the same thought-shape within an hour (the names aside), and a kind of thought that has had the last few turns gives way to the others (the weather, the place, the day), so a town doesn't read as one worried chorus; false: the old choice");
             b.AppendLine("MindStandUp = " + B(MindStandUp) + "   ; with MindLive on: who steps into a rough or a brawl between two others comes from the onlookers' own minds (what it means to them, how many are watching, what a man or a woman of 1899 may let show), and the bully backs down or goes on from his; false: the old roll");
+            b.AppendLine("MindPlans = " + B(MindPlans) + "   ; with MindLive on: people carry plans over the next few days (to get even with someone who wronged them, to thank someone who helped, to pay a debt back, to court a sweetheart); near you, they go to find that person, and the scene it wants plays between them");
             b.AppendLine("MindActs = " + B(MindActs) + "   ; with MindLive on: people near you do what their minds choose: take a stroll, sit down on the nearest bench or chair, go to the bar or the card table, get on with the work, head off home, keep clear of you or of someone they can't abide, go over to a friend for a word; never someone already sat or busy, a few at a time");
             b.AppendLine("LadderShots = " + B(LadderShots) + "   ; with MindLive on: a quarrel that climbs all the way to the shot is fired: the one who pushed it there fires, the other fires back if he carries a gun or runs, and whoever falls stays dead; never in a saloon, with the law near, or unless both carry guns. false: the standoff breaks off");
             b.AppendLine("MindJoinFights = " + B(MindJoinFights) + "   ; with MindLive on: while two people fight, an onlooker may join in on a side: a friend of one, someone with bad blood against the other, a drunk hothead in a saloon; most watch, fewer the bigger the crowd, nobody with the law at hand; a man against a woman seldom (1899); at most three join");

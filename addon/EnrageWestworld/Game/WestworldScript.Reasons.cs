@@ -188,6 +188,7 @@ namespace EnrageWestworld.InGame
                         continue;
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(a.Id) && t.Has(b.Id));
                     Reason why = Reasons.Between(a, b, tie, day, now, where, link);
+                    why = PlanLean(why, a, b);   // a plan between them (WestworldScript.Plans.cs)
                     if (why != null && _cfg.MindLive && _cfg.MindMeetings)
                         MeetLean(why, people[i], people[j]);   // their moods today lean which reason the street plays (Core/Reasons.Mood.cs)
                     if (why != null)
@@ -329,6 +330,8 @@ namespace EnrageWestworld.InGame
                 }
                 return kind == "tiff" ? Scenes.Tiff(cast, seed) : Scenes.Mend(cast, seed, taken);
             }
+            if (kind == "thanks")
+                return Scenes.Thanks(cast, seed);   // a plan to repay a kindness (Core/Plans.cs)
             if (kind == "tend")
                 return Scenes.Tend(cast, seed, done.Hurt ?? "rough");
             if (kind == "beg")
