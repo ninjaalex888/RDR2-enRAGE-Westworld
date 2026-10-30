@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Names over heads: easier to hide, or the name alone (players' request, 2026-10-30)
+
+- The names over heads could already be turned off (`[Display] NameCards = off`, Names over heads on the settings panel), but the panel page holding it was called "Bars and meter"; it is now "Names, bars and meter". New: `[Display] NameCardsSecondLine` (on; settings version 117), Personality line under the names on the same page: off shows the name alone, without the temper, trade, "Stranger" or gang under it. Not yet seen in game.
+
 ### The flirt keys (Lex, 2026-10-29: "H to flirt, G to engage in the hookup if the NPC is interested")
 
 - H in the lock-on menu is always Flirt now. Before, the moment she said yes the same prompt turned into Hook up, so a second H asked her before her answer had even been heard. Hook up is its own prompt on G, shown only while she is willing and once her answer has been said. F2 is gone as the flirt key (`FlirtKey` None; an ini still on F2, or on the older F6 or 5, is moved to None at settings version 106; a key of your own stays). The notices say Hook up (G). With CasualHookups installed its own Flirt key still finishes it (B, as RealNPCs set it once). Not yet seen in game.
