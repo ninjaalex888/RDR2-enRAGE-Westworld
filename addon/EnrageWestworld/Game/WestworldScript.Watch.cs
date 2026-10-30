@@ -52,6 +52,8 @@ namespace EnrageWestworld.InGame
         private bool _lawWasWanted, _lawClearCheck, _defenceBountyNoted, _standDownNoted, _witnessHoldOn;
         private int _lawWasBounty = -1, _lastCrimeEventAt = -1000000, _despairShotAt = -1000000;
         private uint _lastCrimeEvent;
+        private string _lawStage = "";
+        private int _lawStageAt, _lawRadius = -1;
         private Vector3 _despairShotPos;
         private Vector3 _defendAt;
         private uint _defendState;
@@ -229,6 +231,31 @@ namespace EnrageWestworld.InGame
             LawWatch(now, pos);
         }
 
+        /// The game's law in its stages (Lex, 2026-10-30: "an 'investigating' part"): a witness on the way to tell, the law
+        /// investigating an unknown suspect, then wanted; a LAW stage line on each change, with how long the last stage held,
+        /// and the red circle's radius when it changes by 5 m or more. Read only.
+        private void LawStages(int me, int now, int level, bool incident)
+        {
+            bool pending = LAW._ARE_WITNESSES_PENDING(me), witnesses = LAW.ARE_WITNESSES_ACTIVE(me), investigating = LAW._ARE_INVESTIGATORS_ACTIVE(me, false, 0UL);
+            string stage = (pending ? "a witness on the way to tell, " : "") + (witnesses ? "witnesses active, " : "") + (investigating ? "the law investigating, " : "") +
+                           (level > 0 ? "wanted level " + level + ", " : "") + (incident ? "the law after you, " : "");
+            stage = stage.Length > 0 ? stage.Substring(0, stage.Length - 2) : "clear";
+            int radius = level > 0 || incident ? (int)PLAYER.GET_WANTED_LEVEL_RADIUS(me) : 0;
+            if (stage != _lawStage)
+            {
+                if (_lawStage.Length > 0 || stage != "clear")
+                    Log.Write("LAW stage: " + stage + (_lawStage.Length > 0 ? " (after " + _lawStage + " for " + (now - _lawStageAt) / 1000 + " s)" : "") + (radius > 0 ? ", the circle " + radius + " m" : ""));
+                _lawStage = stage;
+                _lawStageAt = now;
+                _lawRadius = radius;
+            }
+            else if (Math.Abs(radius - _lawRadius) >= 5)
+            {
+                Log.Write("LAW stage: the circle " + _lawRadius + " -> " + radius + " m (" + stage + ", " + (now - _lawStageAt) / 1000 + " s in)");
+                _lawRadius = radius;
+            }
+        }
+
         /// Wanted the way the game shows it: a wanted level, or the law after him (an incident) with none yet.
         private static bool PlayerWanted(int me)
         {
@@ -274,6 +301,7 @@ namespace EnrageWestworld.InGame
                 _lawClearCheck = false;
                 Log.Write("LAW after the clear: " + (wanted ? "still wanted (level " + level + (incident ? ", the law after you" : "") + ")" : "no longer wanted"));
             }
+            LawStages(me, now, level, incident);
             if (wanted == _lawWasWanted && bounty == _lawWasBounty)
                 return;
             bool first = _lawWasBounty < 0;
