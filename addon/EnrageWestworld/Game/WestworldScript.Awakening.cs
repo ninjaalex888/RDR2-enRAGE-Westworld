@@ -75,10 +75,43 @@ namespace EnrageWestworld.InGame
                 return null;
             bool woman = !PED.IS_PED_MALE(h);
             string where = _placeTown ?? _town;
+            // standing alone with [World] OwnLooks: someone met before in a body that looks exactly like this one is known in it
+            // again (Game/Looks.cs, Store.ResidentByLook); with enRAGE running its own knowing by look is used and this never
+            string look = null;
+            if (OwnLooksOn && where != null && Environment.TickCount - _looksQuietUntil >= 0)
+            {
+                try
+                {
+                    look = Looks.Of(ped);
+                }
+                catch (Exception ex)
+                {
+                    look = null;
+                    if (!_ownLooksFailed)
+                    {
+                        _ownLooksFailed = true;
+                        Log.Write("LOOKS reading a look failed (once; the body is met as before): " + ex.Message);
+                    }
+                }
+                if (look == null)
+                    _ownLooksUnread++;
+                Resident known = look != null ? _store.ResidentByLook(look, model, woman, where, x => ResidentInAnotherBody(x, h)) : null;
+                if (known != null)
+                {
+                    _resBind[h] = new ResBind { R = known, Model = model };
+                    _store.KeepResident(known, Bridge.Now());   // known again: touched, so not the first dropped from the save
+                    _ownLooksKnown++;
+                    _ownLooksLast = known.Name;
+                    Log.Write("LOOKS known again by their look: " + known.Name + " (" + (known.Trade ?? "a resident") + " of " + (known.Town ?? "nowhere") + ", met " + Math.Max(0, (Bridge.Now() - known.MetAt) / 1440) + " days ago)");
+                    return known;
+                }
+            }
             // someone who woke here before, of the same build, may turn up again in this body (not a town regular: they
+            // come back only unseen and in their own clothes, from the regulars' scan; with OwnLooks, nor anyone known by
+            // their look, who is known only in a body that looks like theirs: the review of item 5)
             // come back only unseen and in their own clothes, from the regulars' scan)
             Resident back = _rng.Next(100) < 35
-                ? _store.Residents.FirstOrDefault(x => !x.Dead && !x.Fled && !x.Regular && x.Cast == null && x.Model == model && x.Woman == woman && x.Town == where && _engine.StageOf(x.Id) > 0 && !_resBind.Values.Any(v => v.R == x))
+                ? _store.Residents.FirstOrDefault(x => !x.Dead && !x.Fled && !x.Regular && x.Cast == null && x.Model == model && x.Woman == woman && x.Town == where && (!OwnLooksOn || x.Look == null) && _engine.StageOf(x.Id) > 0 && !_resBind.Values.Any(v => v.R == x))
                 : null;
             if (back != null)
             {
@@ -86,8 +119,45 @@ namespace EnrageWestworld.InGame
                 return back;
             }
             Resident r = _engine.MeetResident(model, woman, where, ResidentTrade(ped, woman), h + "|" + Game.GameTime, Bridge.Now());
+            if (look != null && !_store.Residents.Any(x => x.Look == look))
+            {
+                // kept with them once something happens to them, so the same body is known for them again; never a look a
+                // kept resident already holds (a twin turned away above would otherwise make that look nobody's: the review)
+                r.Look = look;
+                _ownLooksNew++;
+            }
             _resBind[h] = new ResBind { R = r, Model = model };
             return r;
+        }
+
+        private int _ownLooksKnown, _ownLooksNew, _ownLooksUnread;
+        private string _ownLooksLast;
+        private bool _ownLooksFailed;
+        private int _looksQuietUntil;
+        private const int LooksQuietMs = 10000;   // no look trusted for 10 s after a load, a death or a long jump
+
+        /// Knowing people by their look ourselves: standing alone, with [World] OwnLooks (with enRAGE, enRAGE's own).
+        private bool OwnLooksOn { get { return _cfg != null && _cfg.OwnLooks && _bridge != null && !_bridge.Present; } }
+
+        /// This resident is bound to another body that still exists (a twin in the same clothes is not them; nor is anyone
+        /// met while they lie knocked out or freshly dead: the review of item 5).
+        private bool ResidentInAnotherBody(Resident r, int handle)
+        {
+            foreach (KeyValuePair<int, ResBind> kv in _resBind)
+                if (kv.Value.R == r && kv.Key != handle && ENTITY.DOES_ENTITY_EXIST(kv.Key))
+                    return true;
+            return false;
+        }
+
+        /// F7: on or off, how many were known again by their look, how many new looks noted, how many bodies couldn't be read.
+        private string OwnLooksStatus()
+        {
+            if (_cfg == null || !_cfg.OwnLooks)
+                return "off ([World] OwnLooks): a body met again is a new stranger" + (_bridge != null && _bridge.Present ? " (enRAGE knows its own townsfolk by look)" : "");
+            if (_bridge == null || _bridge.Present)
+                return "waiting: enRAGE is running, its own knowing by look is used";
+            return _ownLooksKnown + " known again by their look this session" + (_ownLooksLast != null ? " (last: " + _ownLooksLast + ")" : "") + ", " + _ownLooksNew + " new looks noted, " + _ownLooksUnread + " bodies not readable yet; " +
+                   _store.Residents.Count(x => x.Look != null) + " kept residents with a look";
         }
 
         /// What to call them: soldiers and lawmen have their own, the rest by how they look.

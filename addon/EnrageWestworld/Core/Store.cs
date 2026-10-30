@@ -100,6 +100,26 @@ namespace EnrageWestworld.Core
             return Residents.FirstOrDefault(r => r.Id == id);
         }
 
+        /// A kept resident of this town met before in a body that looked exactly like this one (night 2026-10-29, item 5;
+        /// [World] OwnLooks, standing alone): the same model, sex and look, living and still in town, never a regular (they
+        /// keep their own outfits: Regulars.cs), the test cast or a keeper at a counter; `taken` says who is in another body
+        /// now. Null for nobody, or when two kept residents share the look (a look two people wear is nobody's).
+        public Resident ResidentByLook(string look, uint model, bool woman, string town, Func<Resident, bool> taken)
+        {
+            if (string.IsNullOrEmpty(look) || Residents == null || town == null)
+                return null;   // never out in the wilds, where nobody's town would hold them to one place
+            Resident found = null;
+            foreach (Resident r in Residents)
+            {
+                if (r.Look != look || r.Model != model || r.Woman != woman || r.Town != town || r.Dead || r.Fled || r.Regular || r.Cast != null || r.PostId != null)
+                    continue;
+                if (found != null)
+                    return null;
+                found = r;
+            }
+            return found != null && taken != null && taken(found) ? null : found;
+        }
+
         /// Saves a resident something has happened to. Over the limit, the oldest untouched ones go first.
         public void KeepResident(Resident r, long now)
         {
