@@ -227,7 +227,6 @@ namespace EnrageWestworld.InGame
                 _lastDefenceAt = now;
             DefenceBounty(now);
             LawWatch(now, pos);
-            LawFadeStep(now, _lawWasWanted);   // the search fades while no lawman sees him (WestworldScript.LawFade.cs)
         }
 
         /// Wanted the way the game shows it: a wanted level, or the law after him (an incident) with none yet.

@@ -134,6 +134,7 @@ The detailed plan, with the ideas, designs and build steps behind each item, is 
 24. **Seeing what happened.** A who's who of the people you've met in the reader, an "Overheard" page of what went on near you, and a cue when voices are raised behind you.
 25. **The epilogue remembers.** Arthur's world carries into John's, eight years older: married, widowed, moved on, and a few who remember a man called Morgan.
 26. **Nights together.** In: women answer your flirting by chance (the saloon's always, single women likely, married ones less so, what they think of you tipping it), and a yes can lead to a night together, off screen. Next: where you go (a room upstairs, a hotel, her home), a price at the saloon, the morning after, sweethearts who expect you back, and a husband who finds out.
+27. **A search that gives up.** When the law is looking for you and hasn't found you, the search should die down where you are and not only once you leave the red circle. Tried on 2026-10-30: the game keeps no score a mod can lower for it, and clearing the wanted level doesn't end a search, so it waits for a way that works (switching the law off for a moment is the one untried idea).
 
 ## Credits
 
