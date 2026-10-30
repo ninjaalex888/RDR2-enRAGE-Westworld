@@ -9,7 +9,7 @@ Built on 0.7.0 during Lex's in-game pass of 2026-10-30, from his tests and a pla
 - The thief walks straight up to you. His walk was given anew several frames in a row every 3 s, and each new one stopped him, so he walked, stopped and walked again, and from 20 m off gave up before he reached you. He is sent on only when he stands with no walk running.
 - He gets close enough to take it: the bump counts from 2 m (was 1.3, and the walk stops him short), standing within 4 m he is sent the last step, and a far start gets 1.5 s a metre more before he gives up; the give-up line says how near he came.
 - A pickpocket works on foot: a man with his own horse within 25 m is never picked (the game had one ride up to you and off with the cash), one who gets on a horse anyway gives up, and the bump needs you both on foot.
-- Nothing else takes him on the way: the pickpocket on his way to you and on the run counts as busy for the rest of RealNPCs (the test cast's stroll had one back at his spot, 7 m off, until he gave up), he is sent on whenever he comes no nearer for 3 s, and none of the test cast is picked (they have their parts).
+- Nothing else takes him on the way: the pickpocket on his way to you and on the run counts as busy for the rest of RealNPCs (the test cast's stroll had one back at his spot, 7 m off, until he gave up), and he is sent on whenever he comes no nearer for 3 s.
 - His dot turns red even when he already had one (the test cast's minute mark is taken off and a red one made; anyone else's dot is turned red).
 
 ### The law: self-defence holds (Lex, 2026-10-30, in game)
