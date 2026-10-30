@@ -105,18 +105,21 @@ namespace EnrageWestworld.InGame
             bool mindBacks = false;
             string bullyMind = null;
             bool bullyKnown = mind && BullyFaced(people[0], a, by, crowd, place, law, now, out mindBacks, out bullyMind);
-            bool backs = test ? _standUpTestTurn++ % 2 == 1 : bullyKnown ? mindBacks : Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
+            // a test takes turns: the fight, then the backing off, and with the mind on a third, the take-away, so the one new
+            // Director act can be seen on demand (the advisor, night 2026-10-29: by chance it comes in about one stand-up in five)
+            int turn = test ? _standUpTestTurn++ % (mind ? 3 : 2) : -1;
+            bool backs = test ? turn == 1 : bullyKnown ? mindBacks : Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
             bool rough = s.Kind == "rough";
             bool far = by.Ped.Position.DistanceTo(people[0].Position) > 3.5f;
             // with the mind deciding: when the bully holds his ground, the one who stepped in may take the one picked on away
-            // (a test takes turns: the fight first, then the backing off, as before)
             bool cFriend = TieWarmth(by.Who.Id, b) > 0;
-            bool takeAway = took != null && !backs && !test && Scenes.TakesAway(cFriend, seed + "|" + by.Who.Id);
+            bool takeAway = test ? turn == 2 : took != null && !backs && Scenes.TakesAway(cFriend, seed + "|" + by.Who.Id);
             cast.Names[2] = Person.FirstOf(by.Who.Name);
             cast.Tempers[2] = by.Who.Temper;
             cast.CWoman = by.Who.Woman;
-            // C names B by his own knowing (any tie between them) on the mind's path only; the old path names B as A knows him, as before
-            bool? cKnowsB = took != null ? (bool?)_store.Ties.Any(t => t.Has(by.Who.Id) && t.Has(b.Id)) : null;
+            // C names B by his own knowing (any tie between them) on the mind's path only (the take-away's test turn too); the
+            // old path names B as A knows him, as before
+            bool? cKnowsB = took != null || takeAway ? (bool?)_store.Ties.Any(t => t.Has(by.Who.Id) && t.Has(b.Id)) : null;
             if (!Scenes.StandUp(s, cast, seed, backs, far, takeAway, cKnowsB))
             {
                 cast.Names[2] = null;
@@ -136,7 +139,7 @@ namespace EnrageWestworld.InGame
                       (TieWarmth(by.Who.Id, b) > 0 ? "a friend of " + Person.FirstOf(b.Name) : "a " + (by.Who.Temper ?? "plain") + " " + (by.Who.Woman ? "woman" : "man")) + ", " + s.Kind + ")" +
                       (took != null ? "; the mind: " + mindWhy : testPick ? "; the mind: nobody would (" + mindWhy + "), so the test's own pick" : "") +
                       (bullyKnown ? "; " + Person.FirstOf(a.Name) + "'s mind: " + bullyMind : "") +
-                      (test ? ", a test (it takes turns: the fight goes on, then he backs off)" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
+                      (test ? ", a test (it takes turns: the fight goes on, then he backs off" + (mind ? ", then they take him away" : "") + ")" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
             return true;
         }
 
