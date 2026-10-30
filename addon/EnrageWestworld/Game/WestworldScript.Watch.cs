@@ -47,7 +47,7 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, int> _layingHandsOn = new Dictionary<int, int>();   // ...and whom he had hold of
         private int _rescuedPed, _rescuedThankAt, _rescuedUntil;
         private readonly Dictionary<int, Blip> _bullyDots = new Dictionary<int, Blip>();   // the red dot on a bully while he's fair game
-        private const int LayingHandsGraceMs = 2500;
+        private const int LayingHandsGraceMs = 60000;   // a minute after the fight ends, dot and all (Lex, 2026-10-30; it was 2.5 s)
         private readonly HashSet<int> _noWanted = new HashSet<int>();   // given PCF_DontInfluenceWantedLevel by us, while they count as having come at him
         private const int PcfDontInfluenceWantedLevel = 6;
         private readonly Dictionary<int, int> _youStarted = new Dictionary<int, int>();      // he hurt them before they came at him
@@ -246,7 +246,7 @@ namespace EnrageWestworld.InGame
                     if (dot != null && dot.Exists())
                         dot.Delete();   // he let go: no longer fair game, no dot
                 }
-            foreach (int h in _layingHandsAt.Where(kv => now - kv.Value > 60000 || now < kv.Value).Select(kv => kv.Key).ToList())
+            foreach (int h in _layingHandsAt.Where(kv => now - kv.Value > LayingHandsGraceMs + 30000 || now < kv.Value).Select(kv => kv.Key).ToList())
             {
                 _layingHandsAt.Remove(h);
                 _layingHandsOn.Remove(h);
@@ -400,7 +400,7 @@ namespace EnrageWestworld.InGame
             }
         }
 
-        /// A bully with hold of someone now, or a moment ago (LayingHandsGraceMs: a shot as he lets go still counts).
+        /// A bully with hold of someone now, or within the minute after (LayingHandsGraceMs), while his red dot shows.
         private bool LayingHands(int h, int now)
         {
             int at;
