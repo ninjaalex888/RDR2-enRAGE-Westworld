@@ -53,7 +53,7 @@ namespace EnrageWestworld.InGame
         private int _lawWasBounty = -1, _lastCrimeEventAt = -1000000, _despairShotAt = -1000000;
         private uint _lastCrimeEvent;
         private string _lawStage = "";
-        private int _lawStageAt, _lawRadius = -1;
+        private int _lawStageAt, _lawRadius = -1, _lawMarksAt = -100000;
         private Vector3 _despairShotPos;
         private Vector3 _defendAt;
         private uint _defendState;
@@ -243,6 +243,11 @@ namespace EnrageWestworld.InGame
             int radius = level > 0 || incident ? (int)PLAYER.GET_WANTED_LEVEL_RADIUS(me) : 0;
             if (stage != _lawStage)
             {
+                if ((pending || witnesses || investigating) && now - _lawMarksAt > 2000)
+                {
+                    _lawMarksAt = now;
+                    Log.Write("LAW stage: who near you carries a mark: " + LawMarkedNear());
+                }
                 if (_lawStage.Length > 0 || stage != "clear")
                     Log.Write("LAW stage: " + stage + (_lawStage.Length > 0 ? " (after " + _lawStage + " for " + (now - _lawStageAt) / 1000 + " s)" : "") + (radius > 0 ? ", the circle " + radius + " m" : ""));
                 _lawStage = stage;
@@ -254,6 +259,30 @@ namespace EnrageWestworld.InGame
                 Log.Write("LAW stage: the circle " + _lawRadius + " -> " + radius + " m (" + stage + ", " + (now - _lawStageAt) / 1000 + " s in)");
                 _lawRadius = radius;
             }
+        }
+
+        /// The people within 120 m carrying a map mark that isn't ours (the game's witness eye, a lawman's), nearest first, at
+        /// most six: who the game picked to tell, and whether RealNPCs knows them (Lex, 2026-10-30: "it wasn't any of the
+        /// RealNPC controlled NPCs that became the witness"). Read only.
+        private string LawMarkedNear()
+        {
+            Ped my = Game.Player.Character;
+            Vector3 at = my.Position;
+            var found = new List<KeyValuePair<float, string>>();
+            foreach (Ped p in World.GetAllPeds())
+            {
+                if (p == null || p.Handle == my.Handle)
+                    continue;
+                float d = p.Position.DistanceTo(at);
+                if (d > 120f || !p.Exists() || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
+                    continue;   // the distance first
+                int blip = MAP.GET_BLIP_FROM_ENTITY(p.Handle);
+                if (blip == 0 || !MAP.DOES_BLIP_EXIST(blip) || _regBlips.Any(kv => kv.Key != null && kv.Key.Handle == blip) || (_theft != null && _theft.Blip != null && _theft.Blip.Handle == blip))
+                    continue;
+                bool known = KnownPerson(p) != null;
+                found.Add(new KeyValuePair<float, string>(d, NameToShow(p.Handle) + (Natives.IsLaw(p) ? " (law)" : known ? " (known to RealNPCs)" : " (the game's)") + " " + (int)d + " m"));
+            }
+            return found.Count == 0 ? "nobody" : string.Join(", ", found.OrderBy(x => x.Key).Take(6).Select(x => x.Value)) + (found.Count > 6 ? " and " + (found.Count - 6) + " more" : "");
         }
 
         /// Wanted the way the game shows it: a wanted level, or the law after him (an incident) with none yet.
@@ -408,7 +437,9 @@ namespace EnrageWestworld.InGame
                 return;
             if (!_youStarted.ContainsKey(t))
                 _youStarted[t] = now;   // however they answer it, he started it
-            _lastOffenceAt = now;
+            // not an offence for the law's sake: the game charges no crime for it, and a man knocked into while chasing a thief
+            // ended self-defence before the shot (Lex, 2026-10-30: the pickpocket's killing was a murder again); a real blow
+            // still is one, through the damage events
             _shoves++;
             Ped victim = new Ped(t);
             Vector3 pos = me.Position;
