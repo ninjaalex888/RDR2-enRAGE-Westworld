@@ -142,7 +142,7 @@ namespace EnrageWestworld.InGame
             { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
             { "SelfDefenceNoBounty", "No bounty for self-defence" },
             { "NameCards", "Names over heads (off, known, everyone)" }, { "NameCardsMetres", "Strangers' names within (metres)" }, { "NameCardsKnownMetres", "Known people's names within (metres)" }, { "NameCardsBesideEnrage", "Ours beside enRAGE's own cards too" }, { "NameCardsSecondLine", "Personality line under the names" },
-            { "FeelingBars", "Bars under people: fear, fondness, anger" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
+            { "FeelingBars", "Bars under people: fear, fondness, anger" }, { "ResetAtClerk", "Reset RealNPCs Memory at a station clerk" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
             { "Encounters", "Encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
             { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" }, { "Executions", "Executions on the road" }, { "ExecutionChance", "An execution's chance on each roll (percent)" },
             { "Hermits", "Hermits who woke" }, { "HermitChance", "A new camp's chance (percent)" },
@@ -302,6 +302,9 @@ namespace EnrageWestworld.InGame
                     testing.Rows.Add(new Row { Action = "wipe-memories", ActionLabel = "Wipe every NPC's memory",
                                                Help = "Forget everything RealNPCs keeps of the people in this world, for this character. A copy of the save is kept; enRAGE's memory stays. Enter, then Enter again.",
                                                ActionAsk = "Wipe everything RealNPCs remembers of the people in this world (who they are, what they know and feel about you, their ties, their deaths)? enRAGE's own memory stays. A copy of the save is kept. Press Enter again to wipe; any other key keeps it all." });
+                    testing.Rows.Add(new Row { Action = "forget-you", ActionLabel = "Everyone forgets you (the world stays)",
+                                               Help = "Everyone forgets what they know and feel about you, in RealNPCs and in enRAGE's townsfolk; the people and their lives stay. Copies of both saves are kept. Enter, then Enter again.",
+                                               ActionAsk = "Make everyone forget you (what they know and feel about you, your deeds and the talk of them; with enRAGE, its townsfolk's fear, fondness and grudges too)? The people, the regulars and their lives stay. Copies of the saves are kept. Press Enter again to go ahead; any other key keeps it all." });
                 }
                 // CasualHookups' settings with ours on romance, when it's installed
                 _hookups = !string.IsNullOrEmpty(HookupsIniPath) && File.Exists(HookupsIniPath) ? IniDoc.Read(HookupsIniPath, false) : null;

@@ -31,6 +31,9 @@ NEW IN 0.7.1
   who came at you (the pickpocket who robbed you, say), puts the bounty back and has lawmen
   already fighting you let go, and bumping into someone on the way no longer spoils it. The
   game's own witnesses may still go to report the killing: that is being worked on.
+- Reset RealNPCs Memory: at a station clerk, hold Q (pad RB) and everyone forgets what they know
+  and feel about you (enRAGE's townsfolk too, when it's installed); the people and their lives
+  stay, and copies of the saves are kept. [Features] ResetAtClerk.
 - The middle bar under people reads "Fondness" (was "Liking"), and RealNPCs' subtitles sit just
   under the game's own, so the two never overlap.
 - Pickpockets walk straight up to you, on foot (never a man with his horse at hand), close
