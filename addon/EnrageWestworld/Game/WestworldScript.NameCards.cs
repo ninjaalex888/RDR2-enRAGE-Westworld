@@ -313,6 +313,17 @@ namespace EnrageWestworld.InGame
         {
             string gang = Factions.MemberOf(c.Model, PED.GET_PED_RELATIONSHIP_GROUP_HASH(p.Handle));
             bool got = NameCardFillInner(p, c, everyone && gang == null);
+            // what they are, before the rest of the line: "Lawman - Proud", "Barkeep" (Lex, 2026-10-30: enRAGE showed a
+            // lawman's and a shopkeeper's trade on the card); a stranger's "Stranger" gives way to it, the badge or the apron
+            // being plain to see
+            string job = got && gang == null ? JobOf(p) : null;
+            if (job != null && c.Name != null)
+            {
+                if (string.IsNullOrEmpty(c.Line2) || c.Line2 == "Stranger")
+                    c.Line2 = job;
+                else if (c.Line2.IndexOf(job, StringComparison.OrdinalIgnoreCase) < 0)
+                    c.Line2 = job + " - " + c.Line2;
+            }
             if (gang == null)
                 return got;
             if (!got)
@@ -323,6 +334,21 @@ namespace EnrageWestworld.InGame
             if (c.Name != null && !c.Name.EndsWith(gang))
                 c.Line2 = gang + (string.IsNullOrEmpty(c.Line2) ? "" : " - " + c.Line2);
             return true;
+        }
+
+        /// The trade a card shows first: a lawman (the sheriff, a deputy), or a town's counter keeper (Posts); null else.
+        private static string JobOf(Ped p)
+        {
+            if (Natives.IsLaw(p))
+            {
+                string m = Natives.ModelName(p);
+                return m.Contains("sheriff") ? "Sheriff" : m.Contains("deputy") ? "Deputy" : "Lawman";
+            }
+            PostKind k = PostKindOf(p);
+            if (k == null || string.IsNullOrEmpty(k.Role))
+                return null;
+            string role = k.Role.StartsWith("the ") ? k.Role.Substring(4) : k.Role;
+            return Grammar.UpperFirst(role.Replace("general store keeper", "store keeper"));
         }
 
         private bool NameCardFillInner(Ped p, NameCard c, bool everyone)

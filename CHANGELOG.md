@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Names say what they are: lawmen and counter keepers (Lex, 2026-10-30, in game: Hampton Pitre's card had no "Lawman")
+
+- The line under a name starts with their trade where it's plain to see, as enRAGE's cards did: "Lawman" (or "Sheriff", "Deputy" by the game's model), and a town's counter keepers, "Store keeper", "Barkeep", "Gunsmith", "Doctor", "Butcher" and the rest; then their temper ("Lawman - Proud"). For someone you haven't met, the trade takes the place of "Stranger".
+
 ### Onlookers join your fistfights too (Lex, 2026-10-30)
 
 - Joining in was only for fights between two of the street's people. Now, while you trade blows with someone, those within 12 m are weighed the same way (Core/JoinIn.cs), you on one side and the man you're fighting on the other: a friend of his, or someone against you, may come at you; someone fond of you may take your side and go for him; a stranger seldom, a drunk hothead in a saloon now and then; nobody with the law at hand or who has seen what you do. Fists only, at most three; those who come at you came at you (self-defence holds); when you're done fighting they leave off. The log's `BRAWL joins your fight:` line.
