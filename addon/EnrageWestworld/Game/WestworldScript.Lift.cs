@@ -210,6 +210,8 @@ namespace EnrageWestworld.InGame
             PED.SET_RELATIONSHIP_BETWEEN_GROUPS(5, playerGroup, _hostileGroup);
             PED.SET_PED_RELATIONSHIP_GROUP_HASH(h, _hostileGroup);
             _cameAtYouSeen[h] = now;
+            if (_cfg.SelfDefenceNoBounty)
+                NoWanted(h, true);   // at once, as the game does its own thief: dealing with him is no murder
             if (_theft != null && _theft.Thief != null && _theft.Thief.Handle == h)
             {
                 try
