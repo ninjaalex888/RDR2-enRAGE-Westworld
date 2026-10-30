@@ -93,7 +93,7 @@ namespace EnrageWestworld.InGame
                 a.TimesSeen = 0;
                 a.Favours = 0;
                 a.FavourNotes?.Clear();
-                a.Witnessed?.RemoveAll(w => w != null && w.IndexOf("you", StringComparison.OrdinalIgnoreCase) >= 0);   // saw you, heard what you did, you threatened him...
+                a.Witnessed?.RemoveAll(w => w != null && w.IndexOf("you", StringComparison.OrdinalIgnoreCase) >= 0);   // any line of theirs about the player
                 a.LastDealt = default(DateTime);
                 a.Reported = false;
                 a.KeptQuiet = false;
