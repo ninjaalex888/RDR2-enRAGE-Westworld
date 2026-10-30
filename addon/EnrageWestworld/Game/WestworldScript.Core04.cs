@@ -150,6 +150,7 @@ namespace EnrageWestworld.InGame
             _settingsKey = KeySpec.Parse(_cfg.SettingsKey, Keys.F9);
             _settingsKey2 = KeySpec.Parse(_cfg.SettingsKey2, Keys.None);   // None (or nothing): no second key
             _tickerNextKey = KeySpec.Parse(_cfg.TickerNextKey, Keys.T);
+            Speech.ShoutsCarry = _cfg.ShoutsCarry;
             BuildTestKeys();   // the Testing page's keys ([Testing], WestworldScript.Testing.cs)
             BuildPadKeys();    // and a controller's buttons ([Controller], WestworldScript.Pad.cs)
         }
@@ -466,6 +467,13 @@ namespace EnrageWestworld.InGame
                 _nextNear = now + 1000;
                 RefreshNear();
             }
+            if (askNext && _cfg.TickerShowsScene && _sceneBarCount >= 2)
+            {
+                // the bar shows the scenes nearby: the key steps to the next of them, and holds it a while (Lex, 2026-10-30)
+                _scenePick = _sceneBarIdx + 1;
+                _scenePickUntil = now + 12000;
+                askNext = false;
+            }
             if (askNext && !Ticker.NextPart(_tickerLine, _cfg, now))
             {
                 _ticker.Skip();
@@ -522,6 +530,8 @@ namespace EnrageWestworld.InGame
             // "show all scenes happening nearby, try to account for if the text will go off the screen")
             Vector3 me = Game.Player.Character.Position;
             var near = _director.TickerLines().Where(kv => kv.Value.DistanceTo(me) <= SceneBarMetres).OrderBy(kv => kv.Value.DistanceTo(me)).ToList();
+            _sceneBarCount = near.Count;
+            _sceneBarIdx = -1;
             if (near.Count == 0)
             {
                 _sceneBar = null;
@@ -543,10 +553,13 @@ namespace EnrageWestworld.InGame
             }
             string text = near[0].Key;   // the line is made anew only when the nearest scene changes
             string shown0 = string.Join("  \u00b7  ", parts);
-            if (parts.Count < near.Count || parts.Any(x => x.StartsWith("(+")))
+            if (parts.Count < near.Count || parts.Any(x => x.StartsWith("(+")) || (Game.GameTime < _scenePickUntil && near.Count >= 2))
             {
                 // more than the bar holds: each in turn, four seconds apiece, so none is hidden (Lex, 2026-10-30)
                 int idx = (int)((Game.GameTime / 4000) % near.Count);
+                if (Game.GameTime < _scenePickUntil)
+                    idx = _scenePick % near.Count;   // the one picked with the ticker key
+                _sceneBarIdx = idx;
                 shown0 = near[idx].Key + " - " + Whereabouts(me, near[idx].Value) + "  (" + (idx + 1) + " of " + near.Count + ")";
             }
             // how far and which way, to the nearest 5 m (Lex, 2026-10-30: "such as 10m South"); the line is made anew only
@@ -563,6 +576,7 @@ namespace EnrageWestworld.InGame
         }
 
         private string _sceneBarOf;
+        private int _sceneBarCount, _sceneBarIdx = -1, _scenePick, _scenePickUntil;
 
         private static readonly string[] Points = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" };
 

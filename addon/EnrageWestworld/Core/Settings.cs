@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 140;
+        public const int CurrentVersion = 141;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -191,6 +191,7 @@ namespace EnrageWestworld.Core
 
         // [Scenes]
         public bool SceneReactions = true;
+        public bool ShoutsCarry = true;   // shouts (anger, threats, fright, "Thief!", fight talk, cheering) are shouted, and carry farther (settings version 141)
         public bool RealVoiceTalk = true;
         public int RealVoiceTalkSeconds = 120;
         public bool CrudeTalk = true;
@@ -775,7 +776,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("TickerY = " + F(TickerY) + "   ; height on screen, 0 = top, 1 = bottom");
             b.AppendLine("TickerScale = " + F(TickerScale) + "   ; text size");
             b.AppendLine("TickerWidth = " + F(TickerWidth) + "   ; share of the screen width it may use");
-            b.AppendLine("TickerNextKey = " + TickerNextKey + "   ; shows the next line on the ticker now (on a long line, its next part first)");
+            b.AppendLine("TickerNextKey = " + TickerNextKey + "   ; shows the next line on the ticker now (on a long line, its next part first); while the bar shows two or more scenes nearby, the next of them");
             b.AppendLine("ThoughtSounds = " + B(ThoughtSounds) + "   ; when a thought of someone within a few steps comes up on the ticker, they make a small wordless sound (at most every 3 minutes each)");
             b.AppendLine("TickerGapSeconds = " + TickerGapSeconds + "   ; a short pause between one thought and the next, so they don't run together (0: none)");
             b.AppendLine("ThoughtMarker = " + B(ThoughtMarker) + "   ; a small gold mark over the person whose thought is on the ticker");
@@ -890,6 +891,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Debts = " + B(Debts) + "   ; people collect what they're owed");
             b.AppendLine();
             b.AppendLine("[Scenes]");
+            b.AppendLine("ShoutsCarry = " + B(ShoutsCarry) + "   ; what's shouted is shouted (anger, threats, fright, a cry for the law, fight talk, cheering, calling out): the game lets a shout carry much farther than talk, so you hear it from down the street; ordinary talk is as before");
             b.AppendLine("RealVoiceTalk = " + B(RealVoiceTalk) + "   ; now and then two people standing together near you have a word in their real recorded voices: the weather, how they're getting on, a piece of news, a hello");
             b.AppendLine("RealVoiceTalkSeconds = " + RealVoiceTalkSeconds + "   ; about how often (seconds, 30 to 1800); each person then rests five minutes, and the pair fifteen");
             b.AppendLine("EnragePeopleJoinIn = " + B(EnragePeopleJoinIn) + "   ; enRAGE's own people (its nemeses, gang men and named folk) take part in street scenes, reactions, talk and waking acts like anyone else, unless enRAGE has them busy (a fight, a job, a ride)");

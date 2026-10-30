@@ -351,6 +351,51 @@ namespace EnrageWestworld.InGame
             return Grammar.UpperFirst(role.Replace("general store keeper", "store keeper"));
         }
 
+        // A stranger greeted keeps the name over their head (Lex, 2026-10-30: "when I greet them, they get a different name than
+        // they had before the greet"): one of our townsfolk, named on the card, whom enRAGE takes up as one of its own at the greet
+        // under a name of its making. Its new one is given ours, once, and only one it made at that greet: someone enRAGE knew
+        // before keeps the name enRAGE gave them.
+        private readonly Dictionary<int, KeyValuePair<string, int>> _nameAtGreet = new Dictionary<int, KeyValuePair<string, int>>();
+
+        private void NoteNameAtGreet(int h, int now)
+        {
+            ResBind b;
+            if (h == 0 || _bridge.RecordAt(h) != null || _bridge.AcquaintanceAt(h) != null || !_resBind.TryGetValue(h, out b) || b == null || b.R == null || string.IsNullOrEmpty(b.R.Name))
+                return;
+            _nameAtGreet[h] = new KeyValuePair<string, int>(b.R.Name, now);
+            if (_nameAtGreet.Count > 30)
+                _nameAtGreet.Remove(_nameAtGreet.OrderBy(kv => kv.Value.Value).First().Key);
+        }
+
+        private void KeepNameAtGreet(int h)
+        {
+            KeyValuePair<string, int> was;
+            if (_nameAtGreet.Count == 0 || !_nameAtGreet.TryGetValue(h, out was))
+                return;
+            int now = Game.GameTime;
+            if (now - was.Value > 60000 || now < was.Value)
+            {
+                _nameAtGreet.Remove(h);   // enRAGE didn't take them up
+                return;
+            }
+            FolkRef ac = _bridge.AcquaintanceAt(h);
+            if (ac == null)
+                return;
+            _nameAtGreet.Remove(h);
+            string theirs = ac.Name;
+            if (theirs == was.Key)
+                return;
+            try
+            {
+                ac.SetName(was.Key);
+                Log.Write("NAME greeted, enRAGE took them up as " + (theirs ?? "nobody") + ": kept as " + was.Key);
+            }
+            catch (Exception ex)
+            {
+                Log.Write("NAME couldn't keep " + was.Key + "'s name at the greet: " + ex.Message);
+            }
+        }
+
         private bool NameCardFillInner(Ped p, NameCard c, bool everyone)
         {
             int h = p.Handle;
@@ -367,6 +412,7 @@ namespace EnrageWestworld.InGame
                 Set(c, who.Name, (who.Personality != null ? who.Personality + " - " : "") + tier, colour, colour, true);
                 return true;
             }
+            KeepNameAtGreet(h);
             FolkRef ac = _bridge.AcquaintanceAt(h);
             if (ac != null && !string.IsNullOrEmpty(ac.Name))
             {

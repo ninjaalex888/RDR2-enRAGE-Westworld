@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Shouts carry; T steps through the scenes nearby (Lex, 2026-10-30, in game)
+
+- What's shouted is now shouted: anger, threats, fright, a cry for the law ("Thief!"), fight talk, cheering and calling out play with the game's own shouted speech settings, which carry much farther than talk, so a quarrel or a cry down the street reaches you. Ordinary talk is as before; a voice that won't shout a line says it as usual. `[World] ShoutsCarry` (settings version 141).
+- **`T`** (the ticker key, or the pad's) steps through the scenes on the bar while it shows two or more nearby: the next one, alone, with where it is and "(2 of 3)", held twelve seconds after the last press. Otherwise it's the next line on the ticker, as before.
+- A stranger you greet keeps the name over their head. Greeting one of the townsfolk made enRAGE take them up as one of its own, under a name of its making, and the card (and everything after) went by that. Now the person enRAGE takes up at that greet is given the name they already had; anyone enRAGE knew before keeps the name it gave them. In the log, NAME greeted.
+
 ### The bar shows every scene; no pair repeats itself (Lex, 2026-10-30, in game)
 
 - With more scenes than the bar's width holds, it shows each in turn, four seconds apiece, with where it is and "(2 of 3)", instead of the nearest and "(+N more)"; when they all fit, all at once as before.

@@ -40,6 +40,7 @@ namespace EnrageWestworld.InGame
         public string Id { get { return Typed.AcqId(Raw); } }
         public string Name { get { return Typed.AcqName(Raw); } }           // as enRAGE names them to the player (its Name)
         public string FullName { get { return Typed.AcqFullName(Raw); } }
+        public void SetName(string name) { Typed.AcqSetName(Raw, name); }
         public string Town { get { return Typed.AcqTown(Raw); } }
         public string Temper { get { return Typed.AcqTemper(Raw); } }
         public uint Model { get { return Typed.AcqModel(Raw); } }

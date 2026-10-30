@@ -639,6 +639,7 @@ namespace EnrageWestworld.InGame
 					if (num2 == 3 && target != 0)
 					{
 						_greetedAt[target] = now;   // greeted before a flirt counts for it (Interest.GreetTilt, Trysts.NightChance)
+						NoteNameAtGreet(target, now);   // the name they had keeps when enRAGE takes them up (WestworldScript.NameCards.cs)
 						if (_greetedAt.Count > 60)
 							_greetedAt.Remove(_greetedAt.OrderBy(kv => kv.Value).First().Key);
 					}
@@ -672,6 +673,7 @@ namespace EnrageWestworld.InGame
 						{
 							continue;
 						}
+						KeepNameAtGreet(key);
 						RecordRef nemesisRecord = _bridge.RecordAt(key);
 						if (_cfg.Conversations)
 						{

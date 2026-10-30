@@ -15,6 +15,11 @@ namespace EnrageWestworld.InGame
         private const ulong PlayAmbientSpeech = 0x8E04FEDD28D42462;
         private const int RetryFailedMs = 120000;
         private static readonly string[] Params = { "SPEECH_PARAMS_FORCE_NORMAL_CLEAR", "SPEECH_PARAMS_FORCE" };
+        // a shout delivered as one, which the game lets carry much farther than talk (Lex, 2026-10-30: "hear the voices from
+        // farther away"); the names are the game's own (its scripts use them); a voice that won't shout a line says it as usual
+        private static readonly string[] Shouted = { "SPEECH_PARAMS_FORCE_SHOUTED_CLEAR", "SPEECH_PARAMS_FORCE_SHOUTED", "SPEECH_PARAMS_FORCE_NORMAL_CLEAR", "SPEECH_PARAMS_FORCE" };
+        public static bool ShoutsCarry = true;   // [World] ShoutsCarry
+        private static HashSet<string> _shouts;
         private static readonly HashSet<string> Worked = new HashSet<string>();
         private static readonly Dictionary<string, int> Failed = new Dictionary<string, int>();
         private static int _turn;
@@ -82,6 +87,24 @@ namespace EnrageWestworld.InGame
         public static readonly string[] Hum = { "VOCAL_FX_RESPOND", "VOCAL_FX_DISAPPROVE" };   // no words: for what's muttered or only thought
         public static readonly string[] Tut = { "VOCAL_FX_DISAPPROVE", "VOCAL_FX_RESPOND" };
         public static readonly string[] Startled = { "VOCAL_FX_SURPRISED", "GENERIC_FRIGHTENED_MED", "GENERIC_SHOCKED_MED" };
+
+        /// The speech settings for a line: shouted for a shout (anger, threats, fright, a cry for the law, fight talk, cheering,
+        /// calling out), the usual for the rest. A line also in a quiet set (a mild retort, a reply) stays talk.
+        private static string[] ParamsFor(string line)
+        {
+            if (!ShoutsCarry || line == null)
+                return Params;
+            if (_shouts == null)
+            {
+                var loud = new HashSet<string>();
+                foreach (string[] set in new[] { Angry, Threat, ThreatArmed, Scared, Plead, Thief, FightTalk, Cheer, Won, Intervene, Unseen, Warned, Final, GetAway, Wanted })
+                    loud.UnionWith(set);
+                foreach (string[] set in new[] { Mild, Respond, Yes, No, NoIdea, Defuse, Greet, Chat, ChatReply, Heard })
+                    loud.ExceptWith(set);
+                _shouts = loud;
+            }
+            return _shouts.Contains(line) || line.Contains("SHOUT") || line.StartsWith("PANIC") || line.EndsWith("_HAIL") ? Shouted : Params;
+        }
 
         /// Someone coming up to a camp, by day or by night.
         public static string[] Camp(bool night)
@@ -187,7 +210,7 @@ namespace EnrageWestworld.InGame
         {
             if (ped == 0 || string.IsNullOrEmpty(line) || take < 1 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
                 return false;
-            foreach (string prm in Params)
+            foreach (string prm in ParamsFor(line))
                 if (Play(ped, line, take, Natives.Hash(prm), null, listener))
                     return true;
             return false;
@@ -198,7 +221,7 @@ namespace EnrageWestworld.InGame
             if (ped == 0 || string.IsNullOrEmpty(line) || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
                 return false;
             ulong* p = stackalloc ulong[8];
-            foreach (string prm in Params)
+            foreach (string prm in ParamsFor(line))
             {
                 for (int variation = 0; variation < 2; variation++)
                 {
@@ -285,7 +308,7 @@ namespace EnrageWestworld.InGame
             int take;
             if (bank != null && Book.Pick(bank, set, _turn++, out line, out take, out words))
             {
-                if (Play(ped, line, take, Natives.Hash(Params[0]), null, listener))
+                if (Play(ped, line, take, Natives.Hash(ParamsFor(line)[0]), null, listener))
                     return true;
                 words = null;
             }
@@ -309,7 +332,7 @@ namespace EnrageWestworld.InGame
                 if (n > 0)
                 {
                     int t = 1 + (_turn++ & 0x7fffffff) % n;
-                    foreach (string prm in Params)
+                    foreach (string prm in ParamsFor(l))
                         if (Play(ped, l, t, Natives.Hash(prm), null, listener))
                         {
                             line = l;
