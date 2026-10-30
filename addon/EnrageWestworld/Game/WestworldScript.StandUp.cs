@@ -52,33 +52,60 @@ namespace EnrageWestworld.InGame
             }
             string an = cast.Names[0] ?? Person.FirstOf(a.Name), bn = cast.Names[1] ?? Person.FirstOf(b.Name);
             long g = _store.LastGameMin;
+            // those who could step in: within 10 m of the pair, not sat at a table or leaning on the bar (they'd have to get
+            // up first), with B in sight, a first name unlike the two's; a friend of B first, then the nearest
+            List<Candidate> near = ReasonCandidates(me, now, test).Where(x => x.Ped.Handle != people[0].Handle && x.Ped.Handle != people[1].Handle && x.Who.Id != a.Id && x.Who.Id != b.Id &&
+                                                                              x.Ped.Position.DistanceTo(mid) < 10f && Person.FirstOf(x.Who.Name) != an && Person.FirstOf(x.Who.Name) != bn &&
+                                                                              !PED.IS_PED_USING_ANY_SCENARIO(x.Ped.Handle) && ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(x.Ped.Handle, people[1].Handle, 17))
+                                                                 .OrderByDescending(x => TieWarmth(x.Who.Id, b) > 0 ? 1 : 0).ThenBy(x => x.Ped.Position.DistanceTo(mid)).ToList();
+            // with MindLive and MindStandUp, who steps in comes from their own minds (Core/StepIn.cs); else the old roll
+            bool mind = MindStandUpOn && !_standUpMindFailed;
+            int crowd = mind ? CrowdAt(mid, StandUpCrowdMetres, people) : 0;   // the crowd and the law only for the mind (the review: two scans thrown away otherwise)
+            string place = _engine.NowIndoors ? _engine.NowPlace : null;
+            bool law = mind && LawmanNear(people[0], 25f);
             Candidate by = null;
-            foreach (Candidate c in ReasonCandidates(me, now, test).Where(x => x.Ped.Handle != people[0].Handle && x.Ped.Handle != people[1].Handle && x.Who.Id != a.Id && x.Who.Id != b.Id &&
-                                                                              x.Ped.Position.DistanceTo(mid) < 10f && Person.FirstOf(x.Who.Name) != an && Person.FirstOf(x.Who.Name) != bn)
-                                                             .OrderByDescending(x => TieWarmth(x.Who.Id, b) > 0 ? 1 : 0).ThenBy(x => x.Ped.Position.DistanceTo(mid)))
+            StepInTake took = null;
+            string mindWhy = null;
+            if (mind)
             {
-                int toB = TieWarmth(c.Who.Id, b), toA = TieWarmth(c.Who.Id, a);
-                bool would = test ? c.Who.Temper != "Coward" && toB >= 0 && toA <= 0 : Scenes.StandsUp(toB, toA, c.Who.Temper, c.Who.Woman, seed + "|" + c.Who.Id);
-                if (!would || PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(c.Ped.Handle, people[1].Handle, 17))
-                    continue;   // not someone sat at a table or leaning on the bar: they'd have to get up first
-                by = c;
-                break;
+                by = StandUpByMind(s.Kind, a, b, near, mid, crowd, place, law, now, seed, out took, out mindWhy);
+                if (_standUpMindFailed)
+                    mind = false;   // its part failed (logged once): the roll, as before
             }
+            bool testPick = false;
+            if (by == null && (!mind || test))
+                foreach (Candidate c in near)
+                {
+                    int toB = TieWarmth(c.Who.Id, b), toA = TieWarmth(c.Who.Id, a);
+                    if (test ? c.Who.Temper != "Coward" && toB >= 0 && toA <= 0 : Scenes.StandsUp(toB, toA, c.Who.Temper, c.Who.Woman, seed + "|" + c.Who.Id))
+                    {
+                        by = c;
+                        testPick = mind;   // a test the mind found nobody for takes the test's own pick
+                        break;
+                    }
+                }
             if (by == null)
             {
-                why = _standUpWhyNot = "nobody watching who'd step in";
+                if (mind)
+                    _standUpNobody++;
+                why = _standUpWhyNot = mind ? "nobody's own mind moved them to step in (" + mindWhy + ")" : "nobody watching who'd step in";
                 return false;
             }
             string skipped;
-            string pace = Pacing.WhyNot(_store.Pace, "standup", _placeTown, by.Who.Id, g, Voice.Hash(seed + "|standup") % 100, test, out skipped);
+            // the mind decides, so its pick isn't rolled again (Lex, 2026-10-29); the rests still hold
+            string pace = Pacing.WhyNot(_store.Pace, "standup", _placeTown, by.Who.Id, g, took != null ? 0 : Voice.Hash(seed + "|standup") % 100, test, out skipped);
             if (pace != null)
             {
                 why = _standUpWhyNot = "rests: " + pace;
                 return false;
             }
-            // a test takes turns, the fight first (Lex, 2026-10-28: a plain bully backs off three times in four, so a test
-            // seldom showed the fight it was fixed for)
-            bool backs = test ? _standUpTestTurn++ % 2 == 1 : Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
+            // whether the bully backs down: from his own mind when it knows him (anger holds his ground, fear or shame backs
+            // him down), else the old roll; a test takes turns, the fight first (Lex, 2026-10-28: a plain bully backs off
+            // three times in four, so a test seldom showed the fight it was fixed for), and says what his mind would do
+            bool mindBacks = false;
+            string bullyMind = null;
+            bool bullyKnown = mind && BullyFaced(people[0], a, by, crowd, place, law, now, out mindBacks, out bullyMind);
+            bool backs = test ? _standUpTestTurn++ % 2 == 1 : bullyKnown ? mindBacks : Scenes.BacksOff(a.Temper, by.Who.Temper, by.Who.Woman, seed);
             bool rough = s.Kind == "rough";
             bool far = by.Ped.Position.DistanceTo(people[0].Position) > 3.5f;
             cast.Names[2] = Person.FirstOf(by.Who.Name);
@@ -92,13 +119,130 @@ namespace EnrageWestworld.InGame
                 return false;
             }
             people.Add(by.Ped);
+            if (took != null)
+                _standUpByMind++;   // counted once the scene has it (tests too)
+            if (bullyKnown && !test)
+                _standUpBullyMind++;
             Pacing.Note(_store.Pace, "standup", _placeTown, by.Who.Id, g);
             _standUp = new StandUpNote { C = by.Ped, A = people[0], B = people[1], CName = by.Who.Name, AName = a.Name, BName = b.Name, Backs = backs, Test = test, Rough = rough };
             _standUpLast = by.Who.Name + " for " + b.Name + " against " + a.Name + ": " + (backs ? "he backed off" : "he went on") + (test ? " (a test)" : "");
             Log.Write("KIND stood up: " + by.Who.Name + " steps in for " + b.Name + " against " + a.Name + " -> " + (backs ? "backs off" : "tells them to keep out") + " (" +
                       (TieWarmth(by.Who.Id, b) > 0 ? "a friend of " + Person.FirstOf(b.Name) : "a " + (by.Who.Temper ?? "plain") + " " + (by.Who.Woman ? "woman" : "man")) + ", " + s.Kind + ")" +
+                      (took != null ? "; the mind: " + mindWhy : testPick ? "; the mind: nobody would (" + mindWhy + "), so the test's own pick" : "") +
+                      (bullyKnown ? "; " + Person.FirstOf(a.Name) + "'s mind: " + bullyMind : "") +
                       (test ? ", a test (it takes turns: the fight goes on, then he backs off)" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
             return true;
+        }
+
+        private const float StandUpCrowdMetres = 15f;   // everyone this near the trouble watches it, whether or not RealNPCs could move them
+        private int _standUpByMind, _standUpNobody, _standUpBullyMind;
+        private bool _standUpMindFailed;
+
+        /// Who steps in comes from their own minds: with [Mind] MindLive and [Mind] MindStandUp (roadmap 39).
+        private bool MindStandUpOn { get { return _cfg.MindLive && _cfg.MindStandUp; } }
+
+        /// Who steps in by their own minds (Core/StepIn.cs): each of those near enough whom the mind already knows takes the
+        /// trouble as the shadow would once it had happened, and the strongest whose urge is to step in, and whose face may
+        /// show it, does. Null when nobody would (`why` says what the first few felt). The mind's part failing is logged
+        /// once and leaves the roll from then on.
+        private Candidate StandUpByMind(string kind, Someone a, Someone b, List<Candidate> near, Vector3 mid, int crowd, string place, bool law, int now, string seed, out StepInTake took, out string why)
+        {
+            took = null;
+            why = null;
+            try
+            {
+                var watching = new List<Onlooker>();
+                var byHandle = new Dictionary<int, Candidate>();
+                foreach (Candidate c in near)
+                {
+                    MindWho w = MindKnown(c.Ped.Handle, now);   // only people the add-on already knows (never makes anyone)
+                    if (w != null && w.Id == null && c.Who.Id != null)
+                    {
+                        // made a resident a moment ago by this same scan, while the cache still had them as nobody (the review): looked up again
+                        _mindWho.Remove(c.Ped.Handle);
+                        w = MindKnown(c.Ped.Handle, now);
+                    }
+                    if (w == null || w.Id == null || w.Id != c.Who.Id || w.P == null)
+                        continue;
+                    Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
+                    if (t == null)
+                        continue;
+                    watching.Add(new Onlooker { P = w.P, T = t, Metres = c.Ped.Position.DistanceTo(mid), Drunk = c.Who.Drunk, WakeStage = c.Who.WakeStage, Handle = c.Ped.Handle });
+                    byHandle[c.Ped.Handle] = c;
+                }
+                if (watching.Count == 0)
+                {
+                    why = near.Count == 0 ? crowd + " watching, none of them near enough and free" : "the mind knows none of the " + near.Count + " near enough";
+                    return null;
+                }
+                Happening h = StepIn.Trouble(kind, a.Id, a.Name, b.Id, b.Name, _placeTown, place, _store.LastGameMin, watching);
+                List<StepInTake> takes = StepIn.Takes(h, watching, _engine.WarmthBetween, crowd, law, seed);
+                took = StepIn.Who(takes);
+                if (took == null)
+                {
+                    why = crowd + " watching: " + string.Join("; ", takes.Take(3).Select(StepIn.Words)) + (takes.Count > 3 ? "; and " + (takes.Count - 3) + " more" : "");
+                    return null;
+                }
+                why = StepIn.Words(took) + "; " + StepIn.Willing(takes) + " of the " + takes.Count + " the mind knows would, " + crowd + " watching";
+                return byHandle[took.Who.Handle];
+            }
+            catch (Exception ex)
+            {
+                _standUpMindFailed = true;
+                Log.Write("KIND the mind's part of standing up failed once, the old roll from here: " + ex.Message);
+                took = null;
+                why = "the mind's part failed";
+                return null;
+            }
+        }
+
+        /// How the bully takes being faced, by his own mind (Core/StepIn.Faced): anger holds his ground, fear or shame backs
+        /// him down. False when the mind doesn't know him (then the old roll).
+        private bool BullyFaced(Ped bully, Someone a, Candidate by, int crowd, string place, bool law, int now, out bool backs, out string words)
+        {
+            backs = false;
+            words = null;
+            try
+            {
+                MindWho w = MindKnown(bully.Handle, now);
+                if (w == null || w.Id == null || w.Id != a.Id || w.P == null)
+                    return false;
+                Traits t = w.Traits ?? (w.Traits = _engine.Shadow.TraitsOf(w.Src));
+                if (t == null)
+                    return false;
+                Person byP = by.Who.P ?? new Person { Id = by.Who.Id, Name = by.Who.Name, Woman = by.Who.Woman };
+                Feeling f = StepIn.Faced(w.P, t, byP, _engine.WarmthBetween, crowd, place, _placeTown, law, a.Drunk, a.WakeStage);
+                if (f == null)
+                    return false;
+                backs = StepIn.BacksDown(f);
+                words = f.Kind + (f.Kind != "none" ? " (" + f.Strength + ")" : "") + ", urge " + f.Urge + ": " + (backs ? "backs down" : "holds his ground");
+                return true;
+            }
+            catch (Exception ex)
+            {
+                _standUpMindFailed = true;
+                Log.Write("KIND the mind's part of standing up failed once, the old roll from here: " + ex.Message);
+                return false;
+            }
+        }
+
+        /// How many living people are within this many metres of a spot, but for these and the player: the crowd watching.
+        private static int CrowdAt(Vector3 at, float metres, List<Ped> not)
+        {
+            int n = 0, me = Game.Player.Character.Handle;
+            foreach (Ped p in World.GetAllPeds())
+            {
+                int h = p.Handle;
+                if (h == me || p.Position.DistanceTo(at) > metres || ENTITY.IS_ENTITY_DEAD(h) || !PED.IS_PED_HUMAN(h))
+                    continue;
+                bool theirs = false;
+                foreach (Ped x in not)
+                    if (x != null && x.Handle == h)
+                        theirs = true;
+                if (!theirs)
+                    n++;
+            }
+            return n;
         }
 
         /// The moment they speak up (the scene's "cb:stoodup"): the ties and the memories, between people who can be
@@ -163,7 +307,10 @@ namespace EnrageWestworld.InGame
         {
             if (!_cfg.Kindnesses)
                 return "off ([Scenes] Kindnesses)";
-            return _standUps + " stepped in this session, " + _standUpBacked + " times the bully backed off" + (_standUpLast != null ? "; last: " + _standUpLast : "") +
+            string who = !_cfg.MindLive || !_cfg.MindStandUp ? "who steps in by the roll ([Mind] " + (!_cfg.MindLive ? "MindLive" : "MindStandUp") + " off)"
+                       : _standUpMindFailed ? "who steps in by the roll (the mind's part FAILED this session)"
+                       : "who steps in from their minds: " + _standUpByMind + " chosen so, " + _standUpNobody + " times nobody's mind moved them, the bully's own mind " + _standUpBullyMind + " times";
+            return _standUps + " stepped in this session, " + _standUpBacked + " times the bully backed off; " + who + (_standUpLast != null ? "; last: " + _standUpLast : "") +
                    (_standUpWhyNot != null ? "; the last time nobody did: " + _standUpWhyNot : "");
         }
     }

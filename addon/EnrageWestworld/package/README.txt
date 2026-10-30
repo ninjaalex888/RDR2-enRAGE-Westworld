@@ -18,6 +18,20 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 Story Mode only. Don't run script mods in Red Dead Online.
 
 
+NEW IN THE NEXT VERSION
+-----------------------
+- Someone who steps into a quarrel near you (to stand up to a bully, to talk a friend down, a
+  jealous husband or wife) walks all the way over and says it to their faces, instead of calling
+  it out from where they stood.
+- With [Mind] MindLive on (in testing): who steps in comes from their own minds. Each onlooker
+  takes it their own way: a friend of the one being picked on, a kind soul, a hothead will often
+  step in, a coward or a cold man seldom; the bigger the crowd, the less each one feels it falls
+  to them; a lawman nearby or a church hushes it. Women step in too, half as often as men for
+  now. Whether the bully backs down comes from his own nature: a hothead or a proud man faced by
+  another man holds his ground, a proud man shamed by a woman before the street mostly backs down.
+  [Mind] MindStandUp turns this part off.
+
+
 NEW IN 0.7.0
 ------------
 - RealNPCs no longer needs enRAGE. It runs on its own (the townsfolk, their ties and memories,

@@ -17,7 +17,7 @@ namespace EnrageWestworld.Core
     public sealed class AppraisalEvent
     {
         public string Kind;              // shove theft death debtcall kindness brawl slight goodnews lawgrab challenge pratfall
-                                         // rivalluck lift revived insult robbed rescued killing refused praised beg
+                                         // rivalluck lift revived insult robbed rescued killing refused praised beg rebuke
         public string Role;              // self (it happened to them), doer, kin, friend, onlooker
         public string Doer;              // player stranger known lawman kin self nobody
         public int WarmDoer, WarmTarget; // -3..3: toward whoever did it, toward whomever it happened to
@@ -97,6 +97,7 @@ namespace EnrageWestworld.Core
             { "beg", new Meaning { DoerNeed = 0.55f, Harm = 0.05f } },
             { "heard", new Meaning { Threat = 0.55f } },   // a shot or a shout nearby, nothing seen: fright only
             { "uncanny", new Meaning { Threat = 0.45f, Uncanny = 1f } },   // the night visitor seen: a pale figure over a body, gone when looked at (night 2026-10-28)
+            { "rebuke", new Meaning { Status = 0.55f, Threat = 0.225f, Wrong = 0.2f, Intent = 1f, Own = 0.6f } },   // called out for one's own conduct before others by a woman stepping in: the shame mostly his own, and half a man's challenge's threat (Lex, 2026-10-29: women may fight and be fought, half as likely as a man for now; StepIn.Faced)
         };
 
         /// The kinds of event it knows.

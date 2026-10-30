@@ -52,6 +52,9 @@ namespace EnrageWestworld.InGame
                 _director.SlamGoing = () => _rough != null && _rough.ForScene;
                 _director.SlamResult = () => _roughResult;
                 _director.React = OnReaction;   // WestworldScript.Reactions.cs
+                // with the mind live, the one who walks over is checked again as they set off (MindLive off: as before,
+                // unchecked: the review of item 2 found the abort reached the old paths)
+                _director.ThirdFree = p => _cfg.MindLive ? MayDirectWhyNot(p) : null;
                 // a fight that never came to anything (the walker never got there) sits nobody out for long
                 _director.NeverMet = (one, other) =>
                 {

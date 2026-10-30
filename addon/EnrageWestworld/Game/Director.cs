@@ -89,6 +89,10 @@ namespace EnrageWestworld.InGame
         public Action<Reaction> React;
         /// "meet" gave up: the two never got close enough, so nothing happened between them.
         public Action<Ped, Ped> NeverMet;
+        /// Asked as the third sets off to walk over (the one who steps in, a friend, a spouse): why they mayn't be moved
+        /// now, or null. They were free when the scene was built; a story mission, enRAGE or a fight may have taken them
+        /// up since (night 2026-10-29: the mind moves people, checked at the roll and again at the moment).
+        public Func<Ped, string> ThirdFree;
 
         // the drunk who calls a man out (Scenes.Drunk): the game's own drunk-dueler moves, one ped at a time
         public const string DrunkDict = "script_re@drunk_dueler";
@@ -485,6 +489,23 @@ namespace EnrageWestworld.InGame
             }
             Beat b = l.Scene.Beats[l.Index++];
             int who = Math.Min(b.Who, l.Cast.Length - 1);
+            if (b.Act == "approach" && who == 2 && l.Cast.Length > 2 && ThirdFree != null)
+            {
+                string taken = null;
+                try
+                {
+                    taken = ThirdFree(l.Cast[2]);
+                }
+                catch (Exception ex)
+                {
+                    taken = "the check failed: " + ex.Message;
+                }
+                if (taken != null)
+                {
+                    Abort(l.Names[2] + " can't come over now (" + taken + ")");
+                    return;
+                }
+            }
             int other = b.To >= 0 && b.To < l.Cast.Length && b.To != who ? b.To : who == 0 ? 1 : 0;   // said to the other, or to whom the beat names
             Ped me = l.Cast[who], them = l.Cast[other];
             int wait = 900;
