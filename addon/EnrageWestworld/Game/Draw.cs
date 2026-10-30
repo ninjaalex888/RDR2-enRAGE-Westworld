@@ -118,6 +118,12 @@ namespace EnrageWestworld.InGame
 
         // ---- frame -------------------------------------------------------------------------------
 
+        /// Text pieces still to be had this frame.
+        public static int Left
+        {
+            get { return Game.FrameCount != _frame ? FrameBudget : FrameBudget - _used; }
+        }
+
         private static bool Take(int n)
         {
             int frame = Game.FrameCount;

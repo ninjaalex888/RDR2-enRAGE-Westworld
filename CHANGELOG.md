@@ -21,6 +21,7 @@
 ### Names over heads, always on (Lex, 2026-10-30, in game: "the nameplates are sometimes not showing up")
 
 - In a crowded saloon some people had no name: only the ten nearest were carded, a table, a post or a lamp in the way hid a card as a wall did, cards faded out over the last 12 m, and they were drawn last of all, after the Testing page's cards over people, so a full frame dropped them first. `[Display] NameCardsAlways` (on; settings version 129, on the Essentials page): a card over everyone in range, up to sixteen, hidden only by walls, full until the last 4 m, drawn before the Testing overlays. Off: as before.
+- The cards leave the Testing overlays their room: drawn first, they had spent the frame's text, and a woman's wake stage tag went the moment her Fondness bar came (Lex, 2026-10-30). With Show wake stages or Show minds on, the names stop short of what those need.
 - Names within 25 m (`NameCardsMetres`, was 30; an ini still on 30 is moved to 25, a distance of your own is kept), on the Essentials page too. People you know keep their own distance (`NameCardsKnownMetres`, 75).
 
 ### Fights that spread: onlookers join in on a side (Lex, 2026-10-30: "between any 2+ NPCs if their inner thoughts lead to it")
