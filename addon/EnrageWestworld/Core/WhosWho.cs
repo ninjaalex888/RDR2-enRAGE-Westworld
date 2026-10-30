@@ -1,8 +1,9 @@
 // Who's who (night 2026-10-29, the backlog's 6b; roadmap 24): a page in the reader of the people you've met, read from
 // what is already kept (who they are, how they take you, who they are tied to), the most recent first. Read only: it
 // saves nothing and makes nobody (a person is listed only if the store already holds them); built anew each time the
-// reader opens, never kept among the papers. With [Mind] MindLive and [Display] WhosWho. All lines are original to this
-// add-on.
+// reader opens, never kept among the papers. With [Mind] MindLive and [Display] WhosWho. And what the mind feels about you
+// lately, as the greetings to you read it (Passing.ToYou), for those the shadow holds this session. All lines are original
+// to this add-on.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,7 +23,7 @@ namespace EnrageWestworld.Core
         }
 
         /// The page's text, or null when you've met nobody yet.
-        public static string Body(Store store, long now)
+        public static string Body(Store store, long now, Func<string, List<FeltAt>> felt = null)
         {
             if (store == null || store.People == null)
                 return null;
@@ -30,14 +31,14 @@ namespace EnrageWestworld.Core
             // someone with neither a name you know nor anything kept of them would only be "someone": counted, not listed
             var listed = all.Where(st => NameOf(store, st) != null || ResidentOf(store, st) != null)
                             .OrderByDescending(Last).ThenBy(st => st.Id, StringComparer.Ordinal).ToList();
-            if (listed.Count == 0)
+            if (all.Count == 0)
                 return null;
             var b = new StringBuilder();
-            b.Append("The people you have met, the most recent first.");
+            b.Append(listed.Count > 0 ? "The people you have met, the most recent first." : "The people you have met.");
             foreach (PersonState st in listed.Take(Most))
             {
                 b.Append("\n\n");
-                b.Append(Entry(store, st, now));
+                b.Append(Entry(store, st, now, felt));
             }
             int more = listed.Count - Math.Min(Most, listed.Count), faceless = all.Count - listed.Count;
             if (more > 0)
@@ -69,7 +70,7 @@ namespace EnrageWestworld.Core
         }
 
         /// One person: who they are, when you first and last saw them, how they take you, and who they are tied to.
-        public static string Entry(Store store, PersonState st, long now)
+        public static string Entry(Store store, PersonState st, long now, Func<string, List<FeltAt>> felt = null)
         {
             Resident r = ResidentOf(store, st);
             bool dead = (r != null && r.Dead) || store.DeathOf(st.Id) != null;
@@ -91,6 +92,9 @@ namespace EnrageWestworld.Core
             string you = Towards(st, dead);
             if (you != null)
                 b.Append(" " + you);
+            string lately = dead || felt == null ? null : Lately(felt(st.Id), now);
+            if (lately != null)
+                b.Append(" " + lately);
             string ties = TiesOf(store, st.Id, dead);
             if (ties != null)
                 b.Append(" " + ties);
@@ -145,6 +149,34 @@ namespace EnrageWestworld.Core
             if (parts.Count == 0)
                 return null;
             return Grammar.UpperFirst(string.Join("; ", parts)) + ".";
+        }
+
+        /// The mind's strongest feeling about you still lasting, by the greetings' own rule (Passing.AboutB for "player",
+        /// Mood.Lasting at least Passing.MindLeft): "Lately sore at you.", "Lately very grateful to you."
+        public static string Lately(List<FeltAt> felt, long now)
+        {
+            if (felt == null)
+                return null;
+            float left = 0f;
+            string kind = null;
+            foreach (FeltAt f in felt)
+            {
+                if (!Passing.AboutB(f, "player"))
+                    continue;
+                float l = Mood.Lasting(f, now);
+                if (l > left)
+                {
+                    left = l;
+                    kind = Feeling.Kinds[f.Kind];
+                }
+            }
+            if (kind == null || left < Passing.MindLeft)
+                return null;
+            string what = kind == "anger" ? "sore at you" : kind == "contempt" ? "scornful of you" : kind == "envy" ? "envious of you"
+                        : kind == "fear" ? "afraid of you" : kind == "gratitude" ? "grateful to you" : kind == "shame" ? "ashamed before you" : null;
+            if (what == null)
+                return null;
+            return "Lately " + (left >= Appraisal.Strong ? "very " : "") + what + ".";
         }
 
         private static string Times(int n)

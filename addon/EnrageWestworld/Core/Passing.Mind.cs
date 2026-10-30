@@ -26,7 +26,7 @@ namespace EnrageWestworld.Core
 
         /// Whether this feeling is about B for a greeting: anger, contempt, envy, fear and gratitude by whom they are about;
         /// shame by who caused it (shame is about oneself).
-        private static bool AboutB(FeltAt f, string bId)
+        internal static bool AboutB(FeltAt f, string bId)
         {
             string k = f.Kind >= 0 && f.Kind < Feeling.Kinds.Length ? Feeling.Kinds[f.Kind] : null;
             switch (k)

@@ -309,7 +309,7 @@ namespace EnrageWestworld.InGame
                 string body = null;
                 try
                 {
-                    body = WhosWho.Body(_store, Bridge.Now());
+                    body = WhosWho.Body(_store, Bridge.Now(), id => _engine != null && _engine.Shadow != null ? _engine.Shadow.Felt(id) : null);
                 }
                 catch (Exception ex)
                 {
