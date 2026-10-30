@@ -44,6 +44,8 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, int> _cameAtYouSeen = new Dictionary<int, int>();   // fighting him before he hurt them
         private readonly Dictionary<int, int> _aimedAt = new Dictionary<int, int>();         // he had a gun on them, when
         private readonly Dictionary<int, int> _layingHandsAt = new Dictionary<int, int>();   // a bully with hold of someone, last seen so
+        private readonly Dictionary<int, int> _layingHandsOn = new Dictionary<int, int>();   // ...and whom he had hold of
+        private int _rescuedPed, _rescuedThankAt, _rescuedUntil;
         private const int LayingHandsGraceMs = 2500;
         private readonly HashSet<int> _noWanted = new HashSet<int>();   // given PCF_DontInfluenceWantedLevel by us, while they count as having come at him
         private const int PcfDontInfluenceWantedLevel = 6;
@@ -114,6 +116,9 @@ namespace EnrageWestworld.InGame
                                     h.Human = true;
                                     h.CameAtYou = CameAtYou(victim, player, out why);
                                     h.Why = why;
+                                    int saved;
+                                    if (h.CameAtYou && LayingHands(victim, now) && _layingHandsOn.TryGetValue(victim, out saved) && saved != _rescuedPed)
+                                        Rescued(saved, now);
                                     if (h.CameAtYou)
                                         _lastDefenceWho = Director.Kind(new Ped(victim), !PED.IS_PED_MALE(victim));
                                     else
@@ -224,15 +229,19 @@ namespace EnrageWestworld.InGame
             // a bully laying hands on someone: the rough move stepping in or playing (WestworldScript.Roughs.cs). Stepping in to
             // stop him is defending the man he has hold of, only while he does it and a moment after (Lex, 2026-10-30: "mark a
             // bully as fair game only while he's actually laying hands on someone"); a brawl, both swinging, isn't this
-            if (_rough != null && (_rough.Stage == 1 || _rough.Stage == 2) && _rough.Att != null && _rough.Att.Exists() && !_rough.Att.IsDead &&
-                _rough.Att.Handle != player && !_youStarted.ContainsKey(_rough.Att.Handle))
-            {
-                _layingHandsAt[_rough.Att.Handle] = now;
-                if (_cfg.SelfDefenceNoBounty && !_noWanted.Contains(_rough.Att.Handle))
-                    NoWanted(_rough.Att.Handle, true);
-            }
+            if (_rough != null && (_rough.Stage == 1 || _rough.Stage == 2) && _rough.Att != null && _rough.Att.Exists() && !_rough.Att.IsDead)
+                LayingHands(_rough.Att.Handle, _rough.Vic != null ? _rough.Vic.Handle : 0, now, player);
+            // and the one who started a street fight, while they're at it (Lex, 2026-10-30, after shooting a brawl's starter
+            // was an assault with a witness: the man who threw the first punch is the bully)
+            int against, starter = _director.FightStarter(out against);
+            if (starter != 0 && ENTITY.DOES_ENTITY_EXIST(starter) && !ENTITY.IS_ENTITY_DEAD(starter))
+                LayingHands(starter, against, now, player);
+            RescuedStep(now, player);
             foreach (int h in _layingHandsAt.Where(kv => now - kv.Value > 60000 || now < kv.Value).Select(kv => kv.Key).ToList())
+            {
                 _layingHandsAt.Remove(h);
+                _layingHandsOn.Remove(h);
+            }
             // the game's own way (its pickpocket script, beat_pickpocket, sets it on its thief): someone who came at him doesn't
             // count toward his wanted level, so dealing with them is no murder (2026-10-30: suppressing the crime held nothing
             // back, a witness set off every time); the mark goes after the five minutes, or once he turns out to have started it
@@ -318,6 +327,56 @@ namespace EnrageWestworld.InGame
                 found.Add(new KeyValuePair<float, string>(d, NameToShow(p.Handle) + (Natives.IsLaw(p) ? " (law)" : known ? " (known to RealNPCs)" : " (the game's)") + " " + (int)d + " m"));
             }
             return found.Count == 0 ? "nobody" : string.Join(", ", found.OrderBy(x => x.Key).Take(6).Select(x => x.Value)) + (found.Count > 6 ? " and " + (found.Count - 6) + " more" : "");
+        }
+
+        /// He has hold of someone (or is beating him) just now: fair game for a while, and whom he had.
+        private void LayingHands(int bully, int victim, int now, int player)
+        {
+            if (bully == player || victim == player || _youStarted.ContainsKey(bully))
+                return;
+            _layingHandsAt[bully] = now;
+            _layingHandsOn[bully] = victim;
+            if (_cfg.SelfDefenceNoBounty && !_noWanted.Contains(bully))
+                NoWanted(bully, true);
+        }
+
+        /// You stepped in on the bully: the man he had hold of keeps out of it and thanks you, never turns on you (Lex,
+        /// 2026-10-30: "the NPC he was fighting then shot at me, he should be thanking me for helping instead"). He's let
+        /// be by the world's alarms for twelve seconds (no answering the shots), turned to you, and says his thanks.
+        private void Rescued(int victim, int now)
+        {
+            if (victim == 0 || !ENTITY.DOES_ENTITY_EXIST(victim) || ENTITY.IS_ENTITY_DEAD(victim) || IsRecord(victim) || MISC.GET_MISSION_FLAG())
+                return;
+            int me = Game.Player.Character.Handle;
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(victim, true);
+            TASK.CLEAR_PED_TASKS(victim, true, false);
+            WEAPON.SET_CURRENT_PED_WEAPON(victim, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
+            TASK.TASK_TURN_PED_TO_FACE_ENTITY(victim, me, 3000, 0f, 0f, 0f);
+            _cameAtYouSeen.Remove(victim);
+            _rescuedPed = victim;
+            _rescuedThankAt = now + 1500;
+            _rescuedUntil = now + 12000;
+            Log.Write("RESCUED " + NameToShow(victim) + ": you stepped in on the man who had hold of him; he keeps out of it and thanks you");
+        }
+
+        private void RescuedStep(int now, int player)
+        {
+            int h = _rescuedPed;
+            if (h == 0)
+                return;
+            bool gone = !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h);
+            if (!gone && _rescuedThankAt != 0 && now >= _rescuedThankAt)
+            {
+                _rescuedThankAt = 0;
+                Speech.SayAny(h, new[] { "GENERIC_THANKS", "THANKS" }, player);
+                SpeechCaption(NameToShow(h), Voice.Pick(h.ToString(), "Obliged to you, mister.", "Thank you. I owe you one.", "Lord, thank you. He'd have killed me."), h, 3000);
+            }
+            if (gone || now >= _rescuedUntil)
+            {
+                if (!gone)
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                _rescuedPed = 0;
+            }
         }
 
         /// A bully with hold of someone now, or a moment ago (LayingHandsGraceMs: a shot as he lets go still counts).

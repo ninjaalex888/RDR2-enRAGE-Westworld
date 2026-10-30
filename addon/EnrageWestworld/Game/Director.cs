@@ -93,6 +93,18 @@ namespace EnrageWestworld.InGame
         public string CurrentKind { get { return _live != null ? _live.Scene.Kind : null; } }
 
         /// Is this ped one of the cast of the scene running now?
+        /// The one who started a street fight, while the two are at it, and the man he is at (0 when none): the bully the
+        /// player may step in on (WestworldScript.Watch.cs; Lex, 2026-10-30).
+        public int FightStarter(out int against)
+        {
+            against = 0;
+            Live l = _live;
+            if (l == null || !l.Fighting || !l.FightOn || l.FightA == 0)
+                return 0;
+            against = l.FightB;
+            return l.FightA;
+        }
+
         public bool Involves(int handle)
         {
             Live l = _live;
