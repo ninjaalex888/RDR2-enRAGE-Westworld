@@ -61,7 +61,7 @@ namespace EnrageWestworld.InGame
                 foreach (int h in _mindNear)
                 {
                     MindWho w;
-                    if (_director.Involves(h) || !_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || w.Traits == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) ||
+                    if (_director.Involves(h) || _director.Leaving(h) || IsOnlooking(h) || IsRescuer(h) || !_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || w.Traits == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) ||
                         w.Model != ENTITY.GET_ENTITY_MODEL(h))
                         continue;   // a handle the game gave to someone else since (the review of 6f)
                     int at;

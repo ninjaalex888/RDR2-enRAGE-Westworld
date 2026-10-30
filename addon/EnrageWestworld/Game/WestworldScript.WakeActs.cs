@@ -241,8 +241,8 @@ namespace EnrageWestworld.InGame
                     break;
                 int cool;
                 if ((_wakeCool.TryGetValue(h, out cool) && now < cool) || _wakeActs.Any(a => a.Handle == h) || (_animTest != null && _animTest.Handle == h) || (_gunTest != null && _gunTest.Handle == h) || PED.IS_PED_IN_COMBAT(h, 0) ||
-                    PED.IS_PED_FLEEING(h) || LawBusy(ped))
-                    continue;
+                    PED.IS_PED_FLEEING(h) || LawBusy(ped) || (_cfg != null && _cfg.MindLive && (IsOnlooking(h) || IsRescuer(h) || IsAcknowledgingYou(h) || _director.Leaving(h))))
+                    continue;   // with the mind on, someone acting on what they saw, walking to a despair, greeting you or walking off with someone is busy (the collision audit, night 2026-10-29)
                 bool known = _resBind.ContainsKey(h);
                 if (!known && bound >= 3)
                     continue;

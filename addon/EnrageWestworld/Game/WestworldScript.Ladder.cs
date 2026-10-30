@@ -185,12 +185,14 @@ namespace EnrageWestworld.InGame
                     continue;
                 int toA = LadderWarmth(c.Who.Id, aId), toB = LadderWarmth(c.Who.Id, bId);
                 int warmth = Math.Max(toA, toB);
-                if (warmth <= 0 || warmth <= bestWarmth)
-                    continue;
+                if (warmth <= 0 || (friends == null && warmth <= bestWarmth))
+                    continue;   // with the mind, every friend in reach is weighed, not only the warmest so far (the collision audit)
                 if (PED.IS_PED_USING_ANY_SCENARIO(c.Ped.Handle) || !ENTITY.HAS_ENTITY_CLEAR_LOS_TO_ENTITY(c.Ped.Handle, people[0].Handle, 17))
                     continue;
                 if (friends != null)
                     friends.Add(c);
+                if (warmth <= bestWarmth)
+                    continue;
                 best = c;
                 bestWarmth = warmth;
                 side = toA >= toB ? 0 : 1;

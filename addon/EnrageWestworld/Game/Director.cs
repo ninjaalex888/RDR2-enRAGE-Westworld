@@ -108,6 +108,24 @@ namespace EnrageWestworld.InGame
             return l != null && handle != 0 && l.Cast.Any(p => p != null && p.Handle == handle);
         }
 
+        private readonly Dictionary<int, int> _leaving = new Dictionary<int, int>();   // handle -> until: walking off together ("leavewith")
+
+        /// Still walking off together after a scene's "leavewith" (the take-away, night 2026-10-29): busy for everything
+        /// else for 30 s, though the scene itself has ended (the collision audit: an onlooker's wander or a wake act cut it).
+        public bool Leaving(int handle)
+        {
+            int until;
+            if (handle == 0 || !_leaving.TryGetValue(handle, out until))
+                return false;
+            int now = Game.GameTime;
+            if (now < until && until - now <= LeaveHoldMs)
+                return true;
+            _leaving.Remove(handle);
+            return false;
+        }
+
+        private const int LeaveHoldMs = 30000;
+
         public Ped CastAt(int i)
         {
             Live l = _live;
@@ -719,6 +737,9 @@ namespace EnrageWestworld.InGame
                             spot += new Vector3(-dir.Y, dir.X, 0f) * 1.2f;
                         PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
                         TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, spot.X, spot.Y, spot.Z, 1f, -1, 1f, 0, 0f);
+                        if (_leaving.Count > 50)
+                            _leaving.Clear();   // only ever two at a time; a guard against a session that never checks
+                        _leaving[h] = Game.GameTime + LeaveHoldMs;
                         return 600;
                     }
                 case "flee":

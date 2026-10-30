@@ -353,8 +353,8 @@ namespace EnrageWestworld.InGame
                 return;
             int h = _fallWander;
             _fallWander = 0;
-            if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !_director.Involves(h) && !PED.IS_PED_USING_ANY_SCENARIO(h))
-                TASK.TASK_WANDER_STANDARD(h, 10f, 10);
+            if (ENTITY.DOES_ENTITY_EXIST(h) && !ENTITY.IS_ENTITY_DEAD(h) && !_director.Involves(h) && !PED.IS_PED_USING_ANY_SCENARIO(h) && !(_cfg != null && _cfg.MindLive && IsAcknowledging(h)))
+                TASK.TASK_WANDER_STANDARD(h, 10f, 10);   // with the mind on, not mid-greeting to you or acting on something seen (the collision audit)
         }
 
         /// F7: on or off, the falls this session by how they ended, your hands up, the last, and why nothing now.

@@ -38,6 +38,7 @@ namespace EnrageWestworld.InGame
             public string Seed, Said;
             public bool Test;               // the Testing row's nod: nothing told on (after item 14)
             public bool Spoke;              // the first one's greeting played (the answer and the goodbyes follow only then)
+            public string MindWhy;          // the mind changed the greeting (PassingFromMind): counted and logged when it plays
         }
 
         private readonly Dictionary<int, NodWho> _nodWho = new Dictionary<int, NodWho>();
@@ -246,8 +247,8 @@ namespace EnrageWestworld.InGame
             return best;
         }
 
-        private int _passMinded, _passMindedAt;
-        private string _passMindedLast, _passMindedPair;
+        private int _passMinded;
+        private string _passMindedLast;
 
         /// With MindLive and MindPassing: what the first one feels about the other lately, and their mood, change the greeting
         /// the tie gives. Only someone the shadow already knows; its own catch (the tie's greeting stands on a fault).
@@ -263,13 +264,7 @@ namespace EnrageWestworld.InGame
                 string why = Passing.Minded(r.Act, _engine.Shadow.Felt(w.Id), r.BId, mood, r.AWoman, Person.FirstOf(r.BName), g, r.Seed);
                 if (why == null)
                     return;
-                if (r.Pair == _passMindedPair && _now - _passMindedAt < 60000 && _now >= _passMindedAt)
-                    return;   // the same pair found again within the minute (the scan runs every second): counted and logged once
-                _passMindedPair = r.Pair;
-                _passMindedAt = _now;
-                _passMinded++;
-                _passMindedLast = r.AName + ": " + why;
-                Log.Detail("NOD the mind: " + r.AName + " passing " + r.BName + ": " + why + " (" + r.Act.Gesture + (r.Act.Speaks ? ", a word" : ", no word") + ")");
+                r.MindWhy = why;   // counted and logged in NodStart, once it plays (the collision audit: the scan finds it every second, in the gap too)
             }
             catch (Exception ex)
             {
@@ -310,6 +305,8 @@ namespace EnrageWestworld.InGame
                 return true;   // acknowledging the player in passing (WestworldScript.ToYou.cs)
             if (IsRescuer(h))
                 return true;   // walking over to someone in despair (WestworldScript.Rescue.cs)
+            if (_director.Leaving(h))
+                return true;   // walking off with someone, a scene's take-away (Director "leavewith")
             if (_gunTest != null && _gunTest.Handle == h)
                 return true;   // and its gunshot row (WestworldScript.Gunshot.cs)
             if (_grudgeWalk != null && _grudgeWalk.Ped != null && _grudgeWalk.Ped.Handle == h)
@@ -367,6 +364,12 @@ namespace EnrageWestworld.InGame
             run.Test = test;
             _nod = run;
             _nextNod = now + NodGapMs;
+            if (run.MindWhy != null)
+            {
+                _passMinded++;
+                _passMindedLast = run.AName + ": " + run.MindWhy;
+                Log.Detail("NOD the mind: " + run.AName + " passing " + run.BName + ": " + run.MindWhy + " (" + run.Act.Gesture + (run.Act.Speaks ? ", a word" : ", no word") + ")");
+            }
             Pacing.Note(_store.Pace, "nod", null, run.Pair, _store.LastGameMin);   // a test too: the pair rests either way
             int c;
             _nodCount.TryGetValue(run.Act.Kind, out c);
