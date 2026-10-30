@@ -42,6 +42,7 @@ namespace EnrageWestworld.InGame
             public bool Slamming;                // "slam": the rough move is playing (WestworldScript.Roughs.cs); nothing else until it's done
             public bool WasFighting;             // a "fight" was started: at the end both are let go of it, however it ended
             public bool Blows;                   // and blows were traded (FightOn came): only then is there an aftermath (FightOver)
+            public int CarryUntil, CarryBy, CarryWho;   // "carry": the game's own carry asked for, waited on until then
             public int Shooter, ShotAt, ShootUntil;   // "shoot": who fired at whom, and until when the gunplay is let run
             public int MeetWalker = 1;           // who walks over in "meet" (the second, or the first for trouble)
             public int MeetGoAt;                 // the walker was sitting or leaning: he sets off once he's up (0: on his way)
@@ -523,6 +524,34 @@ namespace EnrageWestworld.InGame
                 l.Fighting = false;
                 LetJoinersGo(l);
             }
+            if (l.CarryUntil > 0)
+            {
+                Ped by = new Ped(l.CarryBy);
+                if (by.Exists() && by.IsCarryingSomething)
+                {
+                    l.CarryUntil = 0;
+                    Vector3 dir = _player != 0 ? by.Position - new Ped(_player).Position : new Vector3(1f, 0f, 0f);
+                    dir.Z = 0f;
+                    dir = Math.Abs(dir.X) + Math.Abs(dir.Y) < 0.1f ? new Vector3(1f, 0f, 0f) : dir.Normalized;
+                    Vector3 spot = by.Position + dir * 30f;
+                    TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(l.CarryBy, spot.X, spot.Y, spot.Z, 1f, -1, 1f, 0, 0f);
+                    _leaving[l.CarryBy] = now + LeaveHoldMs;
+                    _leaving[l.CarryWho] = now + LeaveHoldMs;
+                    Log.Write("SCENE   " + l.Names[1] + " carries " + l.Names[0] + " home over the shoulder");
+                    Stop(l, "carried off home");
+                    return;
+                }
+                if (now < l.CarryUntil)
+                    return;
+                // the game wouldn't carry him: brought round, and walked home on the friend's arm
+                l.CarryUntil = 0;
+                Log.Write("SCENE   the carry didn't take (" + (PED.IS_PED_RAGDOLL(l.CarryWho) ? "limp" : "not limp") + "): " + l.Names[0] + " is brought round and walked home");
+                TASK.CLEAR_PED_TASKS(l.CarryBy, true, false);
+                l.Scene.Beats.Add(new Beat(0, null, null, "getup"));
+                l.Scene.Beats.Add(new Beat(1, null, null, "homewith"));
+                l.NextAt = now + 1500;
+                return;
+            }
             if (l.ShootUntil > 0)
             {
                 if (now < l.ShootUntil)
@@ -869,6 +898,18 @@ namespace EnrageWestworld.InGame
                         _leaving[h] = Game.GameTime + LeaveHoldMs;
                         return 600;
                     }
+                case "carry":
+                    // the game's own carry, over the shoulder (its pickup of a carriable body): he goes limp first, as the knocked-out
+                    // do, since the game carries only the limp (Lex, 2026-10-30: "the in game pickup person animation"); Tick waits
+                    // 5 s to see it took, else he's brought round and the two walk home
+                    TASK.CLEAR_PED_TASKS(t, true, false);
+                    PED.SET_PED_TO_RAGDOLL(t, 15000, 20000, 0, false, false, "");
+                    TASK.TASK_PICKUP_CARRIABLE_ENTITY(h, t);
+                    l.CarryBy = h;
+                    l.CarryWho = t;
+                    l.CarryUntil = Game.GameTime + 5000;
+                    l.Downed = false;
+                    return 600;
                 case "homewith":
                     {
                         // two go home together (the drunk carried home): side by side to a spot 30 m off, away from the player

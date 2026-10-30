@@ -116,7 +116,8 @@ namespace EnrageWestworld.InGame
                 string seed = drunk.Ped.Handle + "|" + friend.Ped.Handle + "|" + day;
                 _nightDone.Add("drunk|" + _placeTown + "|" + day);
                 SceneCast cast = BuildCast(drunk.Ped, friend.Ped, null, false, me, now, seed);
-                if (!StartScene(Scenes.CarriedHome(cast, seed), new List<Ped> { drunk.Ped, friend.Ped }, cast, seed, now))
+                bool carry = Voice.Chance(seed + "|carry", 50) && PED.IS_PED_MALE(friend.Ped.Handle);   // out cold half the time: carried, the game's own way
+                if (!StartScene(Scenes.CarriedHome(cast, seed, carry), new List<Ped> { drunk.Ped, friend.Ped }, cast, seed, now))
                     return false;
                 _carried++;
                 Log.Write("NIGHT " + friend.Who.Name + " takes " + drunk.Who.Name + " home, drunk (" + (int)drunk.Ped.Position.DistanceTo(me.Position) + " m from you)");

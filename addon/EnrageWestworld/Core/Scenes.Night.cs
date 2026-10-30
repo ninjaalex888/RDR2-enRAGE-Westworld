@@ -32,7 +32,9 @@ namespace EnrageWestworld.Core
         }
 
         /// A (who has drunk too much) staggers and goes down; B, a friend, gets him up and takes him home.
-        public static Scene CarriedHome(SceneCast c, string seed)
+        /// carry: he's out cold, and the friend carries him over the shoulder (the game's own carry, the Director's "carry";
+        /// if it won't take, he's brought round and walked home); else he comes to and leans on the friend.
+        public static Scene CarriedHome(SceneCast c, string seed, bool carry = false)
         {
             string a = N(c, 0, seed);
             Scene s = new Scene { Kind = "carried", Summary = "a friend took a drunk man home" };
@@ -40,6 +42,11 @@ namespace EnrageWestworld.Core
             s.Add(0, null, null, "passout", 2500);
             s.Add(1, null, null, "meet");
             s.Add(1, Voice.Pick(seed + "cb", "Come on, " + a + ". Up you get.", "Lord, " + a + ", not again.", "On your feet, you old fool. I've got you."), "mild", "face");
+            if (carry)
+            {
+                s.Add(1, Voice.Pick(seed + "co", "Out cold. Alright, up you go.", "Dead to the world. Come here, then.", "Not walking tonight, are you? Up."), "mild", "carry");
+                return s;
+            }
             s.Add(0, null, null, "cometo");
             s.Add(0, Voice.Pick(seed + "cc", "...Is it morning?", "You're a good friend. The best.", "Don't tell my wife."), "drunk");
             s.Add(1, Voice.Pick(seed + "cd", "Home. Now. Lean on me.", "Your wife'll hear of it soon enough. Walk.", "Easy. One foot, then the other."), "mild", "homewith");

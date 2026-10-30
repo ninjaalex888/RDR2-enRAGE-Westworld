@@ -6,6 +6,7 @@
 
 - In a town at night, out of doors and with no lawman within 50 m, a man whose mind leans to it (little honesty, an appetite for risk, and money short; or a known pickpocket or mugger) may walk up to someone on their own and demand their money, with a gun if he may draw. Whether they hand it over is their nature's: the anxious and the meek do; the bold refuse, and are knocked down for it. He runs, they cry thief, and the robber is marked a mugger from then on; the victim won't forget him. While he's at it he's fair game, as a bully is.
 - Late at night, someone in their cups goes down in the street, and a friend near gets them up ("Come on. Up you get.") and the two walk off home together, side by side.
+- Half the time he's out cold, and the friend carries him off over the shoulder, the game's own carry (Lex, 2026-10-30: "the in game pickup person animation"); the game carries only the limp, so he goes limp first, and if the carry doesn't take in 5 s he's brought round and walked home instead. The log says which.
 - Each at most once a town a night. `[Scenes] NightScenes` (on, with MindLive; settings version 135). The log's `NIGHT` lines.
 
 ### More chance meetings (the NPC-life run, step 4)
