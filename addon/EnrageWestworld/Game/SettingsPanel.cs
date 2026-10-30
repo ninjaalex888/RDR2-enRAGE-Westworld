@@ -140,7 +140,7 @@ namespace EnrageWestworld.InGame
             { "QuietWhenStill", "Hold enRAGE while you stand still" }, { "QuietStillSeconds", "Standing still for (seconds)" },
             { "QuietInCinematic", "Hold enRAGE in the cinematic camera" }, { "TownPosts", "One person at each counter, for good" },
             { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
-            { "SelfDefenceNoBounty", "No bounty for self-defence" }, { "LawSearchFades", "The law's search fades while it can't see you" }, { "LawSearchFadeSeconds", "Unseen before it fades (seconds)" },
+            { "SelfDefenceNoBounty", "No bounty for self-defence" },
             { "NameCards", "Names over heads (off, known, everyone)" }, { "WhosWho", "Who's who in the papers" }, { "NameCardsMetres", "Strangers' names within (metres)" }, { "NameCardsKnownMetres", "Known people's names within (metres)" }, { "NameCardsBesideEnrage", "Ours beside enRAGE's own cards too" }, { "NameCardsSecondLine", "Personality line under the names" },
             { "FeelingBars", "Bars under people: fear, liking, anger" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
             { "Encounters", "Encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
