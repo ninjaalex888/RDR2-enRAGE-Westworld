@@ -1295,7 +1295,11 @@ namespace EnrageWestworld.InGame
             if (v.Equals("true", StringComparison.OrdinalIgnoreCase))
                 return true;
             float f;
-            return float.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out f) && f > 0f;
+            if (float.TryParse(v, NumberStyles.Float, CultureInfo.InvariantCulture, out f))
+                return f > 0f;
+            // a choice (NameCards off / known / everyone): on unless it says off (Lex, 2026-10-30: the names' own settings
+            // stayed grey with NameCards on everyone)
+            return v.Length > 0 && !v.Equals("false", StringComparison.OrdinalIgnoreCase) && !v.Equals("off", StringComparison.OrdinalIgnoreCase) && !v.Equals("none", StringComparison.OrdinalIgnoreCase);
         }
 
         private static string Label(string key)
