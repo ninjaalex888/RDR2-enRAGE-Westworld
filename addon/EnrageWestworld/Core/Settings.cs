@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 117;
+        public const int CurrentVersion = 118;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -146,6 +146,8 @@ namespace EnrageWestworld.Core
         // [World]
         public bool Deeds = true;
         public bool SelfDefenceNoBounty = true;
+        public bool LawSearchFades = true;          // the law's search fades while no lawman has sight of you (Lex, 2026-10-30; settings version 118)
+        public float LawSearchFadeSeconds = 30f;    // unseen this long before it starts to fade; called off after as long again
         public bool TownPosts = true;
         public string TownPostsAfterDeath = "survive";
         public bool Regulars = true;
@@ -632,6 +634,7 @@ namespace EnrageWestworld.Core
             string nc = (NameCards ?? "known").Trim().ToLowerInvariant();
             NameCards = nc == "off" || nc == "everyone" ? nc : "known";
             NameCardsMetres = Math.Max(5f, Math.Min(150f, NameCardsMetres));
+            LawSearchFadeSeconds = Math.Max(5f, Math.Min(300f, LawSearchFadeSeconds));
             NameCardsKnownMetres = Math.Max(5f, Math.Min(150f, NameCardsKnownMetres));
         }
 
@@ -780,6 +783,8 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[World]");
             b.AppendLine("Deeds = " + B(Deeds) + "   ; people react to where you go and what you do: shops, church, hunting, killing, stealing");
+            b.AppendLine("LawSearchFades = " + B(LawSearchFades) + "   ; while you're wanted and no lawman has sight of you, the search fades and is called off, even inside the red circle (the bounty stays); never in story missions");
+            b.AppendLine("LawSearchFadeSeconds = " + F(LawSearchFadeSeconds) + "   ; unseen this long before the search starts to fade (seconds, 5-300); called off after as long again");
             b.AppendLine("SelfDefenceNoBounty = " + B(SelfDefenceNoBounty) + "   ; killing or hurting someone who came at you (soldiers too) doesn't raise your bounty or make you wanted: RealNPCs puts it back, unless you also hurt someone who didn't, or did another crime");
             b.AppendLine("TownPosts = " + B(TownPosts) + "   ; the shopkeepers, barkeeps, gunsmiths, doctors and station agents are each one person for good, who knows you; when one dies, a relative or a newcomer takes the counter");
             b.AppendLine("TownPostsAfterDeath = " + TownPostsAfterDeath + "   ; survive: the game brings a shot-down counter keeper back bandaged, so they lived and remember it; successor: they died, and a relative or a newcomer takes the counter");

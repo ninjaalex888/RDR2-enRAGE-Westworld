@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### The law: self-defence holds, and a search fades when it can't find you (Lex, 2026-10-30, in game)
+
+- Shooting the pickpocket who robbed you made you wanted, and the lawmen near fought you. RealNPCs only looked at the wanted level, which stays 0 while the law is after you, so it never cleared it; and the game's pursuit, once started, comes back however often it is cleared. Now RealNPCs sees the pursuit, and while a fight with someone who came at you is on (90 s after your last hit on them) and you've hurt nobody else, witnesses can't call the law; lawmen already fighting you let go. A body found later by a passer-by still starts a search for an unknown suspect.
+- New: `[World] LawSearchFades` (on; settings version 118). While you're wanted and no lawman has sight of you for `LawSearchFadeSeconds` (30), the search fades, and after as long again it is called off, even inside the red circle; the bounty stays. Never in story missions.
+- The log's new `LAW` lines say each time you become wanted or your bounty changes, and what RealNPCs saw at the time (a fight in self-defence, the game's charge, a despairing shot near). Not yet all seen in game.
+
 ### What people say near you is a subtitle, not a line at the bottom (Lex, 2026-10-30: "There shouldn't be inner thoughts showing at the bottom of the screen")
 
 - The words of a street scene, a hello or goodbye, the doctor's visit, the law chase and the pickpocket's "Pardon me" were drawn on the bar at the bottom, where they read as thoughts (a mourner's "Last night I dreamed he walked in the door"). They now show as they're said in the subtitle box drawn the game's way ("Hermine: \"...\""), within `[Ticker] ScenesOnTickerMetres` (30) of you; `[Output] Subtitles = off` hides them, and a line said to you is never covered by one. The bar keeps the news; thoughts stay over heads. Voicing these lines in the speakers' own voices is roadmap 1. Not yet seen in game.
