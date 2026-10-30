@@ -38,6 +38,10 @@ namespace EnrageWestworld.Core
         /// At most this many onlookers act on one happening (the run's rule: two a scene).
         public const int MostAScene = 2;
 
+        /// How strong a stranger's fright must be to send them off from someone else's trouble (a milder one watches it
+        /// warily): between felt (0.12) and moderate (0.35).
+        public const float LeaveBar = 0.25f;
+
         /// What this onlooker does about it, or null for nothing beyond the look they already gave. `role`: the
         /// appraisal's (onlooker or friend; the two in it are the scene's, never this); `sitting`: in a scenario; `place`:
         /// the happening's (saloon...); `t`: their nature (the pious and the orderly disapprove).
@@ -55,6 +59,8 @@ namespace EnrageWestworld.Core
                 case "avoid":
                     if (shows == "turned")
                         return "bristle";   // fear shown as bluster stands and glares instead
+                    if (role == "onlooker" && f.Intensity < LeaveBar)
+                        return f.Kind == "fear" ? "watch" : null;   // a stranger's mild fright doesn't send them off: they watch it warily (the advisor, after StreetVolumeTest: two in three fights had someone walk off)
                     return saloon && !strong ? "watch" : "leave";   // a saloon's fights were nothing new: a mild fright there stays to watch
                 case "freeze":
                     return "freeze";

@@ -39,6 +39,19 @@ namespace EnrageWestworld.InGame
         private readonly List<Feeling> _onlookFelt = new List<Feeling>();
         private readonly List<string> _onlookActs = new List<string>();
         private int _onlooked, _onlookSkipped, _onlookStale;
+        private readonly Dictionary<int, int> _onlookBusy = new Dictionary<int, int>();   // handle -> until: acting on what they saw
+
+        /// Acting on something they saw just now (busy for everything else while the act holds).
+        private bool IsOnlooking(int h)
+        {
+            int until;
+            if (!_onlookBusy.TryGetValue(h, out until))
+                return false;
+            if (_now < until && until - _now < 60000)
+                return true;
+            _onlookBusy.Remove(h);
+            return false;
+        }
         private string _onlookLast, _onlookLastSkip;
         private Action _aOnlook;
 
@@ -56,8 +69,8 @@ namespace EnrageWestworld.InGame
                 if (!Onlooking.ActsOn(ev.Kind) || id == ev.DoerId || id == ev.TargetId)
                     return;   // trouble between others, or something the player did; never the two it was between
                 int h = MindHandleById(id);
-                if (h == 0 || _director.Involves(h))
-                    return;   // nobody near now, or one of the scene's own (the one who stepped in: a witness too)
+                if (h == 0 || _director.Involves(h) || IsAcknowledging(h))
+                    return;   // nobody near now, one of the scene's own (the one who stepped in: a witness too), or busy elsewhere (a nod, a rescue, a greeting to you)
                 string act = Onlooking.ActFor(f, f.Shows, ae.Role, PED.IS_PED_USING_ANY_SCENARIO(h), ev.Place, w.Traits);
                 if (act == null)
                     return;
@@ -211,6 +224,7 @@ namespace EnrageWestworld.InGame
                     }
             }
             _onlooked++;
+            _onlookBusy[h] = now + Onlooking.HoldMs(a.Act);   // busy for every other feature while it holds
             _onlookLast = a.Name + " " + did;
             MindLog(now, "ONLOOK " + a.Name + " " + did + " (" + a.Felt.Kind + " " + a.Felt.Strength + ", urge " + a.Felt.Urge + ", shows " + a.Felt.Shows + ") <- " + a.Why);
         }
@@ -234,6 +248,7 @@ namespace EnrageWestworld.InGame
         {
             _onlookQueue.Clear();
             _onlookPending.Clear();
+            _onlookBusy.Clear();
         }
 
         /// F7: on or off, how many acted and were let be, the last.

@@ -54,14 +54,14 @@ namespace EnrageWestworld.InGame
                     YouNodPlay(me, now);
                     return;
                 }
-                if (now < _youNodNext || me == null || !me.Exists() || _director.Busy)
+                if (now < _youNodNext || me == null || !me.Exists())
                     return;
                 _youNodNext = now + YouNodEveryMs;
                 long g = _store.LastGameMin;
                 foreach (int h in _mindNear)
                 {
                     MindWho w;
-                    if (!_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || w.Traits == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) ||
+                    if (_director.Involves(h) || !_mindWho.TryGetValue(h, out w) || w.Id == null || w.P == null || w.Traits == null || !ENTITY.DOES_ENTITY_EXIST(h) || ENTITY.IS_ENTITY_DEAD(h) ||
                         w.Model != ENTITY.GET_ENTITY_MODEL(h))
                         continue;   // a handle the game gave to someone else since (the review of 6f)
                     int at;
