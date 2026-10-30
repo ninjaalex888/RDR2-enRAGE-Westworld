@@ -6,6 +6,7 @@
 // it's gone. A look every 60 s while you're on foot, Pacing "lift" (25%, two game hours between, a town
 // every four), never in a mission, never with a scene or a theft already on. The Testing row starts one now.
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using EnrageWestworld.Core;
 using RDR2;
@@ -196,8 +197,17 @@ namespace EnrageWestworld.InGame
                 try
                 {
                     // the game's own small red enemy dot (BLIP_STYLE_ENEMY); a white dot with the enemy modifier showed big and white (Lex, 2026-10-29)
-                    // a dot he already has (a white one, Lex 2026-10-30) hid the new red one under it: that one turns red instead
+                    // a dot he already has hid the new red one under it (Lex, 2026-10-30: one of the test cast, marked for a
+                    // minute): one of our own minute's marks goes, and the red one is made; anyone else's turns red instead
                     int had = MAP.GET_BLIP_FROM_ENTITY(h);
+                    KeyValuePair<Blip, int> ours = _regBlips.FirstOrDefault(kv => kv.Key != null && kv.Key.Handle == had);
+                    if (had != 0 && ours.Key != null)
+                    {
+                        _regBlips.Remove(ours);
+                        if (ours.Key.Exists())
+                            ours.Key.Delete();
+                        had = 0;
+                    }
                     if (had != 0 && MAP.DOES_BLIP_EXIST(had))
                     {
                         MAP._BLIP_SET_STYLE(had, Natives.Hash("BLIP_STYLE_ENEMY"));
