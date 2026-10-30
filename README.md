@@ -10,7 +10,7 @@ A mod for Red Dead Redemption 2 that gives the people of the world lives of thei
 >
 > **Story Mode only.** Don't run script mods in Red Dead Online.
 
-**Version 0.7.0.** New in it: RealNPCs no longer needs enRAGE (it runs on its own and stays compatible with it), names over heads (the people it knows, the game's sheriffs and story cast, and the gangs' men: "Lemoyne Raider - Stranger"), pickpockets who lift your cash and run as a red dot (catch them to get it back) and lawmen who run thieves down, the doctor seeing people for their own complaints, hellos and goodbyes in people's own voices, scene lines on the ticker, a livelier street, West World thoughts only for the awake, and the settings panel on Alt+R. See CHANGELOG.md for everything.
+**Version 0.7.1.** New in it: names over heads easier to hide (and the name alone, without the personality line under it), what people say near you as subtitles instead of on the bar at the bottom, self-defence that holds against the law's witnesses, and pickpockets who walk straight up to you on foot. **Version 0.7.0** brought: RealNPCs no longer needs enRAGE (it runs on its own and stays compatible with it), names over heads (the people it knows, the game's sheriffs and story cast, and the gangs' men: "Lemoyne Raider - Stranger"), pickpockets who lift your cash and run as a red dot (catch them to get it back) and lawmen who run thieves down, the doctor seeing people for their own complaints, hellos and goodbyes in people's own voices, scene lines on the ticker, a livelier street, West World thoughts only for the awake, and the settings panel on Alt+R. See CHANGELOG.md for everything.
 
 ## What it does
 

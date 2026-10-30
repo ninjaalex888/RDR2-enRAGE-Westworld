@@ -1,4 +1,4 @@
-RealNPCs 0.7.0 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.1 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,22 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.1
+------------
+- Names over heads are easier to hide. The settings panel page is now "Names, bars and meter",
+  and turning Names over heads off there also hides enRAGE's own cards when enRAGE is installed
+  (its [Menu] NameCards set to 0, after a copy of NemesisMod.ini). New: Personality line under
+  the names ([Display] NameCardsSecondLine): off shows the name alone.
+- What people say near you (a street scene, a hello, the doctor, the law chase) shows as a
+  subtitle the game's way, never on the bar at the bottom, which keeps the news. Thoughts stay
+  over heads. [Output] Subtitles = off hides it.
+- Self-defence and the law: while you fight off someone who came at you (the pickpocket who
+  robbed you, say) and for 90 seconds after your last hit on them, witnesses can't call the law
+  and lawmen already fighting you let go, unless you hurt someone else. Bumping into someone on
+  the way no longer spoils it. A body found later still starts a search for an unknown suspect.
+- Pickpockets walk straight up to you, on foot (never a man with his horse at hand), close
+  enough to take it, and their dot turns red when they run.
 
 NEW IN 0.7.0
 ------------

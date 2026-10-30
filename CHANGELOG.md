@@ -1,11 +1,23 @@
 # Changelog
 
-## Unreleased
+## 0.7.1 (2026-10-30)
+
+Built on 0.7.0 during Lex's in-game pass of 2026-10-30, from his tests and a players' request: the name plates, the law, the pickpockets and the subtitles. None of the night run's mind work is in it (that waits on its own branch).
+
+### Pickpockets (Lex, 2026-10-30, in game)
+
+- The thief walks straight up to you. His walk was given anew several frames in a row every 3 s, and each new one stopped him, so he walked, stopped and walked again, and from 20 m off gave up before he reached you. He is sent on only when he stands with no walk running.
+- He gets close enough to take it: the bump counts from 2 m (was 1.3, and the walk stops him short), standing within 4 m he is sent the last step, and a far start gets 1.5 s a metre more before he gives up; the give-up line says how near he came.
+- A pickpocket works on foot: a man with his own horse within 25 m is never picked (the game had one ride up to you and off with the cash), one who gets on a horse anyway gives up, and the bump needs you both on foot.
+- His dot turns red even when he already had one (the test cast's minute mark is taken off and a red one made; anyone else's dot is turned red).
 
 ### The law: self-defence holds (Lex, 2026-10-30, in game)
 
 - Shooting the pickpocket who robbed you made you wanted, and the lawmen near fought you. RealNPCs only looked at the wanted level, which stays 0 while the law is after you, so it never cleared it; and the game's pursuit, once started, comes back however often it is cleared. Now RealNPCs sees the pursuit, and while a fight with someone who came at you is on (90 s after your last hit on them) and you've hurt nobody else, witnesses can't call the law; lawmen already fighting you let go. A body found later by a passer-by still starts a search for an unknown suspect.
-- The log's new `LAW` lines say each time you become wanted or your bounty changes, and what RealNPCs saw at the time (a fight in self-defence, the game's charge, a despairing shot near). Not yet all seen in game.
+- Bumping into someone on the way no longer spoils it: a stumble within 2 m of you counted as hurting someone who hadn't come at you (the mind's shove, 0.7.0), which ended self-defence for five minutes; the game charges no crime for it. It stays a slight in people's minds, and if they answer it, you started it. A real blow still counts.
+- The log's new `LAW` lines say each time you become wanted or your bounty changes, and what RealNPCs saw at the time (a fight in self-defence, the game's charge, a despairing shot near). `LAW stage` lines follow the game's own stages (a witness on the way to tell, witnesses active, the law investigating, wanted, the red circle's radius) and name who near you carries a map mark. Not yet all seen in game.
+- A search that dies down while the law can't see you is roadmap 27: the game keeps no score a mod can lower for it, and clearing the wanted level doesn't end a search.
+- For testing: three seconds after the test cast arrives, `TESTCAST after arrival` logs what each of them is doing (calm, fleeing, running), whether you have a gun out, the dead within 30 m and the law's stage.
 
 ### What people say near you is a subtitle, not a line at the bottom (Lex, 2026-10-30: "There shouldn't be inner thoughts showing at the bottom of the screen")
 
