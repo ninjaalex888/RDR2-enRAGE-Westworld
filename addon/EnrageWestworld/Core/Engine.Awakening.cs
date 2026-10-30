@@ -47,7 +47,7 @@ namespace EnrageWestworld.Core
             if (!st.WakeRolled)
             {
                 st.WakeRolled = true;
-                if (Cfg.AwakeningShare > 0 && _rng.Next(100) < Cfg.AwakeningShare)
+                if (Cfg.AwakeningShare > 0 && _rng.NextDouble() * 100.0 < Cfg.AwakeningShare)
                     Advance(p, st, now);
             }
             return p;
@@ -89,7 +89,7 @@ namespace EnrageWestworld.Core
         public Resident MeetResident(uint model, bool woman, string town, string trade, string seed, long now)
         {
             Resident r = Residents.Make(Resident.Prefix + (++Store.NextResident), seed, model, woman, town, trade, now, Voice.NowYear);
-            if (Cfg.AwakeningShare > 0 && _rng.Next(100) < Cfg.AwakeningShare)
+            if (Cfg.AwakeningShare > 0 && _rng.NextDouble() * 100.0 < Cfg.AwakeningShare)
             {
                 Advance(PersonOfResident(r), Store.Get(PersonOfResident(r)), now);
                 Store.KeepResident(r, now);

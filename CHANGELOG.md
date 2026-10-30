@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fewer wake, and slowly (Lex, 2026-10-30: "slightly turn down the amount of people waking up, and very slow how fast they progress")
+
+- `[WestWorld] AwakeningShare` takes a part of a percent now (0.6), and is 3 by default (was 5; an ini still on 5 is moved to 3). `AwakeningDays` is 5 by default (was 1; an ini still on 1 is moved to 5): at least five game days on each of the first three stages, then a better than even chance each day of the next, so from stirring to fully awake takes three or four weeks of game time, not five days. Settings version 138.
+
 ### Names say what they are: lawmen and counter keepers (Lex, 2026-10-30, in game: Hampton Pitre's card had no "Lawman")
 
 - The line under a name starts with their trade where it's plain to see, as enRAGE's cards did: "Lawman" (or "Sheriff", "Deputy" by the game's model), and a town's counter keepers, "Store keeper", "Barkeep", "Gunsmith", "Doctor", "Butcher" and the rest; then their temper ("Lawman - Proud"). For someone you haven't met, the trade takes the place of "Stranger".

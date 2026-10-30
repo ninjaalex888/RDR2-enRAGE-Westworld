@@ -47,7 +47,7 @@ namespace EnrageWestworld.Core
             post.HolderId = r.Id;
             post.Outfit = -1;   // the game layer decides how a successor is dressed
             Store.KeepResident(r, now);
-            if (Cfg.AwakeningShare > 0 && _rng.Next(100) < Cfg.AwakeningShare)
+            if (Cfg.AwakeningShare > 0 && _rng.NextDouble() * 100.0 < Cfg.AwakeningShare)
                 Advance(PersonOfResident(r), Store.Get(PersonOfResident(r)), now);
             Log("POST " + post.Town + ", " + kind.Role + ": " + r.Name + (Posts.Story(r) != null ? ", " + Posts.Story(r) : first ? ", the first we know of" : ""));
             return r;

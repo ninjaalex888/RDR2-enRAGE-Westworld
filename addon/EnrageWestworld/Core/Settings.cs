@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 137;
+        public const int CurrentVersion = 138;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -95,8 +95,8 @@ namespace EnrageWestworld.Core
 
         // [WestWorld] - the master switch and everything under it
         public bool WestWorld = true;
-        public int AwakeningShare = 5;
-        public int AwakeningDays = 1;
+        public float AwakeningShare = 3f;   // a share of a percent too (0.6); 5 until settings version 138 (Lex, 2026-10-30: fewer waking)
+        public int AwakeningDays = 5;   // 1 until settings version 138 (Lex, 2026-10-30: "very slow how fast they progress the stages")
         public int AwakeningBreakdown = 90;
         public int AwakeningDespair = 75;
         public bool WakeVoices = true;   // the waking speak the game's own lines, oddly, more each stage (Core/WakeVoice.cs; settings version 78)
@@ -456,6 +456,12 @@ namespace EnrageWestworld.Core
                 s.DramaGapSeconds = 90;
                 raised.Add("DramaGapSeconds 150 -> 90");
             }
+            if (s.SettingsVersion < 138)
+            {
+                // 2026-10-30 (Lex): fewer waking, and slowly; a value of your own is kept
+                if (Math.Abs(s.AwakeningShare - 5f) < 0.01f) { s.AwakeningShare = 3f; raised.Add("AwakeningShare 5 -> 3"); }
+                if (s.AwakeningDays == 1) { s.AwakeningDays = 5; raised.Add("AwakeningDays 1 -> 5"); }
+            }
             if (s.SettingsVersion < 129 && Math.Abs(s.NameCardsMetres - 30f) < 0.01f)
             {
                 s.NameCardsMetres = 25f;   // 2026-10-30 (Lex): names within 25 m; a distance of your own is kept
@@ -615,7 +621,7 @@ namespace EnrageWestworld.Core
             ReturnChance = Math.Max(0, Math.Min(100, ReturnChance));
             StrangerReturnChance = Math.Max(0, Math.Min(100, StrangerReturnChance));
             RealityChance = Math.Max(0, Math.Min(100, RealityChance));
-            AwakeningShare = Math.Max(0, Math.Min(100, AwakeningShare));
+            AwakeningShare = Math.Max(0f, Math.Min(100f, AwakeningShare));
             AwakeningDays = Math.Max(1, Math.Min(60, AwakeningDays));
             AwakeningDespair = Math.Max(0, Math.Min(100, AwakeningDespair));
             AwakeningBreakdown = Math.Max(0, Math.Min(100, AwakeningBreakdown));
@@ -788,8 +794,8 @@ namespace EnrageWestworld.Core
             b.AppendLine();
             b.AppendLine("[WestWorld]");
             b.AppendLine("WestWorld = " + B(WestWorld) + "   ; master switch: the people who start to see their world is made. false turns off everything in this section");
-            b.AppendLine("AwakeningShare = " + AwakeningShare + "   ; percent of people who slowly wake up and see the world for what it is (0 turns the Awakening off)");
-            b.AppendLine("AwakeningDays = " + AwakeningDays + "   ; in-game days a woken person spends on each of the first three stages");
+            b.AppendLine("AwakeningShare = " + F(AwakeningShare) + "   ; percent of people who slowly wake up and see the world for what it is, a part of one too (0.6); 0 turns the Awakening off");
+            b.AppendLine("AwakeningDays = " + AwakeningDays + "   ; in-game days a woken person spends at least on each of the first three stages (each day after, a better than even chance of the next)");
             b.AppendLine("AwakeningBreakdown = " + AwakeningBreakdown + "   ; percent of the time an unravelling or awake person breaks down (kneels, shouts at the sky, runs) rather than keeping it together");
             b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, alone, can't bear it and ends their own life, with a gun that fits them, poison, a knife, or by running at a wall (0-100, 0 turns this off; a content note is in the readme)");
             b.AppendLine("WakeVoices = " + B(WakeVoices) + "   ; the waking say the game's own recorded lines in the wrong places: to nobody, the same words again, to the sky, at you; a little at the first stage, a great deal by the fourth, with a thought over the head for what they make of it");
