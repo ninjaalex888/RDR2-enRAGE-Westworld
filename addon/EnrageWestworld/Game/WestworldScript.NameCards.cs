@@ -308,6 +308,8 @@ namespace EnrageWestworld.InGame
                 // greeted or interacted with")
                 if (met)
                     Set(c, ac.Name, temper ?? "", ColourTitle, ColourDim, true);
+                else if (_cfg.NameCardsStrangerNames)
+                    Set(c, ac.Name, "Stranger", ColourStranger, ColourDim, true);   // the name with Stranger under it, if asked for
                 else
                     Set(c, "Stranger", "", ColourStranger, ColourDim, true);
                 return true;
@@ -327,6 +329,8 @@ namespace EnrageWestworld.InGame
                 string line2 = temper != null && trade != null ? temper + " - " + trade : temper ?? trade ?? "";
                 if (met)
                     Set(c, b.R.Name, line2, ColourTitle, ColourDim, true);
+                else if (_cfg.NameCardsStrangerNames)
+                    Set(c, b.R.Name, "Stranger", ColourStranger, ColourDim, true);
                 else
                     Set(c, "Stranger", "", ColourStranger, ColourDim, true);   // no name until you've met (Lex, 2026-10-30)
                 return true;
