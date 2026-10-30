@@ -53,7 +53,8 @@ NEW IN THE NEXT VERSION
   help, and how they help is theirs: a hand up, a gruff one, or walking on. [Mind] MindHelps.
 - With [Mind] MindLive on: people who know each other greet each other by how they feel
   lately and the day they're having: sore at a friend, a nod and no word; afraid, eyes away;
-  grateful, a warm word; a glad day, a good day even to a near stranger. [Mind] MindPassing.
+  grateful, a warm word; a glad day, a good day even to a near stranger. Someone who feels
+  something about you from a while back shows it as you pass, the same way. [Mind] MindPassing.
 - (In testing, off as it comes) [World] OwnLooks: without enRAGE, someone you've met is known
   again by their look (the same clothes on the same build), so yesterday's townsman is the same
   man today. With enRAGE installed, enRAGE's own knowing by look is used instead.
