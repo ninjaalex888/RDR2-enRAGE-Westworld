@@ -8,6 +8,10 @@
 - `[Scenes] ScenesAtOnce` (2; 1-3; settings version 127; on the Essentials page under The world): the scene and up to this many less one quiet talks. 1: just the scene, as before.
 - A chance meeting that came to nothing no longer holds the next one back a minute and a half: the wait starts when one really starts.
 
+### No T pose when a fight starts at the bar (Lex, 2026-10-30, in game)
+
+- A man leaning on the bar or sat when a brawl started was pulled out of it at once after 3 s, and went into a T pose before the fight (Ned Fleming, in the Valentine saloon). He's now asked to get up the game's way, again at 4 and 6 s, and pulled out only past 8 s (logged when it happens), with the punches ordered a moment after; a fight has 16 s to start (was 12).
+
 ### The bar says where the scene is (Lex, 2026-10-30)
 
 - "Nearby: two men came to blows (Simeon and Morgan) - 10 m south": how far the street scene is from you, to the nearest 5 m, and which way (eight points of the compass, north up the map).

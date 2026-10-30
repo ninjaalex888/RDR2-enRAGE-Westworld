@@ -966,7 +966,7 @@ namespace EnrageWestworld.InGame
         private const int ApproachMaxMs = 12000;
 
         /// A brawl stays a brawl: if a fighter reaches for a gun or a knife, it goes back in the holster.
-        private const int FightStartMs = 12000;
+        private const int FightStartMs = 16000;   // 12 s until 2026-10-30: a man getting up off the bar is given 8 s before he's pulled off it
         private static readonly int[] FightAttrIds = { 5, 46, 58 };   // fight unarmed, always fight, never flee the fight
 
         /// The order to fight, once both are on their feet: a man sat or leaning is told to stop (the clear lets him get
@@ -979,13 +979,22 @@ namespace EnrageWestworld.InGame
             {
                 if (!PED.IS_PED_USING_ANY_SCENARIO(p))
                     continue;
-                if (now - l.FightAskedAt > 3000)
+                up = false;
+                // still leaning or sat: asked again to get up the game's way; pulled out at once only past 8 s, and the fight
+                // ordered on a later tick (Lex, 2026-10-30: a man pulled off the bar after 3 s went into a T pose)
+                if (now - l.FightAskedAt > 8000)
+                {
                     TASK.CLEAR_PED_TASKS_IMMEDIATELY(p, false, true);
-                else
-                    up = false;
+                    Log.Write("SCENE fight: " + (p == l.FightA ? l.Names[0] : l.Names[1]) + " was still sat or leaning " + (now - l.FightAskedAt) / 1000 + " s after the word: pulled out of it");
+                }
+                else if (now - l.FightAskedAt > 4000)
+                    TASK.CLEAR_PED_TASKS(p, true, false);
             }
             if (!up)
+            {
+                l.FightOrderedAt = now;   // looked at again in 2 s (Tick), not every frame: each ask starts the getting up over
                 return;
+            }
             TASK.TASK_COMBAT_PED(l.FightA, l.FightB, 0, 16);
             TASK.TASK_COMBAT_PED(l.FightB, l.FightA, 0, 16);
             l.FightOrderedAt = now;
