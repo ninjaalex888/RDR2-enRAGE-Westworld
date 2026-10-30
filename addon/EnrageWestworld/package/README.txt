@@ -55,6 +55,8 @@ NEW IN THE NEXT VERSION
   lately and the day they're having: sore at a friend, a nod and no word; afraid, eyes away;
   grateful, a warm word; a glad day, a good day even to a near stranger. Someone who feels
   something about you from a while back shows it as you pass, the same way. [Mind] MindPassing.
+- With [Mind] MindLive on: your papers end with Who's who, the people you have met, newest
+  first: who they are, how they take you, and who they are friends or at odds with. [Display] WhosWho.
 - (In testing, off as it comes) [World] OwnLooks: without enRAGE, someone you've met is known
   again by their look (the same clothes on the same build), so yesterday's townsman is the same
   man today. With enRAGE installed, enRAGE's own knowing by look is used instead.

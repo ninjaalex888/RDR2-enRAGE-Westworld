@@ -303,6 +303,23 @@ namespace EnrageWestworld.InGame
                 return;
             List<Paper> papers = _store != null ? _store.Papers.Where(p => p.Delivered).OrderByDescending(p => p.At).ToList() : new List<Paper>();
             int unread = papers.FindIndex(p => !p.Read);
+            if (_cfg != null && _cfg.MindLive && _cfg.WhosWho && _store != null)
+            {
+                // the people you've met, last among the papers, made now and never kept (Core/WhosWho.cs)
+                string body = null;
+                try
+                {
+                    body = WhosWho.Body(_store, Bridge.Now());
+                }
+                catch (Exception ex)
+                {
+                    Log.Write("WHOS WHO failed: " + ex.Message);
+                }
+                if (body != null && papers.Count == 0)
+                    body += "\n\nYou carry no letters, diaries or clippings yet. Letters wait at post offices in town. Diaries can be found on the dead, and in their camps.";   // the reader's own hint, which this page would hide
+                if (body != null)
+                    papers.Add(new Paper { Kind = "note", Title = "Who's who", From = "from memory", Body = body, Delivered = true, Read = true });
+            }
             _reader.Show(papers, unread >= 0 ? unread : 0);
         }
 
