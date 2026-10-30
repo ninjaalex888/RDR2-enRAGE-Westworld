@@ -181,6 +181,7 @@ namespace EnrageWestworld.InGame
             try
             {
                 FlirtPromptEnd();
+                ForgetPromptEnd();
                 _director.Abort("stopping");
                 EndEncounters("the add-on stopped");
                 BelowAbort("the add-on stopped");

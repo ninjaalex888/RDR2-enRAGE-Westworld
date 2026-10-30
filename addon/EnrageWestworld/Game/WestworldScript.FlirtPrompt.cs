@@ -73,9 +73,10 @@ namespace EnrageWestworld.InGame
         private static int NewFlirtPrompt(int group, bool hook)
         {
             if (_literalTag == IntPtr.Zero)
-            {
                 _literalTag = Kept("LITERAL_STRING");
-                _flirtWord = Kept("Flirt");
+            if (_flirtWord == IntPtr.Zero)
+            {
+                _flirtWord = Kept("Flirt");   // apart from the tag: the clerk's Reset prompt may make the tag first (the review, 2026-10-30)
                 _hookWord = Kept("Hook up");
             }
             int prompt = HUD._UI_PROMPT_REGISTER_BEGIN();

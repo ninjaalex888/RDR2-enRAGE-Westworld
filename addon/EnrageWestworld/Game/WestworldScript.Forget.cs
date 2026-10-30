@@ -32,15 +32,19 @@ namespace EnrageWestworld.InGame
                 return "Not during a story mission.";
             bool enrage = _bridge != null && _bridge.Present;
             string stamp = DateTime.Now.ToString("yyyyMMdd-HHmmss"), kept = Path.Combine(_dir, "backup");
+            string theirs = enrage ? EnrageDataDir() : null;
+            if (enrage && theirs == null)
+                return "Couldn't find enRAGE's saved people to keep a copy, so nothing was forgotten.";
+            if (!SavedNow())
+                return "Couldn't save first (see the log), so nothing was forgotten.";
             try
             {
-                Save();
                 Directory.CreateDirectory(kept);
                 if (File.Exists(StorePath))
                     File.Copy(StorePath, Path.Combine(kept, Path.GetFileNameWithoutExtension(StorePath) + ".before-forget-you-" + stamp + ".json"), true);
                 if (enrage)
                 {
-                    string theirs = Path.Combine(Path.GetDirectoryName(_dir.TrimEnd('\\', '/')), "enRAGE"), copies = Path.Combine(kept, "enRAGE.before-forget-you-" + stamp);
+                    string copies = Path.Combine(kept, "enRAGE.before-forget-you-" + stamp);
                     Directory.CreateDirectory(copies);
                     foreach (string f in new[] { "people.json", "world.json", "nemeses.json" })
                         if (File.Exists(Path.Combine(theirs, f)))
@@ -54,7 +58,12 @@ namespace EnrageWestworld.InGame
             LetGoOfEveryone("you were forgotten");
             ForgetCounts c = Forget.AboutPlayer(_store);
             _greetedAt.Clear();   // the names over heads say Stranger again
-            Save();
+            if (!SavedNow())
+            {
+                // the forgetting holds in this session only; enRAGE untouched, and the old save is still the one on disk
+                Log.Write("FORGET you (" + how + "): " + c.Said() + "; couldn't be saved, so it lasts until the next load, and enRAGE was left alone");
+                return "Everyone forgot you for now, but it couldn't be saved (see the log): it lasts until the next load. enRAGE was left alone.";
+            }
             LoadStore();          // the engine and the minds from what is kept now, as on a load
             Save();
             string theirsSaid = enrage ? _bridge.ForgetYou() : null;
@@ -62,6 +71,24 @@ namespace EnrageWestworld.InGame
                       "; the copies are in RealNPCs\\backup (" + stamp + ")");
             return "Everyone has forgotten you: " + c.People + " people" + (enrage ? (theirsSaid != null ? ", and enRAGE's " + theirsSaid : "; enRAGE's townsfolk couldn't be reached (see the log)") : "") +
                    ". The town and its people are as they were. Copies of the saves are in RealNPCs\\backup.";
+        }
+
+        /// A save that really reached the disk (Save logs a failure and carries on, 2026-10-30's review).
+        private bool SavedNow()
+        {
+            DateTime before = DateTime.UtcNow.AddSeconds(-2);
+            Save();
+            return File.Exists(StorePath) && File.GetLastWriteTimeUtc(StorePath) >= before;
+        }
+
+        /// Where enRAGE keeps its people: its folder beside ours, else the scripts folder (its own fallback); null if neither.
+        private string EnrageDataDir()
+        {
+            string beside = Path.Combine(Path.GetDirectoryName(_dir.TrimEnd('\\', '/')), "enRAGE");
+            if (File.Exists(Path.Combine(beside, "people.json")))
+                return beside;
+            string scripts = Path.GetDirectoryName(typeof(WestworldScript).Assembly.Location);
+            return scripts != null && File.Exists(Path.Combine(scripts, "people.json")) ? scripts : null;
         }
 
         // ---- the clerk's list ----------------------------------------------------------------------------------
