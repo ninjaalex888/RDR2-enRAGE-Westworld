@@ -49,6 +49,11 @@ namespace EnrageWestworld.InGame
             public int ReactBy, ReactTo;         // who reacts, and to whom
             public string ReactTone;             // the tone of the line they react to
             public int Sat = -1;                 // "sitdown": who is sitting on the ground after a fall, until "getup" (or the end gets them up)
+            public int ApproachUntil;            // "approach" by the third: the next beat waits until they're at the one they walk to, or goes on then
+            public int ApproachTo;               // whom the third walks to
+            public int ApproachGoAt;             // the third was sitting or leaning: they set off once they're up (0: on their way)
+            public int ApproachCheckAt;          // when the walk was last seen getting nearer, or last sent again
+            public float ApproachBest;           // the nearest they've been
         }
 
         /// What one of the cast does about a line said to them, or about the slam ("hurt"), for the game layer to play.
@@ -234,6 +239,9 @@ namespace EnrageWestworld.InGame
             if ((l.Scene.Kind == "help" || l.Scene.Kind == "passby") && l.Cast.Length > 1 && l.Cast[1] != null && l.Cast[1].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[1].Handle) &&
                 !PED.IS_PED_USING_ANY_SCENARIO(l.Cast[1].Handle))
                 TASK.TASK_WANDER_STANDARD(l.Cast[1].Handle, 10f, 10);
+            // a third still walking over when it ended (the player left, someone in it was hurt) is let go on their way
+            if (l.ApproachUntil > 0 && l.Cast.Length > 2 && l.Cast[2] != null && l.Cast[2].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[2].Handle))
+                TASK.TASK_WANDER_STANDARD(l.Cast[2].Handle, 10f, 10);
             if (l.FightAttrs != null)
                 foreach (KeyValuePair<int, bool[]> fa in l.FightAttrs)
                     if (ENTITY.DOES_ENTITY_EXIST(fa.Key))
@@ -431,6 +439,44 @@ namespace EnrageWestworld.InGame
                 else
                     return;
             }
+            if (l.ApproachUntil > 0 && l.Cast.Length > 2)
+            {
+                // the third is still walking over: the next beat waits until they're there, or the time is up
+                Ped w = l.Cast[2], o = l.Cast[l.ApproachTo];
+                if (l.ApproachGoAt > 0)
+                {
+                    if (now < l.ApproachGoAt)
+                        return;
+                    l.ApproachGoAt = 0;
+                    TASK.TASK_GO_TO_ENTITY(w.Handle, o.Handle, 20000, Natives.Brisk, 1.3f, 0f, 0);
+                    l.ApproachCheckAt = now;
+                    return;
+                }
+                float d = w.Position.DistanceTo(o.Position);
+                if (d <= ApproachNear)
+                    l.ApproachUntil = 0;
+                else if (now > l.ApproachUntil)
+                {
+                    l.ApproachUntil = 0;
+                    Log.Write("SCENE   " + l.Names[2] + " never got there (still " + d.ToString("0.0") + " m off" +
+                              (PED.IS_PED_USING_ANY_SCENARIO(w.Handle) ? ", a scenario held them" : "") + "): goes on from there");
+                }
+                else
+                {
+                    if (d < l.ApproachBest - 0.3f)
+                    {
+                        l.ApproachBest = d;
+                        l.ApproachCheckAt = now;
+                    }
+                    else if (now - l.ApproachCheckAt > 3000)
+                    {
+                        // no nearer in 3 s (knocked off the walk, or it never took): the order again, as the kin walk-up does
+                        TASK.TASK_GO_TO_ENTITY(w.Handle, o.Handle, 20000, Natives.Brisk, 1.3f, 0f, 0);
+                        l.ApproachCheckAt = now;
+                    }
+                    return;
+                }
+            }
             if (l.Index >= l.Scene.Beats.Count)
             {
                 Log.Write("SCENE over: " + l.Scene.Kind + " (" + string.Join(" & ", l.Names) + "), played to the end");
@@ -482,7 +528,28 @@ namespace EnrageWestworld.InGame
                     }
                     return 1400;
                 case "approach":
-                    TASK.TASK_GO_TO_ENTITY(h, l.Cast.Length > 2 && who == 2 ? l.Cast[0].Handle : t, -1, Natives.Brisk, 1.3f, 0f, 0);
+                    if (who == 2 && l.Cast.Length > 2)
+                    {
+                        // the third walks over to the pair (the one who steps in, a friend, a spouse) to the one the beat names
+                        // (else A), and the next beat waits until they're there (Tick), as "meet" does. Before 2026-10-29 the
+                        // walk had 2.6 s and the next beat's face turned them where they stood: the one who stepped in said it
+                        // from 9 m off (Lex)
+                        l.ApproachTo = other;
+                        l.ApproachBest = me.Position.DistanceTo(them.Position);
+                        l.ApproachCheckAt = Game.GameTime;
+                        l.ApproachUntil = Game.GameTime + Math.Min(ApproachMaxMs, 4000 + (int)(l.ApproachBest * 800f));
+                        if (PED.IS_PED_USING_ANY_SCENARIO(h))
+                        {
+                            // a walk order alone never moves someone sitting or leaning (seen 2026-10-25): let go of it first
+                            TASK.CLEAR_PED_TASKS(h, true, false);
+                            l.ApproachGoAt = Game.GameTime + 1800;
+                            l.ApproachUntil += 1800;
+                        }
+                        else
+                            TASK.TASK_GO_TO_ENTITY(h, t, 20000, Natives.Brisk, 1.3f, 0f, 0);
+                        return 300;
+                    }
+                    TASK.TASK_GO_TO_ENTITY(h, t, -1, Natives.Brisk, 1.3f, 0f, 0);
                     return 2600;
                 case "meet":
                     // walks over to the other, who waits; the next line waits until they're close (Tick). Someone sitting or
@@ -746,6 +813,10 @@ namespace EnrageWestworld.InGame
             int start = l.StartHealth != null ? l.StartHealth[i] : Math.Max(1, ENTITY.GET_ENTITY_MAX_HEALTH(l.Cast[i].Handle, false));
             return ENTITY.GET_ENTITY_HEALTH(l.Cast[i].Handle) / (float)start;
         }
+
+        /// The third's walk over: there within 2.4 m (as "meet"), and given at most 12 s (4 s and 0.8 s a metre).
+        private const float ApproachNear = 2.4f;
+        private const int ApproachMaxMs = 12000;
 
         /// A brawl stays a brawl: if a fighter reaches for a gun or a knife, it goes back in the holster.
         private const int FightStartMs = 12000;

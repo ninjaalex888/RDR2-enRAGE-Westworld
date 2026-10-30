@@ -6,6 +6,10 @@
 
 - H in the lock-on menu is always Flirt now. Before, the moment she said yes the same prompt turned into Hook up, so a second H asked her before her answer had even been heard. Hook up is its own prompt on G, shown only while she is willing and once her answer has been said. F2 is gone as the flirt key (`FlirtKey` None; an ini still on F2, or on the older F6 or 5, is moved to None at settings version 106; a key of your own stays). The notices say Hook up (G). With CasualHookups installed its own Flirt key still finishes it (B, as RealNPCs set it once). Not yet seen in game.
 
+### The one who steps in walks over first (Lex, 2026-10-29: the woman who stood up to a bully said her piece from 9 m off)
+
+- Someone joining a street scene from a few steps off (the one who stands up to a bully, a friend who talks his man down in a quarrel, a jealous husband or wife) now walks all the way over before the scene goes on, and says it face to face. Before, they had under four seconds of walking and were then turned to face the others wherever they had got to. Someone sitting or leaning is let go of it first; a walker who stops short is sent on again; after a few seconds more than the distance needs (12 at most) the scene goes on from wherever they are, and the log says how far off they stopped. A quarrel's friend walks to his own man, not to whichever of the two happened to be first. Not yet seen in game.
+
 ## 0.7.0 (2026-10-29)
 
 Built in the night run of 2026-10-28 (Lex's brief), the day after it and the in-game pass that evening, on the 0.6.3 release. RealNPCs now stands alone (no enRAGE needed, compatible with it); most of what follows was seen working in game on 2026-10-29. The mind stays in shadow: everything new that would change what people think, say or do sits behind `[Mind] MindLive` (off), and with it off every path runs as it did in 0.6.3, except the two players' reports below: live changes Lex asked for during the run, one commit to take back.
