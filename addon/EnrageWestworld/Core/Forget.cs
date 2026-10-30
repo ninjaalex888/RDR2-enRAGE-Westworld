@@ -14,7 +14,7 @@ namespace EnrageWestworld.Core
     {
         public int People, Memories, Deeds, Rumours, Avengers, Deaths, Happenings, Waiting, Debts;
 
-        public override string ToString()
+        public string Said()
         {
             return People + " people forgot you (" + Memories + " memories of you), " + Deeds + " deeds and " + Rumours + " rumours of them gone, " +
                    Avengers + " avengers stood down, " + Deaths + " deaths no longer by your hand, " + Happenings + " happenings, " + Waiting + " waiting word, " + Debts + " debts";

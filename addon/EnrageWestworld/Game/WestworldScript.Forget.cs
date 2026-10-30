@@ -40,11 +40,11 @@ namespace EnrageWestworld.InGame
                     File.Copy(StorePath, Path.Combine(kept, Path.GetFileNameWithoutExtension(StorePath) + ".before-forget-you-" + stamp + ".json"), true);
                 if (enrage)
                 {
-                    string theirs = Path.Combine(Path.GetDirectoryName(_dir.TrimEnd('\\', '/')), "enRAGE"), to = Path.Combine(kept, "enRAGE.before-forget-you-" + stamp);
-                    Directory.CreateDirectory(to);
+                    string theirs = Path.Combine(Path.GetDirectoryName(_dir.TrimEnd('\\', '/')), "enRAGE"), copies = Path.Combine(kept, "enRAGE.before-forget-you-" + stamp);
+                    Directory.CreateDirectory(copies);
                     foreach (string f in new[] { "people.json", "world.json", "nemeses.json" })
                         if (File.Exists(Path.Combine(theirs, f)))
-                            File.Copy(Path.Combine(theirs, f), Path.Combine(to, f), true);
+                            File.Copy(Path.Combine(theirs, f), Path.Combine(copies, f), true);
                 }
             }
             catch (Exception ex)
@@ -58,7 +58,7 @@ namespace EnrageWestworld.InGame
             LoadStore();          // the engine and the minds from what is kept now, as on a load
             Save();
             string theirsSaid = enrage ? _bridge.ForgetYou() : null;
-            Log.Write("FORGET you (" + how + "): " + c + (enrage ? "; enRAGE: " + (theirsSaid ?? "couldn't (see above)") : "; enRAGE isn't installed: RealNPCs' part only") +
+            Log.Write("FORGET you (" + how + "): " + c.Said() + (enrage ? "; enRAGE: " + (theirsSaid ?? "couldn't (see above)") : "; enRAGE isn't installed: RealNPCs' part only") +
                       "; the copies are in RealNPCs\\backup (" + stamp + ")");
             return "Everyone has forgotten you: " + c.People + " people" + (enrage ? (theirsSaid != null ? ", and enRAGE's " + theirsSaid : "; enRAGE's townsfolk couldn't be reached (see the log)") : "") +
                    ". The town and its people are as they were. Copies of the saves are in RealNPCs\\backup.";
