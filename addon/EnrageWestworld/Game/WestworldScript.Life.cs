@@ -31,6 +31,7 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             GangStep(now);   // rival gangs who meet near you (WestworldScript.Gangs.cs)
+            JoinYouStep(now);   // onlookers who join a fistfight of yours (WestworldScript.JoinYou.cs)
             HorseThiefStep(me, now);   // a horse thief on his way to it, or away on it (WestworldScript.HorseThief.cs)
             FallWanderStep(now);
             WanderLaterStep(now);

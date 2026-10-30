@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Onlookers join your fistfights too (Lex, 2026-10-30)
+
+- Joining in was only for fights between two of the street's people. Now, while you trade blows with someone, those within 12 m are weighed the same way (Core/JoinIn.cs), you on one side and the man you're fighting on the other: a friend of his, or someone against you, may come at you; someone fond of you may take your side and go for him; a stranger seldom, a drunk hothead in a saloon now and then; nobody with the law at hand or who has seen what you do. Fists only, at most three; those who come at you came at you (self-defence holds); when you're done fighting they leave off. The log's `BRAWL joins your fight:` line.
+
 ### A crowd rings a fight; a horse thief (the NPC-life run, step 5)
 
 - While two people trade blows in the street, up to six of those within 20 m who aren't of a fearful nature (the mind's anxiety; nobody it doesn't know), free and on their feet, walk over and stand round it about 4.5 m out, facing in, and cheer or jeer it on now and then; close enough that a friend of one may yet join in. They go back to their own ways when it's over. `[Scenes] FightCrowds` (on, with MindLive; settings version 136). The log's `RING` line.
