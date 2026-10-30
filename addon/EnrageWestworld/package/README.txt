@@ -39,6 +39,9 @@ NEW IN THE NEXT VERSION
   Something uncanny, a killing seen, a man they saw die walking past them again shake their sense
   that things are as they seem, so they wake sooner; a kindness steadies them. The moment that
   sense gives way they begin to stir. [Mind] MindWakes.
+- With [Mind] MindLive on: people who know each other greet each other by how they feel
+  lately and the day they're having: sore at a friend, a nod and no word; afraid, eyes away;
+  grateful, a warm word; a glad day, a good day even to a near stranger. [Mind] MindPassing.
 - (In testing, off as it comes) [World] OwnLooks: without enRAGE, someone you've met is known
   again by their look (the same clothes on the same build), so yesterday's townsman is the same
   man today. With enRAGE installed, enRAGE's own knowing by look is used instead.

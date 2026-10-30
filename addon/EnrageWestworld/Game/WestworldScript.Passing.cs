@@ -241,7 +241,36 @@ namespace EnrageWestworld.InGame
                 _nodApart[kv.Key] = kv.Value;
             if (best == null)
                 whyNot = why;
+            else if (_cfg.MindLive && _cfg.MindPassing)
+                PassingFromMind(best);   // the greeting by what the first one feels about the other lately and their day (Core/Passing.Mind.cs)
             return best;
+        }
+
+        private int _passMinded;
+        private string _passMindedLast;
+
+        /// With MindLive and MindPassing: what the first one feels about the other lately, and their mood, change the greeting
+        /// the tie gives. Only someone the shadow already knows; its own catch (the tie's greeting stands on a fault).
+        private void PassingFromMind(NodRun r)
+        {
+            try
+            {
+                MindWho w;
+                if (r == null || r.A == null || !_mindWho.TryGetValue(r.A.Handle, out w) || w.Id == null || w.Id != r.AId || w.Traits == null)
+                    return;
+                long g = _store.LastGameMin;
+                string mood = Mood.SoreOrGlad(_engine.Shadow.MoodOf(w.Id, w.Traits, g), Mood.Baseline(w.Traits));
+                string why = Passing.Minded(r.Act, _engine.Shadow.Felt(w.Id), r.BId, mood, r.AWoman, Person.FirstOf(r.BName), g, r.Seed);
+                if (why == null)
+                    return;
+                _passMinded++;
+                _passMindedLast = r.AName + ": " + why;
+                Log.Detail("NOD the mind: " + r.AName + " passing " + r.BName + ": " + why + " (" + r.Act.Gesture + (r.Act.Speaks ? ", a word" : ", no word") + ")");
+            }
+            catch (Exception ex)
+            {
+                Log.Write("NOD the mind's part failed: " + ex.Message);
+            }
         }
 
         private static string NodPair(string a, string b)

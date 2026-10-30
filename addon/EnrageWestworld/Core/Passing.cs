@@ -10,7 +10,7 @@ using System.Linq;
 
 namespace EnrageWestworld.Core
 {
-    public static class Passing
+    public static partial class Passing
     {
         public sealed class Act
         {
