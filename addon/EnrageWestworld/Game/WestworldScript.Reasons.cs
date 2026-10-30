@@ -456,6 +456,10 @@ namespace EnrageWestworld.InGame
                     // one of those at a time, and its lines want a man
                     if (!_cfg.NpcThieves || !_cfg.Pickpockets) return "NpcThieves or Pickpockets is off";
                     return _theft != null ? "a thief is already running" : cast.AWoman ? "the lines want a man thief" : null;
+                case "brawl":
+                    // a man in a chair the game won't let go of never comes to blows, even pulled out of it (Lex, 2026-10-30:
+                    // Bryant and David sat through their own brawl); words between them instead
+                    return PED.IS_PED_USING_ANY_SCENARIO(first.Handle) || PED.IS_PED_USING_ANY_SCENARIO(second.Handle) ? "one of them is sat or leaning" : null;
                 case "drunk":
                     if (!_cfg.DrunkChallenges) return "DrunkChallenges is off";
                     return STREAMING.DOES_ANIM_DICT_EXIST(Director.DrunkDict) ? null : "this game is missing the drunk-dueler animation set";

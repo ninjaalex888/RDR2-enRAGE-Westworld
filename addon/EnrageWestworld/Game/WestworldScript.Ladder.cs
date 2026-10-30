@@ -34,6 +34,19 @@ namespace EnrageWestworld.InGame
         /// the scene's cast so far (the two): a friend who steps in is added to it. `matter`: the reason's, or null.
         private Scene LadderScene(Scene old, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, string matter, List<Ped> people, int now, bool force = false)
         {
+            Scene s = LadderSceneOf(old, first, second, doer, done, cast, seed, matter, people, now, force);
+            // the ladder came to blows between two who are sat or leaning: the chair keeps them (Lex, 2026-10-30), so the
+            // quarrel stays words
+            if (s != null && s != old && s.Fight && (PED.IS_PED_USING_ANY_SCENARIO(first.Handle) || PED.IS_PED_USING_ANY_SCENARIO(second.Handle)))
+            {
+                Log.Write("LADDER would come to blows, but one of them is sat or leaning: words only");
+                return old.Fight ? Scenes.Argue(cast, seed) : old;
+            }
+            return s;
+        }
+
+        private Scene LadderSceneOf(Scene old, Ped first, Ped second, Someone doer, Someone done, SceneCast cast, string seed, string matter, List<Ped> people, int now, bool force)
+        {
             if (old == null || (!LadderOn && !force) || _ladderFailed || (old.Kind != "argue" && old.Kind != "brawl") || old.Cast != 2 || people == null || people.Count != 2 || _engine == null || _store == null)
                 return old;
             try

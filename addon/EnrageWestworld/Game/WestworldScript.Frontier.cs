@@ -39,6 +39,8 @@ namespace EnrageWestworld.InGame
             public int LawSince, LawLookAt;
             public bool LawHeld;          // brought down by the law: held, waiting to be resolved
             public int LawHeldAt;
+            public int RunCheckAt, RunStalls;   // the watch on his run: where he was at the last look, and how often he stood (StillRunning)
+            public Vector3 RunFrom;
         }
 
         private sealed class Pleading
@@ -170,8 +172,41 @@ namespace EnrageWestworld.InGame
             }
             if (LawChaseStep(t, me, now))
                 return;
+            StillRunning(t, me, now);
             if (now - t.Started > 120000 || dist > 160f)
                 ResolveTheft(t, "escaped", now);
+        }
+
+        /// The thief keeps running: one order to flee was given and never looked at again, and inside a saloon the game found
+        /// him no way out and he stood where he was (Lex, 2026-10-30, twice). Every 2 s: if he's moved less than a metre and
+        /// isn't down, the flee again, turn about from you and from where you stand (a different way out each time).
+        private void StillRunning(Theft t, Ped me, int now)
+        {
+            int h = t.Thief.Handle;
+            if (t.LawHeld || now - t.Started < 3000 || (_liftRun != null && _liftRun.Handle == h) || PED.IS_PED_RAGDOLL(h))
+                return;
+            Vector3 at = t.Thief.Position;
+            if (t.RunCheckAt == 0)
+            {
+                t.RunCheckAt = now + 2000;
+                t.RunFrom = at;
+                return;
+            }
+            if (now < t.RunCheckAt)
+                return;
+            t.RunCheckAt = now + 2000;
+            float moved = at.DistanceTo(t.RunFrom);
+            t.RunFrom = at;
+            if (moved >= 1f)
+                return;
+            t.RunStalls++;
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            if (t.RunStalls % 2 == 1)
+                TASK.TASK_SMART_FLEE_COORD(h, me.Position, 200f, -1, 0, 3f);   // away from where you stand
+            else
+                TASK.TASK_SMART_FLEE_PED(h, me.Handle, 200f, -1, 0, 3f, 0);   // away from you
+            Log.Write("PICKPOCKET stood still (" + moved.ToString("0.0") + " m in 2 s, " + (int)at.DistanceTo(me.Position) + " m from you" +
+                      (Natives.InteriorType(h) != 0 ? ", indoors" : "") + "): sent running again (" + t.RunStalls + ")");
         }
 
         // ---- a lawman runs him down (Lex, 2026-10-29: the game's police chased and tackled a man; "could we get this into the mod?") ----

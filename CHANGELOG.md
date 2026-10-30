@@ -8,6 +8,11 @@
 - `[Scenes] ScenesAtOnce` (2; 1-3; settings version 127; on the Essentials page under The world): the scene and up to this many less one quiet talks. 1: just the scene, as before.
 - A chance meeting that came to nothing no longer holds the next one back a minute and a half: the wait starts when one really starts.
 
+### The pickpocket keeps running; nobody brawls from a chair (Lex, 2026-10-30, in game)
+
+- The man who lifted your money in the saloon stood where he was, twice: he was told to flee once and never looked at again, and indoors the game found him no way out. Now every 2 s, if he's moved less than a metre and isn't down, he's sent running again, turn about away from you and from where you stand; the log says `PICKPOCKET stood still ... sent running again`.
+- A brawl between two people sat or leaning never came to blows: the chair kept them even pulled out of it (Bryant and David, 16 s of nothing). A fistfight now never casts someone sat or leaning, and a quarrel the ladder takes to blows between such stays words.
+
 ### Names over heads, always on (Lex, 2026-10-30, in game: "the nameplates are sometimes not showing up")
 
 - In a crowded saloon some people had no name: only the ten nearest were carded, a table, a post or a lamp in the way hid a card as a wall did, cards faded out over the last 12 m, and they were drawn last of all, after the Testing page's cards over people, so a full frame dropped them first. `[Display] NameCardsAlways` (on; settings version 129, on the Essentials page): a card over everyone in range, up to sixteen, hidden only by walls, full until the last 4 m, drawn before the Testing overlays. Off: as before.
