@@ -56,6 +56,7 @@ namespace EnrageWestworld.InGame
             public int ApproachCheckAt;          // when the walk was last seen getting nearer, or last sent again
             public float ApproachBest;           // the nearest they've been
             public bool Side;                    // a quiet talk beside the scene (Start with side): voices and near subtitles only
+            public bool Ended;                   // End has begun: the joiners are let go for good
             public List<int[]> Joiners = new List<int[]>();   // those who joined the fight: { handle, side (0 with A, 1 with B) } (Core/JoinIn.cs)
         }
 
@@ -347,6 +348,7 @@ namespace EnrageWestworld.InGame
             // a third still walking over when it ended (the player left, someone in it was hurt) is let go on their way
             if (l.ApproachUntil > 0 && l.Cast.Length > 2 && l.Cast[2] != null && l.Cast[2].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[2].Handle))
                 TASK.TASK_WANDER_STANDARD(l.Cast[2].Handle, 10f, 10);
+            l.Ended = true;
             LetJoinersGo(l);
             if (l.FightAttrs != null)
                 foreach (KeyValuePair<int, bool[]> fa in l.FightAttrs)
@@ -1019,8 +1021,12 @@ namespace EnrageWestworld.InGame
         private static void LetJoinersGo(Live l)
         {
             foreach (int[] j in l.Joiners)
-                if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]) && PED.IS_PED_IN_COMBAT(j[0], 0))
-                    TASK.CLEAR_PED_TASKS(j[0], true, false);
+                if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
+                {
+                    if (PED.IS_PED_IN_COMBAT(j[0], 0))
+                        TASK.CLEAR_PED_TASKS(j[0], true, false);
+                    PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(j[0], !l.Ended);   // held until the scene ends, as endfight holds the two; let go then
+                }
         }
 
         private static void FightOrder(Live l)

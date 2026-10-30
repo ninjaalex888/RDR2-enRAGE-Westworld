@@ -45,6 +45,11 @@ namespace EnrageWestworld.InGame
                     _ladderSkipped++;
                     _ladderWhyNot = "the mind doesn't know " + (ta == null ? cast.Names[0] ?? "the first" : cast.Names[1] ?? "the second") + " yet";
                     Log.Detail("LADDER left to the fixed scene: " + _ladderWhyNot);
+                    // the reason let a woman's fight through for the ladder to judge (Reasons.MayFight, MindDecides); without it,
+                    // the old coin decides, as before (the advisor, 2026-10-30)
+                    if (old.Kind == "brawl" && (cast.AWoman || cast.BWoman) && !force &&
+                        !Voice.Chance(seed + "|womanfight", (cast.AWoman ? Reasons.WomanFightPercent : 100) * (cast.BWoman ? Reasons.WomanFightPercent : 100) / 100))
+                        return Scenes.Argue(cast, seed);
                     return old;
                 }
                 string aId = _mindWho[first.Handle].Id, bId = _mindWho[second.Handle].Id;
