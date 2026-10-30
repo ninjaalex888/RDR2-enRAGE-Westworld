@@ -27,6 +27,37 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// Who saw the fall, as the appraisal takes it (night 2026-10-29, item 6b; with [Mind] MindLive and [Mind] MindHelps):
+        /// a fall in front of them, nobody's doing, someone needing a hand. `warmTo`: their tie to the one who fell.
+        public static AppraisalEvent FallSeenBy(bool woman, int warmTo, string place, bool neighbours, int witnesses, bool drunk, int wakeStage, string fallenId, string fallenName, bool fallenFrail = false)
+        {
+            return new AppraisalEvent
+            {
+                Kind = fallenFrail ? "fall:frail" : "fall", Role = warmTo > 0 ? "friend" : "onlooker", Doer = "nobody", WarmTarget = warmTo, Place = place ?? "street", Woman = woman, WomenPresent = true,
+                Company = neighbours ? "neighbours" : "strangers", Witnesses = Math.Max(0, witnesses), Drunk = drunk, WakeStage = wakeStage, TargetId = fallenId, TargetName = fallenName
+            };
+        }
+
+        /// Whether they help, from what they feel: moved to it, a hand up; only a little, gruffly; unmoved, they walk past.
+        /// A foe is still the tie's (FallAnswer: a sneer from the hot and the proud, else past), and so is a friend who feels
+        /// nothing (a friend always gives a hand, as FallAnswer has it). `compassion`: their trait, for how a mild pity comes out.
+        public static string FallAnswerOf(Feeling f, int? warmth, string temper, float compassion, string seed)
+        {
+            if (warmth < 0)
+                return FallAnswer(warmth, null, temper, seed);
+            bool moved = f != null && f.Kind == "pity" && f.Urge == "help";
+            if (moved && f.Intensity >= Appraisal.Moderate)
+                return "help";
+            if (moved || warmth > 0)
+            {
+                // a little moved, or a friend: a hand all the same; the less gentle often short about it (a seeded roll: the
+                // review of 6b found a hard step on compassion without one)
+                int gruff = compassion < 0f ? 70 : 15;
+                return Voice.Chance(seed + "|gruff", gruff) ? "gruff" : "help";
+            }
+            return Voice.Chance(seed + "|unmoved", 15) ? "gruff" : "pass";   // even the unmoved stop now and then (the old way had the cold at 20%)
+        }
+
         /// The fall and what follows. old: no tumble, they sit down hard instead.
         public static Scene Fall(SceneCast c, string seed, string answer, bool old)
         {

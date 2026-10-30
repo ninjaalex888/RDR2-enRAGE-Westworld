@@ -97,6 +97,8 @@ namespace EnrageWestworld.Core
             { "beg", new Meaning { DoerNeed = 0.55f, Harm = 0.05f } },
             { "heard", new Meaning { Threat = 0.55f } },   // a shot or a shout nearby, nothing seen: fright only
             { "uncanny", new Meaning { Threat = 0.45f, Uncanny = 1f } },   // the night visitor seen: a pale figure over a body, gone when looked at (night 2026-10-28)
+            { "fall", new Meaning { Harm = 0.15f, Status = 0.1f, Need = 0.5f } },
+            { "fall:frail", new Meaning { Harm = 0.25f, Status = 0.1f, Need = 0.75f } },   // a woman or an old person down: more hurt in it, and in 1899 a man was expected to give his arm   // someone else took a fall in front of them: nobody's doing, somebody needing a hand up (Scenes.FallAnswerOf, night 2026-10-29, item 6b)
             { "rebuke", new Meaning { Status = 0.55f, Threat = 0.225f, Wrong = 0.2f, Intent = 1f, Own = 0.6f } },   // called out for one's own conduct before others by a woman stepping in: the shame mostly his own, and half a man's challenge's threat (Lex, 2026-10-29: women may fight and be fought, half as likely as a man for now; StepIn.Faced)
         };
 
