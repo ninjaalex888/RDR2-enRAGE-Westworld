@@ -193,7 +193,7 @@ namespace EnrageWestworld.InGame
                 float s1 = 0.25f - 0.06f * far, s2 = 0.175f - 0.03f * far;
                 float h1 = 0.1f * s1, h2 = 0.094f * s2;
                 Draw.Text(c.Name, x - TitleWidth(c.Name, s1) / 2f, y - h1 - h2 + 0.002f, s1, c.R, c.G, c.B, a, "$title");
-                if (!string.IsNullOrEmpty(c.Line2))
+                if (_cfg.NameCardsSecondLine && !string.IsNullOrEmpty(c.Line2))   // off: the name alone (players, 2026-10-30)
                     Draw.Text(c.Line2, x - TitleWidth(c.Line2, s2) / 2f, y - h2 - 0.0018518518f, s2, c.R2, c.G2, c.B2, (int)(a * 0.88f), "$title");
                 up++;
                 if (_nameCardsMade++ == 0)
@@ -384,7 +384,7 @@ namespace EnrageWestworld.InGame
             if (_cfg.NameCards == "off")
                 return "off ([Display] NameCards)";
             string left = _bridge != null && _bridge.Present && NameCardsLeftToEnrage(_now) ? "; left to enRAGE's own cards (NameCardsBesideEnrage off)" : "";
-            return _cfg.NameCards + " within " + (int)_cfg.NameCardsMetres + "/" + (int)_cfg.NameCardsKnownMetres + " m; " + _nameCardsUp + " up now, " + _nameCardsNow.Count +
+            return _cfg.NameCards + (_cfg.NameCardsSecondLine ? "" : ", names alone") + " within " + (int)_cfg.NameCardsMetres + "/" + (int)_cfg.NameCardsKnownMetres + " m; " + _nameCardsUp + " up now, " + _nameCardsNow.Count +
                    " in range, " + _nameCards.Count + " kept; " + _nameCardsMade + " drawn this session" + left;
         }
     }

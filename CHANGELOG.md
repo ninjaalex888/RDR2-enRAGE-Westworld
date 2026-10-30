@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Names over heads: easier to hide, or the name alone (players' request, 2026-10-30)
+
+- The names over heads could already be turned off (`[Display] NameCards = off`, Names over heads on the settings panel), but the panel page holding it was called "Bars and meter"; it is now "Names, bars and meter". New: `[Display] NameCardsSecondLine` (on; settings version 117), Personality line under the names on the same page: off shows the name alone, without the temper, trade, "Stranger" or gang under it. Not yet seen in game.
+
 ## 0.7.0 (2026-10-29)
 
 Built in the night run of 2026-10-28 (Lex's brief), the day after it and the in-game pass that evening, on the 0.6.3 release. RealNPCs now stands alone (no enRAGE needed, compatible with it); most of what follows was seen working in game on 2026-10-29. The mind stays in shadow: everything new that would change what people think, say or do sits behind `[Mind] MindLive` (off), and with it off every path runs as it did in 0.6.3, except the two players' reports below: live changes Lex asked for during the run, one commit to take back.

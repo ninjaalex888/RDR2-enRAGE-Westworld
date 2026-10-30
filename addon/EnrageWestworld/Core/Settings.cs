@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 105;
+        public const int CurrentVersion = 117;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -73,6 +73,7 @@ namespace EnrageWestworld.Core
         public float NameCardsMetres = 30f;       // strangers' cards within
         public float NameCardsKnownMetres = 75f;  // people you know within
         public bool NameCardsBesideEnrage;        // ours beside enRAGE's own cards too (else left to enRAGE while its are on)
+        public bool NameCardsSecondLine = true;   // the line under the name (temper, trade, Stranger, gang); off: the name alone (players, 2026-10-30; settings version 117)
         public bool GrudgeMeter = true;
 
         // [WestWorld] - the master switch and everything under it
@@ -712,6 +713,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("NameCardsMetres = " + F(NameCardsMetres) + "   ; strangers' names within (metres); they fade out near the edge");
             b.AppendLine("NameCardsKnownMetres = " + F(NameCardsKnownMetres) + "   ; the names of people you know within (metres)");
             b.AppendLine("NameCardsBesideEnrage = " + B(NameCardsBesideEnrage) + "   ; draw ours even while enRAGE draws its own (two cards over each head enRAGE knows)");
+            b.AppendLine("NameCardsSecondLine = " + B(NameCardsSecondLine) + "   ; the smaller line under each name: their temper and trade, \"Stranger\", their gang, \"Wanted\", a nemesis's mood. Off shows the name alone; NameCards = off hides the cards altogether");
             b.AppendLine("GrudgeMeter = " + B(GrudgeMeter) + "   ; top right: strangers whose grudge against you is building, with the mark where they'd become a nemesis, and the nemesis after you");
             b.AppendLine();
             b.AppendLine("[WestWorld]");
