@@ -102,7 +102,7 @@ namespace EnrageWestworld.InGame
                     _store.KeepResident(known, Bridge.Now());   // known again: touched, so not the first dropped from the save
                     _ownLooksKnown++;
                     _ownLooksLast = known.Name;
-                    MindLog(Game.GameTime, "LOOKS known again by their look: " + known.Name + " (" + (known.Trade ?? "a resident") + " of " + (known.Town ?? "nowhere") + ", met " + Math.Max(0, (Bridge.Now() - known.MetAt) / 1440) + " days ago)");
+                    Log.Write("LOOKS known again by their look: " + known.Name + " (" + (known.Trade ?? "a resident") + " of " + (known.Town ?? "nowhere") + ", met " + Math.Max(0, (Bridge.Now() - known.MetAt) / 1440) + " days ago)");
                     return known;
                 }
             }
