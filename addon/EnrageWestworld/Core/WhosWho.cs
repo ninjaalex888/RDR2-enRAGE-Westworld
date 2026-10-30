@@ -40,11 +40,14 @@ namespace EnrageWestworld.Core
                 b.Append("\n\n");
                 b.Append(Entry(store, st, now, felt));
             }
-            int more = listed.Count - Math.Min(Most, listed.Count), faceless = all.Count - listed.Count;
+            // counted: only those who never told a name (one who told it, with nothing of them kept, is left out unsaid)
+            int more = listed.Count - Math.Min(Most, listed.Count), faceless = all.Count(st => !st.KnowsName && ResidentOf(store, st) == null);
             if (more > 0)
                 b.Append("\n\n" + more + " more, longer ago.");
             if (faceless > 0)
-                b.Append("\n\n" + Grammar.UpperFirst((more > 0 ? "and " : "") + (faceless == 1 ? "one other whose name you never learned." : faceless + " others whose names you never learned.")));
+                b.Append("\n\n" + Grammar.UpperFirst((more > 0 ? "and " : "") +
+                         (listed.Count == 0 ? (faceless == 1 ? "one person whose name you never learned." : faceless + " people whose names you never learned.")
+                                            : (faceless == 1 ? "one other whose name you never learned." : faceless + " others whose names you never learned."))));
             return b.ToString();
         }
 
@@ -199,17 +202,23 @@ namespace EnrageWestworld.Core
             {
                 string otherId = t.A == id ? t.B : t.A;
                 string other = OtherName(store, otherId, t.A == id ? t.BName : t.AName, t.Town);
-                parts.Add(t.Warmth >= 2 ? "a friend of " + other : t.Warmth == 1 ? "on good terms with " + other
-                        : t.Warmth == -1 ? "at odds with " + other : "bad blood with " + other);
+                string was = dead ? "was " : "";
+                parts.Add(t.Warmth >= 2 ? was + "a friend of " + other : t.Warmth == 1 ? was + "on good terms with " + other
+                        : t.Warmth == -1 ? was + "at odds with " + other : (dead ? "there was bad blood with " : "bad blood with ") + other);
             }
-            return (dead ? "Was " : "") + (dead ? string.Join("; ", parts) : Grammar.UpperFirst(string.Join("; ", parts))) + ".";
+            return Grammar.UpperFirst(string.Join("; ", parts)) + ".";
         }
 
         private static string OtherName(Store store, string otherId, string tieName, string town)
         {
             PersonState o;
-            if (otherId != null && store.People != null && store.People.TryGetValue(otherId, out o) && o.KnowsName && !string.IsNullOrEmpty(tieName))
-                return tieName;
+            if (otherId != null && store.People != null && store.People.TryGetValue(otherId, out o) && o.KnowsName)
+            {
+                if (!string.IsNullOrEmpty(tieName))
+                    return tieName;
+                if (!string.IsNullOrEmpty(o.Name))
+                    return o.Name;   // the tie kept no name, but you know it
+            }
             Resident r = Resident.IsResident(otherId) ? store.FindResident(otherId) : null;
             string who = r != null && r.Woman ? "a woman" : r != null ? "a man" : "someone";
             return who + (!string.IsNullOrEmpty(town) ? " in " + town : "");
