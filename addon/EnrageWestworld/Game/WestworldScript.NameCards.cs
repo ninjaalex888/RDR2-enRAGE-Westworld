@@ -249,7 +249,25 @@ namespace EnrageWestworld.InGame
         }
 
         /// What the card says for this body: false when there's nothing of ours to say (and the mode doesn't show everyone).
+        /// The card, with the gang a member belongs to before the rest of the second line ("Lemoyne Raider - Hothead"), and
+        /// an unnamed gang member carded by his gang ("A Lemoyne Raider"), as enRAGE showed them (Lex, 2026-10-29).
         private bool NameCardFill(Ped p, NameCard c, bool everyone)
+        {
+            string gang = Factions.MemberOf(c.Model);
+            bool got = NameCardFillInner(p, c, everyone && gang == null);
+            if (gang == null)
+                return got;
+            if (!got)
+            {
+                Set(c, Factions.AOne(gang), "", ColourStranger, ColourDim, false);
+                return true;
+            }
+            if (c.Name != null && !c.Name.EndsWith(gang))
+                c.Line2 = gang + (string.IsNullOrEmpty(c.Line2) ? "" : " - " + c.Line2);
+            return true;
+        }
+
+        private bool NameCardFillInner(Ped p, NameCard c, bool everyone)
         {
             int h = p.Handle;
             bool woman = !PED.IS_PED_MALE(h);
@@ -357,6 +375,12 @@ namespace EnrageWestworld.InGame
 
         private string NameCardsStatus()
         {
+            // who is near, by model and relationship group: which token or group marks a gang member (Lex's Lemoyne Raiders, 2026-10-29)
+            Ped meP = Game.Player.Character;
+            string near = string.Join(", ", World.GetAllPeds().Where(x => x != null && x.Exists() && x.Handle != meP.Handle && PED.IS_PED_HUMAN(x.Handle) && x.Position.DistanceTo(meP.Position) < 12f)
+                .OrderBy(x => x.Position.DistanceTo(meP.Position)).Take(6)
+                .Select(x => (_nameCards.ContainsKey(x.Handle) && _nameCards[x.Handle].Name != null ? _nameCards[x.Handle].Name : "?") + " " + Natives.ModelName(x) + " rel 0x" + PED.GET_PED_RELATIONSHIP_GROUP_HASH(x.Handle).ToString("X8") + (Factions.MemberOf(ENTITY.GET_ENTITY_MODEL(x.Handle)) is string g ? " (" + g + ")" : "")));
+            Log.Write("TEST near models: " + near);
             if (_cfg.NameCards == "off")
                 return "off ([Display] NameCards)";
             string left = _bridge != null && _bridge.Present && NameCardsLeftToEnrage(_now) ? "; left to enRAGE's own cards (NameCardsBesideEnrage off)" : "";
