@@ -249,6 +249,16 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// F7: everything the mind moved people to do this session, in one line (the review's point: with every switch on, the
+        /// volume is what to judge).
+        private string MindActsTotals()
+        {
+            if (_cfg == null || !_cfg.MindLive)
+                return "off ([Mind] MindLive): the mind moves nobody";
+            return "this session: " + _standUpByMind + " stepped in by their minds, " + _standUpBullyMind + " bullies answered by theirs, " + _onlooked + " onlookers acted, " + _fallByMind + " falls answered by the mind, " +
+                   (_rescued + _rescueRefused) + " despairs someone went to (" + _rescued + " talked down), " + _passMinded + " greetings changed, " + _doubtStirs + " stirred from doubt, " + _revivedSeen + " times the revived dead were seen";
+        }
+
         /// F7: on or off, how many were talked down, refused, hesitated, looked for.
         private string RescueStatus()
         {

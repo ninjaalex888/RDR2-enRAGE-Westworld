@@ -92,6 +92,8 @@ namespace EnrageWestworld.InGame
             bool byMind = by != null && _cfg.MindLive && _cfg.MindHelps && FallByMind(people, faller, ref by, now, out byFelt, out byCompassion, out mindWhy);
             SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(by.Who.Id) && t.Has(faller.Who.Id));
             string seed = by.Who.Id + "|" + faller.Who.Id + "|" + g / 60;
+            if (byMind)
+                _fallByMind++;
             string answer = byMind ? Scenes.FallAnswerOf(byFelt, tie != null ? (int?)tie.Warmth : null, by.Who.Temper, byCompassion, seed)
                                    : Scenes.FallAnswer(tie != null ? (int?)tie.Warmth : null, Exchanges.Manner(by.Who, by.Who.Hurt != null), by.Who.Temper, seed);
             bool old = Director.OldModel(faller.Ped);
@@ -198,6 +200,7 @@ namespace EnrageWestworld.InGame
         }
 
         private bool _fallMindFailed;
+        private int _fallByMind;
 
         private static string FallVerb(string answer)
         {
