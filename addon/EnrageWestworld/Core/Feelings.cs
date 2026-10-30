@@ -1,4 +1,4 @@
-// Bars for the people around you (fear of you, liking, anger) and a corner meter for the strangers whose grudge is
+// Bars for the people around you (fear of you, fondness, anger) and a corner meter for the strangers whose grudge is
 // growing ([Display] in the ini; drawn by Game/WestworldScript.Feelings.cs). The numbers are enRAGE's own, 0 to
 // 100, read by the Bridge; only the choosing, the order and the words are here. All words are original to this add-on.
 using System;
@@ -30,12 +30,12 @@ namespace EnrageWestworld.Core
         /// Below this a feeling is only noise, and gets no bar.
         public const float ShowFrom = 3f;
 
-        /// The bars for one person: fear of you, liking for you, anger at you; only those worth showing, in that order.
+        /// The bars for one person: fear of you, fondness for you ("Liking" until Lex's word, 2026-10-30), anger at you; only those worth showing, in that order.
         public static List<FeelingBar> Bars(float fear, float like, float anger)
         {
             List<FeelingBar> bars = new List<FeelingBar>();
             Add(bars, "Fear", fear, 120, 160, 225);
-            Add(bars, "Liking", like, 110, 190, 110);
+            Add(bars, "Fondness", like, 110, 190, 110);
             Add(bars, "Anger", anger, 215, 75, 55);
             return bars;
         }
@@ -74,7 +74,7 @@ namespace EnrageWestworld.Core
         /// Every word shown, for the tests.
         public static IEnumerable<string> AllLines()
         {
-            return new[] { Title, "Fear", "Liking", "Anger", "{name}, out to get you" };
+            return new[] { Title, "Fear", "Fondness", "Anger", "{name}, out to get you" };
         }
     }
 }

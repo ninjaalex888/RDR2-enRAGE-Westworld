@@ -24,6 +24,11 @@ Built on 0.7.0 during Lex's in-game pass of 2026-10-30, from his tests and a pla
 
 - The words of a street scene, a hello or goodbye, the doctor's visit, the law chase and the pickpocket's "Pardon me" were drawn on the bar at the bottom, where they read as thoughts (a mourner's "Last night I dreamed he walked in the door"). They now show as they're said in the subtitle box drawn the game's way ("Hermine: \"...\""), within `[Ticker] ScenesOnTickerMetres` of you (12 m, was 30: Lex saw a mourner's line from 26 m off, out of sight; an ini still on 30 is moved to 12 at settings version 120); `[Output] Subtitles = off` hides them, and a line said to you is never covered by one. The bar keeps the news; thoughts stay over heads. Voicing these lines in the speakers' own voices is roadmap 1. Not yet seen in game.
 
+### Fondness, and subtitles under the game's own (Lex, 2026-10-30)
+
+- The middle bar under people is "Fondness" (was "Liking"): how fond of you they are, beside their fear and anger.
+- RealNPCs' subtitles sat on the game's own subtitle line and the two overlapped. Ours now start just under the game's line and grow down toward the news bar.
+
 ### Names over heads: easier to hide, or the name alone (players' request, 2026-10-30)
 
 - The names over heads could already be turned off (`[Display] NameCards = off`, Names over heads on the settings panel), but the panel page holding it was called "Bars and meter"; it is now "Names, bars and meter". With enRAGE installed, the cards over heads are its own (ours stand aside for them), so turning ours off changed nothing (Lex, 2026-10-30, in game): off on the panel now sets enRAGE's `[Menu] NameCards` to 0 too, after the usual copy of NemesisMod.ini (turning ours back on leaves enRAGE's off). New: `[Display] NameCardsSecondLine` (on; settings version 117), Personality line under the names on the same page: off shows the name alone, without the temper, trade, "Stranger" or gang under it. Not yet seen in game.

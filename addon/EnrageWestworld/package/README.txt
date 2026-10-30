@@ -31,6 +31,8 @@ NEW IN 0.7.1
   who came at you (the pickpocket who robbed you, say), puts the bounty back and has lawmen
   already fighting you let go, and bumping into someone on the way no longer spoils it. The
   game's own witnesses may still go to report the killing: that is being worked on.
+- The middle bar under people reads "Fondness" (was "Liking"), and RealNPCs' subtitles sit just
+  under the game's own, so the two never overlap.
 - Pickpockets walk straight up to you, on foot (never a man with his horse at hand), close
   enough to take it, and their dot turns red when they run.
 
@@ -740,7 +742,7 @@ in the file. The new ones:
             above their head in small type instead of on the bar, ThoughtsOverHeadScale (0.24)
             ScenesOnTicker (true): what people say in a street scene within ScenesOnTickerMetres (30)
             shows on the ticker as they say it
-[Display]   FeelingBars (true): bars under people near you for their fear, liking and anger,
+[Display]   FeelingBars (true): bars under people near you for their fear, fondness and anger,
             FeelingBarsMetres (15), FeelingBarsShowEmpty (false): the empty part of each bar too,
             GrudgeMeter (true): the "Sore at you" panel, top right,
             NameCards (known; off, everyone): names over the heads of people RealNPCs knows, in

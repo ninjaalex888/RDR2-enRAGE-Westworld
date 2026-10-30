@@ -45,7 +45,9 @@ namespace EnrageWestworld.InGame
 		/// The face for the subtitles: the font test (Shift+F2) found $body the closest to the game's own (Lex, line 1).
 		public static string SubtitleFace = "$body";
 
-		public const float SubtitleScale = 0.42f, SubtitleBottom = 0.846f, SubtitleWidth = 0.62f;
+		// the box's top just under the game's own subtitle line, so the two never overlap (Lex, 2026-10-30, a screenshot: ours sat
+		// on the game's), growing down to SubtitleLowest above the news bar; a longer one rises only as far as it must
+		public const float SubtitleScale = 0.42f, SubtitleTop = 0.858f, SubtitleLowest = 0.946f, SubtitleWidth = 0.62f;
 
 		private static string _subText;
 		private static int _subFrom, _subUntil;
@@ -306,7 +308,7 @@ namespace EnrageWestworld.InGame
 			float w = 0f;
 			foreach (string l in lines)
 				w = Math.Max(w, Draw.Width(l, scale));
-			float padX = 0.012f, padY = 0.006f, h = lines.Count * lineH, top = SubtitleBottom - h - padY * 2f;
+			float padX = 0.012f, padY = 0.006f, h = lines.Count * lineH, top = Math.Min(SubtitleTop, SubtitleLowest - h - padY * 2f);
 			Draw.Rect(0.5f - w / 2f - padX, top, w + padX * 2f, h + padY * 2f, 0, 0, 0, a * 165 / 255);
 			float y = top + padY;
 			foreach (string l in lines)
