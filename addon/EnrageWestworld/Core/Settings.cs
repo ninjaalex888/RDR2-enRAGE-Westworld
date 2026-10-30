@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 119;
+        public const int CurrentVersion = 120;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -51,7 +51,7 @@ namespace EnrageWestworld.Core
         public bool ThoughtsOverHeads = true;
         public float ThoughtsOverHeadScale = 0.24f;
         public bool ScenesOnTicker = true;        // a street scene's lines on the ticker while it plays within ScenesOnTickerMetres (2026-10-29, Lex)
-        public float ScenesOnTickerMetres = 30f;
+        public float ScenesOnTickerMetres = 12f;   // 30 until settings version 120 (Lex, 2026-10-30: a line from 26 m off, out of sight)
         public bool ShareWithEnrage = true;
         public bool Minds = true;
         public bool RecordMinds = true;
@@ -430,6 +430,11 @@ namespace EnrageWestworld.Core
                 s.DramaGapSeconds = 90;
                 raised.Add("DramaGapSeconds 150 -> 90");
             }
+            if (s.SettingsVersion < 120 && Math.Abs(s.ScenesOnTickerMetres - 30f) < 0.01f)
+            {
+                s.ScenesOnTickerMetres = 12f;   // 2026-10-30 (Lex): the subtitles only for people near you; a distance of your own is kept
+                raised.Add("ScenesOnTickerMetres 30 -> 12");
+            }
             if (s.SettingsVersion < 101 && s.DramaGapSeconds == 90)
             {
                 s.DramaGapSeconds = 60;   // 2026-10-29 (Lex): "these NPC interactions happening pretty frequently to make the world feel lively"
@@ -703,7 +708,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("ThoughtsOverHeads = " + B(ThoughtsOverHeads) + "   ; the thoughts of people near you show above their head in small type, not on the bar (the news and the rest stay on the bar; a thought whose thinker is out of view is passed over, never put on the bar)");
             b.AppendLine("ThoughtsOverHeadScale = " + F(ThoughtsOverHeadScale) + "   ; text size of thoughts above heads (TickerScale is the bar's)");
             b.AppendLine("ScenesOnTicker = " + B(ScenesOnTicker) + "   ; what people say near you (a street scene, a hello, the doctor, the law) shows as they say it in the subtitle box, the game's way (their name, the line); never on the bar; [Output] Subtitles = off hides it");
-            b.AppendLine("ScenesOnTickerMetres = " + F(ScenesOnTickerMetres) + "   ; a scene within this many metres is followed on the ticker");
+            b.AppendLine("ScenesOnTickerMetres = " + F(ScenesOnTickerMetres) + "   ; what people say within this many metres shows as a subtitle (5-80)");
             b.AppendLine();
             b.AppendLine("[Display]");
             b.AppendLine("FeelingBars = " + B(FeelingBars) + "   ; bars under people near you who feel something about you: their fear, liking and anger, as enRAGE keeps them");
