@@ -120,7 +120,7 @@ namespace EnrageWestworld.InGame
                 }
                 int start = old.Kind == "brawl" ? Scenes.BrawlStartRung : 0;
                 List<Escalation.Step> steps;
-                Scene s = Scenes.Quarrel(cast, seed, ta, tb, q, start, out steps);
+                Scene s = Scenes.Quarrel(cast, seed, ta, tb, q, start, out steps, _cfg.LadderShots);   // the shot fired (Lex, 2026-10-30)
                 if (s.Cast == 3)
                 {
                     people.Add(friend.Ped);

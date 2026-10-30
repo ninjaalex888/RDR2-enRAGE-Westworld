@@ -53,7 +53,9 @@ namespace EnrageWestworld.Core
         /// The quarrel from the ladder. `startRung`: 0 words (an argue), 2 the blows (a brawl reason). `steps` gets the
         /// run for the log. A woman never goes past the shove and nobody draws what he doesn't carry (Escalation's own
         /// rules); the friend way needs the cast's third (`c.Friend` 0 or 1: whose friend), else it's a walk-off.
-        public static Scene Quarrel(SceneCast c, string seed, Traits ta, Traits tb, QuarrelContext q, int startRung, out List<Escalation.Step> steps)
+        /// shotsPlay (Lex, 2026-10-30: "fights escalate to having the NPCs use guns on each other", deadly, true to 1899;
+        /// [Mind] LadderShots): the shot is fired, not thought better of; off (and in the tests' runs), as before.
+        public static Scene Quarrel(SceneCast c, string seed, Traits ta, Traits tb, QuarrelContext q, int startRung, out List<Escalation.Step> steps, bool shotsPlay = false)
         {
             if (q == null)
                 q = new QuarrelContext();
@@ -82,7 +84,14 @@ namespace EnrageWestworld.Core
                         : blows ? (twoMen ? "two men came to blows" : "two people came to blows") : "hard words" + (q.Place == "saloon" ? " in the saloon" : " in the street"),
                 Ladder = steps
             };
-            if (shot)
+            // fired only where the gun may come out (BuildCast's rule for the cast: armed, no law near, not a saloon)
+            bool fires = shot && shotsPlay && (Who(last.By) == 0 ? c.Armed0 : c.Armed1);
+            if (fires)
+            {
+                s.LadderNote = "the ladder said a shot (" + Side(last.By, c.Names[0] ?? a, c.Names[1] ?? b, c) + "): fired";
+                s.Summary = "shots fired" + (q.Place == "saloon" ? " in the saloon" : " in the street");
+            }
+            else if (shot)
                 s.LadderNote = "the ladder said a shot (" + Side(last.By, c.Names[0] ?? a, c.Names[1] ?? b, c) + "); not played, the standoff breaks off (the mind damages nobody yet)";
             // the words: what it's over
             string[] open = Opening(q.Matter, seed, a, b);
@@ -108,7 +117,14 @@ namespace EnrageWestworld.Core
                             fixedBeats.Add(s.Beats[i]);
                 }
             }
-            if (shot)
+            if (fires)
+            {
+                // the shot: the one who pushed the draw to it fires, and the other fires back if he carries a gun, or runs (the
+                // Director's "shoot"); whoever falls is the ledger's, and what follows a death follows
+                int w = Who(last.By);
+                s.Add(w, Voice.Pick(seed + "|shot|" + w, "Then it's this.", "You were warned.", "Enough talk.", "Should've walked away."), "angry", "shoot");
+            }
+            else if (shot)
             {
                 // the draw played; the shot doesn't: the one who would have fired thinks better of it, and both put up
                 int w = Who(last.By);

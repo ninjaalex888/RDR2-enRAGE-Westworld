@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### A quarrel may end in shots (Lex, 2026-10-30: "fights escalate to having the NPCs use guns on each other"; deadly, true to 1899)
+
+- The quarrel ladder's last step was always said and never played ("the mind damages nobody yet"): the one who'd have fired thought better of it and both put up. With `[Mind] LadderShots` (on, with MindLive; settings version 132) the shot is fired: the one who pushed the draw to it says a last word and goes for the other with his own sidearm; the other fires back if he carries a gun, or runs. It runs until one is down or 15 s, then the shooter runs from it. Whoever falls stays dead, and what follows a death follows (the ledger, mourners, kin, vengeance). Only where the gun may come out at all: both armed, no lawman near, never in a saloon; the ladder's own odds keep it rare. The log's `SCENE shots:` line.
+
 ### After a fight (the NPC-life run, step 1; Lex, 2026-10-30: "consequences that chain")
 
 - A street fight near you no longer ends with everyone going back to what they were doing. Once blows have been traded and it's over, the Director says who was left standing (`FightOver`), and a few seconds on a friend of the one who went down walks over and sees to him ("Hold still. Let me look at that."), or, with no friend there, maybe a kind soul among those who saw it. Then a lawman within 50 m walks over to the one left standing and has a word ("Break it up! Who started this?"), answered by the man's nature (a hothead: "He had it coming, deputy."; a coward: "He started it, sir, I swear it!"; a cold one: "Nothing that concerns the law.") and a warning. Each is a scene of its own when the street is free; it gives up after a minute or once you're 45 m off. The fight's hostile tie already brings the two to words again when they next meet.

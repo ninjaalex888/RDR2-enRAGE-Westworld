@@ -42,6 +42,7 @@ namespace EnrageWestworld.InGame
             public bool Slamming;                // "slam": the rough move is playing (WestworldScript.Roughs.cs); nothing else until it's done
             public bool WasFighting;             // a "fight" was started: at the end both are let go of it, however it ended
             public bool Blows;                   // and blows were traded (FightOn came): only then is there an aftermath (FightOver)
+            public int Shooter, ShotAt, ShootUntil;   // "shoot": who fired at whom, and until when the gunplay is let run
             public int MeetWalker = 1;           // who walks over in "meet" (the second, or the first for trouble)
             public int MeetGoAt;                 // the walker was sitting or leaning: he sets off once he's up (0: on his way)
             public bool Downed;                  // "passout" played: he's lying there until "cometo", or the end gets him up
@@ -354,6 +355,12 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_WANDER_STANDARD(l.Cast[2].Handle, 10f, 10);
             l.Ended = true;
             LetJoinersGo(l);
+            if (l.Shooter != 0 && ENTITY.DOES_ENTITY_EXIST(l.Shooter) && !ENTITY.IS_ENTITY_DEAD(l.Shooter))
+            {
+                PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(l.Shooter, false);
+                TASK.CLEAR_PED_TASKS(l.Shooter, true, false);
+                TASK.TASK_SMART_FLEE_PED(l.Shooter, l.ShotAt != 0 && ENTITY.DOES_ENTITY_EXIST(l.ShotAt) ? l.ShotAt : _player, 150f, -1, 0, 3f, 0);   // he runs from what he's done
+            }
             if (l.FightAttrs != null)
                 foreach (KeyValuePair<int, bool[]> fa in l.FightAttrs)
                     if (ENTITY.DOES_ENTITY_EXIST(fa.Key))
@@ -470,7 +477,7 @@ namespace EnrageWestworld.InGame
                 if (p == null || !p.Exists() || p.IsDead || (PED.IS_PED_IN_COMBAT(p.Handle, player.Handle)) ||
                     PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, p.Handle))
                 {
-                    Stop(l, "someone in the scene is gone or threatened");
+                    Stop(l, l.ShootUntil > 0 ? "shot down" : "someone in the scene is gone or threatened");
                     return;
                 }
             }
@@ -515,6 +522,13 @@ namespace EnrageWestworld.InGame
                     return;
                 l.Fighting = false;
                 LetJoinersGo(l);
+            }
+            if (l.ShootUntil > 0)
+            {
+                if (now < l.ShootUntil)
+                    return;
+                Stop(l, "the shooting is over");
+                return;
             }
             if (l.Slamming)
             {
@@ -904,6 +918,36 @@ namespace EnrageWestworld.InGame
                 case "mourn":
                     TASK.TASK_START_SCENARIO_IN_PLACE_HASH(h, Natives.Hash("WORLD_HUMAN_GRAVE_MOURNING"), 20000, true, 0u, -1f, false);
                     return 1200;
+                case "shoot":
+                    {
+                        // the shot (the ladder's top, LadderShots): his own sidearm, at the other; the other fires back if he carries
+                        // one, or runs. The gunplay runs until one is down, or 15 s (Tick); then the shooter runs
+                        uint gun = WEAPON.GET_BEST_PED_WEAPON(h, false, false);
+                        if (gun == 0 || gun == Natives.Hash("WEAPON_UNARMED"))
+                            return 600;
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+                        PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(t, false);
+                        WEAPON.SET_CURRENT_PED_WEAPON(h, gun, true, 0, false, false);
+                        PED.SET_PED_COMBAT_ATTRIBUTES(h, 5, false);   // not "fight unarmed": the gun
+                        TASK.TASK_COMBAT_PED(h, t, 0, 16);
+                        uint theirs = WEAPON.GET_BEST_PED_WEAPON(t, false, false);
+                        bool armed = theirs != 0 && theirs != Natives.Hash("WEAPON_UNARMED");
+                        if (armed)
+                        {
+                            WEAPON.SET_CURRENT_PED_WEAPON(t, theirs, true, 0, false, false);
+                            PED.SET_PED_COMBAT_ATTRIBUTES(t, 5, false);
+                            TASK.TASK_COMBAT_PED(t, h, 0, 16);
+                        }
+                        else
+                            TASK.TASK_SMART_FLEE_PED(t, h, 80f, -1, 0, 3f, 0);
+                        l.Shooter = h;
+                        l.ShotAt = t;
+                        l.ShootUntil = Game.GameTime + 15000;
+                        for (int i = 0; i < l.Aimed.Length; i++)
+                            l.Aimed[i] = false;
+                        Log.Write("SCENE shots: " + l.Names[who] + " fires on " + l.Names[other] + (armed ? ", who fires back" : ", who runs"));
+                        return 1000;
+                    }
                 case "aim":
                     // a standoff: guns come out only when the cast is armed and no lawman is close (the game layer checks)
                     if ((who == 0 && l.Info.Armed0) || (who == 1 && l.Info.Armed1))
