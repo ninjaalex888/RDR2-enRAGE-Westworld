@@ -189,6 +189,8 @@ namespace EnrageWestworld.InGame
                     SceneTie tie = _store.Ties.FirstOrDefault(t => t.Has(a.Id) && t.Has(b.Id));
                     Reason why = Reasons.Between(a, b, tie, day, now, where, link);
                     why = PlanLean(why, a, b);   // a plan between them (WestworldScript.Plans.cs)
+                    if (why != null && PairPlayedLately(a.Id, b.Id, why.Kind))
+                        why = null;   // the same reason between the same two, played lately: not again so soon (Pearl and Frank, four times in two minutes)
                     if (why != null && _cfg.MindLive && _cfg.MindMeetings)
                         MeetLean(why, people[i], people[j]);   // their moods today lean which reason the street plays (Core/Reasons.Mood.cs)
                     if (why != null)
@@ -232,6 +234,32 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        // the reasons each pair has played lately, by game minute: the same one isn't played between them again for three game
+        // hours (Lex, 2026-10-30: one pair's worry made the same scene four times in two minutes once scenes came more often)
+        private readonly Dictionary<string, long> _pairPlayed = new Dictionary<string, long>();
+        private const long PairPlayedRestMinutes = 180;
+
+        private static string PairKey(string a, string b, string kind)
+        {
+            return string.CompareOrdinal(a, b) < 0 ? a + "|" + b + "|" + kind : b + "|" + a + "|" + kind;
+        }
+
+        private bool PairPlayedLately(string a, string b, string kind)
+        {
+            long at;
+            long g = _store.LastGameMin;
+            return a != null && b != null && _pairPlayed.TryGetValue(PairKey(a, b, kind), out at) && g - at >= 0 && g - at < PairPlayedRestMinutes;
+        }
+
+        private void NotePairPlayed(string a, string b, string kind)
+        {
+            if (a == null || b == null)
+                return;
+            if (_pairPlayed.Count > 500)
+                _pairPlayed.Clear();
+            _pairPlayed[PairKey(a, b, kind)] = _store.LastGameMin;
+        }
+
         /// The strongest reason near the player that he can see, played as a scene. False if there's none.
         /// side: a quiet talk beside the scene (SideScene): only people clear allows, standing together already, and only a
         /// scene Director.Quiet allows, without the walk-over, the ladder, the barkeep or anyone stepping in.
@@ -273,6 +301,7 @@ namespace EnrageWestworld.InGame
                 Log.Write("REASON " + (pr.Why.BFirst ? pr.B.Who.Name + " & " + pr.A.Who.Name : pr.A.Who.Name + " & " + pr.B.Who.Name) + ": " + pr.Why.Why + " -> " + kind +
                           " (strength " + pr.Why.Strength + (pr.Why.Leaned != null ? ", the mind: " + pr.Why.Leaned : "") + ", " + (int)pr.Apart + " m apart, " + (int)pr.A.Ped.Position.DistanceTo(me.Position) + " m from you)");
                 List<Ped> cast2 = new List<Ped> { first, second };
+                NotePairPlayed(pr.A.Who.Id, pr.B.Who.Id, pr.Why.Kind);
                 if (side)
                 {
                     if (!StartScene(s, cast2, cast, seed, now, side: true))

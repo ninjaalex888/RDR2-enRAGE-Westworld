@@ -543,6 +543,12 @@ namespace EnrageWestworld.InGame
             }
             string text = near[0].Key;   // the line is made anew only when the nearest scene changes
             string shown0 = string.Join("  \u00b7  ", parts);
+            if (parts.Count < near.Count || parts.Any(x => x.StartsWith("(+")))
+            {
+                // more than the bar holds: each in turn, four seconds apiece, so none is hidden (Lex, 2026-10-30)
+                int idx = (int)((Game.GameTime / 4000) % near.Count);
+                shown0 = near[idx].Key + " - " + Whereabouts(me, near[idx].Value) + "  (" + (idx + 1) + " of " + near.Count + ")";
+            }
             // how far and which way, to the nearest 5 m (Lex, 2026-10-30: "such as 10m South"); the line is made anew only
             // when the scene or that changes
             string shown = shown0;

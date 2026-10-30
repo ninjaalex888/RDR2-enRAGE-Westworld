@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### The bar shows every scene; no pair repeats itself (Lex, 2026-10-30, in game)
+
+- With more scenes than the bar's width holds, it shows each in turn, four seconds apiece, with where it is and "(2 of 3)", instead of the nearest and "(+N more)"; when they all fit, all at once as before.
+- The same reason between the same two isn't played again for three game hours: one woman's worry at its worst made the same scene with the same friend four times in two minutes once scenes came more often.
+
 ### More of the street at once (Lex, 2026-10-30)
 
 - `[Scenes] ScenesAtOnce` 4 (was 2, at most 6 now, was 3; an ini still on 2 is moved to 4; settings version 140): the scene and three quiet talks beside it. Quiet talks come again sooner (a quarter to under half the scene gap, was 40-70%), chance meetings every scene gap (was one and a half), and up to ten people act on their own choices at once, one new every 1.5 s (was six, every 3 s). Still one scene at a time that needs the Director whole (blows, the bully, the pickpocket).
