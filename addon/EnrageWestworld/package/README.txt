@@ -27,10 +27,10 @@ NEW IN 0.7.1
 - What people say near you (a street scene, a hello, the doctor, the law chase) shows as a
   subtitle the game's way, never on the bar at the bottom, which keeps the news. Thoughts stay
   over heads. [Output] Subtitles = off hides it.
-- Self-defence and the law: while you fight off someone who came at you (the pickpocket who
-  robbed you, say) and for 90 seconds after your last hit on them, witnesses can't call the law
-  and lawmen already fighting you let go, unless you hurt someone else. Bumping into someone on
-  the way no longer spoils it. A body found later still starts a search for an unknown suspect.
+- Self-defence and the law: RealNPCs now sees when the law is after you over a fight with someone
+  who came at you (the pickpocket who robbed you, say), puts the bounty back and has lawmen
+  already fighting you let go, and bumping into someone on the way no longer spoils it. The
+  game's own witnesses may still go to report the killing: that is being worked on.
 - Pickpockets walk straight up to you, on foot (never a man with his horse at hand), close
   enough to take it, and their dot turns red when they run.
 

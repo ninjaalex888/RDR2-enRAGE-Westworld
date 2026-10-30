@@ -247,6 +247,13 @@ namespace EnrageWestworld.InGame
                 {
                     _lawMarksAt = now;
                     Log.Write("LAW stage: who near you carries a mark: " + LawMarkedNear());
+                    // which crime the game has against him, and whether the shield's holding back ever took (2026-10-30: the
+                    // witness set off 3 s after a killing the shield was on for)
+                    uint charge = LAW._GET_HUD_PLAYER_CRIME_TYPE(me);
+                    string held = string.Join(", ", DefenceCrimes.Select(c => new KeyValuePair<uint, int>(c, LAW.NUM_CRIMES_SUPPRESSED(me, c))).Where(x => x.Value > 0)
+                                                     .Select(x => "0x" + x.Key.ToString("X8") + " x" + x.Value));
+                    Log.Write("LAW stage: the game's charge " + (charge == 0 ? "none shown" : "0x" + charge.ToString("X8") + (Array.IndexOf(DefenceCrimes, charge) >= 0 ? " (one the shield holds back)" : " (not one the shield holds back)")) +
+                              "; held back so far: " + (held.Length > 0 ? held : "none"));
                 }
                 if (_lawStage.Length > 0 || stage != "clear")
                     Log.Write("LAW stage: " + stage + (_lawStage.Length > 0 ? " (after " + _lawStage + " for " + (now - _lawStageAt) / 1000 + " s)" : "") + (radius > 0 ? ", the circle " + radius + " m" : ""));

@@ -18,7 +18,7 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private Ped _lifter;
-        private int _lifterSince, _liftLookAt, _lifts, _liftsBack, _lifterWalkAt, _lifterGiveUpMs = 30000;
+        private int _lifterSince, _liftLookAt, _lifts, _liftsBack, _lifterWalkAt, _lifterGiveUpMs = 30000, _lifterGainAt;
         private float _lifterNearest = 999f;
         private uint _lifterModel;
         private Ped _liftRun;
@@ -74,7 +74,7 @@ namespace EnrageWestworld.InGame
             if (pace != null)
                 return why = pace;
             Ped pick = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) &&
-                                                     !PED.IS_PED_ON_MOUNT(p.Handle) && PED.IS_PED_MALE(p.Handle) && IsGrownUp(p) && !Natives.StoryModel(p) && !NotFree(p.Handle) &&
+                                                     !PED.IS_PED_ON_MOUNT(p.Handle) && PED.IS_PED_MALE(p.Handle) && IsGrownUp(p) && !Natives.StoryModel(p) && !NotFree(p.Handle) && !Spawner.IsCast(p.Handle) &&
                                                      MayDirectWhyNot(p) == null && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                      p.Position.DistanceTo(me.Position) > 4f && p.Position.DistanceTo(me.Position) < 22f && !HorseAtHand(p))
                                          .OrderBy(p => p.Position.DistanceTo(me.Position)).FirstOrDefault();
@@ -83,6 +83,7 @@ namespace EnrageWestworld.InGame
             _lifter = pick;
             _lifterSince = now;
             _lifterWalkAt = now;
+            _lifterGainAt = now;
             _lifterGiveUpMs = 30000 + (int)(pick.Position.DistanceTo(me.Position) * 1500f);   // a far start gets longer (Lex, 2026-10-30: from 20 m he gave up)
             _lifterNearest = 999f;
             _lifterModel = ENTITY.GET_ENTITY_MODEL(pick.Handle);
@@ -115,8 +116,6 @@ namespace EnrageWestworld.InGame
                 Log.Write("LIFT given up: he never reached you (nearest " + _lifterNearest.ToString("0.0") + " m)");
                 return;
             }
-            // sent on again only once his walk has stopped, at most every 3 s: the walk given anew every few frames each
-            // 3 s stopped and started him, and from 20 m off he never got there (Lex, 2026-10-30)
             if (PED.IS_PED_ON_MOUNT(p.Handle) || PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false))
             {
                 // a pickpocket works on foot (Lex, 2026-10-30: one walked to his horse and rode up to lift the cash)
@@ -126,6 +125,8 @@ namespace EnrageWestworld.InGame
                 return;
             }
             float dist = p.Position.DistanceTo(me.Position);
+            if (dist < _lifterNearest - 0.3f)
+                _lifterGainAt = now;   // getting nearer
             _lifterNearest = Math.Min(_lifterNearest, dist);
             // the walk ends short of you, arm's length off (2026-10-30: walked over and never took it), so standing within 4 m
             // he is sent the last step at once, and the bump counts from 2 m
@@ -134,12 +135,14 @@ namespace EnrageWestworld.InGame
                 _lifterWalkAt = now;
                 TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, -1, 1.0f, 0.3f, 0f, 0);   // a walk, stopping at 0.3 m
             }
-            else if (now - _lifterWalkAt >= 3000)
+            else if (now - _lifterWalkAt >= 3000 && now - _lifterGainAt >= 3000)
             {
+                // no nearer for 3 s, whatever had him (Lex, 2026-10-30: one sent from 7 m never came nearer than 7.5): sent on
+                // again; never while he closes in, since a walk given anew stops him a moment (the stop-start of the same day)
                 _lifterWalkAt = now;
-                int status = TASK.GET_SCRIPT_TASK_STATUS(p.Handle, Natives.Hash("SCRIPT_TASK_GO_TO_ENTITY"), true);
-                if (status != 0 && status != 1 && ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.3f)   // and standing: a wrong task name never stops a walking man
-                    TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, -1, 1.3f, 0.4f, 0f, 0);
+                _lifterGainAt = now;
+                TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, -1, 1.3f, 0.4f, 0f, 0);
+                Log.Detail("LIFT no nearer for 3 s (" + dist.ToString("0.0") + " m): sent on again");
             }
             if (dist > 2f || PED.IS_PED_ON_MOUNT(me.Handle) || PED.IS_PED_IN_ANY_VEHICLE(me.Handle, false))
                 return;   // and you on foot too
