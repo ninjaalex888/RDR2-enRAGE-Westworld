@@ -46,6 +46,7 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<int, int> _layingHandsAt = new Dictionary<int, int>();   // a bully with hold of someone, last seen so
         private readonly Dictionary<int, int> _layingHandsOn = new Dictionary<int, int>();   // ...and whom he had hold of
         private int _rescuedPed, _rescuedThankAt, _rescuedUntil;
+        private readonly Dictionary<int, Blip> _bullyDots = new Dictionary<int, Blip>();   // the red dot on a bully while he's fair game
         private const int LayingHandsGraceMs = 2500;
         private readonly HashSet<int> _noWanted = new HashSet<int>();   // given PCF_DontInfluenceWantedLevel by us, while they count as having come at him
         private const int PcfDontInfluenceWantedLevel = 6;
@@ -237,6 +238,14 @@ namespace EnrageWestworld.InGame
             if (starter != 0 && ENTITY.DOES_ENTITY_EXIST(starter) && !ENTITY.IS_ENTITY_DEAD(starter))
                 LayingHands(starter, against, now, player);
             RescuedStep(now, player);
+            if (_bullyDots.Count > 0)
+                foreach (int h in _bullyDots.Keys.Where(x => !LayingHands(x, now) || !ENTITY.DOES_ENTITY_EXIST(x) || ENTITY.IS_ENTITY_DEAD(x)).ToList())
+                {
+                    Blip dot = _bullyDots[h];
+                    _bullyDots.Remove(h);
+                    if (dot != null && dot.Exists())
+                        dot.Delete();   // he let go: no longer fair game, no dot
+                }
             foreach (int h in _layingHandsAt.Where(kv => now - kv.Value > 60000 || now < kv.Value).Select(kv => kv.Key).ToList())
             {
                 _layingHandsAt.Remove(h);
@@ -334,6 +343,18 @@ namespace EnrageWestworld.InGame
         {
             if (bully == player || victim == player || _youStarted.ContainsKey(bully))
                 return;
+            if (!LayingHands(bully, now))
+            {
+                // newly at it: a red dot, as the pickpocket has, so you can tell who to stop (Lex, 2026-10-30: "I couldn't
+                // tell who started the brawl"), and the log names him
+                Log.Write("BULLY " + NameToShow(bully) + " starts on " + (victim != 0 ? NameToShow(victim) : "someone") + ": fair game while he's at it");
+                if (!_bullyDots.ContainsKey(bully) && MAP.GET_BLIP_FROM_ENTITY(bully) == 0)
+                {
+                    Blip dot = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_ENEMY"), bully));
+                    dot.Label = "Bully";
+                    _bullyDots[bully] = dot;
+                }
+            }
             _layingHandsAt[bully] = now;
             _layingHandsOn[bully] = victim;
             if (_cfg.SelfDefenceNoBounty && !_noWanted.Contains(bully))
