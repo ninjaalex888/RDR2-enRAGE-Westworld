@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.2 (2026-10-30)
+
+The night run of 2026-10-29 (the mind acting on what people feel) joined to 0.7.1, with Lex's in-game pass of 2026-10-30 that afternoon in Valentine: `[Mind] MindLive` is on for everyone now (settings version 126 switches an ini still on off, once), so onlookers, people stepping in, greetings, help after a fall and talking someone down follow the minds; the settings panel pauses the world and takes the mouse; a hermit's name over their head; a willing woman's voice no longer turns you down; the names' own settings on the panel can be changed again.
 
 ### The settings panel: the world paused, and the mouse (Lex, 2026-10-30)
 

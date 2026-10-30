@@ -1,4 +1,4 @@
-RealNPCs 0.7.1 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.2 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -18,14 +18,16 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 Story Mode only. Don't run script mods in Red Dead Online.
 
 
-NEW IN THE NEXT VERSION
------------------------
+NEW IN 0.7.2
+------------
+- The minds act: [Mind] MindLive is on for everyone now (an ini where it was off is switched on
+  once; turn it off there if you'd rather not). Each part below has its own switch.
 - The settings panel pauses the world while it's open (it used to slow it), and the mouse works
   on it: point at a row, click to change it, scroll with the wheel, drag the scrollbar.
 - Someone who steps into a quarrel near you (to stand up to a bully, to talk a friend down, a
   jealous husband or wife) walks all the way over and says it to their faces, instead of calling
   it out from where they stood.
-- With [Mind] MindLive on (in testing): who steps in comes from their own minds. Each onlooker
+- With [Mind] MindLive on: who steps in comes from their own minds. Each onlooker
   takes it their own way: a friend of the one being picked on, a kind soul, a hothead will often
   step in, a coward or a cold man seldom; the bigger the crowd, the less each one feels it falls
   to them; a lawman nearby or a church hushes it. Women step in too, half as often as men for
@@ -64,6 +66,9 @@ NEW IN THE NEXT VERSION
   man today. With enRAGE installed, enRAGE's own knowing by look is used instead.
 - Women come to blows too, with a man or another woman, half as often as two men do for each
   woman in it ([Scenes] WomenInFights; off: only two men ever fight, as before).
+- A hermit at their camp has a name over their head like anyone else.
+- Flirting: a willing woman's voice no longer turns you down (a late "slow down" from an
+  earlier flirt could play over her yes).
 
 NEW IN 0.7.1
 ------------
@@ -196,7 +201,7 @@ NEW IN 0.6.3
 - A mind under every person, run beside the game and only reported while it's tested: traits,
   needs, worries, what they feel about what happens near you, their mood. Show minds (Ctrl+F2)
   puts a card over the people near you; in a crowd the nearest has the full card and the rest a
-  line, never overlapping. [Mind] MindShadow, MindLive (off).
+  line, never overlapping. [Mind] MindShadow, MindLive (on).
 - Controllers: hold RB and press D-pad up for the settings panel, left for F7, right for your
   letters; set your own on the Hotkeys page from the controller ([Controller]).
 - Subtitles, one set at a time: the game draws its own white subtitle for any recorded line
@@ -896,7 +901,7 @@ in the file. The new ones:
             MindShadow (true, while it is tested): the mind underneath works out the traits, needs,
             feelings and mood of the people near you and writes them to the log (MIND lines), F7
             (TEST mind shadow) and the Show minds cards; it changes nothing anyone does or thinks.
-            MindLive (false): what that mind decides reaches the screen: moods, and thoughts of what people really feel (about you, a friend, a stranger) and of a pressing want
+            MindLive (true): what that mind decides reaches the screen: moods, and thoughts of what people really feel (about you, a friend, a stranger) and of a pressing want
             MindLevels (false, in testing): the mind's work spread by distance and a budget a frame.
             QuarrelLadder (true, under MindLive): an argument or a fight between two people the mind knows
             climbs or cools by their natures and the room; the shot is never fired.
