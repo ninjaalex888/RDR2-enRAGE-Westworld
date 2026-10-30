@@ -32,6 +32,8 @@ NEW IN 0.7.1
   who came at you (the pickpocket who robbed you, say), puts the bounty back and has lawmen
   already fighting you let go, and bumping into someone on the way no longer spoils it. The
   game's own witnesses may still go to report the killing: that is being worked on.
+- The settings panel opens on the essentials (a page of key settings, the hotkeys, the mod
+  list); F switches to every setting and the Testing page.
 - A Mod list page on the settings panel turns your other mods off and on (scripts with the next
   Insert reload, ASI plugins when the game next starts); nothing is deleted.
 - Reset RealNPCs Memory: at a station clerk, hold Q (pad RB) and everyone forgets what they know

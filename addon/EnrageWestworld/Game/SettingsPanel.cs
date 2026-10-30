@@ -142,7 +142,7 @@ namespace EnrageWestworld.InGame
             { "Regulars", "Each town keeps its own people" }, { "RegularsPerTown", "Regulars in each town" }, { "RegularsDress", "Regulars wear their own clothes" }, { "TownPostsAfterDeath", "When a counter keeper is shot down" },
             { "SelfDefenceNoBounty", "No bounty for self-defence" },
             { "NameCards", "Names over heads (off, known, everyone)" }, { "NameCardsMetres", "Strangers' names within (metres)" }, { "NameCardsKnownMetres", "Known people's names within (metres)" }, { "NameCardsBesideEnrage", "Ours beside enRAGE's own cards too" }, { "NameCardsSecondLine", "Personality line under the names" },
-            { "FeelingBars", "Bars under people: fear, fondness, anger" }, { "ResetAtClerk", "Reset RealNPCs Memory at a station clerk" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
+            { "FeelingBars", "Bars under people: fear, fondness, anger" }, { "ResetAtClerk", "Reset RealNPCs Memory at a station clerk" }, { "PanelShowsAll", "Show every setting (and the Testing page)" }, { "FeelingBarsMetres", "For people within (metres)" }, { "FeelingBarsShowEmpty", "Show the empty part of each bar" }, { "GrudgeMeter", "Grudge meter (top right)" },
             { "Encounters", "Encounters (master switch)" }, { "EncounterEveryMinutes", "Roll for an encounter every (real minutes)" },
             { "CryingWoman", "The crying woman" }, { "CryingWomanChance", "Her chance on each roll (percent)" }, { "Executions", "Executions on the road" }, { "ExecutionChance", "An execution's chance on each roll (percent)" },
             { "Hermits", "Hermits who woke" }, { "HermitChance", "A new camp's chance (percent)" },
@@ -357,6 +357,10 @@ namespace EnrageWestworld.InGame
             Page mods = ModsPage();
             if (mods != null)
                 _pages.Add(mods);
+            IniEntry all = _ours != null && _ours.Error == null ? _ours.FindKey("PanelShowsAll") : null;
+            ShowAll = all == null || all.Value.Trim().Equals("true", StringComparison.OrdinalIgnoreCase);
+            if (!ShowAll)
+                EssentialsOnly();
             if (keepTitle != null)
             {
                 int i = _pages.FindIndex(p => p.Title == keepTitle);
@@ -455,6 +459,11 @@ namespace EnrageWestworld.InGame
             if (key == Keys.Back || key == Keys.Escape)
             {
                 Close();
+                return;
+            }
+            if (key == Keys.F && !shift && !ctrl && !alt)
+            {
+                ShowEverything(!ShowAll);
                 return;
             }
             if (_pages.Count == 0)
@@ -691,7 +700,7 @@ namespace EnrageWestworld.InGame
         // ---- the UI page (Lex, 2026-10-30: "UI (Nameplates, bars, etc)", and have all UI related settings here") ----
         // The ini keeps its sections; the panel gathers what is on the screen onto one page: [Display]'s names, bars and meter,
         // [Ticker]'s bar and the thoughts over heads, and [Output]'s subtitles, notices and the panel's own ways.
-        private static readonly string[] UiFromOutput = { "Subtitles", "NewsTo", "WarNewsTo", "TerritoryNews", "UseGameFeed", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" };
+        private static readonly string[] UiFromOutput = { "Subtitles", "NewsTo", "WarNewsTo", "TerritoryNews", "UseGameFeed", "PanelShowsAll", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" };
 
         private List<Row> UiRows(List<Row> display)
         {
@@ -705,7 +714,7 @@ namespace EnrageWestworld.InGame
                 rows.AddRange(t);
             }
             Func<string[], List<Row>> from = keys => keys.Select(k => _ours.FindKey(k)).Where(e => e != null && !IsOurKey(e.Key)).Select(e => new Row { E = e }).ToList();
-            List<Row> said = from(new[] { "Subtitles", "NewsTo", "WarNewsTo", "TerritoryNews", "UseGameFeed" }), panel = from(new[] { "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" });
+            List<Row> said = from(new[] { "Subtitles", "NewsTo", "WarNewsTo", "TerritoryNews", "UseGameFeed" }), panel = from(new[] { "PanelShowsAll", "PanelSlowsTime", "PanelTimeScale", "ReplaceEnrageSettings" });
             if (said.Count > 0)
             {
                 rows.Add(new Row { Heading = "Subtitles and notices" });
@@ -1344,6 +1353,55 @@ namespace EnrageWestworld.InGame
                 : testing ? "Up/Down or wheel choose   Q/E page   Enter: set a key   Space: fire it now   Delete: no key   Backspace: close"
                 : "Up/Down or wheel choose   Left/Right change   Shift: x10, or the next section   Q/E page   Tab: RealNPCs / enRAGE   Enter: set a key   Backspace: close";
             Draw.Text(Draw.Fit(keys, SmallScale * 0.94f, W - 0.04f), left, Y + H - 0.04f, SmallScale * 0.94f, 140, 128, 110);
+            // the switch between the essentials and every setting, at the bottom centre of every page (Lex, 2026-10-30)
+            string sw = ShowAll ? "Showing every setting   F: just the essentials" : "Showing the essentials   F: every setting and the Testing page";
+            float sws = SmallScale * 1.05f, sww = Draw.Width(sw, sws);
+            Draw.Rect(0.5f - sww / 2f - 0.012f, Y + H + 0.004f, sww + 0.024f, Draw.LineHeight(sws) + 0.01f, 30, 22, 14, 220);
+            Draw.Text(sw, 0.5f - sww / 2f, Y + H + 0.009f, sws, 236, 206, 140);
+        }
+
+        // ---- the essentials (Lex, 2026-10-30: "as default ... players only see the hotkeys and a handful of other key settings,
+        // unless they switch on the full settings") ----
+        public bool ShowAll;
+        private static readonly string[][] Essentials =
+        {
+            new[] { "The world", "WestWorld", "Stalkers", "Encounters", "Romance", "Lifts" },
+            new[] { "On the screen", "NameCards", "NameCardsSecondLine", "FeelingBars", "GrudgeMeter", "Ticker", "TickerShowsScene", "ThoughtsOverHeads", "Subtitles" },
+            new[] { "The law", "SelfDefenceNoBounty" },
+            new[] { "Memory", "ResetAtClerk" },
+        };
+
+        /// The essentials page, the hotkeys and the mod list; the rest waits behind F.
+        private void EssentialsOnly()
+        {
+            var ess = new Page { Title = "Essentials" };
+            foreach (string[] group in Essentials)
+            {
+                List<Row> rows = group.Skip(1).Select(k => _ours.FindKey(k)).Where(e => e != null).Select(e => new Row { E = e }).ToList();
+                if (rows.Count == 0)
+                    continue;
+                ess.Rows.Add(new Row { Heading = group[0] });
+                ess.Rows.AddRange(rows);
+            }
+            List<Page> keep = new List<Page> { ess };
+            keep.AddRange(_pages.Where(p => p.Title == "Hotkeys" || p.Title == "Mod list"));
+            _pages.Clear();
+            _pages.AddRange(keep);
+        }
+
+        /// F: every setting, or the essentials again; kept in the ini.
+        private void ShowEverything(bool all)
+        {
+            Flush();
+            IniEntry e = _ours != null ? _ours.FindKey("PanelShowsAll") : null;
+            if (e != null)
+                Write(new Row { E = e }, all ? "true" : "false");
+            ShowAll = all;
+            Reload();
+            _page = 0;
+            _scroll = 0;
+            _row = _pages.Count > 0 ? Selectable(_pages[0], 0) : 0;
+            _note = all ? "Every setting is showing, the Testing page too. F: just the essentials." : "The essentials. F: every setting and the Testing page.";
         }
 
         public void Render()
