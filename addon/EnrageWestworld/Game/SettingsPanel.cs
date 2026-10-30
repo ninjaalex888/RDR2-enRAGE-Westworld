@@ -165,6 +165,7 @@ namespace EnrageWestworld.InGame
 
         /// CasualHookups.ini when CasualHookups.asi is installed (set before Show), else null.
         public string HookupsIniPath;
+        public string GameDir, ScriptsDir;   // the Mod list page (Lex, 2026-10-30)
 
         // CasualHookups' own settings (another mod), on the Romance page in our own words; its three chances add up to 100
         private const string HookupsG = "INPUT_INTERACT_OPTION1", HookupsB = "INPUT_INTERACT_HORSE_BRUSH";
@@ -348,6 +349,9 @@ namespace EnrageWestworld.InGame
             if (testing.Rows.Count > 0)
                 _pages.Add(testing);
             _pages.Add(enrage);
+            Page mods = ModsPage();
+            if (mods != null)
+                _pages.Add(mods);
             if (keepTitle != null)
             {
                 int i = _pages.FindIndex(p => p.Title == keepTitle);
@@ -439,7 +443,7 @@ namespace EnrageWestworld.InGame
             if (_confirm != null && key != Keys.Enter)
             {
                 _confirm = null;   // anything but a second Enter keeps it all
-                _note = "Nothing was wiped.";
+                _note = "Nothing changed.";
                 if (key == Keys.Back || key == Keys.Escape)
                     return;
             }
@@ -632,6 +636,12 @@ namespace EnrageWestworld.InGame
                     return;
                 }
                 _confirm = null;
+                if (r.Action.StartsWith("mod:"))
+                {
+                    _note = ToggleMod(r.Action.Substring(4));
+                    Reload();   // the row says its new state
+                    return;
+                }
                 try
                 {
                     _note = _runAction != null ? _runAction(r.Action) : "Nothing to do.";
@@ -645,7 +655,7 @@ namespace EnrageWestworld.InGame
             if (_confirm != null)
             {
                 _confirm = null;
-                _note = "Nothing was wiped.";
+                _note = "Nothing changed.";
             }
             IniEntry e = r.E;
             if (e == null)
@@ -671,6 +681,93 @@ namespace EnrageWestworld.InGame
                 return;
             }
             _note = "Left and Right change this one.";
+        }
+
+        // ---- the Mod list (Lex, 2026-10-30: "a mod list Page menu ... to be able to turn on/off other mods") ----
+        // Each mod in the game folder (.asi plugins) and the scripts folder (Script Hook .NET's .dll scripts), on or off. Off
+        // renames the file with ".off" after it, so the game passes it over; on renames it back; nothing is deleted. A .NET
+        // script takes it on an Insert reload, an .asi plugin only when the game starts again. What modding itself stands on
+        // (Script Hook, its .NET hook, the ASI loader, Lenny's mod loader, the .NET API and the libraries) and RealNPCs itself
+        // are never listed. A mod's .ini beside it is named as its settings.
+        private static readonly string[] ModsNeverListed = { "scripthookrdrdotnet.asi", "vfs.asi", "dinput8.asi", "version.asi", "newtonsoft.json.dll", "scripthookrdrnetapi.dll" };
+
+        private Page ModsPage()
+        {
+            if (string.IsNullOrEmpty(GameDir) || !Directory.Exists(GameDir))
+                return null;
+            Page page = new Page { Title = "Mod list" };
+            try
+            {
+                List<Row> scripts = ModRows(ScriptsDir, ".dll", false), plugins = ModRows(GameDir, ".asi", true);
+                if (scripts.Count > 0)
+                {
+                    page.Rows.Add(new Row { Heading = "Scripts: on or off with the next Insert reload" });
+                    page.Rows.AddRange(scripts);
+                }
+                if (plugins.Count > 0)
+                {
+                    page.Rows.Add(new Row { Heading = "ASI plugins: on or off when the game next starts" });
+                    page.Rows.AddRange(plugins);
+                }
+            }
+            catch (Exception ex)
+            {
+                page.Message = "The game folder couldn't be read: " + ex.Message;
+                return page;
+            }
+            if (page.Rows.Count == 0)
+                page.Message = "No other mods found in the game folder or the scripts folder.";
+            return page;
+        }
+
+        private List<Row> ModRows(string dir, string ext, bool plugin)
+        {
+            var rows = new List<Row>();
+            if (string.IsNullOrEmpty(dir) || !Directory.Exists(dir))
+                return rows;
+            string ours = Path.GetFileName(typeof(SettingsPanel).Assembly.Location).ToLowerInvariant();
+            var files = Directory.GetFiles(dir, "*" + ext).Concat(Directory.GetFiles(dir, "*" + ext + ".off"));
+            foreach (string path in files.OrderBy(f => Path.GetFileName(f), StringComparer.OrdinalIgnoreCase))
+            {
+                bool on = !path.EndsWith(".off", StringComparison.OrdinalIgnoreCase);
+                string file = on ? Path.GetFileName(path) : Path.GetFileName(path.Substring(0, path.Length - 4));
+                if (file.ToLowerInvariant() == ours || ModsNeverListed.Contains(file.ToLowerInvariant()))
+                    continue;
+                string bare = Path.GetFileNameWithoutExtension(file), name = bare.Equals("NemesisMod", StringComparison.OrdinalIgnoreCase) ? "enRAGE (NemesisMod)" : bare;
+                string ini = File.Exists(Path.Combine(dir, bare + ".ini")) ? bare + ".ini" : null;
+                string when = plugin ? "when the game next starts" : "with the next Insert reload";
+                rows.Add(new Row
+                {
+                    Action = "mod:" + path,
+                    ActionLabel = name + "  -  " + (on ? "on" : "OFF") + (ini != null ? "  (settings: " + ini + ")" : ""),
+                    ActionAsk = "Turn " + name + (on ? " off" : " on") + "? It takes effect " + when + ". Press Enter again to do it; any other key leaves it " + (on ? "on" : "off") + ".",
+                    Help = file + " in the " + (plugin ? "game folder" : "scripts folder") + ", " + (on ? "on" : "off (renamed " + file + ".off)") + ". Enter, then Enter again, to turn it " +
+                           (on ? "off" : "on") + "; it takes effect " + when + "." + (bare.Equals("NemesisMod", StringComparison.OrdinalIgnoreCase) ? " Off, RealNPCs runs on its own." : "")
+                });
+            }
+            return rows;
+        }
+
+        /// Turns one mod off (".off" after its name) or back on; what to say back.
+        private static string ToggleMod(string path)
+        {
+            bool on = !path.EndsWith(".off", StringComparison.OrdinalIgnoreCase);
+            string to = on ? path + ".off" : path.Substring(0, path.Length - 4), file = Path.GetFileName(on ? path : to);
+            bool plugin = file.EndsWith(".asi", StringComparison.OrdinalIgnoreCase);
+            try
+            {
+                if (!File.Exists(path))
+                    return file + " isn't there any more.";
+                if (File.Exists(to))
+                    return "Nothing changed: " + Path.GetFileName(to) + " is there already (one of the two needs moving by hand).";
+                File.Move(path, to);
+            }
+            catch (Exception ex)
+            {
+                return "Couldn't turn " + file + (on ? " off: " : " on: ") + ex.Message;
+            }
+            Log.Write("MODS " + file + (on ? " turned off (" : " turned on (") + Path.GetFileName(path) + " -> " + Path.GetFileName(to) + ")");
+            return file + (on ? " is off" : " is on") + ": " + (plugin ? "restart the game for it to take effect." : "press Insert to reload the scripts for it to take effect.");
         }
 
         /// A Testing row's test, now: it fires a second after the panel is gone.

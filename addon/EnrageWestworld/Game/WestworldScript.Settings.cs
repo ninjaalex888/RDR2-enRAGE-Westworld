@@ -176,6 +176,8 @@ namespace EnrageWestworld.InGame
             string scripts = Path.GetDirectoryName(base.FileName);
             string game = GameDir();   // CasualHookups' settings too, when it's installed (WestworldScript.Hookups.cs)
             Panel.HookupsIniPath = game != null && File.Exists(Path.Combine(game, "CasualHookups.asi")) ? Path.Combine(game, "CasualHookups.ini") : null;
+            Panel.GameDir = game;        // the Mod list page
+            Panel.ScriptsDir = scripts;
             Panel.Show(_bridge != null ? _bridge.EnrageIniPath(scripts) : Path.Combine(scripts ?? string.Empty, "NemesisMod.ini"));
             Log.Write("SETTINGS panel opened");
         }
