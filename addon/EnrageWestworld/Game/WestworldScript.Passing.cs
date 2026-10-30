@@ -246,8 +246,8 @@ namespace EnrageWestworld.InGame
             return best;
         }
 
-        private int _passMinded;
-        private string _passMindedLast;
+        private int _passMinded, _passMindedAt;
+        private string _passMindedLast, _passMindedPair;
 
         /// With MindLive and MindPassing: what the first one feels about the other lately, and their mood, change the greeting
         /// the tie gives. Only someone the shadow already knows; its own catch (the tie's greeting stands on a fault).
@@ -259,10 +259,14 @@ namespace EnrageWestworld.InGame
                 if (r == null || r.A == null || !_mindWho.TryGetValue(r.A.Handle, out w) || w.Id == null || w.Id != r.AId || w.Traits == null)
                     return;
                 long g = _store.LastGameMin;
-                string mood = Mood.SoreOrGlad(_engine.Shadow.MoodOf(w.Id, w.Traits, g), Mood.Baseline(w.Traits));
+                string mood = Passing.DayMood(_engine.Shadow.MoodOf(w.Id, w.Traits, g), Mood.Baseline(w.Traits));   // against their own nature: a sour one isn't sore at a friend every day
                 string why = Passing.Minded(r.Act, _engine.Shadow.Felt(w.Id), r.BId, mood, r.AWoman, Person.FirstOf(r.BName), g, r.Seed);
                 if (why == null)
                     return;
+                if (r.Pair == _passMindedPair && _now - _passMindedAt < 60000 && _now >= _passMindedAt)
+                    return;   // the same pair found again within the minute (the scan runs every second): counted and logged once
+                _passMindedPair = r.Pair;
+                _passMindedAt = _now;
                 _passMinded++;
                 _passMindedLast = r.AName + ": " + why;
                 Log.Detail("NOD the mind: " + r.AName + " passing " + r.BName + ": " + why + " (" + r.Act.Gesture + (r.Act.Speaks ? ", a word" : ", no word") + ")");
@@ -550,7 +554,8 @@ namespace EnrageWestworld.InGame
                 return "off ([Scenes] Acknowledge)";
             return "on; this session: " + (_nodCount.Count == 0 ? "none yet" : string.Join(", ", _nodCount.Select(kv => kv.Key + " " + kv.Value))) +
                    "; thoughts shown " + _nodShown + ", out of view " + _nodUnseen + (_nodLast != null ? "; last: " + _nodLast : "") +
-                   (_nod != null ? "; one going on" : _nodWhyNot != null ? "; now: " + _nodWhyNot : "") + "; known handles cached " + _nodWho.Count;
+                   (_nod != null ? "; one going on" : _nodWhyNot != null ? "; now: " + _nodWhyNot : "") + "; known handles cached " + _nodWho.Count +
+                   (_cfg.MindLive && _cfg.MindPassing ? "; the mind changed " + _passMinded + " greetings" + (_passMindedLast != null ? " (last: " + _passMindedLast + ")" : "") : "");
         }
     }
 }
