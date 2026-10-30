@@ -51,7 +51,7 @@ namespace EnrageWestworld.Core
         public bool ThoughtsOverHeads = true;
         public float ThoughtsOverHeadScale = 0.24f;
         public bool ScenesOnTicker = true;        // a street scene's lines on the ticker while it plays within ScenesOnTickerMetres (2026-10-29, Lex)
-        public float ScenesOnTickerMetres = 12f;   // 30 until settings version 120 (Lex, 2026-10-30: a line from 26 m off, out of sight)
+        public float ScenesOnTickerMetres = 12f;   // was 30 before settings version 120 (Lex, 2026-10-30: a mourner's words subtitled from 26 m away)
         public bool ShareWithEnrage = true;
         public bool Minds = true;
         public bool RecordMinds = true;
