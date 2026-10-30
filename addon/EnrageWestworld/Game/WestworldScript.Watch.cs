@@ -340,7 +340,7 @@ namespace EnrageWestworld.InGame
                 NoWanted(bully, true);
         }
 
-        /// You stepped in on the bully: the man he had hold of keeps out of it and thanks you, never turns on you (Lex,
+        /// You stopped the bully: the man he was laying into stays clear of the shooting and gives his thanks, never turns on you (Lex,
         /// 2026-10-30: "the NPC he was fighting then shot at me, he should be thanking me for helping instead"). He's let
         /// be by the world's alarms for twelve seconds (no answering the shots), turned to you, and says his thanks.
         private void Rescued(int victim, int now)
@@ -356,7 +356,7 @@ namespace EnrageWestworld.InGame
             _rescuedPed = victim;
             _rescuedThankAt = now + 1500;
             _rescuedUntil = now + 12000;
-            Log.Write("RESCUED " + NameToShow(victim) + ": you stepped in on the man who had hold of him; he keeps out of it and thanks you");
+            Log.Write("RESCUED " + NameToShow(victim) + ": you stopped the man laying into him; he stays clear of the shooting and gives his thanks");
         }
 
         private void RescuedStep(int now, int player)
@@ -369,7 +369,7 @@ namespace EnrageWestworld.InGame
             {
                 _rescuedThankAt = 0;
                 Speech.SayAny(h, new[] { "GENERIC_THANKS", "THANKS" }, player);
-                SpeechCaption(NameToShow(h), Voice.Pick(h.ToString(), "Obliged to you, mister.", "Thank you. I owe you one.", "Lord, thank you. He'd have killed me."), h, 3000);
+                SpeechCaption(NameToShow(h), Voice.Pick(h.ToString(), "Much appreciated, friend. Never saw that coming.", "Bless you. I thought I was done for.", "Lord, thank you. He'd have killed me."), h, 3000);
             }
             if (gone || now >= _rescuedUntil)
             {
