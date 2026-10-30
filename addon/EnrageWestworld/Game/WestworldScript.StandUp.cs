@@ -115,7 +115,9 @@ namespace EnrageWestworld.InGame
             cast.Names[2] = Person.FirstOf(by.Who.Name);
             cast.Tempers[2] = by.Who.Temper;
             cast.CWoman = by.Who.Woman;
-            if (!Scenes.StandUp(s, cast, seed, backs, far, takeAway, cFriend))
+            // C names B by his own knowing (any tie between them) on the mind's path only; the old path names B as A knows him, as before
+            bool? cKnowsB = took != null ? (bool?)_store.Ties.Any(t => t.Has(by.Who.Id) && t.Has(b.Id)) : null;
+            if (!Scenes.StandUp(s, cast, seed, backs, far, takeAway, cKnowsB))
             {
                 cast.Names[2] = null;
                 cast.Tempers[2] = null;

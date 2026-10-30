@@ -720,6 +720,7 @@ namespace EnrageWestworld.InGame
             _mindEvPeople.Clear();
             OnlookForget();
             DoubtForget();
+            YouNodForget();
             _mindFelt = 0;
             _mindLastFelt = null;   // nothing from a rewound future in F7
             _mindChooseCursor = 0;

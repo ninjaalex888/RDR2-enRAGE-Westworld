@@ -58,6 +58,7 @@ namespace EnrageWestworld.InGame
             public bool RescueTried, SaverFriend, SaverClose, SaverWoman, SaverAnswered, SaverHeeded;
             public int SaverHandle, SaverUntil, SaverSpokeAt;
             public string SaverId, SaverName;
+            public uint SaverModel;   // the body the saver was in, so a handle the game gives to someone else is not taken for them
         }
 
         private readonly List<WakeAct> _wakeActs = new List<WakeAct>();

@@ -29,6 +29,15 @@ namespace EnrageWestworld.InGame
         private readonly Dictionary<string, int> _youNodAt = new Dictionary<string, int>();
         private readonly Dictionary<string, long> _youSpokeDay = new Dictionary<string, long>();
         private YouNod _youNod;
+
+        /// With the shadow's (a load, a new engine): a greeting pending on a handle the game may give to someone else, and the
+        /// day's and the five minutes' marks (the branch read, night 2026-10-29).
+        private void YouNodForget()
+        {
+            _youNod = null;
+            _youNodAt.Clear();
+            _youSpokeDay.Clear();
+        }
         private int _youNodNext, _youNods;
         private string _youNodLast;
 

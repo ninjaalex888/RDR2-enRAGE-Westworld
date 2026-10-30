@@ -51,7 +51,7 @@ namespace EnrageWestworld.InGame
                 if (act.SaverHandle == 0)
                     return false;
                 int s = act.SaverHandle, h = act.Handle;
-                if (!ENTITY.DOES_ENTITY_EXIST(s) || ENTITY.IS_ENTITY_DEAD(s) || MayDirectWhyNot(new Ped(s)) != null)
+                if (!ENTITY.DOES_ENTITY_EXIST(s) || ENTITY.IS_ENTITY_DEAD(s) || ENTITY.GET_ENTITY_MODEL(s) != act.SaverModel || MayDirectWhyNot(new Ped(s)) != null)
                     return RescueGiveUp(act, now, "was taken up");
                 string theirs = RescueTheirsWhyNot(act);
                 if (theirs != null)
@@ -213,6 +213,7 @@ namespace EnrageWestworld.InGame
                 return;
             }
             act.SaverHandle = bestH;
+            act.SaverModel = ENTITY.GET_ENTITY_MODEL(bestH);
             act.SaverId = best.Id;
             act.SaverName = best.Name;
             act.SaverFriend = bestWarm > 0;

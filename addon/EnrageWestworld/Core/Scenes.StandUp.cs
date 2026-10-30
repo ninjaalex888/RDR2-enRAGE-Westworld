@@ -78,7 +78,7 @@ namespace EnrageWestworld.Core
                                           : Voice.Pick(seed + "sy", "...Fine. Not worth the skinned knuckles.", "Another time, " + bToA + ".", "You're lucky " + NThird(c, 2, seed) + " came by."), "storm", "walkaway"));
                 add.Add(new Beat(1, null, null, "faceone") { To = 2 });
                 add.Add(new Beat(1, rough ? Voice.Pick(seed + "st", "Thank you, " + cn + ". I owe you.", cn + ". Thank God.", "Obliged, " + cn + ". He'd have done it.")
-                                          : Voice.Pick(seed + "sz", "Obliged, " + cn + ". He had it coming, but obliged.", "Thank you, " + cn + ". I'd have lost my temper."), "thanks") { To = 2 });
+                                          : Voice.Pick(seed + "sz", "Obliged, " + cn + ". " + (c.AWoman ? "She" : "He") + " had it coming, but obliged.", "Thank you, " + cn + ". I'd have lost my temper."), "thanks") { To = 2 });
                 s.Beats.RemoveRange(at, s.Beats.Count - at);
                 s.Beats.AddRange(add);
                 s.Kind = "argue";   // it never came to blows
@@ -94,8 +94,8 @@ namespace EnrageWestworld.Core
                                           : Voice.Pick(seed + "sw", "Step aside, " + cn + ".", "This is ours to settle, " + cn + "."), "angry", "face") { To = 2 });   // said to the one who stepped in
                 // C speaks to B by C's own knowing (bToC: a friend by name, a stranger mister or ma'am), A by his (bToA)
                 add.Add(new Beat(2, null, null, "faceone") { To = 1 });
-                add.Add(new Beat(2, c.CWoman ? Voice.Pick(seed + "ta", "Come with me, " + bToC + ". Now. Don't look back at him.", "Leave it, " + bToC + ". Walk with me.", bToC + ", come away. He isn't worth one more word.")
-                                          : Voice.Pick(seed + "ta", "Come on, " + bToC + ". He ain't worth it.", "Walk away, " + bToC + ". Walk with me.", "Leave it, " + bToC + ". We're going."), "mild") { To = 1 });
+                add.Add(new Beat(2, c.CWoman ? Voice.Pick(seed + "ta", "Come with me, " + bToC + ". Now. Don't look back at " + (c.AWoman ? "her" : "him") + ".", "Leave it, " + bToC + ". Walk with me.", bToC + ", come away. " + (c.AWoman ? "She" : "He") + " isn't worth one more word.")
+                                          : Voice.Pick(seed + "ta", "Come on, " + bToC + ". " + (c.AWoman ? "She" : "He") + " ain't worth it.", "Walk away, " + bToC + ". Walk with me.", "Leave it, " + bToC + ". We're going."), "mild") { To = 1 });
                 // the two leave together, away from A (the Director's "leavewith": both walk to one spot past C, side by side)
                 add.Add(new Beat(2, null, null, "leavewith") { To = 0 });
                 add.Add(new Beat(1, null, null, "leavewith") { To = 0 });

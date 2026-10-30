@@ -77,7 +77,7 @@ namespace EnrageWestworld.InGame
                         if (noticed >= 2)
                             return;
                         MindWho w;
-                        if (wh == rh || !_mindWho.TryGetValue(wh, out w) || w.Id == null || w.Traits == null || w.P == null || w.Id == r.Id)
+                        if (wh == rh || !_mindWho.TryGetValue(wh, out w) || w.Id == null || w.Traits == null || w.P == null || w.Id == r.Id || !ENTITY.DOES_ENTITY_EXIST(wh) || ENTITY.IS_ENTITY_DEAD(wh) || w.Model != ENTITY.GET_ENTITY_MODEL(wh))
                             continue;
                         string key = w.Id + "|" + r.Id;
                         if (_revivedNoticed.Contains(key) || !Engine.SawThemDie(_store.Find(w.Id), r.Id))
