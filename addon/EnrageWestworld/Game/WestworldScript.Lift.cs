@@ -17,7 +17,8 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private Ped _lifter;
-        private int _lifterSince, _liftLookAt, _lifts, _liftsBack, _lifterWalkAt;
+        private int _lifterSince, _liftLookAt, _lifts, _liftsBack, _lifterWalkAt, _lifterGiveUpMs = 30000;
+        private float _lifterNearest = 999f;
         private uint _lifterModel;
         private Ped _liftRun;
         private int _liftRunAt, _liftRunTake;
@@ -81,6 +82,8 @@ namespace EnrageWestworld.InGame
             _lifter = pick;
             _lifterSince = now;
             _lifterWalkAt = now;
+            _lifterGiveUpMs = 30000 + (int)(pick.Position.DistanceTo(me.Position) * 1500f);   // a far start gets longer (Lex, 2026-10-30: from 20 m he gave up)
+            _lifterNearest = 999f;
             _lifterModel = ENTITY.GET_ENTITY_MODEL(pick.Handle);
             Pacing.Note(_store.Pace, "lift", _placeTown, null, g);
             NoteInScene(new[] { pick }, "lift", now);
@@ -96,24 +99,33 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             Ped p = _lifter;
-            if (p == null || !p.Exists() || p.IsDead || ENTITY.GET_ENTITY_MODEL(p.Handle) != _lifterModel || now - _lifterSince > 30000 || _director.Involves(p.Handle))
+            if (p == null || !p.Exists() || p.IsDead || ENTITY.GET_ENTITY_MODEL(p.Handle) != _lifterModel || now - _lifterSince > _lifterGiveUpMs || _director.Involves(p.Handle))
             {
                 if (p != null && p.Exists() && !p.IsDead)
                     WanderLater(p.Handle, now);
                 _lifter = null;
-                Log.Write("LIFT given up: he never reached you");
+                Log.Write("LIFT given up: he never reached you (nearest " + _lifterNearest.ToString("0.0") + " m)");
                 return;
             }
             // sent on again only once his walk has stopped, at most every 3 s: the walk given anew every few frames each
             // 3 s stopped and started him, and from 20 m off he never got there (Lex, 2026-10-30)
-            if (now - _lifterWalkAt >= 3000)
+            float dist = p.Position.DistanceTo(me.Position);
+            _lifterNearest = Math.Min(_lifterNearest, dist);
+            // the walk ends short of you, arm's length off (2026-10-30: walked over and never took it), so standing within 4 m
+            // he is sent the last step at once, and the bump counts from 2 m
+            if (dist < 4f && ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.3f && now - _lifterWalkAt >= 800)
+            {
+                _lifterWalkAt = now;
+                TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, -1, 1.0f, 0.3f, 0f, 0);   // a walk, stopping at 0.3 m
+            }
+            else if (now - _lifterWalkAt >= 3000)
             {
                 _lifterWalkAt = now;
                 int status = TASK.GET_SCRIPT_TASK_STATUS(p.Handle, Natives.Hash("SCRIPT_TASK_GO_TO_ENTITY"), true);
                 if (status != 0 && status != 1 && ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.3f)   // and standing: a wrong task name never stops a walking man
                     TASK.TASK_GO_TO_ENTITY(p.Handle, me.Handle, -1, 1.3f, 0.4f, 0f, 0);
             }
-            if (p.Position.DistanceTo(me.Position) > 1.3f)
+            if (dist > 2f)
                 return;
             // the bump: his pardon, your cash
             int cash = MONEY._MONEY_GET_CASH_BALANCE();
