@@ -1373,7 +1373,8 @@ namespace EnrageWestworld.InGame
         public bool ShowAll;
         private static readonly string[][] Essentials =
         {
-            new[] { "The world", "WestWorld", "Stalkers", "Encounters", "Romance", "Lifts" },
+            new[] { "The world", "WestWorld", "Stalkers", "Encounters", "Romance" },
+            new[] { "Things that happen to you", "Lifts" },   // the pickpocket (Lex, 2026-10-30: not one of the world's big switches)
             new[] { "On the screen", "NameCards", "NameCardsSecondLine", "FeelingBars", "GrudgeMeter", "Ticker", "TickerShowsScene", "ThoughtsOverHeads", "Subtitles" },
             new[] { "The law", "SelfDefenceNoBounty" },
             new[] { "Memory", "ResetAtClerk" },
