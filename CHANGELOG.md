@@ -4,6 +4,7 @@
 
 ### The language layer, measured (Lex, 2026-10-30: Ollama installed, an RTX 5080 at max settings)
 
+- Its first run in game crashed the game (a stack overflow, the CLR's 0xC00000FD): building a request asks for the written line it may not copy, and the written line was worded through the swap, which built the request again, round and round. A request now gets the written line itself, and the swap can never run inside itself. The tests had it off.
 - Measured beside the game at max settings: llama3.1:8b (4-bit) loads in about 7 s once a session, then words a thought in 0.3 to 0.4 s (20 to 26 tokens); with it loaded the card held 13.8 GB of its 16.3. A request now asks for no more than 1,024 tokens of context (less memory, ample for one thought), and the first 25 answers and swaps a session go to the main log (`LANGUAGE answer for ... in N ms`, `LANGUAGE shown for ...`), so a play session shows what the model wrote and how fast.
 
 ### Plans over days (the NPC-life run, step 6)

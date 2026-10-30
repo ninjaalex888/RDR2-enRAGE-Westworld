@@ -123,7 +123,7 @@ namespace EnrageWestworld.Core
                     if (line != null)
                     {
                         pull = 40f + 50f * Math.Min(1f, most);
-                        return new KeyValuePair<string, string>(Worded(p, "mind:feeling:" + kind, line), "mind:feeling:" + kind);
+                        return new KeyValuePair<string, string>(request ? line : Worded(p, "mind:feeling:" + kind, line), "mind:feeling:" + kind);   // a request wants the written line itself
                     }
                 }
             }
@@ -147,7 +147,7 @@ namespace EnrageWestworld.Core
             if (need == null)
                 return default(KeyValuePair<string, string>);
             pull = 38f;
-            return new KeyValuePair<string, string>(Worded(p, "mind:need:" + NeedState.Names[top], need), "mind:need:" + NeedState.Names[top]);
+            return new KeyValuePair<string, string>(request ? need : Worded(p, "mind:need:" + NeedState.Names[top], need), "mind:need:" + NeedState.Names[top]);
         }
 
         // ---- the language layer (2026-10-29; roadmap 15; Core/Language.Client.cs, Game/WestworldScript.Language.cs) ----
@@ -160,10 +160,15 @@ namespace EnrageWestworld.Core
 
         /// The mind's own line, worded by the model when [Mind] Language is on and a checked answer is kept for this situation;
         /// else the written line. A fault gives the written line and is logged once.
+        [ThreadStatic] private static bool _inSwap;
+
         private string Worded(Person p, string source, string written)
         {
-            if (written == null || Cfg == null || !Cfg.Language || LanguageSwap == null || _languageSwapFailed)
+            // never into itself: the request the swap builds asks for the written line, which once came back here, round and
+            // round until the stack gave out and the game with it (Lex, 2026-10-30, the language layer's first run)
+            if (written == null || Cfg == null || !Cfg.Language || LanguageSwap == null || _languageSwapFailed || _inSwap)
                 return written;
+            _inSwap = true;
             try
             {
                 string line = LanguageSwap(p, source, written);
@@ -174,6 +179,10 @@ namespace EnrageWestworld.Core
                 _languageSwapFailed = true;
                 Log("LANGUAGE the swap failed once, the written lines from here: " + ex.Message);
                 return written;
+            }
+            finally
+            {
+                _inSwap = false;
             }
         }
 
