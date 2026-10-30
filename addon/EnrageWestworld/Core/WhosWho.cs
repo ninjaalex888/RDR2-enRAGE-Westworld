@@ -1,8 +1,8 @@
 // Who's who (night 2026-10-29, the backlog's 6b; roadmap 24): a page in the reader of the people you've met, read from
 // what is already kept (who they are, how they take you, who they are tied to), the most recent first. Read only: it
 // saves nothing and makes nobody (a person is listed only if the store already holds them); built anew each time the
-// reader opens, never kept among the papers. With [Mind] MindLive and [Display] WhosWho. And what the mind feels about you
-// lately, as the greetings to you read it (Passing.ToYou), for those the shadow holds this session. All lines are original
+// reader opens, never kept among the papers. With [Display] WhosWho, for everyone (Lex, 2026-10-30). And, with [Mind] MindLive,
+// what the mind feels about you lately, as the greetings to you read it (Passing.ToYou), for those the shadow holds this session. All lines are original
 // to this add-on.
 using System;
 using System.Collections.Generic;

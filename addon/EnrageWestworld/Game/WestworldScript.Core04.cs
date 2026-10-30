@@ -303,13 +303,14 @@ namespace EnrageWestworld.InGame
                 return;
             List<Paper> papers = _store != null ? _store.Papers.Where(p => p.Delivered).OrderByDescending(p => p.At).ToList() : new List<Paper>();
             int unread = papers.FindIndex(p => !p.Read);
-            if (_cfg != null && _cfg.MindLive && _cfg.WhosWho && _store != null)
+            if (_cfg != null && _cfg.WhosWho && _store != null)
             {
-                // the people you've met, last among the papers, made now and never kept (Core/WhosWho.cs)
+                // the people you've met, last among the papers, made now and never kept (Core/WhosWho.cs); for everyone, its
+                // "Lately" (the mind's feelings) only with MindLive (Lex, 2026-10-30)
                 string body = null;
                 try
                 {
-                    body = WhosWho.Body(_store, Bridge.Now(), id => _engine != null && _engine.Shadow != null ? _engine.Shadow.Felt(id) : null);
+                    body = WhosWho.Body(_store, Bridge.Now(), id => _cfg.MindLive && _engine != null && _engine.Shadow != null ? _engine.Shadow.Felt(id) : null);
                 }
                 catch (Exception ex)
                 {
