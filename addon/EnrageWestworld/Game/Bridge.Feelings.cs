@@ -154,6 +154,50 @@ namespace EnrageWestworld.InGame
             return ProvFields(p) ? Convert.ToSingle(_provScore.GetValue(p)) : 0f;
         }
 
+        /// "Forget you" (Lex, 2026-10-30; WestworldScript.Forget.cs): enRAGE's townsfolk forget the player (Typed.AcqForgetYouAll)
+        /// and the strangers' grudges building against him go (its _provoked, all but those on a record: its nemeses and
+        /// their hate are its own story). Direct writes (CLAUDE.md, "Writing to enRAGE"), then its people marked to be saved.
+        /// What was done, or null when the townsfolk couldn't be reached.
+        public string ForgetYou()
+        {
+            if (!Present || _people == null)
+                return null;
+            int folk, grudges = 0;
+            try
+            {
+                folk = Typed.AcqForgetYouAll(_people.GetValue(Mod, null));
+                if (folk < 0)
+                    return null;
+                if (_peopleDirty != null)
+                    _peopleDirty.SetValue(Mod, true);
+            }
+            catch (Exception ex)
+            {
+                Fail("forgetting you (the townsfolk)", ex);
+                return null;
+            }
+            try
+            {
+                ResolveFeelings();
+                IDictionary prov = _provokedField != null ? _provokedField.GetValue(Mod) as IDictionary : null;
+                if (prov != null)
+                {
+                    var drop = new List<object>();
+                    foreach (DictionaryEntry e in prov)
+                        if (e.Value != null && ProvFields(e.Value) && _provRecord.GetValue(e.Value) == null)
+                            drop.Add(e.Key);
+                    foreach (object k in drop)
+                        prov.Remove(k);
+                    grudges = drop.Count;
+                }
+            }
+            catch (Exception ex)
+            {
+                Fail("forgetting you (the strangers' grudges)", ex);
+            }
+            return folk + " townsfolk who knew you and " + grudges + " strangers' grudges";
+        }
+
         private bool ProvFields(object p)
         {
             if (_provScore == null)

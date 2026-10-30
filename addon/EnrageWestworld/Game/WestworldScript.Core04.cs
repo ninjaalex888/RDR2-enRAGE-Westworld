@@ -845,6 +845,7 @@ namespace EnrageWestworld.InGame
             SubtitleStep(now);
             TerritoryStep(now);
             FlirtPromptStep();
+            ForgetPromptStep();   // Reset RealNPCs Memory in a station clerk's list (WestworldScript.Forget.cs)
             RoughStep(now);
             Safe("pleading", _aPlead);
             Safe("pickpockets", _aTheft);

@@ -11,12 +11,13 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 120;
+        public const int CurrentVersion = 121;
 
         public int SettingsVersion = CurrentVersion;
 
         // [Features]
         public bool Conversations = true;
+        public bool ResetAtClerk = true;   // "Reset RealNPCs Memory" in a station clerk's list (Lex, 2026-10-30; settings version 121)
         public bool Remarks = true;
         public bool Thoughts = true;
         public bool Diaries = true;
@@ -676,6 +677,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("SettingsVersion = " + SettingsVersion + "   ; leave this alone");
             b.AppendLine();
             b.AppendLine("[Features]");
+            b.AppendLine("ResetAtClerk = " + B(ResetAtClerk) + "   ; a station clerk's list offers Reset RealNPCs Memory (hold Q): everyone forgets what they know and feel about you, enRAGE's townsfolk too; the people and their lives stay; copies of the saves are kept");
             b.AppendLine("Conversations = " + B(Conversations) + "   ; greet someone enRAGE knows and they talk about themselves");
             b.AppendLine("Remarks = " + B(Remarks) + "   ; people who remember you speak up when you pass");
             b.AppendLine("Thoughts = " + B(Thoughts) + "   ; now and then, what someone privately thinks of you");

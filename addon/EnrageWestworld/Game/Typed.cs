@@ -68,6 +68,40 @@ namespace EnrageWestworld.InGame
         [MethodImpl(MethodImplOptions.NoInlining)] public static void AcqSetDead(object a, bool v) { ((Acquaintance)a).Dead = v; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static int AcqLike(object a) { return ((Acquaintance)a).Like; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static void AcqSetLike(object a, int v) { ((Acquaintance)a).Like = v; }
+
+        /// "Forget you" (Lex, 2026-10-30): every townsperson forgets what they know and feel about the player: knowing him, their
+        /// fear, fondness and grudge, the favours, what they saw of him and whether they told the law. How many knew him.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public static int AcqForgetYouAll(object people)
+        {
+            int knew = 0;
+            IEnumerable<Acquaintance> all = people as IEnumerable<Acquaintance>;
+            if (all == null)
+                return -1;
+            foreach (Acquaintance a in all)
+            {
+                if (a == null)
+                    continue;
+                if (a.Met || a.Fear != 0 || a.Like != 0 || a.Grudge != 0 || a.Favours != 0 || (a.Witnessed != null && a.Witnessed.Count > 0))
+                    knew++;
+                a.Met = false;
+                a.Fear = 0;
+                a.Like = 0;
+                a.Grudge = 0;
+                a.GrudgeSettled = false;
+                a.SawFace = null;
+                a.TimesSeen = 0;
+                a.Favours = 0;
+                a.FavourNotes?.Clear();
+                a.Witnessed?.RemoveAll(w => w != null && (w.StartsWith("saw you") || w.StartsWith("heard what you did")));
+                a.Reported = false;
+                a.KeptQuiet = false;
+                a.LastScaredMin = 0;
+                a.LastGreetDay = 0;
+                a.LikeSpread = false;
+            }
+            return knew;
+        }
         [MethodImpl(MethodImplOptions.NoInlining)] public static int AcqGrudge(object a) { return ((Acquaintance)a).Grudge; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static int AcqFear(object a) { return ((Acquaintance)a).Fear; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static List<string> AcqWitnessed(object a) { return ((Acquaintance)a).Witnessed; }

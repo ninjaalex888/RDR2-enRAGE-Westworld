@@ -19,6 +19,8 @@ namespace EnrageWestworld.InGame
             {
                 case "wipe-memories":
                     return WipeMemories();
+                case "forget-you":
+                    return ForgetYou("the settings panel");
                 case null:
                     return "Nothing to do.";
                 case "stage-execution":
@@ -61,36 +63,7 @@ namespace EnrageWestworld.InGame
                 return "Couldn't keep a copy of the save first, so nothing was wiped: " + ex.Message;
             }
             int people = _store.People.Count, residents = _store.Residents.Count, ties = _store.Ties.Count, deaths = _store.Deaths != null ? _store.Deaths.Count : 0;
-            // everyone the features hold, let go first
-            _director.Abort("memories wiped");
-            EndEncounters("memories wiped");
-            WakeActsAbort();
-            TrystAbort();
-            PassingAbort();
-            TestCastClear("memories wiped");
-            WanderLaterClear();
-            SightsReset("memories wiped");
-            VicesReset();
-            BelowAbort("the wipe");
-            PatientAbort("the wipe");
-            GrudgesAbort();
-            KinAbort();
-            _sightSeen.Clear();
-            _sightTown.Clear();
-            if (_rough != null)
-                RoughEnd(_rough, "stopped: memories wiped", _now);
-            ClearRegularBlips();
-            // and what the game side remembers of who is who
-            _resBind.Clear();
-            _bodyWas.Clear();
-            _known.Clear();
-            _deadNoted.Clear();
-            _downed.Clear();
-            _shareDue.Clear();
-            _unshareDue.Clear();
-            _courtThoughts.Clear();
-            _disbeliefAt.Clear();
-            _wakeCool.Clear();
+            LetGoOfEveryone("memories wiped");
             try
             {
                 if (File.Exists(path))
@@ -105,6 +78,42 @@ namespace EnrageWestworld.InGame
             Log.Write("WIPE: everything RealNPCs remembered of the people in this world is gone (" + people + " people, " + residents + " residents, " + ties + " ties, " +
                       deaths + " deaths); the old save is " + backup);
             return "Wiped: " + people + " people, " + residents + " residents, " + ties + " ties and " + deaths + " deaths forgotten. enRAGE's own memory is untouched; the old save is in RealNPCs\\backup.";
+        }
+
+        /// Everyone the features hold, let go, and what the game side remembers of who is who, forgotten: the memory wipe and
+        /// "forget you" (WestworldScript.Forget.cs) before the store is reloaded.
+        private void LetGoOfEveryone(string why)
+        {
+            // everyone the features hold, let go first
+            _director.Abort(why);
+            EndEncounters(why);
+            WakeActsAbort();
+            TrystAbort();
+            PassingAbort();
+            TestCastClear(why);
+            WanderLaterClear();
+            SightsReset(why);
+            VicesReset();
+            BelowAbort(why);
+            PatientAbort(why);
+            GrudgesAbort();
+            KinAbort();
+            _sightSeen.Clear();
+            _sightTown.Clear();
+            if (_rough != null)
+                RoughEnd(_rough, "stopped: " + why, _now);
+            ClearRegularBlips();
+            // and what the game side remembers of who is who
+            _resBind.Clear();
+            _bodyWas.Clear();
+            _known.Clear();
+            _deadNoted.Clear();
+            _downed.Clear();
+            _shareDue.Clear();
+            _unshareDue.Clear();
+            _courtThoughts.Clear();
+            _disbeliefAt.Clear();
+            _wakeCool.Clear();
         }
     }
 }
