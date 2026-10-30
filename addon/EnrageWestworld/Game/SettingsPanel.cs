@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using EnrageWestworld.Core;
@@ -1345,31 +1346,60 @@ namespace EnrageWestworld.InGame
         {
             if (_capture != null)
                 return;
-            if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, WheelUp))
+            // the cursor's own scroll controls only live in the game's menus; out in the world the wheel is the weapon
+            // and menu-scroll controls (Lex, 2026-10-30: the wheel didn't move the panel)
+            if (Pressed(WheelUp) || Pressed(0x81457A1Au) || Pressed(0xCC1075A7u) || Pressed(0xF78D7337u))
                 Key(Keys.Up, false, false, false);
-            else if (PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, WheelDown))
+            else if (Pressed(WheelDown) || Pressed(0x9DA42644u) || Pressed(0xFD0F0C2Cu) || Pressed(0xD0842EDFu))
                 Key(Keys.Down, false, false, false);
+        }
+
+        private static bool Pressed(uint control)
+        {
+            return PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, control);
         }
 
         // the mouse (Lex, 2026-10-30): the game's cursor while the panel is open; pointing at a row chooses it, a left click
         // changes it forward (or does it, or sets its key), a right click back; a click on the page's name turns the page
         // (left half back, right half on), and one on the line under the panel switches the essentials and every setting.
-        // The game's menu cursor controls, and the ordinary buttons in case those don't reach a script's screen.
-        private const uint CursorX = 0xD6C4ECDC, CursorY = 0xE4130778, CursorAccept = 0x9D2AEA88, CursorCancel = 0x27568539, Attack = 0x07CE1E61, Aim = 0xF84FA74F;
+        // The game's cursor controls only work in its own menus (in the world they read 0, 0), so where the mouse is and
+        // its buttons come from Windows: the cursor over the game's window, as a share of it.
         private float _mouseX = -1f, _mouseY = -1f;
-        private bool _mouseNoted;
+        private bool _mouseNoted, _leftWas, _rightWas, _dragging;
+
+        [StructLayout(LayoutKind.Sequential)] private struct POINT { public int X, Y; }
+        [StructLayout(LayoutKind.Sequential)] private struct RECT { public int L, T, R, B; }
+        [DllImport("user32.dll")] private static extern bool GetCursorPos(out POINT p);
+        [DllImport("user32.dll")] private static extern bool ScreenToClient(IntPtr w, ref POINT p);
+        [DllImport("user32.dll")] private static extern bool GetClientRect(IntPtr w, out RECT r);
+        [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+        [DllImport("user32.dll")] private static extern short GetAsyncKeyState(int key);
+
+        private static bool Cursor(out float x, out float y)
+        {
+            x = y = -1f;
+            IntPtr w = GetForegroundWindow();
+            if (w == IntPtr.Zero || !GetCursorPos(out POINT p) || !ScreenToClient(w, ref p) || !GetClientRect(w, out RECT c) || c.R <= 0 || c.B <= 0)
+                return false;
+            x = p.X / (float)c.R;
+            y = p.Y / (float)c.B;
+            return true;
+        }
 
         private void MouseInput()
         {
             _NAMESPACE30.SET_MOUSE_CURSOR_THIS_FRAME();
             if (_capture != null || _pages.Count == 0)
                 return;
-            float mx = PAD.GET_DISABLED_CONTROL_NORMAL(0, CursorX), my = PAD.GET_DISABLED_CONTROL_NORMAL(0, CursorY);
+            if (!Cursor(out float mx, out float my))
+                return;
             bool moved = Math.Abs(mx - _mouseX) > 0.002f || Math.Abs(my - _mouseY) > 0.002f;
             _mouseX = mx;
             _mouseY = my;
-            bool left = PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, CursorAccept) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, Attack);
-            bool right = PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, CursorCancel) || PAD.IS_DISABLED_CONTROL_JUST_PRESSED(0, Aim);
+            bool leftDown = (GetAsyncKeyState(0x01) & 0x8000) != 0, rightDown = (GetAsyncKeyState(0x02) & 0x8000) != 0;
+            bool left = leftDown && !_leftWas, right = rightDown && !_rightWas;
+            _leftWas = leftDown;
+            _rightWas = rightDown;
             if ((left || right) && !_mouseNoted)
             {
                 _mouseNoted = true;   // once a session: whether the cursor's place reaches the panel
@@ -1378,6 +1408,23 @@ namespace EnrageWestworld.InGame
             Page page = _pages[_page];
             float pageY = Y + 0.016f + Draw.LineHeight(TitleScale) + 0.006f, rowH = Draw.LineHeight(RowScale) * 1.22f, top = pageY + Draw.LineHeight(PageScale) + 0.014f;
             bool inside = mx >= X && mx <= X + W;
+            // the scrollbar: click or drag along it to go there
+            float barX = X + W - 0.022f - 0.004f, trackH = VisibleRows * rowH;
+            if (!leftDown)
+                _dragging = false;
+            else if (left && page.Rows.Count > VisibleRows && mx >= barX - 0.012f && mx <= barX + 0.016f && my >= top && my <= top + trackH)
+                _dragging = true;
+            if (_dragging)
+            {
+                float f = Math.Max(0f, Math.Min(1f, (my - top) / trackH));
+                int want = Math.Max(0, Math.Min(page.Rows.Count - 1, (int)Math.Round(f * (page.Rows.Count - 1))));
+                while (want < page.Rows.Count - 1 && !Pickable(page.Rows[want]))
+                    want++;
+                while (want > 0 && !Pickable(page.Rows[want]))
+                    want--;
+                _row = want;
+                return;
+            }
             int hit = -1;
             if (inside && my >= top - 0.002f && my < top - 0.002f + VisibleRows * rowH)
             {
