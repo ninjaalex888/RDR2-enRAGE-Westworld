@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### More chance meetings (the NPC-life run, step 4)
+
+- A chance meeting between two people with no reason of their own needed them standing within 3.4 m of each other already. Now two up to 6 m apart may meet: one walks over to the other first, as the reasons' meetings do. `[Scenes] ChanceMeetMetres` (6; 2-12; settings version 134). The quiet talks beside a scene keep to people already standing together.
+
 ### Names in Saint Denis: never left to enRAGE's cards alone (Lex, 2026-10-30, in game: none in the streets or the saloon)
 
 - While enRAGE's own cards are on (its running NameCards above 0, whatever its file says), ours stood aside entirely; enRAGE cards only its own people, so a city of strangers had no names at all. With names always on, ours never stand aside: they card everyone enRAGE doesn't, and leave enRAGE's people to its own card (one a head). The log says when enRAGE's cards come on or go off.

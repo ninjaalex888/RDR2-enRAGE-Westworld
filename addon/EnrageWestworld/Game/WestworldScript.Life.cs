@@ -132,7 +132,7 @@ namespace EnrageWestworld.InGame
             if (pool.Count < 2 || now < _nextChance)
                 return;
             Ped a = null, b = null;
-            float best = 3.4f;
+            float best = Math.Max(2f, _cfg.ChanceMeetMetres);   // was 3.4 m, standing together already; farther, one walks over (AddMeet; the NPC-life run, step 4)
             for (int i = 0; i < pool.Count; i++)
                 for (int j = i + 1; j < pool.Count; j++)
                 {
@@ -198,6 +198,7 @@ namespace EnrageWestworld.InGame
             if (s.Kind == "gossip" && saloon && _cfg.JobRumours)
                 AddJobTalk(s, seed);
             s = LadderScene(s, a, b, null, null, cast, seed, null, people, now);   // a chance meeting's argue or brawl from the quarrel ladder, behind MindLive (WestworldScript.Ladder.cs)
+            AddMeet(s, s.Kind, a, b, a.Position.DistanceTo(b.Position));   // a few steps apart: one walks over first
             AddBarkeep(s, people, cast, seed, saloon);
             string stood;
             if (s.Ladder == null || s.Cast == 2)

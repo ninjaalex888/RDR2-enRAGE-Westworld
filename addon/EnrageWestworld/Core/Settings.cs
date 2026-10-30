@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 133;
+        public const int CurrentVersion = 134;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -196,6 +196,7 @@ namespace EnrageWestworld.Core
         public bool RoughHandling = true;
         public float TroubleWeight = 1f;   // [Scenes] every chance of a fight or a quarrel between people scaled by it (Lex, 2026-10-28; settings version 88)
         public bool Aftermath = true;   // [Scenes] with MindLive: after a street fight near you, a friend tends the one who went down and a lawman near has a word with the one left standing (the NPC-life run, Lex 2026-10-30; settings version 131)
+        public float ChanceMeetMetres = 6f;   // [Scenes] two people this far apart may meet by chance, one walking over to the other (3.4, standing together, until settings version 134; Lex, 2026-10-30)
         public int ScenesAtOnce = 2;   // [Scenes] street scenes playing at once: the one scene, and quiet talks beside it elsewhere on the street (the NPC-life run, Lex 2026-10-30: "several at once"; settings version 127); 1: just the scene, as before
         public bool GangShootouts = true;   // [World] men of two rival gangs who meet near you fight it out: words, a standoff, a shootout (Lex, 2026-10-30; settings version 133)
         public bool WomenInFights = true;   // [Scenes] women may come to blows too, at half a man's chance for each woman in it (Lex, 2026-10-29: "we can allow men to trade blows with women in this mod ... 50% less likely than a man getting in a fight until we have the innermind logic take over"; night 2026-10-29, item 2b; settings version 107); false: two men only, as before
@@ -650,6 +651,7 @@ namespace EnrageWestworld.Core
             AvengerGapHours = Math.Max(0, Math.Min(720, AvengerGapHours));
             DramaGapSeconds = Math.Max(20, DramaGapSeconds);
             ScenesAtOnce = Math.Max(1, Math.Min(3, ScenesAtOnce));
+            ChanceMeetMetres = Math.Max(2f, Math.Min(12f, ChanceMeetMetres));
             TroubleWeight = Math.Max(0f, Math.Min(5f, TroubleWeight));
             RescueChance = Math.Max(0, Math.Min(100, RescueChance));
             TickerSeconds = Math.Max(4, Math.Min(120, TickerSeconds));
@@ -887,6 +889,7 @@ namespace EnrageWestworld.Core
             b.AppendLine("Acknowledge = " + B(Acknowledge) + "   ; two people who know each other nod, tip a hat or wave as they pass (enemies give a hard look, sweethearts a long one), and each thinks something of it; a pair once in 45 game minutes");
             b.AppendLine("TroubleWeight = " + F(TroubleWeight) + "   ; how often people come to blows or quarrel: 1 as built, 2 twice as often, 0.5 half, 0 never by chance (0-5); it scales the brawl's and the argument's share of a chance meeting, hot blood between strangers, drink and temper, and a snap that comes to blows; over 1 it also shortens everyone's rest between scenes (2 min, 15 after blows, divided by it)");
             b.AppendLine("Aftermath = " + B(Aftermath) + "   ; with MindLive on: after a street fight near you, a friend of the one who went down (or a kind soul who saw it) goes to see to him, and a lawman near has a word with the one left standing");
+            b.AppendLine("ChanceMeetMetres = " + F(ChanceMeetMetres) + "   ; two people up to this far apart may meet by chance near you, one walking over to the other (2-12; 3.4 was standing together only)");
             b.AppendLine("ScenesAtOnce = " + ScenesAtOnce + "   ; street scenes playing at once (1-3): one scene, and the rest quiet talks between other people elsewhere on the street (words only, never blows); 1: just the scene");
             b.AppendLine("GangShootouts = " + B(GangShootouts) + "   ; men of two rival gangs who meet within 90 m of you may fight it out (more often where enRAGE reports a war between them): words, a standoff, then a shootout until a side is beaten or gone; at most one in five minutes");
             b.AppendLine("WomenInFights = " + B(WomenInFights) + "   ; women may come to blows in a quarrel too (with a man or another woman), half as often as two men for each woman in it; false: only two men ever fight");
