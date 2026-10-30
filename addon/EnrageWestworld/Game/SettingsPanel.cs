@@ -1348,10 +1348,37 @@ namespace EnrageWestworld.InGame
                 return;
             // the cursor's own scroll controls only live in the game's menus; during play the wheel is the weapon
             // and menu-scroll controls (Lex, 2026-10-30: the wheel didn't move the panel)
+            // the wheel moves the list, as the scrollbar does (Lex, 2026-10-30), three rows a notch; the chosen row stays
+            // unless it would leave the view, when it takes the nearest row still in it
+            int step = 0;
             if (Pressed(WheelUp) || Pressed(0x81457A1Au) || Pressed(0xCC1075A7u) || Pressed(0xF78D7337u))
-                Key(Keys.Up, false, false, false);
+                step = -3;
             else if (Pressed(WheelDown) || Pressed(0x9DA42644u) || Pressed(0xFD0F0C2Cu) || Pressed(0xD0842EDFu))
-                Key(Keys.Down, false, false, false);
+                step = 3;
+            if (step == 0 || _pages.Count == 0 || _confirm != null)
+                return;
+            Page page = _pages[_page];
+            if (page.Rows.Count <= VisibleRows)
+            {
+                Key(step < 0 ? Keys.Up : Keys.Down, false, false, false);   // nothing to scroll: the wheel chooses, as before
+                return;
+            }
+            _scroll = Math.Max(0, Math.Min(page.Rows.Count - VisibleRows, _scroll + step));
+            // a row the view keeps without pulling it back: in view, and not the first under a heading scrolled away
+            Func<int, bool> fits = i => Pickable(page.Rows[i]) && !(i == _scroll && i > 0 && page.Rows[i - 1].Heading != null);
+            if (_row >= _scroll && _row < _scroll + VisibleRows && fits(_row))
+                return;
+            int end = Math.Min(page.Rows.Count, _scroll + VisibleRows);
+            if (_row < _scroll)
+            {
+                for (int i = _scroll; i < end; i++)
+                    if (fits(i)) { _row = i; return; }
+            }
+            else
+            {
+                for (int i = end - 1; i >= _scroll; i--)
+                    if (fits(i)) { _row = i; return; }
+            }
         }
 
         private static bool Pressed(uint control)
