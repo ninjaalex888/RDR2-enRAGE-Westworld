@@ -352,18 +352,25 @@ namespace EnrageWestworld.InGame
         }
 
         // A stranger greeted keeps the name over their head (Lex, 2026-10-30: "when I greet them, they get a different name than
-        // they had before the greet"): one of our townsfolk, named on the card, whom enRAGE takes up as one of its own at the greet
-        // under a name of its making. Its new one is given ours, once, and only one it made at that greet: someone enRAGE knew
-        // before keeps the name enRAGE gave them.
+        // they had before the greet"): one of our townsfolk, named on the card, whom enRAGE takes up as one of its own (at the
+        // greet, or a moment after) under a name of its making. The name we showed is noted each time the card shows it (enRAGE
+        // had no one in that body then) and at the greet; when enRAGE has someone there within the minute, and its someone is
+        // new (seen once, or first seen these few minutes), they're given ours. Someone enRAGE knew before, met again in a new
+        // body, keeps the name enRAGE gave them.
         private readonly Dictionary<int, KeyValuePair<string, int>> _nameAtGreet = new Dictionary<int, KeyValuePair<string, int>>();
 
         private void NoteNameAtGreet(int h, int now)
         {
             ResBind b;
-            if (h == 0 || _bridge.RecordAt(h) != null || _bridge.AcquaintanceAt(h) != null || !_resBind.TryGetValue(h, out b) || b == null || b.R == null || string.IsNullOrEmpty(b.R.Name))
+            if (h == 0 || _bridge.RecordAt(h) != null || !_resBind.TryGetValue(h, out b) || b == null || b.R == null || string.IsNullOrEmpty(b.R.Name))
                 return;
-            _nameAtGreet[h] = new KeyValuePair<string, int>(b.R.Name, now);
-            if (_nameAtGreet.Count > 30)
+            NoteOurName(h, b.R.Name, now);
+        }
+
+        private void NoteOurName(int h, string name, int now)
+        {
+            _nameAtGreet[h] = new KeyValuePair<string, int>(name, now);
+            if (_nameAtGreet.Count > 40)
                 _nameAtGreet.Remove(_nameAtGreet.OrderBy(kv => kv.Value.Value).First().Key);
         }
 
@@ -375,7 +382,7 @@ namespace EnrageWestworld.InGame
             int now = Game.GameTime;
             if (now - was.Value > 60000 || now < was.Value)
             {
-                _nameAtGreet.Remove(h);   // enRAGE didn't take them up
+                _nameAtGreet.Remove(h);   // a while since we named them: whatever enRAGE has there isn't new to this
                 return;
             }
             FolkRef ac = _bridge.AcquaintanceAt(h);
@@ -387,12 +394,17 @@ namespace EnrageWestworld.InGame
                 return;
             try
             {
+                if (!ac.IsNew)
+                {
+                    Log.Write("NAME " + was.Key + " is someone enRAGE knew before, " + (theirs ?? "nobody") + " (seen " + ac.TimesSeen + " times): its name kept");
+                    return;
+                }
                 ac.SetName(was.Key);
-                Log.Write("NAME greeted, enRAGE took them up as " + (theirs ?? "nobody") + ": kept as " + was.Key);
+                Log.Write("NAME enRAGE took up " + was.Key + " as " + (theirs ?? "nobody") + ": kept as " + was.Key);
             }
             catch (Exception ex)
             {
-                Log.Write("NAME couldn't keep " + was.Key + "'s name at the greet: " + ex.Message);
+                Log.Write("NAME couldn't keep " + was.Key + "'s name when enRAGE took them up: " + ex.Message);
             }
         }
 
@@ -443,6 +455,7 @@ namespace EnrageWestworld.InGame
                 string temper = b.R.Personality != null && b.R.Personality.Length > 0 ? b.R.Personality : null;
                 string trade = b.R.Trade != null && b.R.Trade.Length > 0 ? Grammar.UpperFirst(b.R.Trade.StartsWith("a ") ? b.R.Trade.Substring(2) : b.R.Trade.StartsWith("an ") ? b.R.Trade.Substring(3) : b.R.Trade) : null;
                 string line2 = temper != null && trade != null ? temper + " - " + trade : temper ?? trade ?? "";
+                NoteOurName(h, b.R.Name, Game.GameTime);   // shown (or meant) as ours while enRAGE has no one in this body
                 if (st != null && st.Has(PickpocketMark))
                     line2 = "Pickpocket" + (temper != null ? " - " + temper : "");   // the trade he keeps to (Lex, 2026-10-30)
                 if (met)

@@ -41,6 +41,18 @@ namespace EnrageWestworld.InGame
         public string Name { get { return Typed.AcqName(Raw); } }           // as enRAGE names them to the player (its Name)
         public string FullName { get { return Typed.AcqFullName(Raw); } }
         public void SetName(string name) { Typed.AcqSetName(Raw, name); }
+        public int TimesSeen { get { return Typed.AcqTimesSeen(Raw); } }
+        /// Taken up by enRAGE just now: seen once at most, or first seen these five minutes (its clock, local or UTC).
+        public bool IsNew
+        {
+            get
+            {
+                if (TimesSeen <= 1)
+                    return true;
+                DateTime first = Typed.AcqFirstSeen(Raw);
+                return first != default(DateTime) && ((DateTime.Now - first).Duration() < TimeSpan.FromMinutes(5) || (DateTime.UtcNow - first).Duration() < TimeSpan.FromMinutes(5));
+            }
+        }
         public string Town { get { return Typed.AcqTown(Raw); } }
         public string Temper { get { return Typed.AcqTemper(Raw); } }
         public uint Model { get { return Typed.AcqModel(Raw); } }

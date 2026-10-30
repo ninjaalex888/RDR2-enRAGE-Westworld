@@ -61,6 +61,8 @@ namespace EnrageWestworld.InGame
         [MethodImpl(MethodImplOptions.NoInlining)] public static string AcqName(object a) { return ((Acquaintance)a).Name; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static string AcqFullName(object a) { return ((Acquaintance)a).FullName; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static void AcqSetName(object a, string name) { ((Acquaintance)a).Name = name; }   // its FullName is the title and this
+        [MethodImpl(MethodImplOptions.NoInlining)] public static int AcqTimesSeen(object a) { return ((Acquaintance)a).TimesSeen; }
+        [MethodImpl(MethodImplOptions.NoInlining)] public static DateTime AcqFirstSeen(object a) { return ((Acquaintance)a).FirstSeen; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static string AcqTown(object a) { return ((Acquaintance)a).Town; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static string AcqTemper(object a) { return ((Acquaintance)a).Temper; }
         [MethodImpl(MethodImplOptions.NoInlining)] public static uint AcqModel(object a) { return ((Acquaintance)a).Model; }
