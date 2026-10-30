@@ -78,7 +78,7 @@ namespace EnrageWestworld.InGame
                     float ts = _cfg.ThoughtsOverHeadScale * Math.Max(0.75f, Feelings.SizeAt(head.DistanceTo(Game.Player.Character.Position)));
                     float thoughtTop = ty - WakeTagLift(c.Handle) - Draw.LineHeight(ts) * 2f - 0.003f;
                     if (_overHeadTopHandle == c.Handle && _overHeadTopAt == now)
-                        thoughtTop = Math.Min(thoughtTop, _overHeadTopY);
+                        thoughtTop = Math.Min(thoughtTop, _overHeadTopY - WakeTagLift(c.Handle));   // the wake tag sits on the thought
                     y = Math.Min(y, thoughtTop - 0.008f - pad);
                 }
                 float h = lineH * lines.Length, top = y - h;

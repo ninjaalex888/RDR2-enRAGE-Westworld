@@ -65,7 +65,9 @@ namespace EnrageWestworld.InGame
                 float x, y;
                 if (!ScreenAt(head + new Vector3(0f, 0f, ThoughtAboveHead), out x, out y))
                     continue;
-                float top = y - lineH;   // sits on the thought's point; a thought over them goes on top of it
+                // sits on the thought's point; while a thought shows over them, on top of the thought (Lex, 2026-10-30: the tag
+                // went under the thought box)
+                float top = _overHeadTopHandle == t.Handle && _overHeadTopAt == now ? _overHeadTopY - 0.004f - lineH : y - lineH;
                 Draw.Rect(x - t.Width / 2f - pad, top - pad, t.Width + pad * 2f, lineH + pad * 2f, 10, 10, 12, 150);
                 Draw.Text(t.Text, x - t.Width / 2f, top, WakeTagScale, t.R, t.G, t.B);
             }
