@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Names inside big buildings (Lex, 2026-10-30, in game: none in the Bastille saloon, Saint Denis)
+
+- A card was hidden for anyone whose interior wasn't yours, and a big building is several interiors, so a whole room could go without names. With names always on, only the walls' ray decides now. And each time you go in or out of a building the log says what the cards found: `NAME cards indoors (saloon, Saint Denis): 14 people within 25 m, 9 carded; none for 5 the game's own (...)`, so a room that still shows none says why.
+
 ### Whoever joins a fight is fair game too (the NPC-life run, step 3)
 
 - Only the man who started a street fight carried the bully's red dot and was fair game. Now anyone who joins in on it (Core/JoinIn.cs), and a man firing on another in a quarrel while the gunplay lasts, is the same: a red dot, the `BULLY` log line, no crime to stop them, and the one they went for thanks you.

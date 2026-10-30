@@ -50,6 +50,7 @@ namespace EnrageWestworld.InGame
         private int? _enrageCards;
         private int _enrageCardsAt = -100000;
         private Action _aNameCards;
+        private int _nameCardsProbedIn = -1, _nameCardsProbeAt = -100000;
         private const int NameCardsMost = 10, NameCardsMostAlways = 16, NameCardsRefreshMs = 3000;
         private const float NameCardAbove = 0.32f, NameCardSteady = 2.5f, NameCardLead = 1f;
         private static readonly int[] ColourTitle = { 245, 244, 240 }, ColourStranger = { 170, 168, 160 }, ColourDim = { 146, 144, 138 };
@@ -182,7 +183,7 @@ namespace EnrageWestworld.InGame
                     c.BlockedAt = now;
                 }
                 bool hidden = c.BlockedAt == 0 || c.Blocked;
-                if (!hidden)
+                if (!hidden && !_cfg.NameCardsAlways)   // always on, the walls' ray alone decides: a big building is several interiors (Lex, 2026-10-30: none in the Bastille)
                 {
                     int interior = INTERIOR.GET_INTERIOR_FROM_ENTITY(h);
                     if (interior != 0 && interior != myInterior)
@@ -235,6 +236,11 @@ namespace EnrageWestworld.InGame
         {
             _nameCardsNow.Clear();
             bool everyone = _cfg.NameCards == "everyone";
+            int inside = INTERIOR.GET_INTERIOR_FROM_ENTITY(me.Handle);
+            bool probe = inside != _nameCardsProbedIn && now - _nameCardsProbeAt > 3000;
+            int seen = 0, carded = 0;
+            var why = probe ? new Dictionary<string, int>() : null;
+            var models = probe ? new List<string>() : null;
             float knownRange = _cfg.NameCardsKnownMetres, strangerRange = _cfg.NameCardsMetres, most = Math.Max(knownRange, strangerRange) + 20f;
             List<NameCard> found = new List<NameCard>();
             foreach (Ped p in World.GetAllPeds())
@@ -252,12 +258,23 @@ namespace EnrageWestworld.InGame
                     c = new NameCard { Handle = h, Model = model, FirstSeen = now, MadeAt = -100000 };
                     _nameCards[h] = c;
                 }
-                if (now - c.MadeAt >= NameCardsRefreshMs)
+                if (probe && d <= strangerRange)
+                    seen++;
+                if (now - c.MadeAt >= NameCardsRefreshMs || probe)
                 {
                     c.MadeAt = now;
                     if (!NameCardFill(p, c, everyone))
                     {
                         c.Name = null;
+                        if (probe && d <= strangerRange)
+                        {
+                            string r = Natives.StoryModel(p) ? "the game's own" : !IsGrownUp(p) ? "not grown" : !everyone ? "not known (NameCards known)" : "nothing to say";
+                            int n0;
+                            why.TryGetValue(r, out n0);
+                            why[r] = n0 + 1;
+                            if (models.Count < 6)
+                                models.Add(Natives.ModelName(p));
+                        }
                         continue;
                     }
                 }
@@ -270,6 +287,14 @@ namespace EnrageWestworld.InGame
             }
             foreach (NameCard c in found.OrderBy(x => x.Metres).Take(_cfg.NameCardsAlways ? NameCardsMostAlways : NameCardsMost))
                 _nameCardsNow.Add(c);
+            if (probe)
+            {
+                carded = _nameCardsNow.Count;
+                _nameCardsProbedIn = inside;
+                _nameCardsProbeAt = now;
+                Log.Write("NAME cards " + (inside != 0 ? "indoors (" + (_placeKind ?? "a building") + (_placeTown != null ? ", " + _placeTown : "") + ")" : "out of doors") + ": " + seen + " people within " + (int)strangerRange + " m, " + carded + " carded" +
+                          (why.Count > 0 ? "; none for " + string.Join(", ", why.Select(kv => kv.Value + " " + kv.Key)) + " (" + string.Join(", ", models) + ")" : ""));
+            }
         }
 
         /// What the card says for this body: false when there's nothing of ours to say (and the mode doesn't show everyone).
