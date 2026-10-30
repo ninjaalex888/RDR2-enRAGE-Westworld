@@ -1,4 +1,4 @@
-RealNPCs 0.7.2 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.3 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,29 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.3
+------------
+- Several street scenes at once: while one plays near you, and between scenes, other people
+  elsewhere on the street have quiet talks of their own (gossip, small talk, the old days),
+  words only, in their own voices, with a subtitle when they're near. [Scenes] ScenesAtOnce (2;
+  1-3; 1 is one scene at a time, as before).
+- With [Mind] MindLive on, every argument or fistfight near you comes from the two people's
+  minds: whether it stays words, comes to a shove or to blows is theirs. A man's hand against a
+  woman at a tenth of his rate, as in 1899.
+- Fights spread: while two people trade blows, a friend of one, someone with bad blood against
+  the other, or a drunk hothead in a saloon may join in on a side; most just watch, fewer the
+  bigger the crowd, nobody with the law at hand; at most three join. [Mind] MindJoinFights.
+- People act on their own choices: someone near you takes a stroll, sits down on the nearest
+  bench or chair, goes to the bar or the card table, gets on with the work, heads off home, keeps
+  clear of you or of someone they can't abide, or goes over to a friend for a word. A few at a
+  time, never someone already sat or busy. [Mind] MindActs.
+- Names over heads always on: a name over everyone within 25 m, hidden only by walls (not a
+  table or someone in the way). [Display] NameCardsAlways, NameCardsMetres (25).
+- The bar names the street scene near you and where it is: "... - 10 m south".
+- The fistfight test takes any two people, women too. Nobody brawls from a chair, a man at the
+  bar gets up before a fight instead of going into a T pose, a pickpocket who stands still is
+  sent running again, and a wake stage tag sits on top of a thought over the head.
 
 NEW IN 0.7.2
 ------------
@@ -307,7 +330,7 @@ NEW IN 0.6.1
   the sheriffs and the story cast; enRAGE's people when it runs) carry
   their name in the game's title type, with a temper, a trade or "Stranger" under it, steadied as
   they walk, hidden behind walls, fading with distance. [Display] NameCards (known; off, or
-  everyone for a grey "A townsman" over the rest), NameCardsMetres (30), NameCardsKnownMetres (75);
+  everyone for a grey "A townsman" over the rest), NameCardsMetres (25), NameCardsKnownMetres (75);
   while enRAGE draws its own cards ours stay off unless NameCardsBesideEnrage.
 - Standing still no longer holds up enRAGE's funerals or someone's evening at the saloon.
 - Aiming at one of enRAGE's outlaws leaves him to enRAGE (he stands his ground and his crew draws
@@ -808,7 +831,8 @@ in the file. The new ones:
             FeelingBarsMetres (15), FeelingBarsShowEmpty (false): the empty part of each bar too,
             GrudgeMeter (true): the "Sore at you" panel, top right,
             NameCards (known; off, everyone): names over the heads of people RealNPCs knows, in
-            the game's title type, NameCardsMetres (30), NameCardsKnownMetres (75),
+            the game's title type, NameCardsMetres (25), NameCardsKnownMetres (75),
+            NameCardsAlways (true): a name over everyone in range, hidden only by walls,
             NameCardsBesideEnrage (false): ours even while enRAGE draws its own
 [WestWorld] WestWorld (true): the master switch. false turns off everything below it.
             AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
@@ -852,6 +876,7 @@ in the file. The new ones:
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
             SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true),
+            ScenesAtOnce (2): the scene and quiet talks beside it elsewhere on the street (1-3),
             Reactions (true): in a street scene the one spoken to reacts to the words by their
             nature, and a man whose face goes into the bar reels
             Acknowledge (true): people who know each other nod, tip a hat, wave or say hello as they
@@ -903,6 +928,9 @@ in the file. The new ones:
             (TEST mind shadow) and the Show minds cards; it changes nothing anyone does or thinks.
             MindLive (true): what that mind decides reaches the screen: moods, and thoughts of what people really feel (about you, a friend, a stranger) and of a pressing want
             MindLevels (false, in testing): the mind's work spread by distance and a budget a frame.
+            MindActs (true, under MindLive): people near you do what their minds choose (a stroll, the
+            nearest bench, chair, bar or work spot, off home, clear of you or a foe, over to a friend).
+            MindJoinFights (true, under MindLive): onlookers may join a fistfight on a side (at most three).
             QuarrelLadder (true, under MindLive): an argument or a fight between two people the mind knows
             climbs or cools by their natures and the room; the shot is never fired.
             ThoughtVariety (true): no two people near you think the same shape of thought within an hour,

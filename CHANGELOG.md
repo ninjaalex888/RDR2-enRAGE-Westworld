@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.3 (2026-10-30)
+
+Lex's in-game pass of 2026-10-30 in Valentine, after 0.7.2, and the start of the NPC-life run: several street scenes at once (quiet talks beside the scene), every quarrel from the mind and fights that spread as onlookers join in on a side, people acting on their own everyday choices, names over heads always on within 25 m, the bar saying where a scene is, and fixes from the evening's play (a T pose at the bar, a pickpocket who stood still, brawls from chairs, a wake tag lost behind a thought). Much of it is new and not yet seen at length in game; each part has its own switch.
 
 ### Several street scenes at once (the NPC-life run, Lex 2026-10-30: "more frequent NPC-to-NPC scenes, including several at once")
 
