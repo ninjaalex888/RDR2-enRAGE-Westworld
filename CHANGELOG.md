@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased
+
+### What you're wearing, or not (Lex, 2026-10-30, in game: standing naked in the saloon and nobody minded)
+
+- People notice when you're naked (nothing over the body or the legs) or undressed (shirtless, or in your drawers), read every 3 s from the game's clothing categories (shirt, coat, vest, dress, cloak, poncho; pants, skirt; the body itself and a hat, boots or a gunbelt never count, and any category not known counts as covering, so a gap can't make a dressed man naked). The log's `SIGHT clothes:` line says what was read each time it changes.
+- In 1899 that was a scandal: a woman is shocked (a gasp, a look away, "Lord above! Cover yourself!") and often turns and goes, as the timid and some plain men do; the bold and your friends laugh at it ("Lose your clothes at cards, mister?"); the cold and those against you are disgusted; anyone who has seen what you do is afraid. Naked is noticed before blood, drink or mud, anywhere (a saloon too, and while a street scene plays), by up to three at once and eight times a town a day; undressed is nothing out in the wilds. New thoughts for each.
+
+### Less said about mud (Lex, 2026-10-30: "it's difficult for players to clean their character")
+
+- Filthy is remarked only when you're caked (the dirt level from 0.95, was 0.9; in Saint Denis and Blackwater from 0.75, was 0.6), and once a town a day (was three times).
+
 ## 0.7.3 (2026-10-30)
 
 Lex's in-game pass of 2026-10-30 in Valentine, after 0.7.2, and the start of the NPC-life run: several street scenes at once (quiet talks beside the scene), every quarrel from the mind and fights that spread as onlookers join in on a side, people acting on their own everyday choices, names over heads always on within 25 m, the bar saying where a scene is, and fixes from the evening's play (a T pose at the bar, a pickpocket who stood still, brawls from chairs, a wake tag lost behind a thought). Much of it is new and not yet seen at length in game; each part has its own switch.

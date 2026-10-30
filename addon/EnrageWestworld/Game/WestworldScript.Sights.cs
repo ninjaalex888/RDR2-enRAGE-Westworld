@@ -21,7 +21,7 @@ namespace EnrageWestworld.InGame
     public partial class WestworldScript
     {
         private const ulong GetPedDirtLevel = 0x0105FEE8F9091255;   // _GET_PED_DIRT_LEVEL(ped, useCompositeLayer) -> float (the natives database); not named in the .NET API
-        private const float SightNear = 10f, FilthyAt = 0.6f, SoakedLevel = 0.45f;
+        private const float SightNear = 10f, FilthyAt = 0.75f, SoakedLevel = 0.45f;   // filthy from 0.75 (0.6 until 2026-10-30, Lex: toned down)
         private const int SightSampleMs = 500, DirtSampleMs = 5000, SightLookMs = 1000, SightGapMs = 20000, BloodiedMinutes = 120, SoakedMinutes = 30, SightsPerTown = 3;
 
         private sealed class SightRun
@@ -44,6 +44,75 @@ namespace EnrageWestworld.InGame
         private bool _drunk, _sightProbed, _sightSets, _dirtOff;
         private Vector3 _sightWas;
         private string _sightLast, _sightState, _sightWhyNot;
+        private string _dress, _dressWorn;   // naked, undressed or null (dressed); the categories he wears, for the log
+        private int _sightNextDress;
+        private const int DressSampleMs = 3000, NakedPerTown = 8;
+
+        // what he wears, by the game's clothing categories (joaat of their names; femga/rdr3_discoveries clothes/cloth_hash_names):
+        // the body itself and what doesn't cover him (a hat, boots, a gunbelt) never count; any category not named here
+        // counts as covering him, so a gap in this list can't make a dressed man naked, and the log names it
+        private static readonly Dictionary<uint, string> Torso = new Dictionary<uint, string>
+        {
+            { 0x2026C46D, "shirt" }, { 0xE06D30CE, "coat" }, { 0x0662AC34, "closed coat" }, { 0x485EE834, "vest" }, { 0xA2926F9B, "dress" },
+            { 0x3C1A74CD, "cloak" }, { 0xAF14310B, "poncho" }
+        };
+        private static readonly Dictionary<uint, string> Legs = new Dictionary<uint, string>
+        {
+            { 0x1D4C528A, "pants" }, { 0xA0E3AB7F, "skirt" }, { 0xA2926F9B, "dress" }
+        };
+        private static readonly Dictionary<uint, string> NotCover = new Dictionary<uint, string>
+        {
+            { 0x378AD10C, "head" }, { 0x864B03AE, "hair" }, { 0xEA24B45E, "eyes" }, { 0x96EDAE5C, "teeth" }, { 0x0B3966C9, "upper body" }, { 0x823687F5, "lower body" },
+            { 0x0EAF8BBE, "eyebrows" }, { 0x15D3C7F2, "beard" }, { 0xB6B63737, "chops" }, { 0xF8016BCA, "beard" }, { 0xECC8B25A, "moustache" },
+            { 0x9925C067, "hat" }, { 0x777EC6EF, "boots" }, { 0x18729F39, "boot buckles" }, { 0x08A9783C, "spurs" }, { 0x514ADCEA, "spats" },
+            { 0x9B2C8B89, "gunbelt" }, { 0xF1542D11, "gunbelt pieces" }, { 0x49C89D9B, "holster" }, { 0x7BE77792, "knife holster" }, { 0xB6B6122D, "holster" },
+            { 0xB9E2FA01, "holster" }, { 0xA6D134C6, "belt" }, { 0xFAE9107F, "buckle" }, { 0x3F7F3587, "badge" }, { 0x3F1F01E5, "ammo" }, { 0xDA0E2C55, "ammo" },
+            { 0x83887E88, "loadout" }, { 0x94504D26, "satchel" }, { 0x7BC10759, "bracelet" }, { 0xF16A1D23, "ring" }, { 0x7A6BBD0B, "ring" },
+            { 0xEABE0032, "gloves" }, { 0x91CE9B20, "gauntlets" }, { 0x5FC29285, "neckwear" }, { 0x7A96FACA, "necktie" }, { 0x7505EF42, "mask" },
+            { 0x05E47CA6, "eyewear" }, { 0x79D7DF96, "accessory" }, { 0x8E84A2AA, "hair piece" }, { 0x877A2CF7, "suspenders" }, { 0x3107499B, "chaps" },
+            { 0x76F0E272, "apron" }, { 0x72E6EF74, "armour" }, { 0x1AECF7DC, "talisman" }, { 0x7C00A8F0, "talisman" }, { 0x8EFB276A, "talisman" }, { 0xDB64A390, "talisman" }
+        };
+
+        /// What he has on: naked (nothing over the body or the legs), undressed (one of the two bare), or null; worn says
+        /// what was read, for the log.
+        private static unsafe string DressOf(int h, out string worn)
+        {
+            worn = null;
+            if (!PED.IS_PED_READY_TO_RENDER(h))
+                return null;
+            int n = PED._GET_NUM_COMPONENTS_IN_PED(h);
+            bool torso = false, legs = false;
+            var names = new List<string>();
+            for (int i = 0; i < n && i < Looks.MostPieces; i++)
+            {
+                uint category = 0;
+                try
+                {
+                    category = (uint)PED._0x9B90842304C938A7((ulong)h, (ulong)i, 0);   // the piece's category (as Looks reads it)
+                }
+                catch
+                {
+                    return null;
+                }
+                string name, tn, ln;
+                bool t = Torso.TryGetValue(category, out tn), l = Legs.TryGetValue(category, out ln);
+                torso |= t;
+                legs |= l;
+                name = tn ?? ln;
+                if (name == null && !NotCover.TryGetValue(category, out name))
+                {
+                    name = category.ToString("X8") + " (unknown, taken as covering)";
+                    torso = legs = true;
+                }
+                if (!names.Contains(name))
+                    names.Add(name);
+            }
+            if (n <= 0)
+                return null;
+            names.Sort(StringComparer.Ordinal);
+            worn = string.Join(", ", names);
+            return !torso && !legs ? "naked" : !torso || !legs ? "undressed" : null;
+        }
         private Action _aSights;
 
         private void SightsStep(int now)
@@ -74,7 +143,7 @@ namespace EnrageWestworld.InGame
             if (_sights.Count > 0 || now < _sightNextLook || now < _sightNext)
                 return;
             _sightNextLook = now + SightLookMs;
-            if (_director.Busy)
+            if (_director.Busy && _sightState != "naked")   // a naked man is looked at whatever else goes on
             {
                 _sightWhyNot = "a street scene is going on";
                 return;
@@ -104,6 +173,17 @@ namespace EnrageWestworld.InGame
                 _wetAt = g;
                 _hurtAt = -100000;   // the water washes the blood off
             }
+            if (now >= _sightNextDress)
+            {
+                _sightNextDress = now + DressSampleMs;
+                string worn;
+                _dress = DressOf(h, out worn);
+                if (worn != null && worn != _dressWorn)
+                {
+                    _dressWorn = worn;
+                    Log.Write("SIGHT clothes: " + (_dress ?? "dressed") + " (" + worn + ")");
+                }
+            }
             _drunk = PED._IS_PED_DRUNK(h);
             _drunkness = PED._GET_PED_DRUNKNESS(h);
             if (!_sightProbed)
@@ -113,7 +193,7 @@ namespace EnrageWestworld.InGame
                 float first = Function.Call<float>(GetPedDirtLevel, h, false);
                 _dirtOff = float.IsNaN(first) || first < 0f || first > 1.5f;   // not the 0-1 reading we expect: left alone from now on
                 _dirt = _dirtOff ? 0f : first;
-                Log.Write("SIGHT probe: dirt level " + first.ToString("0.000") + (_dirtOff ? " (not a 0-1 reading: filthy is off this session)" : " (filthy from " + FilthyAt + "; 0.9 outside the city)") +
+                Log.Write("SIGHT probe: dirt level " + first.ToString("0.000") + (_dirtOff ? " (not a 0-1 reading: filthy is off this session)" : " (filthy from " + FilthyAt + "; 0.95 outside the city)") +
                           ", drunk " + _drunk + " (" + _drunkness.ToString("0.00") + "), health " + health + " of " + max + ", the gesture sets " + (_sightSets ? "yes" : "NO"));
                 _sightNextDirt = now + DirtSampleMs;
             }
@@ -137,7 +217,7 @@ namespace EnrageWestworld.InGame
             bool soaked = !inWater && !raining && g - _wetAt >= 0 && g - _wetAt < SoakedMinutes;
             bool bloodied = g - _hurtAt >= 0 && g - _hurtAt < BloodiedMinutes;
             string was = _sightState;
-            _sightState = Sights.StateOf(bloodied, _drunk || _drunkness > 0.25f, !_dirtOff && _dirt >= FilthyAt, soaked);
+            _sightState = Sights.StateOf(bloodied, _drunk || _drunkness > 0.25f, !_dirtOff && _dirt >= FilthyAt, soaked, _dress);
             if (_sightState != was)
                 Log.Detail("SIGHT you look " + (_sightState ?? "ordinary") + " now (dirt " + _dirt.ToString("0.00") + ", drunkness " + _drunkness.ToString("0.00") + ")");
         }
@@ -181,7 +261,7 @@ namespace EnrageWestworld.InGame
             string townKey = state + "|" + (_placeTown ?? "the wilds") + "|" + g / 1440;
             int inTown;
             _sightTown.TryGetValue(townKey, out inTown);
-            if (!test && inTown >= SightsPerTown)
+            if (!test && inTown >= (state == "naked" ? NakedPerTown : state == "filthy" ? 1 : SightsPerTown))   // mud remarked once a town a day (Lex, 2026-10-30)
             {
                 _sightWhyNot = "this town has seen you " + state + " enough today";
                 return;
@@ -234,8 +314,8 @@ namespace EnrageWestworld.InGame
                 _sightSeen[key] = g;
                 Log.Write("SIGHT " + run.Name + ": you look " + state + " -> " + run.Look.Feeling + " (" + (temper ?? "plain") + (regard != null ? ", " + regard + " of you" : "") + "; " + run.Look.Gesture +
                           (run.Look.Voice != null ? ", " + run.Look.Voice[0] : "") + ", " + (int)p.Position.DistanceTo(me.Position) + " m)" + (test ? ", a test" + (skipped != null ? " (skipped: " + skipped + ")" : "") : ""));
-                if (++n >= 2)
-                    break;
+                if (++n >= (state == "naked" ? 3 : 2))
+                    break;   // a naked man draws more eyes
             }
             if (n == 0)
             {
@@ -391,6 +471,15 @@ namespace EnrageWestworld.InGame
                 default:
                     if (t < 900)
                         return false;
+                    if (r.Look.Leaves && MayDirectWhyNot(r.By) == null && !PED.IS_PED_USING_ANY_SCENARIO(h))
+                    {
+                        // shocked: they turn and go (Lex, 2026-10-30)
+                        Vector3 away = r.By.Position - r.At.Position;
+                        away.Z = 0f;
+                        Vector3 to = r.By.Position + (away.Length() < 0.5f ? new Vector3(0f, 1f, 0f) : away.Normalized) * 18f;
+                        TASK.TASK_FOLLOW_NAV_MESH_TO_COORD(h, to.X, to.Y, to.Z, 1.4f, -1, 1f, 0, 0f);
+                        Log.Write("SIGHT " + r.Name + " turns and goes");
+                    }
                     if (!string.IsNullOrEmpty(r.Look.Thought) && NodInView(Game.Player.Character, r.By))
                     {
                         _sightShown++;
@@ -433,7 +522,7 @@ namespace EnrageWestworld.InGame
             long g = _store != null ? _store.LastGameMin : 0;
             return "you look " + (_sightState ?? "ordinary") + "; hurt " + (_hurtAt > -100000 ? (g - _hurtAt) + " game min ago" : "not lately") +
                    ", in the water " + (_wetAt > -100000 ? (g - _wetAt) + " game min ago" : "not lately") + ", drunk " + _drunk + " (" + _drunkness.ToString("0.00") + ")" +
-                   ", dirt " + (_dirtOff ? "off (not a 0-1 reading)" : _dirt.ToString("0.00") + " (the most seen " + _dirtMax.ToString("0.00") + "; filthy from " + FilthyAt + ", 0.9 outside the city)") +
+                   ", dirt " + (_dirtOff ? "off (not a 0-1 reading)" : _dirt.ToString("0.00") + " (the most seen " + _dirtMax.ToString("0.00") + "; filthy from " + FilthyAt + ", 0.95 outside the city)") +
                    "; gesture sets " + (!_sightProbed ? "not looked yet" : _sightSets ? "yes" : "NO") + "; " + _sightCount + " reactions, " + _sightShown + " thoughts shown" +
                    (_sightLast != null ? "; last: " + _sightLast : "") + (_sightWhyNot != null ? "; now: " + _sightWhyNot : "");
         }
