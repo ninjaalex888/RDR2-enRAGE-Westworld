@@ -384,7 +384,7 @@ namespace EnrageWestworld.InGame
 			if (_bridge.Present && !_bridge.Usable)
 			{
 				_off = true;
-				Feed.Notice("RealNPCs", "This enRAGE version isn't supported yet (see RealNPCs.log).");
+				Feed.Notice("RealNPCs " + _version, "This enRAGE version isn't supported yet (see RealNPCs.log).");
 				return;
 			}
 			List<RecordRef> list = _bridge.Present ? _bridge.Roster() : new List<RecordRef>();
@@ -406,7 +406,7 @@ namespace EnrageWestworld.InGame
 				Log.Write("REGULARS: " + (_cfg.Regulars ? "kept: " + Regulars.Count(_store.Residents) : "off") + "; " + _store.Residents.Count + " residents saved (up to " + Store.MaxResidents + ")");
 				Log.Write("CLOCK: year " + CLOCK.GET_CLOCK_YEAR() + ", day of the week " + CLOCK.GET_CLOCK_DAY_OF_WEEK() + " (thoughts take 0 as Sunday), " +
 					CLOCK.GET_CLOCK_DAY_OF_MONTH() + "/" + (CLOCK.GET_CLOCK_MONTH() + 1) + ", " + CLOCK.GET_CLOCK_HOURS() + ":" + CLOCK.GET_CLOCK_MINUTES().ToString("00") + (IsJohn() ? ", playing John" : ""));
-				Feed.Notice("RealNPCs", _bridge.Present ? "listening. " + list.Count + " people in the world" + ((num > 0) ? (", " + num + " who know you.") : ".")
+				Feed.Notice("RealNPCs " + _version, _bridge.Present ? "listening. " + list.Count + " people in the world" + ((num > 0) ? (", " + num + " who know you.") : ".")
 					: "standing alone: enRAGE isn't " + (EnrageInstalled() ? "running" : "installed") + ", so its people and features are off. Everything of RealNPCs' own runs.");
 			}
 		}
