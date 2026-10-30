@@ -56,6 +56,7 @@ namespace EnrageWestworld.InGame
             public int ApproachCheckAt;          // when the walk was last seen getting nearer, or last sent again
             public float ApproachBest;           // the nearest they've been
             public bool Side;                    // a quiet talk beside the scene (Start with side): voices and near subtitles only
+            public List<int[]> Joiners = new List<int[]>();   // those who joined the fight: { handle, side (0 with A, 1 with B) } (Core/JoinIn.cs)
         }
 
         /// What one of the cast does about a line said to them, or about the slam ("hurt"), for the game layer to play.
@@ -150,7 +151,7 @@ namespace EnrageWestworld.InGame
             if (handle == 0)
                 return false;
             Live l = _live;
-            if (l != null && l.Cast.Any(p => p != null && p.Handle == handle))
+            if (l != null && (l.Cast.Any(p => p != null && p.Handle == handle) || l.Joiners.Any(j => j[0] == handle)))
                 return true;
             foreach (Live x in _side)
                 if (x.Cast.Any(p => p != null && p.Handle == handle))
@@ -346,6 +347,7 @@ namespace EnrageWestworld.InGame
             // a third still walking over when it ended (the player left, someone in it was hurt) is let go on their way
             if (l.ApproachUntil > 0 && l.Cast.Length > 2 && l.Cast[2] != null && l.Cast[2].Exists() && !ENTITY.IS_ENTITY_DEAD(l.Cast[2].Handle))
                 TASK.TASK_WANDER_STANDARD(l.Cast[2].Handle, 10f, 10);
+            LetJoinersGo(l);
             if (l.FightAttrs != null)
                 foreach (KeyValuePair<int, bool[]> fa in l.FightAttrs)
                     if (ENTITY.DOES_ENTITY_EXIST(fa.Key))
@@ -487,10 +489,14 @@ namespace EnrageWestworld.InGame
                         return;
                     }
                 }
+                foreach (int[] j in l.Joiners)
+                    if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]))
+                        KeepFists(new Ped(j[0]));
                 bool hurt = Health(l, 0) < 0.6f || Health(l, 1) < 0.6f;
                 if (now < l.FightUntil && !hurt)
                     return;
                 l.Fighting = false;
+                LetJoinersGo(l);
             }
             if (l.Slamming)
             {
@@ -971,6 +977,52 @@ namespace EnrageWestworld.InGame
 
         /// The order to fight, once both are on their feet: a man sat or leaning is told to stop (the clear lets him get
         /// up) and, still in it after 3 s, taken out of it at once. Given again every 2 s until they're at it.
+        /// The fight going on now, as two sides: who started it on each, and who has joined each (Core/JoinIn.cs); false when
+        /// no fists are flying.
+        public bool FightSides(out List<int> a, out List<int> b)
+        {
+            a = b = null;
+            Live l = _live;
+            if (l == null || !l.Fighting || !l.FightOn || l.FightA == 0 || l.FightB == 0)
+                return false;
+            a = new List<int> { l.FightA };
+            b = new List<int> { l.FightB };
+            foreach (int[] j in l.Joiners)
+                (j[1] == 0 ? a : b).Add(j[0]);
+            return true;
+        }
+
+        public int JoinerCount { get { return _live != null ? _live.Joiners.Count : 0; } }
+
+        /// Someone joins the fight on a side and goes for target, with their fists, as the first two fight; the fight runs
+        /// a little longer for it. Their own ways are put back when the fight ends.
+        public bool AddFighter(int h, int side, int target)
+        {
+            Live l = _live;
+            if (l == null || !l.Fighting || !l.FightOn || h == 0 || target == 0 || Involves(h) || !ENTITY.DOES_ENTITY_EXIST(h) || !ENTITY.DOES_ENTITY_EXIST(target))
+                return false;
+            l.Joiners.Add(new[] { h, side });
+            if (l.FightAttrs == null)
+                l.FightAttrs = new Dictionary<int, bool[]>();
+            if (!l.FightAttrs.ContainsKey(h))
+                l.FightAttrs[h] = FightAttrIds.Select(id => PED._GET_PED_COMBAT_ATTRIBUTE(h, id)).ToArray();
+            foreach (int id in FightAttrIds)
+                PED.SET_PED_COMBAT_ATTRIBUTES(h, id, true);
+            PED.SET_BLOCKING_OF_NON_TEMPORARY_EVENTS(h, false);
+            WEAPON.SET_CURRENT_PED_WEAPON(h, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
+            TASK.TASK_COMBAT_PED(h, target, 0, 16);
+            l.FightUntil = Math.Min(Game.GameTime + 20000, Math.Max(l.FightUntil, Game.GameTime + 6000));   // a fight with more in it lasts a little longer
+            return true;
+        }
+
+        /// The fight is over: those who joined stop, and their own combat ways come back (End puts back the attributes).
+        private static void LetJoinersGo(Live l)
+        {
+            foreach (int[] j in l.Joiners)
+                if (ENTITY.DOES_ENTITY_EXIST(j[0]) && !ENTITY.IS_ENTITY_DEAD(j[0]) && PED.IS_PED_IN_COMBAT(j[0], 0))
+                    TASK.CLEAR_PED_TASKS(j[0], true, false);
+        }
+
         private static void FightOrder(Live l)
         {
             int now = Game.GameTime;

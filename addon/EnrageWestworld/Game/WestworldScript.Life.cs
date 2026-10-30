@@ -44,6 +44,7 @@ namespace EnrageWestworld.InGame
             }
             if (_director.Busy)
             {
+                JoinStep(now);   // onlookers who join a fight, from their minds (WestworldScript.JoinIn.cs)
                 SideScene(me, now);   // a quiet talk elsewhere while the scene plays (the NPC-life run)
                 return;
             }

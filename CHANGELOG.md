@@ -8,6 +8,11 @@
 - `[Scenes] ScenesAtOnce` (2; 1-3; settings version 127; on the Essentials page under The world): the scene and up to this many less one quiet talks. 1: just the scene, as before.
 - A chance meeting that came to nothing no longer holds the next one back a minute and a half: the wait starts when one really starts.
 
+### Fights that spread: onlookers join in on a side (Lex, 2026-10-30: "between any 2+ NPCs if their inner thoughts lead to it")
+
+- While two people trade blows, every few seconds the onlookers within 12 m are weighed by their minds (`Core/JoinIn.cs`): a friend of one fighter, or someone with bad blood against the other, may join on a side and go for the one they hate most, else the one who started on that side; a drunk hothead may wade in, a saloon's most of all. Most watch, and a stranger is less likely to join the bigger the crowd. Nobody joins with a lawman within 30 m, nobody sat or leaning, at work, mounted or already busy. A man's hand against a woman at a tenth of his rate (1899, Lex's word), a woman joins at half and only with WomenInFights. At most three join, a single one each look, so it spreads: the friend of the man just set upon may be next. Each joiner fights with their fists for a fight that runs a little longer, their own ways back when it ends, and leaves a tie with the one they went for.
+- `[Mind] MindJoinFights` (on, with MindLive; settings version 128). The log's `BRAWL joins:` line says who, for whom, at whom and why; F7's dump counts them. mindtest's JoinInTest holds the numbers (strangers about 1%, a friend about 38%, bad blood about 32%, a drunk in a saloon about 6%, the law 0).
+
 ### Every quarrel from the mind (Lex, 2026-10-30: "it can break out between any 2+ NPCs if their inner thoughts lead to it")
 
 - With MindLive, an argument or a fistfight between any two people near you is played from the quarrel ladder: whether it stays words, comes to a shove, to blows or worse is theirs, from their natures, drink, what it's over, who's watching and their history. The ladder had passed people over when its last look at them, up to ten seconds stale, found nobody (Nimrod Hatch, known all morning, was "not known yet"); now it looks again.
