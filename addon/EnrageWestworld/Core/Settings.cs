@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 135;
+        public const int CurrentVersion = 137;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -195,6 +195,8 @@ namespace EnrageWestworld.Core
         public bool CrudeTalk = true;
         public bool RoughHandling = true;
         public float TroubleWeight = 1f;   // [Scenes] every chance of a fight or a quarrel between people scaled by it (Lex, 2026-10-28; settings version 88)
+        public bool HorseThieves = true;   // [Scenes] with MindLive: a man whose mind leans to it takes a horse with nobody on it and rides off; its owner shouts after him (the NPC-life run, step 5; settings version 137)
+        public bool FightCrowds = true;   // [Scenes] with MindLive: a crowd rings a street fight and cheers it on (the fearful keep away) (the NPC-life run, step 5; settings version 136)
         public bool NightScenes = true;   // [Scenes] with MindLive: at night, a mugging by someone whose mind leans to it, and a drunk taken home by a friend (the NPC-life run, step 5; settings version 135)
         public bool Aftermath = true;   // [Scenes] with MindLive: after a street fight near you, a friend tends the one who went down and a lawman near has a word with the one left standing (the NPC-life run, Lex 2026-10-30; settings version 131)
         public float ChanceMeetMetres = 6f;   // [Scenes] two people this far apart may meet by chance, one walking over to the other (3.4, standing together, until settings version 134; Lex, 2026-10-30)
@@ -889,6 +891,8 @@ namespace EnrageWestworld.Core
             b.AppendLine("SightReactions = " + B(SightReactions) + "   ; people near you notice how you look (bloodied, drunk, filthy, soaked) and take it by their nature: the timid afraid, the hard sizing you up, the kind concerned; and a man walking off bloodied from a street fight gets looked at");
             b.AppendLine("Acknowledge = " + B(Acknowledge) + "   ; two people who know each other nod, tip a hat or wave as they pass (enemies give a hard look, sweethearts a long one), and each thinks something of it; a pair once in 45 game minutes");
             b.AppendLine("TroubleWeight = " + F(TroubleWeight) + "   ; how often people come to blows or quarrel: 1 as built, 2 twice as often, 0.5 half, 0 never by chance (0-5); it scales the brawl's and the argument's share of a chance meeting, hot blood between strangers, drink and temper, and a snap that comes to blows; over 1 it also shortens everyone's rest between scenes (2 min, 15 after blows, divided by it)");
+            b.AppendLine("HorseThieves = " + B(HorseThieves) + "   ; with MindLive on, in town: a man honest with nobody and short of money (or a known thief) gets up on a horse that isn't his and rides off, a red dot and fair game; its owner shouts after him. At most once a town in two game hours");
+            b.AppendLine("FightCrowds = " + B(FightCrowds) + "   ; with MindLive on: while two people trade blows, up to six of those near who aren't of a fearful nature gather round in a ring and cheer it on; they go when it's over");
             b.AppendLine("NightScenes = " + B(NightScenes) + "   ; with MindLive on, at night in town: someone short of money and honest with nobody (or a known thief) robs someone on their own, who hands it over or won't by their nature; and late, a drunk who goes down in the street is got up and taken home by a friend. Each at most once a town a night");
             b.AppendLine("Aftermath = " + B(Aftermath) + "   ; with MindLive on: after a street fight near you, a friend of the one who went down (or a kind soul who saw it) goes to see to him, and a lawman near has a word with the one left standing");
             b.AppendLine("ChanceMeetMetres = " + F(ChanceMeetMetres) + "   ; two people up to this far apart may meet by chance near you, one walking over to the other (2-12; 3.4 was standing together only)");

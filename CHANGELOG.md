@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### A crowd rings a fight; a horse thief (the NPC-life run, step 5)
+
+- While two people trade blows in the street, up to six of those within 20 m who aren't of a fearful nature (the mind's anxiety; nobody it doesn't know), free and on their feet, walk over and stand round it about 4.5 m out, facing in, and cheer or jeer it on now and then; close enough that a friend of one may yet join in. They go back to their own ways when it's over. `[Scenes] FightCrowds` (on, with MindLive; settings version 136). The log's `RING` line.
+- In a town, with no lawman within 40 m, a man whose mind leans to it (little honesty, an appetite for risk, money short) or one known for thieving walks to a horse standing with nobody on it (never yours), gets up and rides off at a gallop: a red dot, fair game. Its owner, the last who rode it, shouts after him if near ("Horse thief! That's my horse!"). He's marked a horse thief from then on. At most once a town in two game hours. `[Scenes] HorseThieves` (on, with MindLive; settings version 137). The log's `HORSE` lines.
+
 ### The night: a mugging, and a drunk taken home (the NPC-life run, step 5)
 
 - In a town at night, out of doors and with no lawman within 50 m, a man whose mind leans to it (little honesty, an appetite for risk, and money short; or a known pickpocket or mugger) may walk up to someone on their own and demand their money, with a gun if he may draw. Whether they hand it over is their nature's: the anxious and the meek do; the bold refuse, and are knocked down for it. He runs, they cry thief, and the robber is marked a mugger from then on; the victim won't forget him. While he's at it he's fair game, as a bully is.

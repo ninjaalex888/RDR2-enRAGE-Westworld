@@ -31,6 +31,7 @@ namespace EnrageWestworld.InGame
         {
             Ped me = Game.Player.Character;
             GangStep(now);   // rival gangs who meet near you (WestworldScript.Gangs.cs)
+            HorseThiefStep(me, now);   // a horse thief on his way to it, or away on it (WestworldScript.HorseThief.cs)
             FallWanderStep(now);
             WanderLaterStep(now);
             PatientStep(now);   // the doctor's patient on the way there and back (WestworldScript.Patient.cs)
@@ -47,8 +48,11 @@ namespace EnrageWestworld.InGame
                 AftermathStep(me, now);   // what follows a fight: a friend tends the loser, the law has a word (WestworldScript.Aftermath.cs)
             if (_director.FightOver == null)
                 _director.FightOver = OnFightOver;
+            if (!_director.Busy && _ring.Count > 0)
+                RingBreak();   // the scene ended with the fight
             if (_director.Busy)
             {
+                RingStep(now);   // a crowd rings the fight (WestworldScript.Ring.cs)
                 JoinStep(now);   // onlookers who join a fight, from their minds (WestworldScript.JoinIn.cs)
                 SideScene(me, now);   // a quiet talk elsewhere while the scene plays (the NPC-life run)
                 return;
@@ -98,7 +102,7 @@ namespace EnrageWestworld.InGame
             bool saloon = _placeKind == "saloon";
             if (_interiorType != 0 && !saloon)
                 return;
-            if (NightScene(me, now))
+            if (NightScene(me, now) || HorseThiefScene(me, now))
                 return;   // the night's mugging or a drunk taken home (WestworldScript.Night.cs)
             string fallWhy;
             if (_interiorType == 0 && PreacherScene(me, now, false, out fallWhy))
