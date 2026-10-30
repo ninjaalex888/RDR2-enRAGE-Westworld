@@ -429,6 +429,41 @@ namespace EnrageWestworld.InGame
         private bool _trampleWantedBefore;
         private string _othersTrampleWho;
 
+        // a witness who saw a self-defence killing may go to the law after the fight's window has closed, and the game calls it
+        // murder (Lex, 2026-10-30, Rhodes: four men came at him, and two minutes on he was wanted for murder). For ten minutes
+        // after such a killing, a murder or an assault charge on him, with nobody innocent hurt since, is put back to how he
+        // stood before the fight.
+        private const int SelfDefenceAfterMs = 600000;
+        private int _sdKillAt = -1, _sdBounty, _sdCleared;
+        private bool _sdWanted;
+        private string _sdKillWho;
+
+        private void SelfDefenceAfter(int me, int now, int level, bool incident, int bounty)
+        {
+            if (_sdKillAt < 0 || !_cfg.SelfDefenceNoBounty || MISC.GET_MISSION_FLAG())
+                return;
+            if (now - _sdKillAt > SelfDefenceAfterMs || now < _sdKillAt || _lastOffenceAt > _sdKillAt)
+            {
+                _sdKillAt = -1;   // the ten minutes are up, or he has hurt someone who hadn't come at him since: the law's call
+                return;
+            }
+            if (_defendSince >= 0)
+                return;   // the fight's own window still holds it (DefenceBounty)
+            uint charge = LAW._GET_HUD_PLAYER_CRIME_TYPE(me);
+            if (Array.IndexOf(DefenceCrimes, charge) < 0)
+                return;
+            bool raised = bounty > _sdBounty, newlyWanted = (level > 0 || incident) && !_sdWanted;
+            if (!raised && !newlyWanted)
+                return;
+            if (raised)
+                LAW.SET_BOUNTY(me, _sdBounty);
+            if (newlyWanted)
+                LawStandDown(me);
+            _sdCleared++;
+            Log.Write("LAW: a witness took your self-defence killing of " + (_sdKillWho ?? "someone who came at you") + " to the law as " + Crimes.Name(charge) + " " +
+                      (now - _sdKillAt) / 1000 + " s on: " + (raised ? "bounty $" + bounty / 100 + " -> $" + _sdBounty / 100 : "") + (raised && newlyWanted ? ", " : "") + (newlyWanted ? "no longer wanted" : ""));
+        }
+
         private void NoteOthersTrample(string who)
         {
             int me = Game.Player.Handle;
@@ -509,6 +544,7 @@ namespace EnrageWestworld.InGame
             }
             LawStages(me, now, level, incident);
             NotYourTrampling(me, now, level, incident, bounty);
+            SelfDefenceAfter(me, now, level, incident, bounty);
             if (wanted == _lawWasWanted && bounty == _lawWasBounty)
                 return;
             bool first = _lawWasBounty < 0;
@@ -910,7 +946,16 @@ namespace EnrageWestworld.InGame
                 known = beggarName;
             string kind = Deeds.KillKind(law, thief, begged, hit.CameAtYou, hit.Fighting);
             if (kind == null)
+            {
                 Log.Write("SELF-DEFENCE: killed " + (known ?? label) + " near " + place + ", who came at you (" + hit.Why + "): no crime noted, no witnesses, no rumour");
+                if (_sdKillAt < 0 || now - _sdKillAt > SelfDefenceAfterMs)
+                {
+                    _sdBounty = _defendSince >= 0 ? _bountyBase : LAW.GET_BOUNTY(Game.Player.Handle);   // how he stood before the fight
+                    _sdWanted = _defendSince >= 0 ? _wantedBefore : PlayerWanted(Game.Player.Handle);
+                }
+                _sdKillAt = now;
+                _sdKillWho = known ?? label;
+            }
             if (_cfg.Deeds && kind != null)
             {
                 Deed d = Deeds.Make(kind, thief ? "a pickpocket" : begged ? label : known ?? label, town, zone, gameMin, pos.X, pos.Y, pos.Z, seen);

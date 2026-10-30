@@ -51,6 +51,10 @@
 - People notice when you're naked (nothing over the body or the legs) or undressed (shirtless, or in your drawers), read every 3 s from the game's clothing categories (shirt, coat, vest, dress, cloak, poncho; pants, skirt; the body itself and a hat, boots or a gunbelt never count, and any category not known counts as covering, so a gap can't make a dressed man naked). The log's `SIGHT clothes:` line says what was read each time it changes.
 - In 1899 that was a scandal: a woman is shocked (a gasp, a look away, "Lord above! Cover yourself!") and often turns and goes, as the timid and some plain men do; the bold and your friends laugh at it ("Lose your clothes at cards, mister?"); the cold and those against you are disgusted; anyone who has seen what you do is afraid. Naked is noticed before blood, drink or mud, anywhere (a saloon too, and while a street scene plays), by up to three at once and eight times a town a day; undressed is nothing out in the wilds. New thoughts for each.
 
+### Self-defence holds after the fight too (Lex, 2026-10-30, in game, Rhodes)
+
+- Four men came at him and he killed them, self-defence by every rule; witnesses were held back for the fight and 90 s after, and two minutes on one of them went to the law and the game called it murder ($15, wanted). For ten minutes after a self-defence killing, a murder or assault charge on him, with nobody innocent hurt since, is put back to how he stood before the fight, bounty and wanted alike. The log says `LAW: a witness took your self-defence killing of ... to the law as murder ...: no longer wanted`.
+
 ### The law: charges in words, and a trampling that wasn't yours (Lex, 2026-10-30, in game)
 
 - The log's `LAW` lines name the game's charge ("killing a horse (0xC7261D79)", "trampling (0x45DB39D8)") instead of a number alone: all 58 of the game's crime types (`Core/Crimes.cs`, from femga/rdr3_discoveries).
