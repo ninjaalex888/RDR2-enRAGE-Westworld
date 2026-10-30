@@ -35,6 +35,10 @@ NEW IN THE NEXT VERSION
   off his face slips away quietly), the pious shake their heads and leave, a gun or something
   uncanny roots them to the spot, contempt shakes its head, a keen eye turns to watch. Two
   people at most each time, never the law or a shopkeeper. [Mind] MindOnlookers.
+- With [Mind] MindLive on (and West World): the Awakening follows what people live through.
+  Something uncanny, a killing seen, a man they saw die walking past them again shake their sense
+  that things are as they seem, so they wake sooner; a kindness steadies them. The moment that
+  sense gives way they begin to stir. [Mind] MindWakes.
 - Women come to blows too, with a man or another woman, half as often as two men do for each
   woman in it ([Scenes] WomenInFights; off: only two men ever fight, as before).
 

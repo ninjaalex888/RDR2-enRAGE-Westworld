@@ -88,6 +88,7 @@ namespace EnrageWestworld.InGame
                 MindLook(_mindNear[_mindCursor++], now);
             MindAppraiseStep(now);   // one person a frame from the happening being appraised
             OnlookStep(now);   // and one onlooker's act a frame, with MindLive and MindOnlookers (WestworldScript.Onlookers.cs)
+            RevivedStep(now);   // every 2 s: a buried man walking past those who saw him die (MindWakes; WestworldScript.Doubt.cs)
             if (_aMindChoose == null)
                 _aMindChoose = () => MindChooseStep(_now);
             Safe("mind choosing", _aMindChoose);   // one person a frame, each once a minute: what they would do now (shadow; nobody is tasked); its own guard, so a fault in it can't stop the traits, needs and feelings
@@ -146,6 +147,7 @@ namespace EnrageWestworld.InGame
                 t0 = Stopwatch.GetTimestamp();
                 MindAppraiseStep(now);
                 OnlookStep(now);
+                RevivedStep(now);
                 _mindLevels.Spend(Micros(t0));
             }
             if (_mindLevels.FrameHasRoom)
@@ -490,6 +492,7 @@ namespace EnrageWestworld.InGame
                     bs.Held = Beliefs.HeldBits(_mindBaseline, bs.Moved);
                     bs.Seen = true;
                 }
+                float worldWas = bs.Moved[Beliefs.World];
                 bool moved = _engine.Shadow.Believe(id, f, ae, w.Traits, _mindBaseline);
                 int held = Beliefs.HeldBits(_mindBaseline, bs.Moved);
                 if (held == bs.Held)
@@ -497,6 +500,8 @@ namespace EnrageWestworld.InGame
                 int was = bs.Held;
                 bs.Held = held;
                 _mindBeliefFlips++;
+                if ((was & (1 << Beliefs.World)) != 0 && (held & (1 << Beliefs.World)) == 0 && bs.Moved[Beliefs.World] < worldWas - 1e-4f)
+                    DoubtGaveWay(w, id);   // only when this feeling moved it down: a stage gained lowers the baseline too (the review of item 4: the Awakening fed itself)   // "things are as they seem" gave way: with MindWakes they stir (WestworldScript.Doubt.cs)
                 string flipped = Beliefs.Flips(was, held);
                 _mindLastBelief = w.Name + ": " + flipped;
                 if (!MindLogRoom(now))
@@ -507,7 +512,7 @@ namespace EnrageWestworld.InGame
                 string regard = st != null ? Regard.OfPerson(w.P, st, false) : null;
                 string dis = Beliefs.Disagreements(_mindBaseline, bs.Moved, _mindBeliefCtx.WakeStage, regard);
                 if (MindLog(now, "MIND believes: " + w.Name + " (" + (w.Src.Temper ?? "plain") + "): " + flipped + " <- " + (moved ? f.Kind + " at " + ae.Kind : "a memory or the Awakening (the baseline moved)") +
-                            "; " + Beliefs.Describe(_mindBaseline, bs.Moved) + (dis != null ? "; disagrees: " + dis : "") + "; a memory against it they'd " + Beliefs.Road(w.Traits) + " (nothing drives the Awakening or Regard from this)"))
+                            "; " + Beliefs.Describe(_mindBaseline, bs.Moved) + (dis != null ? "; disagrees: " + dis : "") + "; a memory against it they'd " + Beliefs.Road(w.Traits) + (_cfg.MindLive && _cfg.MindWakes ? " (the Awakening reads 'as it seems'; nothing drives Regard from this)" : " (nothing drives the Awakening or Regard from this)")))
                     _mindBeliefLines++;
             }
             catch (Exception ex)
@@ -712,6 +717,7 @@ namespace EnrageWestworld.InGame
             _mindEv = null;
             _mindEvPeople.Clear();
             OnlookForget();
+            DoubtForget();
             _mindFelt = 0;
             _mindLastFelt = null;   // nothing from a rewound future in F7
             _mindChooseCursor = 0;
