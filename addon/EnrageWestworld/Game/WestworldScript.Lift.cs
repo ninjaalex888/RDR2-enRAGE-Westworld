@@ -196,7 +196,16 @@ namespace EnrageWestworld.InGame
                 try
                 {
                     // the game's own small red enemy dot (BLIP_STYLE_ENEMY); a white dot with the enemy modifier showed big and white (Lex, 2026-10-29)
-                    _theft.Blip = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_ENEMY"), h));
+                    // a dot he already has (a white one, Lex 2026-10-30) hid the new red one under it: that one turns red instead
+                    int had = MAP.GET_BLIP_FROM_ENTITY(h);
+                    if (had != 0 && MAP.DOES_BLIP_EXIST(had))
+                    {
+                        MAP._BLIP_SET_STYLE(had, Natives.Hash("BLIP_STYLE_ENEMY"));
+                        _theft.Blip = new Blip(had);
+                        Log.Write("LIFT the thief's own dot turned red");
+                    }
+                    else
+                        _theft.Blip = new Blip(MAP.BLIP_ADD_FOR_ENTITY(Natives.Hash("BLIP_STYLE_ENEMY"), h));
                     _theft.Blip.Label = "Pickpocket";
                 }
                 catch (Exception ex)
