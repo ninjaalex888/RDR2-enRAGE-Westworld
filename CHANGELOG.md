@@ -8,6 +8,11 @@
 - `[Scenes] ScenesAtOnce` (2; 1-3; settings version 127; on the Essentials page under The world): the scene and up to this many less one quiet talks. 1: just the scene, as before.
 - A chance meeting that came to nothing no longer holds the next one back a minute and a half: the wait starts when one really starts.
 
+### People act on their own choices (the NPC-life run, step 2; Lex, 2026-10-30: "start with the mind acting on choices")
+
+- What each mind chooses to do (needs, nature, mood, who's near: Core/Choosing.cs) was only written to the log as `MIND would:`. Now, when someone near you and in view changes their mind, they do it: take a stroll; sit down to rest, eat, have a drink, join the cards, get on with the work or say a prayer at the nearest of the game's own spots within 15 m (a bench, a porch, a chair, the bar, a work point); head off home or out of the weather, walking off out of the scene; keep well clear of you, or step clear of someone they can't abide; go over to a friend for a word, or to someone standing near to talk (two standing together, a quiet talk may follow); keep a wary eye on you when they've seen you do violence.
+- Gently: never someone sat, leaning or at something already, busy in a scene or another of RealNPCs' moments, held by enRAGE or the story, riding, fighting or running; one new act every 3 s at most and six acting at once; each let go to their own ways once done, arrived or after a while. `[Mind] MindActs` (on, with MindLive; settings version 130). The log's `MIND acts:` line says who did what and why; F7 counts them by kind.
+
 ### The pickpocket keeps running; nobody brawls from a chair (Lex, 2026-10-30, in game)
 
 - The man who lifted your money in the saloon stood where he was, twice: he was told to flee once and never looked at again, and indoors the game found him no way out. Now every 2 s, if he's moved less than a metre and isn't down, he's sent running again, turn about away from you and from where you stand; the log says `PICKPOCKET stood still ... sent running again`.

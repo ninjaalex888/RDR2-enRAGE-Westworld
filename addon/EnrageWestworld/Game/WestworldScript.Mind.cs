@@ -351,6 +351,8 @@ namespace EnrageWestworld.InGame
         /// enRAGE has him" (or whatever else stands in the way) where MayDirect would refuse. Nobody is tasked.
         private void MindChooseStep(int now)
         {
+            if (_mindActs.Count > 0)
+                MindActsStep(now);   // those acting on a choice: done, arrived or gone (WestworldScript.MindActs.cs)
             if (_mindNear.Count == 0)
                 return;
             if (_mindChooseCursor >= _mindNear.Count)
@@ -437,6 +439,8 @@ namespace EnrageWestworld.InGame
                 _mindChoiceChanges++;
                 if (!quiet)
                     _mindLastChoice = w.Name + " -> " + Choosing.WordsOf(ch.Key);   // F7's last choice is someone near, not the about ring's
+                if (!quiet)
+                    MindActOn(w, h, now);   // and now they do it (WestworldScript.MindActs.cs; the NPC-life run)
             }
             if (quiet)
             {
