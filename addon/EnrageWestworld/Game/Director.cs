@@ -41,6 +41,7 @@ namespace EnrageWestworld.InGame
             public int MeetUntil;                // "meet": B is walking over; nothing is said until they're close, or give up then
             public bool Slamming;                // "slam": the rough move is playing (WestworldScript.Roughs.cs); nothing else until it's done
             public bool WasFighting;             // a "fight" was started: at the end both are let go of it, however it ended
+            public bool Blows;                   // and blows were traded (FightOn came): only then is there an aftermath (FightOver)
             public int MeetWalker = 1;           // who walks over in "meet" (the second, or the first for trouble)
             public int MeetGoAt;                 // the walker was sitting or leaning: he sets off once he's up (0: on his way)
             public bool Downed;                  // "passout" played: he's lying there until "cometo", or the end gets him up
@@ -95,6 +96,9 @@ namespace EnrageWestworld.InGame
         public Action<string> Happened;
         /// The one spoken to reacts (WestworldScript.Reactions.cs); null: nobody reacts.
         public Action<Reaction> React;
+        /// A fight between the scene's two is over, blows having been traded: the one left standing (the better off), then the
+        /// other (WestworldScript.Aftermath.cs).
+        public Action<int, int> FightOver;
         /// "meet" gave up: the two never got close enough, so nothing happened between them.
         public Action<Ped, Ped> NeverMet;
         /// Asked as the third sets off to walk over (the one who steps in, a friend, a spouse): why they mayn't be moved
@@ -367,6 +371,17 @@ namespace EnrageWestworld.InGame
                         WEAPON.SET_CURRENT_PED_WEAPON(p.Handle, Natives.Hash("WEAPON_UNARMED"), true, 0, false, false);
                 }
             }
+            if (l.Blows && !l.Side && l.Cast.Length >= 2 && l.Cast[0] != null && l.Cast[1] != null && l.Cast[0].Exists() && l.Cast[1].Exists() && FightOver != null)
+            {
+                bool first = Health(l, 0) >= Health(l, 1);
+                try
+                {
+                    FightOver(first ? l.Cast[0].Handle : l.Cast[1].Handle, first ? l.Cast[1].Handle : l.Cast[0].Handle);
+                }
+                catch
+                {
+                }
+            }
             LastSummary = l.Scene.Summary;
             try
             {
@@ -474,6 +489,7 @@ namespace EnrageWestworld.InGame
                     if (PED.IS_PED_IN_MELEE_COMBAT(l.FightA) || PED.IS_PED_IN_MELEE_COMBAT(l.FightB) || Health(l, 0) < 0.97f || Health(l, 1) < 0.97f)
                     {
                         l.FightOn = true;
+                        l.Blows = true;
                         l.FightUntil = now + l.FightMs;
                         Log.Write("SCENE fight: at it " + ((now - l.FightAskedAt) / 1000.0).ToString("0.0") + " s after the word");
                     }

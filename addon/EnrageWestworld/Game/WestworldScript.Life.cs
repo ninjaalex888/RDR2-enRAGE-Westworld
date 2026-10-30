@@ -42,6 +42,10 @@ namespace EnrageWestworld.InGame
                 if (_director.AnyPlaying)
                     _director.Tick(me, SceneSay, SideSay);
             }
+            if (_after != null)
+                AftermathStep(me, now);   // what follows a fight: a friend tends the loser, the law has a word (WestworldScript.Aftermath.cs)
+            if (_director.FightOver == null)
+                _director.FightOver = OnFightOver;
             if (_director.Busy)
             {
                 JoinStep(now);   // onlookers who join a fight, from their minds (WestworldScript.JoinIn.cs)

@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### After a fight (the NPC-life run, step 1; Lex, 2026-10-30: "consequences that chain")
+
+- A street fight near you no longer ends with everyone going back to what they were doing. Once blows have been traded and it's over, the Director says who was left standing (`FightOver`), and a few seconds on a friend of the one who went down walks over and sees to him ("Hold still. Let me look at that."), or, with no friend there, maybe a kind soul among those who saw it. Then a lawman within 50 m walks over to the one left standing and has a word ("Break it up! Who started this?"), answered by the man's nature (a hothead: "He had it coming, deputy."; a coward: "He started it, sir, I swear it!"; a cold one: "Nothing that concerns the law.") and a warning. Each is a scene of its own when the street is free; it gives up after a minute or once you're 45 m off. The fight's hostile tie already brings the two to words again when they next meet.
+- `[Scenes] Aftermath` (on, with MindLive; settings version 131). The log's `AFTER the fight:` lines; F7 counts them.
+
 ### What you're wearing, or not (Lex, 2026-10-30, in game: standing naked in the saloon and nobody minded)
 
 - People notice when you're naked (nothing over the body or the legs) or undressed (shirtless, or in your drawers), read every 3 s from the game's clothing categories (shirt, coat, vest, dress, cloak, poncho; pants, skirt; the body itself and a hat, boots or a gunbelt never count, and any category not known counts as covering, so a gap can't make a dressed man naked). The log's `SIGHT clothes:` line says what was read each time it changes.
