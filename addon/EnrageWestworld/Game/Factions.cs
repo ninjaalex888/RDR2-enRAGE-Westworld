@@ -20,6 +20,7 @@ namespace EnrageWestworld.InGame
             new[] { "unibanditos", "Del Lobo" },
             new[] { "uniswamp", "Night Folk" },
             new[] { "brontegoon", "Bronte man" }, new[] { "nbxbronte", "Bronte man" },
+            new[] { "unigrays", "Gray" }, new[] { "unibraithwaites", "Braithwaite man" },
             new[] { "wapwarriors", "Wapiti" },
             new[] { "army", "Soldier" },
             new[] { "pinkerton", "Pinkerton" }
@@ -35,6 +36,23 @@ namespace EnrageWestworld.InGame
                 if (m.Contains(t[0]))
                     return t[1];
             return null;
+        }
+
+        // the gangs' relationship groups, as seen in game (2026-10-29: the Raiders in the Valentine saloon, 0x211A2F38), for a
+        // member whose model carries no token
+        private static readonly System.Collections.Generic.Dictionary<uint, string> Groups = new System.Collections.Generic.Dictionary<uint, string>
+        {
+            { 0x211A2F38u, "Lemoyne Raider" }
+        };
+
+        /// By the model, else by the relationship group the game put him in.
+        public static string MemberOf(uint model, uint relGroup)
+        {
+            string g = MemberOf(model);
+            if (g != null)
+                return g;
+            string byGroup;
+            return Groups.TryGetValue(relGroup, out byGroup) ? byGroup : null;
         }
 
         /// "an O'Driscoll", "a Lemoyne Raider".

@@ -253,7 +253,7 @@ namespace EnrageWestworld.InGame
         /// an unnamed gang member carded by his gang ("A Lemoyne Raider"), as enRAGE showed them (Lex, 2026-10-29).
         private bool NameCardFill(Ped p, NameCard c, bool everyone)
         {
-            string gang = Factions.MemberOf(c.Model);
+            string gang = Factions.MemberOf(c.Model, PED.GET_PED_RELATIONSHIP_GROUP_HASH(p.Handle));
             bool got = NameCardFillInner(p, c, everyone && gang == null);
             if (gang == null)
                 return got;
