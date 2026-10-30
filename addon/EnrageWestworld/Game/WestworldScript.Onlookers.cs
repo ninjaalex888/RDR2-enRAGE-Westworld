@@ -212,7 +212,7 @@ namespace EnrageWestworld.InGame
             }
             _onlooked++;
             _onlookLast = a.Name + " " + did;
-            Log.Write("ONLOOK " + a.Name + " " + did + " (" + a.Felt.Kind + " " + a.Felt.Strength + ", urge " + a.Felt.Urge + ", shows " + a.Felt.Shows + ") <- " + a.Why);
+            MindLog(now, "ONLOOK " + a.Name + " " + did + " (" + a.Felt.Kind + " " + a.Felt.Strength + ", urge " + a.Felt.Urge + ", shows " + a.Felt.Shows + ") <- " + a.Why);
         }
 
         /// The handle of someone known to the mind by id, alive near the player this second (the scan's), or 0.
