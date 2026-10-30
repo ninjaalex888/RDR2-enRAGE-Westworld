@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.0 (2026-10-29)
 
-Built in the night run of 2026-10-28 (Lex's brief) and the morning after it, on the 0.6.3 release; nothing here has been seen in game yet. The mind stays in shadow: everything new that would change what people think, say or do sits behind `[Mind] MindLive` (off), and with it off every path runs as it did in 0.6.3, except the two players' reports below: live changes Lex asked for during the run, one commit to take back.
+Built in the night run of 2026-10-28 (Lex's brief), the day after it and the in-game pass that evening, on the 0.6.3 release. RealNPCs now stands alone (no enRAGE needed, compatible with it); most of what follows was seen working in game on 2026-10-29. The mind stays in shadow: everything new that would change what people think, say or do sits behind `[Mind] MindLive` (off), and with it off every path runs as it did in 0.6.3, except the two players' reports below: live changes Lex asked for during the run, one commit to take back.
 
 ### Names over heads (Lex, 2026-10-29: "enRAGE did a really good job of placing NPC names over the NPC head that looked really good and our mod wasn't doing this")
 

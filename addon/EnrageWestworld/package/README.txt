@@ -1,4 +1,4 @@
-RealNPCs 0.6.3 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.0 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -18,8 +18,27 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 Story Mode only. Don't run script mods in Red Dead Online.
 
 
-NEW IN THE NEXT VERSION (not yet released; nothing here is seen in game yet)
+NEW IN 0.7.0
 ------------
+- RealNPCs no longer needs enRAGE. It runs on its own (the townsfolk, their ties and memories,
+  the street scenes, the minds, the names over heads are all its own) and stays compatible: with
+  enRAGE installed it reads its nemeses and townsfolk and gives them lives too.
+- Names over heads, the way enRAGE drew them: the people RealNPCs knows, the game's own named
+  people (the sheriffs, the story cast) and the gangs' men ("Lemoyne Raider - Stranger", "An
+  O'Driscoll"). "Stranger" until you've met them. [Display] NameCards.
+- Pickpockets: a man may bump into you anywhere and lift some of your cash, then run, a red dot
+  on the map and fair game; catch him to get it back. Street pickpockets come three times as
+  often, and a lawman near runs a thief down and tackles him. [Scenes] Lifts, LawChases.
+- The doctor sees people for their own complaints (a tooth, a back, a cough, ribs after a fight,
+  a child's fever): they tell him what's wrong and he answers, aloud.
+- People who know each other say hello and goodbye in their own voices as they pass, and what
+  people say in a scene near you shows on the ticker as they say it.
+- A livelier street (a scene a minute at most), people walking briskly on their errands, the
+  world feeling unreal only to those who have begun to wake (thirty thoughts a stage now), a
+  quicker despair, and the settings panel on Alt+R (and Alt+F).
+- From the night run and the day after: a mind under every person (traits, needs, feelings,
+  memories that fade and get retold, beliefs), quarrels that climb or cool by who the two are,
+  thoughts that vary, manners of 1899, and the rest below.
 - Fixes: a controller binding of "+" alone no longer stops RealNPCs starting; the test cast fit
   their parts for the mind too; the supper invitation's host wanders off when nobody comes, and a
   fault in the dark no longer says your pockets were turned out; Show minds' cards cost less in a
