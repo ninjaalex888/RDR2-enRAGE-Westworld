@@ -304,6 +304,8 @@ namespace EnrageWestworld.InGame
         {
             if (_animTest != null && _animTest.Handle == h)
                 return true;   // the Testing page's animation rows have them (WestworldScript.AnimTest.cs)
+            if (IsAcknowledgingYou(h))
+                return true;   // acknowledging the player in passing (WestworldScript.ToYou.cs)
             if (IsRescuer(h))
                 return true;   // walking over to someone in despair (WestworldScript.Rescue.cs)
             if (_gunTest != null && _gunTest.Handle == h)

@@ -89,6 +89,7 @@ namespace EnrageWestworld.InGame
             MindAppraiseStep(now);   // one person a frame from the happening being appraised
             OnlookStep(now);   // and one onlooker's act a frame, with MindLive and MindOnlookers (WestworldScript.Onlookers.cs)
             RevivedStep(now);   // every 2 s: a buried man walking past those who saw him die (MindWakes; WestworldScript.Doubt.cs)
+            YouNodStep(now);    // someone who feels something about you lately shows it as you pass (MindPassing; WestworldScript.ToYou.cs)
             if (_aMindChoose == null)
                 _aMindChoose = () => MindChooseStep(_now);
             Safe("mind choosing", _aMindChoose);   // one person a frame, each once a minute: what they would do now (shadow; nobody is tasked); its own guard, so a fault in it can't stop the traits, needs and feelings
@@ -148,6 +149,7 @@ namespace EnrageWestworld.InGame
                 MindAppraiseStep(now);
                 OnlookStep(now);
                 RevivedStep(now);
+                YouNodStep(now);
                 _mindLevels.Spend(Micros(t0));
             }
             if (_mindLevels.FrameHasRoom)
