@@ -517,9 +517,30 @@ namespace EnrageWestworld.InGame
                 _sceneBar = null;
                 return null;
             }
-            if (_sceneBar == null || !ReferenceEquals(_sceneBar.Text, text))
-                _sceneBar = new TickerLine { Label = "Nearby", Text = text, Kind = "news", ShownAt = Game.GameTime };
+            // how far and which way, to the nearest 5 m (Lex, 2026-10-30: "such as 10m South"); the line is made anew only
+            // when the scene or that changes
+            string shown = text + " - " + Whereabouts(Game.Player.Character.Position, at);
+            if (_sceneBar == null || !ReferenceEquals(_sceneBarOf, text))
+            {
+                _sceneBarOf = text;
+                _sceneBar = new TickerLine { Label = "Nearby", Text = shown, Kind = "news", ShownAt = Game.GameTime };
+            }
+            else if (_sceneBar.Text != shown)
+                _sceneBar.Text = shown;
             return _sceneBar;
+        }
+
+        private string _sceneBarOf;
+
+        private static readonly string[] Points = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" };
+
+        /// "10 m south": from here to there, to the nearest 5 m, on the game's map (north is +Y, east +X).
+        private static string Whereabouts(Vector3 from, Vector3 to)
+        {
+            float dx = to.X - from.X, dy = to.Y - from.Y;
+            int m = Math.Max(5, (int)Math.Round(Math.Sqrt(dx * dx + dy * dy) / 5.0) * 5);
+            double deg = (Math.Atan2(dx, dy) * 180.0 / Math.PI + 360.0) % 360.0;
+            return m + " m " + Points[(int)Math.Round(deg / 45.0) % 8];
         }
 
         private bool TickerVisible(int now)
