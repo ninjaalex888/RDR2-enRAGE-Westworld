@@ -945,6 +945,35 @@ namespace EnrageWestworld.InGame
                 _note = Label(e.Key) + " = " + value;
             Reload();
             Log.Write("SETTINGS RealNPCs [" + e.Section + "] " + e.Key + " = " + (kept ?? value));
+            if (e.Key.Equals("NameCards", StringComparison.OrdinalIgnoreCase) && string.Equals(kept ?? value, "off", StringComparison.OrdinalIgnoreCase))
+                EnrageNameCardsOff();
+        }
+
+        /// Names over heads off hides enRAGE's own cards too: with enRAGE running, the cards a player sees are its, ours
+        /// standing aside for them (Lex, 2026-10-30: "I set Names over heads to off but I still see the nameplates"). Its
+        /// [Menu] NameCards to 0, the copy of NemesisMod.ini first, as any enRAGE row. Only this way: turning ours back on
+        /// leaves enRAGE's off, and ours draw.
+        private void EnrageNameCardsOff()
+        {
+            IniEntry theirs = _theirs != null && _theirs.Error == null ? _theirs.Find("Menu", "NameCards") : null;
+            if (theirs == null || (theirs.Value ?? "").Trim() == "0")
+                return;
+            if (!BackUp())
+            {
+                _note = "Names over heads = off; enRAGE's own names stay on: " + _note;
+                return;
+            }
+            string err = _theirs.Set(theirs, "0") ? _theirs.Save() : "couldn't change it";
+            if (err != null)
+            {
+                _note = "Names over heads = off; couldn't turn off enRAGE's own: " + err;
+                Reload();
+                return;
+            }
+            bool reloaded = _bridge != null && _bridge.ReloadEnrageSettings();
+            Reload();
+            _note = "Names over heads = off, enRAGE's own too" + (reloaded ? "" : " (saved; enRAGE picks it up when it next reads its settings)");
+            Log.Write("SETTINGS enRAGE [Menu] NameCards = 0 (RealNPCs' Names over heads turned off)");
         }
 
         /// A line of CasualHookups.ini: the three chances kept at 100 between them, a copy of the file first.
