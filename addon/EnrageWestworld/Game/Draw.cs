@@ -165,13 +165,27 @@ namespace EnrageWestworld.InGame
         /// Text with its top-left corner at (x, y), in screen fractions.
         public static void Text(string text, float x, float y, float scale, int r, int g, int b, int a = 255, string face = null)
         {
-            if (string.IsNullOrEmpty(text) || a <= 0 || !Take(1))
+            if (string.IsNullOrEmpty(text) || a <= 0)
                 return;
-            text = Safe(text);
+            TextFormed(Formed(text, face), x, y, scale, r, g, b, a);
+        }
+
+        /// The text as Text sends it (made safe, in its font): kept by a caller that draws the same text every frame, so
+        /// nothing is built anew each frame (the name cards, night 2026-10-29).
+        public static string Formed(string text, string face = null)
+        {
+            return string.IsNullOrEmpty(text) ? null : "<FONT FACE='" + (face ?? Font) + "'>" + Safe(text) + "</FONT>";
+        }
+
+        /// Text already formed (Formed), with its top-left corner at (x, y).
+        public static void TextFormed(string formed, float x, float y, float scale, int r, int g, int b, int a = 255)
+        {
+            if (string.IsNullOrEmpty(formed) || a <= 0 || !Take(1))
+                return;
             UIDEBUG._BG_SET_TEXT_SCALE(scale, scale);
             UIDEBUG._BG_SET_TEXT_COLOR(r, g, b, a);
             ulong inner = Function.Call<ulong>(VarString, 10, new InputArgument(Pin("LITERAL_STRING")),
-                new InputArgument(Pin("<FONT FACE='" + (face ?? Font) + "'>" + text + "</FONT>")));
+                new InputArgument(Pin(formed)));
             ulong v = Function.Call<ulong>(VarString, 42, new InputArgument(Pin("COLOR_STRING")), 0, new InputArgument(inner));
             Function.Call(DisplayText, new InputArgument(v), x, y);
         }

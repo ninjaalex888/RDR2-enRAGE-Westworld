@@ -38,6 +38,10 @@ namespace EnrageWestworld.InGame
             public bool Blocked;
             public int BlockedAt;
             public float Alpha;
+            // the text as drawn and its width in the title font's units, kept until the text changes (night 2026-10-29,
+            // NIGHT.md checklist 4-5: built anew for every card every frame, the costliest feature in a Saint Denis crowd)
+            public string FormedOf, Formed, Formed2Of, Formed2;
+            public float Units, Units2;
         }
 
         private readonly Dictionary<int, NameCard> _nameCards = new Dictionary<int, NameCard>();
@@ -192,9 +196,23 @@ namespace EnrageWestworld.InGame
                 float far = Math.Max(0f, Math.Min(1f, (c.Metres - 6f) / Math.Max(1f, c.Range - 6f)));
                 float s1 = 0.25f - 0.06f * far, s2 = 0.175f - 0.03f * far;
                 float h1 = 0.1f * s1, h2 = 0.094f * s2;
-                Draw.Text(c.Name, x - TitleWidth(c.Name, s1) / 2f, y - h1 - h2 + 0.002f, s1, c.R, c.G, c.B, a, "$title");
+                if (!ReferenceEquals(c.FormedOf, c.Name))
+                {
+                    c.FormedOf = c.Name;
+                    c.Formed = Draw.Formed(c.Name, "$title");
+                    c.Units = TitleUnits(c.Name);
+                }
+                Draw.TextFormed(c.Formed, x - c.Units * s1 * 0.0205f / 2f, y - h1 - h2 + 0.002f, s1, c.R, c.G, c.B, a);
                 if (!string.IsNullOrEmpty(c.Line2))
-                    Draw.Text(c.Line2, x - TitleWidth(c.Line2, s2) / 2f, y - h2 - 0.0018518518f, s2, c.R2, c.G2, c.B2, (int)(a * 0.88f), "$title");
+                {
+                    if (!ReferenceEquals(c.Formed2Of, c.Line2))
+                    {
+                        c.Formed2Of = c.Line2;
+                        c.Formed2 = Draw.Formed(c.Line2, "$title");
+                        c.Units2 = TitleUnits(c.Line2);
+                    }
+                    Draw.TextFormed(c.Formed2, x - c.Units2 * s2 * 0.0205f / 2f, y - h2 - 0.0018518518f, s2, c.R2, c.G2, c.B2, (int)(a * 0.88f));
+                }
                 up++;
                 if (_nameCardsMade++ == 0)
                     Log.Write("NAME cards: the first, over " + c.Name + (c.Line2 != null && c.Line2.Length > 0 ? " (" + c.Line2 + ")" : "") + ", " + (int)c.Metres + " m off");
@@ -215,11 +233,11 @@ namespace EnrageWestworld.InGame
             List<NameCard> found = new List<NameCard>();
             foreach (Ped p in World.GetAllPeds())
             {
-                if (p == null || !p.Exists() || p.IsDead || p.Handle == me.Handle || !PED.IS_PED_HUMAN(p.Handle))
+                if (p == null || !p.Exists() || p.Handle == me.Handle)
                     continue;
                 float d = p.Position.DistanceTo(mePos);
-                if (d > most)
-                    continue;
+                if (d > most || p.IsDead || !PED.IS_PED_HUMAN(p.Handle))
+                    continue;   // the distance first: a far body needs neither native (the same people pass)
                 int h = p.Handle;
                 uint model = ENTITY.GET_ENTITY_MODEL(h);
                 NameCard c;
@@ -341,8 +359,9 @@ namespace EnrageWestworld.InGame
             return 1f / (1f + tau / dt);
         }
 
-        /// The width of text in the game's title font, in screen fractions (enRAGE's table, with lower case at 0.8).
-        private static float TitleWidth(string s, float scale)
+        /// The width of text in the game's title font in its own units (enRAGE's table, with lower case at 0.8): x scale x 0.0205
+        /// gives screen fractions; kept on a card while its text stands.
+        private static float TitleUnits(string s)
         {
             if (string.IsNullOrEmpty(s))
                 return 0f;
@@ -370,7 +389,7 @@ namespace EnrageWestworld.InGame
                 }
                 w += char.IsLower(c) ? u * 0.8f : u;
             }
-            return w * scale * 0.0205f;
+            return w;
         }
 
         private string NameCardsStatus()
