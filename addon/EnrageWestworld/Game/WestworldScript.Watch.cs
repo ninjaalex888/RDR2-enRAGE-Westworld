@@ -48,6 +48,11 @@ namespace EnrageWestworld.InGame
         private string _lastDefenceWho;
         private int _defendSince = -1, _bountyBase;
         private bool _wantedBefore, _defenceTaintNoted, _defenceWantedNoted;
+        // the law watch (Lex, 2026-10-30: wanted for shooting a pickpocket, and again as a despairing man's shot went off)
+        private bool _lawWasWanted, _lawClearCheck;
+        private int _lawWasBounty = -1, _lastCrimeEventAt = -1000000, _despairShotAt = -1000000;
+        private uint _lastCrimeEvent;
+        private Vector3 _despairShotPos;
         private Vector3 _defendAt;
         private uint _defendState;
         private readonly List<KeyValuePair<int, int>> _bountyHistory = new List<KeyValuePair<int, int>>();   // (when, bounty; negative = wanted)
@@ -221,6 +226,49 @@ namespace EnrageWestworld.InGame
             if (_defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs && FoeStillIn(now, player, pos))
                 _lastDefenceAt = now;
             DefenceBounty(now);
+            LawWatch(now, pos);
+        }
+
+        /// Wanted the way the game shows it: a wanted level, or the law after him (an incident) with none yet.
+        private static bool PlayerWanted(int me)
+        {
+            return PLAYER.GET_PLAYER_WANTED_LEVEL(me) > 0 || LAW.IS_LAW_INCIDENT_ACTIVE(me);
+        }
+
+        /// A LAW line each time he becomes wanted or stops being, or his bounty changes: what the game says and what was
+        /// going on (the self-defence shield, the last crime the game reported, a despairing shot near him), so the next
+        /// test says which path the law took. Every 400 ms with the defence scan; a line only on a change.
+        private void LawWatch(int now, Vector3 pos)
+        {
+            int me = Game.Player.Handle;
+            int level = PLAYER.GET_PLAYER_WANTED_LEVEL(me);
+            bool incident = LAW.IS_LAW_INCIDENT_ACTIVE(me);
+            bool wanted = level > 0 || incident;
+            int bounty = LAW.GET_BOUNTY(me);
+            if (_lawClearCheck)
+            {
+                _lawClearCheck = false;
+                Log.Write("LAW after the clear: " + (wanted ? "still wanted (level " + level + (incident ? ", the law after you" : "") + ")" : "no longer wanted"));
+            }
+            if (wanted == _lawWasWanted && bounty == _lawWasBounty)
+                return;
+            bool first = _lawWasBounty < 0;
+            bool was = _lawWasWanted;
+            _lawWasWanted = wanted;
+            _lawWasBounty = bounty;
+            if (first && !wanted)
+                return;
+            string why = "";
+            if (now - _lastDefenceHitAt < 30000 || (_defendSince >= 0 && now - _lastDefenceAt < DefenceLaw.WindowMs))
+                why += "; in self-defence (" + (now - _lastDefenceHitAt) / 1000 + " s since your last hit on them, the shield " + (_shieldOn ? "on" : "off") + ")";
+            if (now - _lastOffenceAt < DefenceLaw.LookbackMs)
+                why += "; you hurt someone who hadn't come at you " + (now - _lastOffenceAt) / 1000 + " s ago";
+            if (now - _lastCrimeEventAt < 30000)
+                why += "; the game reported crime 0x" + _lastCrimeEvent.ToString("X8") + " " + (now - _lastCrimeEventAt) / 1000 + " s ago";
+            if (now - _despairShotAt < 30000)
+                why += "; a despairing shot " + (now - _despairShotAt) / 1000 + " s ago, " + (int)_despairShotPos.DistanceTo(pos) + " m off";
+            Log.Write("LAW: " + (wanted == was ? "bounty now $" + bounty / 100 : wanted ? "wanted (level " + level + (incident ? ", the law after you" : "") + "), bounty $" + bounty / 100 : "no longer wanted, bounty $" + bounty / 100) +
+                      (why.Length > 0 ? why : "; nothing RealNPCs saw"));
         }
 
         /// While the event probe runs: the game's melee state around the player every 400 ms, whenever any of it is set
@@ -343,7 +391,7 @@ namespace EnrageWestworld.InGame
         {
             int me = Game.Player.Handle;
             int bounty = LAW.GET_BOUNTY(me);
-            bool wanted = PLAYER.GET_PLAYER_WANTED_LEVEL(me) > 0;
+            bool wanted = PlayerWanted(me);   // the law after him counts, as elsewhere (it alone missed the pickpocket's wanted, 2026-10-30)
             bool mission = MISC.GET_MISSION_FLAG();
             Vector3 pos = Game.Player.Character.Position;
             bool moved = _defendSince >= 0 && (pos.DistanceTo(_defendAt) > 300f || StateAt(pos) != _defendState);
@@ -396,6 +444,7 @@ namespace EnrageWestworld.InGame
                         if (!_defenceWantedNoted)
                         {
                             _defenceWantedNoted = true;
+                            _lawClearCheck = true;   // the next scan says whether the clear ended the law's pursuit too
                             Log.Write("SELF-DEFENCE: wanted level cleared: you were fighting off " + (_lastDefenceWho ?? "someone") + ", who attacked first. Any new one is cleared too until the fight is over.");
                         }
                     }
@@ -471,7 +520,7 @@ namespace EnrageWestworld.InGame
             List<KeyValuePair<int, int>> recent = _bountyHistory.Where(x => now - x.Key <= 4000).ToList();
             if (recent.Count == 0)
             {
-                bool w = PLAYER.GET_PLAYER_WANTED_LEVEL(me) > 0;
+                bool w = PlayerWanted(me);
                 int b = LAW.GET_BOUNTY(me);
                 recent.Add(new KeyValuePair<int, int>(now, w ? -b - 1 : b));
             }
@@ -628,6 +677,8 @@ namespace EnrageWestworld.InGame
 
         private void OnCrime(uint crime, int witness, int now)
         {
+            _lastCrimeEvent = crime;
+            _lastCrimeEventAt = now;
             string kind = CrimeKind(crime);
             if (kind == null)
             {

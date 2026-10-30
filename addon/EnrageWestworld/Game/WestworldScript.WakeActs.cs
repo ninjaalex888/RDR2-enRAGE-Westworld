@@ -1029,6 +1029,8 @@ namespace EnrageWestworld.InGame
             bool triggered = GunTrigger(h, ground, act.Arm);
             MISC.SHOOT_SINGLE_BULLET_BETWEEN_COORDS(from.X, from.Y, from.Z, head.X, head.Y, head.Z, 500, true, act.Arm, h, true, false, 1000f, false);   // the bullet's mark, in case it ever does strike
             ENTITY.SET_ENTITY_HEALTH(h, 0, h);   // dead at the shot: the fall comes with the sound
+            _despairShotAt = now;   // for the law watch (WestworldScript.Watch.cs)
+            _despairShotPos = pos;
             Log.Write("WAKE despair: " + act.Name + " dead at the shot" + (triggered ? ", the trigger pulled" : ", no gun in hand to fire, so no shot heard"));
             act.Phase = 5;
             act.PhaseUntil = now + 1500;
