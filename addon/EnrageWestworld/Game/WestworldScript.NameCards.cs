@@ -286,7 +286,12 @@ namespace EnrageWestworld.InGame
             {
                 bool met = ac.Met;
                 string temper = ac.Temper != null && ac.Temper.Length > 0 ? Grammar.UpperFirst(ac.Temper) : null;
-                Set(c, ac.Name, met ? temper ?? "" : "Stranger", met ? ColourTitle : ColourStranger, ColourDim, true);
+                // no name until you've met: "Stranger" alone (Lex, 2026-10-30: "have their name show as Stranger until they are
+                // greeted or interacted with")
+                if (met)
+                    Set(c, ac.Name, temper ?? "", ColourTitle, ColourDim, true);
+                else
+                    Set(c, "Stranger", "", ColourStranger, ColourDim, true);
                 return true;
             }
             ResBind b;
@@ -296,13 +301,16 @@ namespace EnrageWestworld.InGame
                 // (Lex, 2026-10-29: "it should show Stranger until the main character has greeted or interacted with the NPC")
                 PersonState st = _store != null ? _store.Find(b.R.Id) : null;
                 int greetedAt;
-                bool met = (st != null && (st.Talks > 0 || st.KnowsName || st.Flirts > 0 || st.ContactAt > 0 || st.SawDeeds.Count > 0)) || _greetedAt.TryGetValue(h, out greetedAt);
+                // met: you greeted, talked, flirted or had any contact, or they spoke up to you; only seeing you do something isn't
+                // meeting (Lex, 2026-10-30)
+                bool met = (st != null && (st.Talks > 0 || st.KnowsName || st.Flirts > 0 || st.ContactAt > 0 || st.LastRemarkAt > 0)) || _greetedAt.TryGetValue(h, out greetedAt);
                 string temper = b.R.Personality != null && b.R.Personality.Length > 0 ? b.R.Personality : null;
                 string trade = b.R.Trade != null && b.R.Trade.Length > 0 ? Grammar.UpperFirst(b.R.Trade.StartsWith("a ") ? b.R.Trade.Substring(2) : b.R.Trade.StartsWith("an ") ? b.R.Trade.Substring(3) : b.R.Trade) : null;
                 string line2 = temper != null && trade != null ? temper + " - " + trade : temper ?? trade ?? "";
-                if (!met)
-                    line2 = "Stranger";
-                Set(c, b.R.Name, line2, met ? ColourTitle : ColourStranger, ColourDim, true);
+                if (met)
+                    Set(c, b.R.Name, line2, ColourTitle, ColourDim, true);
+                else
+                    Set(c, "Stranger", "", ColourStranger, ColourDim, true);   // no name until you've met (Lex, 2026-10-30)
                 return true;
             }
             // the game's own named people: the story characters and the uniques the game names (StoryCast.cs; Lex, 2026-10-29: the

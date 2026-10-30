@@ -34,6 +34,8 @@ Built on 0.7.0 during Lex's in-game pass of 2026-10-30, from his tests and a pla
 
 ### Fondness, and subtitles under the game's own (Lex, 2026-10-30)
 
+- Someone you haven't met is "Stranger" over their head, with no name under or over it (Lex: "have their name show as Stranger until they are greeted or interacted with"). Met is greeting, talking, flirting, any contact, or their speaking up to you; only seeing you do something no longer counts. enRAGE's nemeses and the game's own named people (sheriffs, the story cast) keep their names.
+
 - The middle bar under people is "Fondness" (was "Liking"): how fond of you they are, beside their fear and anger.
 - RealNPCs' subtitles sat on the game's own subtitle line and the two overlapped. Ours now start just under the game's line and grow down toward the news bar.
 
