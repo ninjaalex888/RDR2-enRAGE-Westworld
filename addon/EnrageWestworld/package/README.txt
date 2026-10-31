@@ -1,4 +1,4 @@
-RealNPCs 0.7.4 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.5 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,16 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.5
+------------
+- Alt+R keeps working. Each part of RealNPCs switches itself off if it keeps failing, and the
+  settings panel's count of errors ran all session, so a rare error every so often could leave
+  it off until the game restarted. Now a part switches off only for errors close together, and
+  the settings key always brings the panel back. The settings keys also work with Shift or Ctrl
+  held (sprinting, crouching, or a key Windows thinks is still down after Alt+Tab).
+- If Alt+R still does nothing, try Alt+F (the second settings key), and send RealNPCs.log
+  (Documents\Rockstar Games\Red Dead Redemption 2\RealNPCs) with a bug report.
 
 NEW IN 0.7.4
 ------------

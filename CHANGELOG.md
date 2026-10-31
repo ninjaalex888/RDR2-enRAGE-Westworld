@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.5 (2026-10-30)
+
+A fix for the settings key (Alt+R), which two players found stopped working a while into the game.
 
 ### Alt+R keeps working (two players, 2026-10-30: the settings key stopped working a while into the game)
 
