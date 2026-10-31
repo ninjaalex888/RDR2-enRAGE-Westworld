@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.6 (2026-10-30)
+
+Killing a pickpocket who robbed you is self-defence again, as it was meant to be: no murder charge. Lex tested it in game (a pickpocket in Annesburg, shot after he took $25: no charge, no bounty, the money back).
 
 ### A thief shot while running off isn't murder (Lex, 2026-10-30, in game: "I just killed a pickpocket and got wanted for murder")
 

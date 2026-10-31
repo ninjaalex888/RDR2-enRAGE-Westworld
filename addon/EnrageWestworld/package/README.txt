@@ -1,4 +1,4 @@
-RealNPCs 0.7.5 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.6 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,13 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.6
+------------
+- Killing a pickpocket who robbed you is self-defence, never murder. The game's pursuit could
+  outlast the clear of the bounty and wanted level; now the game's record of the crime is
+  wiped too (what you owed before is kept), and if the law is still after you, it's switched
+  off for a moment to end the chase. Under [World] SelfDefenceNoBounty.
 
 NEW IN 0.7.5
 ------------
