@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Two subtitle boxes: to Arthur, and between others (Lex, 2026-10-30, a screenshot)
+
+- A woman's gossip to another sat in the subtitle box where a line to Arthur goes. Now the game's place is for what's said to Arthur alone; what people say to each other (street scenes, quiet talks, hellos in passing, the doctor's patient, the law chase, the gangs) shows in a smaller, softer box just under it, above the bar, and the two show at once without either replacing the other. A thank-you after you step in and a sorry from someone who walks into you are said to you, so they take the top box.
+- No thought in a subtitle: the one that was (a rescuer's, after talking someone down from the edge) goes over their head now. The Testing row's subtitle preview shows both boxes. Roadmap 30 now includes every line heard rather than read, inner thoughts too, in the speaker's own voice.
+
 ### The model picks what people near you do (Lex, 2026-10-30; in testing)
 
 - The first step toward the model deciding. When the mind's choice changes for someone within 15 m of you, the best three of the things it would allow them (and a plan's own step, "goes to find Gideon, meaning to get even with him", when the one it's about is near) go to the local model with who they are and how they feel, and it answers with a number. That's what they do. Every option is one the mind already allows, so any pick is safe; a feeling strongly felt still decides by itself. The wait is 2.5 s at most: late, empty or unreadable, the mind's own choice is done, as before. Picks go ahead of thoughts in the model's queue, four at once at most. Measured on llama3.1:8b before the game: 30 to 140 ms an answer, a clean number each time.
