@@ -55,7 +55,17 @@ namespace EnrageWestworld.InGame
         }
 
         /// The resident this person is, made if need be. Null if they can't be one.
+        // without enRAGE, everyone the cards reach is named (Lex, 2026-10-30: "if not, fall back to trying to have as many NPCs
+        // under our mod"); those named for the cards alone haven't had the Awakening's roll, which comes the first time the
+        // mind meets them, so the share of the waking stays what it was
+        private readonly HashSet<string> _unrolled = new HashSet<string>();
+
         private Resident ResidentOf(Ped ped)
+        {
+            return ResidentOf(ped, false);
+        }
+
+        private Resident ResidentOf(Ped ped, bool forCard)
         {
             if (ped == null || !ped.Exists())
                 return null;
@@ -65,7 +75,11 @@ namespace EnrageWestworld.InGame
             if (_resBind.TryGetValue(h, out b))
             {
                 if (b.Model == model)
+                {
+                    if (!forCard && _unrolled.Count > 0 && b.R != null && _unrolled.Remove(b.R.Id))
+                        _engine.RollAwakening(b.R, Bridge.Now());
                     return b.R;
+                }
                 _resBind.Remove(h);   // the game reused the handle for someone else
             }
             PostKind postKind = PostKindOf(ped);
@@ -118,7 +132,13 @@ namespace EnrageWestworld.InGame
                 _resBind[h] = new ResBind { R = back, Model = model };
                 return back;
             }
-            Resident r = _engine.MeetResident(model, woman, where, ResidentTrade(ped, woman), h + "|" + Game.GameTime, Bridge.Now());
+            Resident r = _engine.MeetResident(model, woman, where, ResidentTrade(ped, woman), h + "|" + Game.GameTime, Bridge.Now(), !forCard);
+            if (forCard)
+            {
+                _unrolled.Add(r.Id);
+                if (_unrolled.Count > 400)
+                    _unrolled.Clear();   // long gone, most of them: they're rolled no more (a little under the share, never over)
+            }
             if (look != null && !_store.Residents.Any(x => x.Look == look))
             {
                 // kept with them once something happens to them, so the same body is known for them again; never a look a

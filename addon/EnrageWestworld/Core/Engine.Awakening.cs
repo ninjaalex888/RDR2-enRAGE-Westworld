@@ -86,15 +86,23 @@ namespace EnrageWestworld.Core
 
         /// Makes a resident for an ordinary person who has just been asked about. Not saved until something happens
         /// to them, except that the share of residents who start already waking is rolled here, and those are kept.
-        public Resident MeetResident(uint model, bool woman, string town, string trade, string seed, long now)
+        public Resident MeetResident(uint model, bool woman, string town, string trade, string seed, long now, bool roll = true)
         {
             Resident r = Residents.Make(Resident.Prefix + (++Store.NextResident), seed, model, woman, town, trade, now, Voice.NowYear);
+            if (roll)
+                RollAwakening(r, now);
+            return r;
+        }
+
+        /// The Awakening's share: this resident may be one of those already stirring when met. Once each (MeetResident, or when
+        /// one named only for the cards is first met by the mind).
+        public void RollAwakening(Resident r, long now)
+        {
             if (Cfg.AwakeningShare > 0 && _rng.NextDouble() * 100.0 < Cfg.AwakeningShare)
             {
                 Advance(PersonOfResident(r), Store.Get(PersonOfResident(r)), now);
                 Store.KeepResident(r, now);
             }
-            return r;
         }
 
         /// Something happened to this resident (they were talked to, woke a stage...): they are saved from now on.

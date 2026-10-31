@@ -576,6 +576,30 @@ namespace EnrageWestworld.InGame
         }
 
         private string _sceneBarOf;
+
+        private int _namedForCards;
+
+        /// Without enRAGE, everyone within the cards' reach is one of ours, with a name (two new a second, nearest first; once
+        /// named they stay so): enRAGE names its townsfolk when it runs, and alone the add-on does it for everyone it can.
+        private void NameEveryone(Ped me)
+        {
+            if (_bridge == null || _bridge.Present || _engine == null)
+                return;
+            Vector3 pos = me.Position;
+            float reach = Math.Max(_cfg.NameCardsMetres, 12f);
+            var fresh = new List<KeyValuePair<Ped, float>>();
+            foreach (Ped p in World.GetAllPeds())
+            {
+                if (p == null || p.Handle == me.Handle || _resBind.ContainsKey(p.Handle))
+                    continue;
+                float d = p.Position.DistanceTo(pos);
+                if (d <= reach && ResidentEligible(p))
+                    fresh.Add(new KeyValuePair<Ped, float>(p, d));
+            }
+            foreach (KeyValuePair<Ped, float> kv in fresh.OrderBy(x => x.Value).Take(2))
+                if (ResidentOf(kv.Key, true) != null)
+                    _namedForCards++;
+        }
         private int _sceneBarCount, _sceneBarIdx = -1, _scenePick, _scenePickUntil;
 
         private static readonly string[] Points = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" };
@@ -658,6 +682,7 @@ namespace EnrageWestworld.InGame
             Ped me = Game.Player.Character;
             if (me == null || !me.Exists())
                 return;
+            Safe("names for all", () => NameEveryone(me));
             Vector3 pos = me.Position;
             float r = _cfg.TickerNearbyMetres;
             long now = Bridge.Now();
