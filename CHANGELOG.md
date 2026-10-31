@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Thoughts said aloud in their own voice (Lex, 2026-10-30; in testing)
+
+- As a thought shows over someone within 12 m whose voice the add-on knows, the local model is shown the thought and the remarks that person's own voice has recorded (by their words where your local word list has them, else by what each is for: grumbling about the weather, a curse under the breath, drunken talk, things going badly...) and picks the one that fits. They say it aloud in their real voice, with its words in the lower subtitle box when they're known. Most thoughts stay unspoken: half are never offered, and the model is asked twice, the line said only when both answers agree (in a trial before the game, a sure fit came back alike each time, an unsure one wandered). One every 20 s at most, each person once in four minutes, never someone speaking or in a scene. The log's MIND aloud line shows the thought, what was offered and what was said; F7 TEST aloud counts them. `[Mind] ThoughtsAloud`, on, with `Language` (settings version 143).
+- The more voices transcribed, the better it fits: export voice banks with OpenIV (PEDS_00 to PEDS_10.rpf, one folder a bank into C:\modsoice-testanks) and transcribe them there; the words then reach the game through voices\words.txt.
+
 ### A working girl's own come-on, wherever she flirts (Lex, 2026-10-30, in game)
 
 - Carrie, a working girl in Valentine's saloon, said her own come-on to Arthur, the game's PLAYER_FOLLOWING recording in her voice. Now, wherever one of the working girls is about to say something flirty (her yes when Arthur flirts, her yes to somewhere quieter, a come-on to a man in a street scene, a sweetheart's hello), that line goes first, now and then: once in ten minutes a woman and once in two minutes in all, so it stays a treat. Only the working girls' voices: in anyone else's the same line is a cold "what you following me for?". In the log, VOICE a working girl's come-on.

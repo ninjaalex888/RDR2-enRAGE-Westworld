@@ -34,6 +34,7 @@ namespace EnrageWestworld.InGame
             JoinYouStep(now);   // onlookers who join a fistfight of yours (WestworldScript.JoinYou.cs)
             PlansStep(me, now);   // plans over days (WestworldScript.Plans.cs)
             PicksStep(now);   // the model's picks, as they come back (WestworldScript.Picks.cs)
+            AloudStep(now);   // a thought said aloud in their own voice (WestworldScript.Aloud.cs)
             HorseThiefStep(me, now);   // a horse thief on his way to it, or away on it (WestworldScript.HorseThief.cs)
             FallWanderStep(now);
             WanderLaterStep(now);

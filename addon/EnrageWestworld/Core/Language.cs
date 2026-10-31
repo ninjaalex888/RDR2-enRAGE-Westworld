@@ -34,7 +34,8 @@ namespace EnrageWestworld.Core
         public List<string> Near = new List<string>();       // first names of those in sight
         public List<string> Beliefs = new List<string>();    // what they hold, in their own words (Beliefs.Words: "that stranger is a dangerous man"), up to three (after item 14)
         public string AvoidLine;             // the written line the fallback would give (the model must not copy it)
-        public List<string> Options = new List<string>();    // Kind "pick": what they might do, in words (Language.Pick.cs)
+        public List<string> Options = new List<string>();    // Kind "pick": what they might do, in words (Language.Pick.cs); "say": the remarks their voice has (ThoughtVoice.cs)
+        public string Thought;               // Kind "say": the thought showing now
 
         /// Every name the answer may use: their own, whom it's about, those near, the town, any in the memories.
         public HashSet<string> Names()

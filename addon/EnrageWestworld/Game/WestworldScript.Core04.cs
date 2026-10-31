@@ -486,6 +486,7 @@ namespace EnrageWestworld.InGame
                 _tickerLine = _ticker.Update(now, _near, _cfg.NewsRoute == "corner" ? null : (Func<string>)(() => _engine.Summary()));   // the news has its own box then
                 if (_tickerLine != was)
                     Safe("thought sound", () => ThoughtSound(_tickerLine, now));
+                    Safe("aloud", () => AloudAsk(_tickerLine, now));   // said aloud in their own voice, if it fits (WestworldScript.Aloud.cs)
             }
             TickerLine line = _tickerLine;
             // a thought goes over its thinker's head (WestworldScript.OverHead.cs), under its own guard, and with

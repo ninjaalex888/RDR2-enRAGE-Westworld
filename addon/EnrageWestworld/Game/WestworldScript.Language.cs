@@ -208,7 +208,7 @@ namespace EnrageWestworld.InGame
                         Thread.Sleep(60);
                         continue;
                     }
-                    bool pick = ask.Request.Kind == "pick";
+                    bool pick = ask.Request.Kind == "pick" || ask.Request.Kind == "say";   // a choice by number, read on the game thread
                     if (!_langReady)
                     {
                         if (pick)
@@ -218,7 +218,7 @@ namespace EnrageWestworld.InGame
                         continue;
                     }
                     var sw = Stopwatch.StartNew();
-                    string json = LanguagePost(_cfg.LanguageUrl + "/api/generate", pick ? Language.PickBody(_cfg.LanguageModel, ask.Request) : Language.RequestBody(_cfg.LanguageModel, ask.Request));
+                    string json = LanguagePost(_cfg.LanguageUrl + "/api/generate", ask.Request.Kind == "say" ? ThoughtVoice.Body(_cfg.LanguageModel, ask.Request) : pick ? Language.PickBody(_cfg.LanguageModel, ask.Request) : Language.RequestBody(_cfg.LanguageModel, ask.Request));
                     sw.Stop();
                     string answer = Language.ParseResponse(json);
                     if (pick)
