@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.7 (2026-10-31)
+
+The settings panel works on other builds of Script Hook RDR2 .NET V2. Lex checked the panel in game.
+
+### The settings panel opens on other Script Hook .NET builds (a player, 2026-10-30: Alt+R did nothing)
+
+- The player's log showed the panel failing on its first frame ("Could not load type 'RDR2.Native._NAMESPACE30'") and switching itself off, and the bell and waking scenes failing on the look-at call ("Method not found: TASK_LOOK_AT_COORD"). Their Script Hook RDR2 .NET V2 gives the same version number as ours but names those two game functions differently. RealNPCs now calls both by the game's own hash, which doesn't depend on how a build names it.
+
 ## 0.7.6 (2026-10-30)
 
 Killing a pickpocket who robbed you is self-defence again, as it was meant to be: no murder charge. Lex tested it in game (a pickpocket in Annesburg, shot after he took $25: no charge, no bounty, the money back).

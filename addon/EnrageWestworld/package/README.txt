@@ -1,4 +1,4 @@
-RealNPCs 0.7.6 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.7 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,13 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.7
+------------
+- The settings panel (Alt+R) and people turning to look work on other builds of Script Hook
+  RDR2 .NET V2. On some builds the panel failed as it opened and switched itself off; the
+  log said "Could not load type 'RDR2.Native._NAMESPACE30'". RealNPCs now calls those two
+  game functions directly, whatever the build names them.
 
 NEW IN 0.7.6
 ------------
