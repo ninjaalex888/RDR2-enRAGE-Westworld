@@ -1,4 +1,4 @@
-RealNPCs 0.7.8 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.9 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,12 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.9
+------------
+- Stripping is held back: the first time one of the awake stripped in testing, the game froze.
+  Nothing strips now, whatever WakeStripChance says, until the cause is found. Everything else
+  of 0.7.8 is unchanged.
 
 NEW IN 0.7.8
 ------------
@@ -923,7 +929,7 @@ in the file. The new ones:
             back to their day, for WakeHoldMinutes (3); WakeGestures (true): their hands and bodies
             as they act; WakeStrange (true): from the third stage they bother the people around them
             (up close and staring, a hand before the face, following, "you're not real", preaching);
-            WakeStripChance (5): percent of the awake who strip bare once (never enRAGE's people),
+            WakeStripChance (5): held back since 0.7.9 (it froze the game); nobody strips,
             WakeLashOut (25): percent of holds at stages 3-4 that end with them turning on you or on
             someone near (fists, or their own gun when awake),
             HostsQuestionReality (true), RealityChance (15), Glitches (true),

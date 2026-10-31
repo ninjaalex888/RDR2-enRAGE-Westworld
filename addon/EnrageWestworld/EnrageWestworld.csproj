@@ -8,7 +8,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Deterministic>true</Deterministic>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
-    <Version>0.7.8</Version>
+    <Version>0.7.9</Version>
     <Product>RealNPCs (unofficial add-on for enRAGE)</Product>
     <Description>Real people for enRAGE: lives, memories, inner thoughts and rumours, and an optional West World where some of them wake.</Description>
     <DebugType>none</DebugType>

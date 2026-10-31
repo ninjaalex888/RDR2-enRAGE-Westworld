@@ -29,6 +29,10 @@ namespace EnrageWestworld.InGame
     {
         private const int HoldGapMs = 60000;
         private const string StripMark = "wake:strip";
+        // held back (2026-10-31): the first strip seen in game froze the game two seconds after the Testing row fired it
+        // (the log stops as REMOVE_TAG_FROM_META_PED ran on an ambient man in Saint Denis). Nothing strips, whatever
+        // WakeStripChance says, until the cause is found and it's seen working.
+        private static readonly bool StripHeldBack = true;
         private const ulong RemoveTagFromMetaPed = 0xD710A5007C2AC539;   // REMOVE_TAG_FROM_META_PED(ped, category, 0), by hash like the cursor
         private const ulong UpdatePedVariation = 0xCC8CA3E88256E58F;     // _UPDATE_PED_VARIATION(ped, false, true, true, true, false)
         private readonly HashSet<string> _gestBad = new HashSet<string>();
@@ -92,7 +96,7 @@ namespace EnrageWestworld.InGame
             if (act.LashAt > 0 && act.Links + 1 >= act.LashAt && !sitting)
                 kind = "lashout";
             else if (act.Stage >= Awakening.Awake && !act.Stripped && !act.St.Has(StripMark) && _bridge.RecordAt(h) == null && !sitting && s < 30 &&
-                WakeOdd.Strips(_cfg.WakeStripChance, act.P.Id))
+                !StripHeldBack && WakeOdd.Strips(_cfg.WakeStripChance, act.P.Id))
                 kind = "strip";
             else
                 kind = WakeOdd.NextKind(act.Stage, sitting, _cfg.WakeStrange && OtherFor(act, me) != null, r, s);
@@ -188,6 +192,8 @@ namespace EnrageWestworld.InGame
                 }
                 case "strip":
                 {
+                    if (StripHeldBack)
+                        return false;   // held back: it froze the game
                     Take(act);
                     TASK.TASK_STAND_STILL(h, 9000);
                     LookAtCoord(h, ped.Position.X, ped.Position.Y, ped.Position.Z - 1f, 3000);   // down at themselves
@@ -534,6 +540,8 @@ namespace EnrageWestworld.InGame
 
         private void WakeStrip(WakeAct act, Ped me, int now)
         {
+            if (StripHeldBack)
+                return;
             int h = act.Handle;
             act.St.Mark(StripMark);
             act.Stripped = true;
@@ -721,6 +729,11 @@ namespace EnrageWestworld.InGame
                 bool passive;
                 if (_director.Involves(ped.Handle) || !WakeIdentity(ped, true, out p, out st, out res, out passive) || passive || st.WakeStage < Awakening.Unravelling)
                     continue;
+                if (kind == "strip" && StripHeldBack)
+                {
+                    _strangeTest++;
+                    return "stripping is held back: it froze the game the first time it ran (2026-10-31); press it again for the next";
+                }
                 if (kind == "strip" && (st.WakeStage < Awakening.Awake || _bridge.RecordAt(ped.Handle) != null))
                 {
                     _strangeTest++;   // on to the next turn, as it says

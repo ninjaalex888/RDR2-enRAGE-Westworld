@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.9 (2026-10-31)
+
+A fix: stripping froze the game.
+
+- **Stripping is held back** (Lex, 2026-10-31, in game: the game froze two seconds after a fully awake man was made to strip from the Testing page; the log stops as the clothes came off). Nothing strips now, whatever `WakeStripChance` says, and the Testing row passes over it, until the cause is found and it's seen working. Nothing else changes from 0.7.8.
+
 ## 0.7.8 (2026-10-31)
 
 The waking stay strange: from the second stage they no longer slip back into their day between acts, they use their hands and bodies, they bother the people around them, and the worst of them turn on you or on others. Lex tested the hold, the strange acts and a lash-out at him in game; stripping hasn't been seen in game yet.
