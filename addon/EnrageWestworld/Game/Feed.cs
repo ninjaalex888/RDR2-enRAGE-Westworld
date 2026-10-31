@@ -50,10 +50,13 @@ namespace EnrageWestworld.InGame
 		// on the game's), growing down to SubtitleLowest above the news bar; a longer one rises only as far as it must
 		public const float SubtitleScale = 0.42f, SubtitleTop = 0.858f, SubtitleLowest = 0.946f, SubtitleWidth = 0.62f;
 
-		private static string _subText;
-		private static int _subFrom, _subUntil;
-		private static bool _subOverheard;
-		private static string _drawnNoted;   // the line showing was only overheard: a line said to the player may replace it
+		// two boxes (Lex, 2026-10-30, a screenshot: one woman's gossip to another sat where a line to Arthur goes): what's said to
+		// the player in the game's place, and what's said between other people in a smaller, softer box just under it, above
+		// the bar. A thought is never either: thoughts go over heads.
+		public const float OverheardScale = 0.37f;
+		private static string _subText, _ovrText;
+		private static int _subFrom, _subUntil, _ovrFrom, _ovrUntil;
+		private static string _drawnNoted, _ovrNoted;
 
 		/// [Output] Subtitles (on, unless "off").
 		public static bool SubtitlesOn = true;
@@ -273,7 +276,6 @@ namespace EnrageWestworld.InGame
 					if (sub != null)
 					{
 						_subText = Clean(sub);
-						_subOverheard = false;
 						_subFrom = gameTime;
 						_subUntil = gameTime + Math.Max(ms, Duration(sub));
 						SubtitlesShown++;
@@ -294,11 +296,23 @@ namespace EnrageWestworld.InGame
 			if (!SubtitlesOn || SubtitleMode == "off" || string.IsNullOrEmpty(text))
 				return false;
 			int now = Game.GameTime;
-			if (_subText != null && now < _subUntil && !_subOverheard)
+			string sub = (string.IsNullOrEmpty(speaker) ? "" : speaker + ": ") + "\"" + text.Trim() + "\"";
+			_ovrText = Clean(sub);
+			_ovrFrom = now;
+			_ovrUntil = now + ms;
+			SubtitlesShown++;
+			LastSubtitle = sub;
+			return true;
+		}
+
+		/// A line someone says to the player that isn't one of the Feed's voiced lines (a thank-you, a sorry): the top box.
+		public static bool ToYouCaption(string speaker, string text, int ms)
+		{
+			if (!SubtitlesOn || SubtitleMode == "off" || string.IsNullOrEmpty(text))
 				return false;
+			int now = Game.GameTime;
 			string sub = (string.IsNullOrEmpty(speaker) ? "" : speaker + ": ") + "\"" + text.Trim() + "\"";
 			_subText = Clean(sub);
-			_subOverheard = true;
 			_subFrom = now;
 			_subUntil = now + ms;
 			SubtitlesShown++;
@@ -310,6 +324,34 @@ namespace EnrageWestworld.InGame
 		/// fading in and out. Nothing when none is showing.
 		public static void DrawSubtitle(int now)
 		{
+			// what's said between others first, at the bottom just above the bar; what's said to the player above it
+			float bottom = SubtitleLowest;
+			if (_ovrText != null && now < _ovrUntil && now >= _ovrFrom)
+			{
+				int oa = Math.Min(255, Math.Min((now - _ovrFrom) * 255 / 150, (_ovrUntil - now) * 255 / 250));
+				if (oa > 0)
+				{
+					float os = OverheardScale, olh = Draw.LineHeight(os);
+					List<string> ol = Draw.Wrap(_ovrText, os, SubtitleWidth);
+					float ow = 0f;
+					foreach (string l in ol)
+						ow = Math.Max(ow, Draw.Width(l, os));
+					float oh = ol.Count * olh, otop = SubtitleLowest - oh - 0.010f;
+					if (!ReferenceEquals(_ovrNoted, _ovrText))
+					{
+						_ovrNoted = _ovrText;
+						Log.Detail("SUBTITLE (between others) drawn: top " + otop.ToString("0.000") + ", " + _ovrText);
+					}
+					Draw.Rect(0.5f - ow / 2f - 0.010f, otop, ow + 0.020f, oh + 0.010f, 0, 0, 0, oa * 130 / 255);
+					float oy = otop + 0.005f;
+					foreach (string l in ol)
+					{
+						Draw.Text(l, 0.5f - Draw.Width(l, os) / 2f, oy, os, 218, 214, 204, oa, SubtitleFace);
+						oy += olh;
+					}
+					bottom = otop - 0.006f;
+				}
+			}
 			if (_subText == null || now >= _subUntil || now < _subFrom)
 				return;
 			int a = Math.Min(255, Math.Min((now - _subFrom) * 255 / 150, (_subUntil - now) * 255 / 250));
@@ -320,7 +362,7 @@ namespace EnrageWestworld.InGame
 			float w = 0f;
 			foreach (string l in lines)
 				w = Math.Max(w, Draw.Width(l, scale));
-			float padX = 0.012f, padY = 0.006f, h = lines.Count * lineH, top = Math.Min(SubtitleTop, SubtitleLowest - h - padY * 2f);
+			float padX = 0.012f, padY = 0.006f, h = lines.Count * lineH, top = Math.Min(SubtitleTop, bottom - h - padY * 2f);
 			if (!ReferenceEquals(_drawnNoted, _subText))
 			{
 				_drawnNoted = _subText;   // once a subtitle: drawn, and where (2026-10-30: Lex couldn't see them)

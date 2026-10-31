@@ -394,7 +394,7 @@ namespace EnrageWestworld.InGame
             {
                 _rescuedThankAt = 0;
                 Speech.SayAny(h, new[] { "GENERIC_THANKS", "THANKS" }, player);
-                SpeechCaption(NameToShow(h), Voice.Pick(h.ToString(), "Much appreciated, friend. Never saw that coming.", "Bless you. I thought I was done for.", "Lord, thank you. He'd have killed me."), h, 3000);
+                SpeechCaption(NameToShow(h), Voice.Pick(h.ToString(), "Much appreciated, friend. Never saw that coming.", "Bless you. I thought I was done for.", "Lord, thank you. He'd have killed me."), h, 3000, true);
             }
             if (gone || now >= _rescuedUntil)
             {

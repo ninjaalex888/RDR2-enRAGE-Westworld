@@ -100,7 +100,7 @@ namespace EnrageWestworld.InGame
                 _rescued++;
                 _rescueLast = act.SaverName + " talked " + act.Name + " down";
                 Log.Write("WAKE despair: " + act.SaverName + " talked " + act.Name + " down (" + (act.SaverFriend ? "a friend" : "a stranger") + "): they come away");
-                SpeechCaption(act.SaverName + ", thinking", Rescue.After(true, act.SaverClose ? Person.FirstOf(act.Name) : null, act.SaverId), s, 4000);
+                _ticker.Push(act.SaverName + ", thinking", Rescue.After(true, act.SaverClose ? Person.FirstOf(act.Name) : null, act.SaverId), "near", s);   // a thought: over their head, never a subtitle
                 RescueRemember(act, saver, them);
                 act.Until = now;   // the act ends at the next look ("finished"); EndWakeAct sends both on their way (RescueRelease)
                 return true;

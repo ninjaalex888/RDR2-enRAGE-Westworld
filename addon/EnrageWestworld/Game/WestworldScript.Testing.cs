@@ -195,7 +195,7 @@ namespace EnrageWestworld.InGame
                     // the box RealNPCs draws what people say near you in (Lex, 2026-10-30: "I'm still not able to see our mods
                     // drawn on subtitles"): one for six seconds, and the log says where it was drawn
                     skipped = "nothing";
-                    return Feed.Overheard("RealNPCs", "This is how RealNPCs' subtitles look, just under the game's own line.", 6000) ? null : "[Output] Subtitles is off, or a line said to you is showing";
+                    return Feed.ToYouCaption("A townsman", "This is a line said to you, in the game's own place.", 6000) & Feed.Overheard("His wife", "And this is one said between other people, just under it.", 6000) ? null : "[Output] Subtitles is off";
                 case "cast":
                     skipped = "nothing: it brings people, it starts nothing";
                     return TestCastBring(Game.Player.Character, now, out said);   // WestworldScript.TestCast.cs

@@ -439,12 +439,12 @@ namespace EnrageWestworld.InGame
         // a line being said near you (a scene, the doctor, a hello), as a subtitle in the game's style for its own time, never
         // on the bar, which the thoughts used to share (Lex, 2026-10-30: "There shouldn't be inner thoughts showing at the
         // bottom of the screen"; a mourner's line read as one)
-        private void SpeechCaption(string label, string text, int handle, int ms)
+        private void SpeechCaption(string label, string text, int handle, int ms, bool toYou = false)
         {
             if (string.IsNullOrEmpty(text))
                 return;
-            bool shown = Feed.Overheard(label, text, Math.Max(1500, ms));
-            Log.Detail("CAPTION " + label + ": " + text + (shown ? "" : " (no subtitle: [Output] Subtitles off, or a line to you showing)"));
+            bool shown = toYou ? Feed.ToYouCaption(label, text, Math.Max(1500, ms)) : Feed.Overheard(label, text, Math.Max(1500, ms));   // to the player: the top box; else the one under it
+            Log.Detail("CAPTION " + (toYou ? "(to you) " : "") + label + ": " + text + (shown ? "" : " (no subtitle: [Output] Subtitles off)"));
         }
 
         private void FrameImpl(int now)
