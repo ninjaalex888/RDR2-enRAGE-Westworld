@@ -65,6 +65,12 @@ namespace EnrageWestworld.InGame
 			return false;
 		}
 
+		/// The key with at least the modifiers it asks for (an extra Shift or Ctrl held doesn't stop it; an extra Alt does).
+		public bool MatchesLoose(KeyEventArgs e)
+		{
+			return Key != Keys.None && e.KeyCode == Key && e.Alt == Alt && (!Ctrl || e.Control) && (!Shift || e.Shift);
+		}
+
 		public override string ToString()
 		{
 			return (Ctrl ? "Ctrl+" : "") + (Shift ? "Shift+" : "") + (Alt ? "Alt+" : "") + Name(Key);

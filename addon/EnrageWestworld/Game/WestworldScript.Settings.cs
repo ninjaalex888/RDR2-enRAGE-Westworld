@@ -142,8 +142,23 @@ namespace EnrageWestworld.InGame
         /// SettingsKey or SettingsKey2 (a key set to None never matches).
         private bool SettingsKeyHit(KeyEventArgs e)
         {
-            return _settingsKey.Matches(e) || _settingsKey2.Matches(e);
+            if (_settingsKey.Matches(e) || _settingsKey2.Matches(e))
+                return true;
+            // the key with an extra Shift or Ctrl held (sprinting, crouching, or one Windows thinks is still down after Alt+Tab)
+            // counts too, unless that exact combination is another of RealNPCs' keys (players, 2026-10-30: Alt+R stopped working)
+            if (!(_settingsKey.MatchesLoose(e) || _settingsKey2.MatchesLoose(e)))
+                return false;
+            if (_testKey.Matches(e) || _flirtKey.Matches(e) || _readerKey.Matches(e) || _tickerNextKey.Matches(e) || IsTestingKey(e))
+                return false;
+            if (!_looseKeyNoted)
+            {
+                _looseKeyNoted = true;
+                Log.Write("SETTINGS key pressed with " + (e.Shift ? "Shift " : "") + (e.Control ? "Ctrl " : "") + "held too (sprinting, crouching, or a key Windows thinks is still down): taken as the settings key");
+            }
+            return true;
         }
+
+        private bool _looseKeyNoted;
 
         /// The keys that open the panel, each named once (both set to the same key: just that one).
         private string SettingsKeysText(string joint)

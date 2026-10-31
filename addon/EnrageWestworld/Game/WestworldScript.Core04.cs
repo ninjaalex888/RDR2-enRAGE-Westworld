@@ -52,6 +52,7 @@ namespace EnrageWestworld.InGame
         private int _now, _nextTickerUpdate;
         private TickerLine _tickerLine;
         private readonly Dictionary<string, int> _featureErrors = new Dictionary<string, int>();
+        private readonly Dictionary<string, int> _featureErrorSince = new Dictionary<string, int>();   // when the count began (it starts again after two quiet minutes)
         private readonly HashSet<string> _featureOff = new HashSet<string>();
         private Action _aFrame, _aReader, _aEvents, _aRequests, _aIni, _aPlaces, _aHosts, _aStalker, _aDrama, _aCourtThoughts, _aCeremony, _aCast, _aPickups, _aMission,
             _aPlead, _aTheft, _aArrival, _aLater, _aVoices, _aWake, _aWakeActs;
@@ -73,15 +74,25 @@ namespace EnrageWestworld.InGame
             }
             catch (Exception ex)
             {
-                int n;
+                // switched off only when it fails over and over: 15 errors with no two quiet minutes between them (players,
+                // 2026-10-30: Alt+R stopped working a while into the game; the count used to run all session, so a rare
+                // error every so often added up to the settings panel switched off for good)
+                int n, since, t = Environment.TickCount;
                 _featureErrors.TryGetValue(feature, out n);
+                if (_featureErrorSince.TryGetValue(feature, out since) && (t - since > 120000 || t < since))
+                    n = 0;
+                _featureErrorSince[feature] = t;
                 _featureErrors[feature] = ++n;
-                if (n == 1)
+                int total;
+                _featureErrors.TryGetValue(feature + "|all", out total);
+                _featureErrors[feature + "|all"] = ++total;
+                if (total == 1 || n == 1 && total <= 5)
                     Log.Write("ERROR in " + feature + ": " + ex);
                 if (n >= 15)
                 {
                     _featureOff.Add(feature);
-                    Log.Write(feature + " kept failing and is switched off until the game restarts (details above). Everything else carries on.");
+                    Log.Write(feature + " kept failing and is switched off until the game restarts (details above). Everything else carries on." +
+                              (feature == "settings panel" ? " The settings key brings it back." : ""));
                 }
             }
             finally
@@ -247,6 +258,11 @@ namespace EnrageWestworld.InGame
             }
             if (SettingsKeyHit(e))
             {
+                if (_featureOff.Remove("settings panel"))
+                {
+                    _featureErrors.Remove("settings panel");
+                    Log.Write("SETTINGS key: the panel had switched itself off after errors; it's back on (any error comes to the log)");
+                }
                 _settingsRequested = true;
                 return true;
             }

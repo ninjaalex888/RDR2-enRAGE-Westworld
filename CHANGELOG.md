@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+### Alt+R keeps working (two players, 2026-10-30: the settings key stopped working a while into the game)
+
+- Each part of RealNPCs is switched off if it keeps failing, so one fault can't take the rest down. The count of its errors ran all session, so a rare error every so often added up, and after fifteen of them the settings panel was off until the game restarted: the key did nothing. Now a part is switched off only for fifteen errors with no two quiet minutes between them, and the settings key always brings the panel back (the log says so).
+- The settings keys work with Shift or Ctrl held too: sprinting, crouching, or a key Windows still thinks is down after Alt+Tab made Alt+R read as Alt+Shift+R and do nothing. Not when that combination is another of RealNPCs' keys. The first time, the log says so.
+
 ## 0.7.4 (2026-10-30)
 
 Lex's evening in game after 0.7.3, and the rest of the NPC-life run: what follows a fight, crowds, onlookers who join your own fistfights, quarrels that may end in shots, rival gangs, the night's muggings and drunks carried home, horse thieves, plans over days that shape what people do, people going to the real saloon, store and church, and clothes people notice; the law's fixes (self-defence after the fight, another's trampling, carrying a body you didn't kill); names that keep (lawmen and keepers marked, a greeted stranger's name, names inside big buildings); shouts that carry, two subtitle boxes, the bar's scenes in turn with T; and, with a local language model, thoughts worded, picks of what people near you do, and thoughts said aloud in their own voice. Much of it is new and not yet seen at length in game; each part has its own switch.
