@@ -57,6 +57,8 @@ namespace EnrageWestworld.InGame
         private const float TitleScale = 0.46f, PageScale = 0.38f, RowScale = 0.285f, SmallScale = 0.245f;
         private const float X = 0.16f, Y = 0.065f, W = 0.68f, H = 0.87f;
         private const int VisibleRows = 16;
+        // SET_MOUSE_CURSOR_THIS_FRAME by hash: Script Hook .NET builds name its namespace differently (_NAMESPACE30 or not at all)
+        private const ulong MouseCursorThisFrame = 0xF12E4CCAF249DC10;
         private const int PanelBudget = 120;
 
         private static readonly string[] OurOrder = { "WestWorld", "Stalkers", "Encounters", "Quiet", "Features", "World", "Scenes", "Romance", "Mind", "Ticker", "Display", "Pacing", "Output" };
@@ -1419,7 +1421,7 @@ namespace EnrageWestworld.InGame
 
         private void MouseInput()
         {
-            _NAMESPACE30.SET_MOUSE_CURSOR_THIS_FRAME();
+            Function.Call(MouseCursorThisFrame);
             if (_capture != null || _pages.Count == 0)
                 return;
             if (!Cursor(out float mx, out float my))

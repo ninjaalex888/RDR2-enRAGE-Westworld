@@ -146,7 +146,7 @@ namespace EnrageWestworld.InGame
                 TASK.TASK_STAND_STILL(h, 4500);
                 double hd = ENTITY.GET_ENTITY_HEADING(h) * Math.PI / 180.0;
                 Vector3 hands = ped.Position + new Vector3((float)-Math.Sin(hd) * 0.45f, (float)Math.Cos(hd) * 0.45f, -0.35f);
-                TASK.TASK_LOOK_AT_COORD(h, hands.X, hands.Y, hands.Z, 4000, 0, 51, 0);
+                LookAtCoord(h, hands.X, hands.Y, hands.Z, 4000);
             }
             act.Until = now + 30000;
             DespairLastWords(act, me);

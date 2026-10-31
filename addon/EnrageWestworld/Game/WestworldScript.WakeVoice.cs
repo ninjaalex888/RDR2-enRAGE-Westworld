@@ -230,12 +230,12 @@ namespace EnrageWestworld.InGame
                     TASK.TASK_LOOK_AT_ENTITY(h, me, 6000, 0, 51, 0);
                     break;
                 case "sky":
-                    TASK.TASK_LOOK_AT_COORD(h, at.X, at.Y, at.Z + 25f, 5000, 0, 51, 0);
+                    LookAtCoord(h, at.X, at.Y, at.Z + 25f, 5000);
                     break;
                 case "hands":
                 {
                     Vector3 f = p.ForwardVector;
-                    TASK.TASK_LOOK_AT_COORD(h, at.X + f.X * 0.45f, at.Y + f.Y * 0.45f, at.Z - 0.35f, 5000, 0, 51, 0);
+                    LookAtCoord(h, at.X + f.X * 0.45f, at.Y + f.Y * 0.45f, at.Z - 0.35f, 5000);
                     break;
                 }
                 case "other":

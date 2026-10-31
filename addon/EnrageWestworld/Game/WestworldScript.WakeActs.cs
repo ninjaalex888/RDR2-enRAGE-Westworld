@@ -397,7 +397,7 @@ namespace EnrageWestworld.InGame
                 case "shout":
                 {
                     Vector3 sky = act.A + new Vector3(0f, 0f, 25f);
-                    TASK.TASK_LOOK_AT_COORD(h, sky.X, sky.Y, sky.Z, 5000, 0, 51, 0);
+                    LookAtCoord(h, sky.X, sky.Y, sky.Z, 5000);
                     if (!act.Passive)
                     {
                         Take(act);
@@ -515,7 +515,7 @@ namespace EnrageWestworld.InGame
                         case 2: at = pos + side * 8f + new Vector3(0f, 0f, 1.2f); break;
                         default: at = pos - side * 8f + new Vector3(0f, 0f, 1.2f); break;
                     }
-                    TASK.TASK_LOOK_AT_COORD(h, at.X, at.Y, at.Z, 2100, 0, 51, 0);
+                    LookAtCoord(h, at.X, at.Y, at.Z, 2100);
                     act.NextStep = now + 2200;
                     break;
                 }
@@ -538,7 +538,7 @@ namespace EnrageWestworld.InGame
                         Vector3 beyond = act.Goal + (act.Goal - act.A).Normalized * 40f;
                         TASK.CLEAR_PED_TASKS(h, true, false);
                         TASK.TASK_STAND_STILL(h, 9000);
-                        TASK.TASK_LOOK_AT_COORD(h, beyond.X, beyond.Y, beyond.Z + 2f, 9000, 0, 51, 0);
+                        LookAtCoord(h, beyond.X, beyond.Y, beyond.Z + 2f, 9000);
                         Think(act, WakeBeats.Opening("edgeEnd", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|edgeEnd|" + now / 1000));
                         act.Until = Math.Min(act.Until, now + 9500);
                     }

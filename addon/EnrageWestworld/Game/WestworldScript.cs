@@ -26,6 +26,14 @@ namespace EnrageWestworld.InGame
 
 		private const int GreetDelayMs = 3200;
 
+		// TASK_LOOK_AT_COORD by hash: Script Hook .NET builds give the wrapper different parameter types
+		private const ulong TaskLookAtCoord = 0x6FA46612594F7973;
+
+		private static void LookAtCoord(int ped, float x, float y, float z, int ms)
+		{
+			Function.Call(TaskLookAtCoord, ped, x, y, z, ms, 0, 51, 0);
+		}
+
 		private readonly string _dir;
 
 		private readonly string _version;

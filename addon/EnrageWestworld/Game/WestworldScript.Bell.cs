@@ -53,7 +53,7 @@ namespace EnrageWestworld.InGame
             }
             foreach (Candidate c in hear)
             {
-                TASK.TASK_LOOK_AT_COORD(c.Ped.Handle, church.X, church.Y, church.Z + 8f, 6000, 0, 51, 0);
+                LookAtCoord(c.Ped.Handle, church.X, church.Y, church.Z + 8f, 6000);
                 _ticker.Push(Person.FirstOf(c.Who.Name) + ", thinking", Bell.Thought(c.Who.WakeStage, c.Who.Id + "|" + g / 1440), "near", c.Ped.Handle);
             }
             Candidate first = hear[0];
