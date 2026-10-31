@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### A working girl's own come-on, wherever she flirts (Lex, 2026-10-30, in game)
+
+- Carrie, a working girl in Valentine's saloon, said her own come-on to Arthur, the game's PLAYER_FOLLOWING recording in her voice. Now, wherever one of the working girls is about to say something flirty (her yes when Arthur flirts, her yes to somewhere quieter, a come-on to a man in a street scene, a sweetheart's hello), that line goes first, now and then: once in ten minutes a woman and once in two minutes in all, so it stays a treat. Only the working girls' voices: in anyone else's the same line is a cold "what you following me for?". In the log, VOICE a working girl's come-on.
+- The model's thought over someone's head was logged (and counted on F7) every time it was drawn, twice a second; now once a line.
+
 ### Two subtitle boxes: to Arthur, and between others (Lex, 2026-10-30, a screenshot)
 
 - A woman's gossip to another sat in the subtitle box where a line to Arthur goes. Now the game's place is for what's said to Arthur alone; what people say to each other (street scenes, quiet talks, hellos in passing, the doctor's patient, the law chase, the gangs) shows in a smaller, softer box just under it, above the bar, and the two show at once without either replacing the other. A thank-you after you step in and a sorry from someone who walks into you are said to you, so they take the top box.

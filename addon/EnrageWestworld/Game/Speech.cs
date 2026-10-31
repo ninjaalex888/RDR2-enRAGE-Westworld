@@ -106,6 +106,59 @@ namespace EnrageWestworld.InGame
             return _shouts.Contains(line) || line.Contains("SHOUT") || line.StartsWith("PANIC") || line.EndsWith("_HAIL") ? Shouted : Params;
         }
 
+        // a working girl's own come-on (Lex, 2026-10-30, Carrie in Valentine's saloon: "I bet you can follow this ass for days,
+        // huh", her voice's PLAYER_FOLLOWING; "add this voiceline in everywhere we can where it's fitting"). Wherever one of
+        // them is about to say something flirty (her yes to Arthur, a night's yes, a come-on to a man in the street, a
+        // sweetheart's hello), it goes first, now and then: once in ten minutes a woman, once in two anyone, so it stays hers.
+        // Only the working girls' voices: in anyone else's the same line is a cold "what you following me for?".
+        private const string Tease = "PLAYER_FOLLOWING";
+        private static readonly HashSet<string> FlirtyLines = new HashSet<string> { "GREET_FLIRTY", "PERV_RESPONSE", "CHAT_FLATTER", "FLATTER_RESPONSE" };
+        private static readonly Dictionary<int, int> TeasedAt = new Dictionary<int, int>();
+        private static int _teaseAnyAt = -1000000;
+        public static int Teases;
+
+        /// One of the game's working girls (her model; their voices are their own).
+        public static bool WorkingGirl(int ped)
+        {
+            if (ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped) || PED.IS_PED_MALE(ped))
+                return false;
+            string m = Models.Name(ENTITY.GET_ENTITY_MODEL(ped));
+            return m != null && m.IndexOf("prostitute", System.StringComparison.OrdinalIgnoreCase) >= 0;
+        }
+
+        /// The lines with her come-on first, when she's a working girl about to flirt and it hasn't been heard lately.
+        private static string[] WithTease(int ped, string[] lines)
+        {
+            if (lines == null || lines.Length == 0 || System.Array.IndexOf(lines, Tease) >= 0)
+                return lines;
+            bool flirty = false;
+            foreach (string l in lines)
+                if (FlirtyLines.Contains(l))
+                {
+                    flirty = true;
+                    break;
+                }
+            if (!flirty)
+                return lines;
+            int now = Game.GameTime, at;
+            if (now - _teaseAnyAt < 120000 && now >= _teaseAnyAt)
+                return lines;
+            if (TeasedAt.TryGetValue(ped, out at) && now - at < 600000 && now >= at)
+                return lines;
+            if (!WorkingGirl(ped))
+                return lines;
+            _teaseAnyAt = now;
+            TeasedAt[ped] = now;
+            if (TeasedAt.Count > 40)
+                TeasedAt.Clear();
+            Teases++;
+            Log.Write("VOICE a working girl's come-on (" + Tease + ") goes first, " + (Models.Name(ENTITY.GET_ENTITY_MODEL(ped)) ?? "her") + ", ahead of " + lines[0]);
+            var o = new string[lines.Length + 1];
+            o[0] = Tease;
+            System.Array.Copy(lines, 0, o, 1, lines.Length);
+            return o;
+        }
+
         /// Someone coming up to a camp, by day or by night.
         public static string[] Camp(bool night)
         {
@@ -246,6 +299,9 @@ namespace EnrageWestworld.InGame
         {
             if (set == null || set.Length == 0 || ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
                 return false;
+            string[] teased = WithTease(ped, set);
+            if (!ReferenceEquals(teased, set) && Say(ped, Tease, listener))
+                return true;   // her come-on, ahead of the turn-taking below
             uint model = ENTITY.GET_ENTITY_MODEL(ped);
             int now = Game.GameTime;
             int head = System.Math.Min(3, set.Length);
@@ -325,6 +381,7 @@ namespace EnrageWestworld.InGame
             words = null;
             if (lines == null || ped == 0 || !ENTITY.DOES_ENTITY_EXIST(ped) || ENTITY.IS_ENTITY_DEAD(ped))
                 return false;
+            lines = WithTease(ped, lines);
             string bank = BankOf(ped);
             foreach (string l in lines)
             {
