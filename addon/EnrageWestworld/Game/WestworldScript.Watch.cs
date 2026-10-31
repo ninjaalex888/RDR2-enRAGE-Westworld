@@ -57,6 +57,18 @@ namespace EnrageWestworld.InGame
         private bool _wantedBefore, _defenceTaintNoted, _defenceWantedNoted;
         // the law watch (Lex, 2026-10-30: wanted for shooting a pickpocket, and again as a despairing man's shot went off)
         private bool _lawWasWanted, _lawClearCheck, _defenceBountyNoted, _standDownNoted, _witnessHoldOn;
+        private bool _lawPulsed, _lawPulseAfter;
+        private int _lawPulseUntil;   // the law switched off until then (0: it isn't)
+
+        /// Every frame, before anything else: the law is never left switched off past its moment, whatever else fails.
+        private void LawPulseEnd(int now, bool always = false)
+        {
+            if (_lawPulseUntil == 0 || (!always && now < _lawPulseUntil))
+                return;
+            _lawPulseUntil = 0;
+            _lawPulseAfter = true;
+            LAW._SET_LAW_DISABLED(false);
+        }
         private int _lawWasBounty = -1, _lastCrimeEventAt = -1000000, _despairShotAt = -1000000;
         private uint _lastCrimeEvent;
         private string _lawStage = "";
@@ -561,9 +573,15 @@ namespace EnrageWestworld.InGame
         /// fighting him lets go. The next scan's LAW line says whether it held.
         private void LawStandDown(int me)
         {
+            int owed = LAW.GET_BOUNTY(me);
             PLAYER.CLEAR_PLAYER_WANTED_LEVEL(me);
             LAW.CLEAR_WANTED_SCORE(me);
             LAW.RESET_WANTED_FOR_NEW_INCIDENT(me);
+            // the crime itself too, or the incident holds (Lex, 2026-10-30: a pickpocket shot in Annesburg, bounty and level
+            // cleared, "still wanted (level 0, the law after you)" and wanted for murder); what he owed before stays
+            LAW.CLEAR_PLAYER_PAST_CRIMES(me);
+            if (LAW.GET_BOUNTY(me) < owed)
+                LAW.SET_BOUNTY(me, owed);
             Ped my = Game.Player.Character;
             int calmed = 0;
             foreach (Ped p in World.GetAllPeds())
@@ -594,6 +612,19 @@ namespace EnrageWestworld.InGame
             {
                 _lawClearCheck = false;
                 Log.Write("LAW after the clear: " + (wanted ? "still wanted (level " + level + (incident ? ", the law after you" : "") + ")" : "no longer wanted"));
+                // the law still after him: its pursuit is ended by switching the law off for a moment, once a fight
+                if (wanted && !_lawPulsed && _cfg.SelfDefenceNoBounty && !MISC.GET_MISSION_FLAG())
+                {
+                    _lawPulsed = true;
+                    LAW._SET_LAW_DISABLED(true);
+                    _lawPulseUntil = now + 1500;
+                    Log.Write("LAW: the pursuit held after the clear: the law is switched off for a moment to end it");
+                }
+            }
+            if (_lawPulseAfter && _lawPulseUntil == 0)
+            {
+                _lawPulseAfter = false;
+                Log.Write("LAW after the moment off: " + (wanted ? "still wanted (level " + level + (incident ? ", the law after you" : "") + ")" : "no longer wanted"));
             }
             LawStages(me, now, level, incident);
             NotYourTrampling(me, now, level, incident, bounty);
@@ -886,6 +917,7 @@ namespace EnrageWestworld.InGame
             _defenceWantedNoted = false;
             _defenceBountyNoted = false;
             _standDownNoted = false;
+            _lawPulsed = false;
             _defendAt = Game.Player.Character.Position;
             _defendState = StateAt(_defendAt);
             int me = Game.Player.Handle;

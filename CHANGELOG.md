@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### A thief shot while running off isn't murder (Lex, 2026-10-30, in game: "I just killed a pickpocket and got wanted for murder")
+
+- In Annesburg a pickpocket took $25 and ran; Arthur shot him. RealNPCs saw it as self-defence and cleared the bounty and the wanted level, but the game's pursuit stayed on ("still wanted (level 0, the law after you)") and the charge was murder. Now the clear wipes the game's record of the crime too (what you owed before is kept), and if the law is still after you on the next check, the law is switched off for a moment (a second and a half, once a fight) to end the pursuit. The log says LAW after the clear, and LAW after the moment off, whether it held.
+
 ## 0.7.5 (2026-10-30)
 
 A fix for the settings key (Alt+R), which two players found stopped working a while into the game.

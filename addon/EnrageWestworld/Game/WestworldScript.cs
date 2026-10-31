@@ -175,6 +175,7 @@ namespace EnrageWestworld.InGame
 				return;
 			}
 			long stepStart = System.Diagnostics.Stopwatch.GetTimestamp();   // the frame-time meter's total (WestworldScript.Perf.cs)
+			LawPulseEnd(Game.GameTime);
 			try
 			{
 				Step();
@@ -531,6 +532,7 @@ namespace EnrageWestworld.InGame
 
 		private void OnAborted(object sender, EventArgs e)
 		{
+			LawPulseEnd(0, true);
 			Shutdown04();
 			Save();
 			Log.Write("Stopped.");
