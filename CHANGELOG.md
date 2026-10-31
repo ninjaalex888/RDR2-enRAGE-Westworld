@@ -1,6 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.7.4 (2026-10-30)
+
+Lex's evening in game after 0.7.3, and the rest of the NPC-life run: what follows a fight, crowds, onlookers who join your own fistfights, quarrels that may end in shots, rival gangs, the night's muggings and drunks carried home, horse thieves, plans over days that shape what people do, people going to the real saloon, store and church, and clothes people notice; the law's fixes (self-defence after the fight, another's trampling, carrying a body you didn't kill); names that keep (lawmen and keepers marked, a greeted stranger's name, names inside big buildings); shouts that carry, two subtitle boxes, the bar's scenes in turn with T; and, with a local language model, thoughts worded, picks of what people near you do, and thoughts said aloud in their own voice. Much of it is new and not yet seen at length in game; each part has its own switch.
 
 ### Thoughts said aloud in their own voice (Lex, 2026-10-30; in testing)
 
@@ -34,7 +36,7 @@
 
 ### Shouts carry; T steps through the scenes nearby (Lex, 2026-10-30, in game)
 
-- What's shouted is now shouted: anger, threats, fright, a cry for the law ("Thief!"), fight talk, cheering and calling out play with the game's own shouted speech settings, which carry much farther than talk, so a quarrel or a cry down the street reaches you. Ordinary talk is as before; a voice that won't shout a line says it as usual. `[World] ShoutsCarry` (settings version 141).
+- What's shouted is now shouted: anger, threats, fright, a cry for the law ("Thief!"), fight talk, cheering and calling out play with the game's own shouted speech settings, which carry much farther than talk, so a quarrel or a cry down the street reaches you. Ordinary talk is as before; a voice that won't shout a line says it as usual. `[Scenes] ShoutsCarry` (settings version 141).
 - **`T`** (the ticker key, or the pad's) steps through the scenes on the bar while it shows two or more nearby: the next one, alone, with where it is and "(2 of 3)", held twelve seconds after the last press. Otherwise it's the next line on the ticker, as before.
 - A stranger you greet keeps the name over their head. Greeting one of the townsfolk made enRAGE take them up as one of its own, under a name of its making, and the card (and everything after) went by that. Now, when enRAGE takes up someone whose card was showing our name within the minute (at the greet or a moment after), and its someone is new (seen once, or first seen these five minutes), they're given the name they already had; anyone enRAGE knew before keeps the name it gave them. In the log, NAME enRAGE took up.
 
@@ -107,7 +109,7 @@
 ### Rival gangs fight it out (Lex, 2026-10-30: building on enRAGE's gangs attacking each other; staged for now, the MindsEye in time)
 
 - Every 10 s, men of two different gangs within 90 m of you (the O'Driscolls, the Lemoyne Raiders, the Del Lobos, the Laramie, the Murfrees, the Skinners, the Night Folk, Bronte's and the Braithwaites' men, the Grays; the army and the Pinkertons as one side; never the Wapiti, the story's people or men enRAGE has busy) may meet in a fight: 30%, or 70% where enRAGE has reported a war, feud, clash or rivalry between the two in the last two game days. The nearest of each go toward the other, words are shouted ("Raiders! This is our ground!" / "Make us."), a moment's standoff with guns on each other, then every man of both within 50 m fights the nearest of the other side until a side is beaten or gone, or a minute. At most one in five minutes, and two gangs that passed each other by aren't tried again for half a game hour.
-- `[World] GangShootouts` (on; settings version 133). The log's `GANG` lines (who met, the words, how many each side lost); F7 counts them.
+- `[Scenes] GangShootouts` (on; settings version 133). The log's `GANG` lines (who met, the words, how many each side lost); F7 counts them.
 
 ### A quarrel may end in shots (Lex, 2026-10-30: "fights escalate to having the NPCs use guns on each other"; deadly, true to 1899)
 

@@ -1,4 +1,4 @@
-RealNPCs 0.7.3 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.4 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,46 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.4
+------------
+- After a fight: a friend of the one who lost goes to them and helps them up, and a lawman
+  nearby has a word with the winner. [Scenes] Aftermath.
+- A crowd gathers in a ring around a fistfight and cheers it on. [Scenes] FightCrowds. When you
+  start a fistfight near others, a friend of the man you hit, or someone against you, may come
+  at you, and someone fond of you may take your side.
+- A quarrel may end in shots, when the one who has had enough is armed: deadly, true to 1899.
+  [Mind] LadderShots.
+- Rival gangs who meet fight it out. [Scenes] GangShootouts.
+- The night: a mugging in a dark street (the mugger runs, and a lawman who catches a thief
+  hogties him), and a drunk carried or walked home by a friend. [Scenes] NightScenes. A horse
+  thief rides off on a hitched horse, and the owner shouts for help. [Scenes] HorseThieves.
+- Plans over days: someone wronged means to get even, someone helped means to thank them,
+  someone in debt means to pay it, a sweetheart means to court. Near you, they go and find that
+  person, and the plan shapes their day (the store for a gift, the work over the saloon, a
+  brooding drink). [Mind] MindPlans.
+- People go to the real saloon, store and church of their town, more street scenes play at once
+  ([Scenes] ScenesAtOnce, 4 now, up to 6), and people who meet by chance stop for a word.
+- What you're wearing, or not: someone naked or half dressed is noticed (shocked, amused or
+  disgusted). Mud is remarked on less.
+- The law: self-defence holds for ten minutes after the fight (a witness who goes to the law
+  later can't make it murder); a trampling by someone else's horse or wagon isn't charged to
+  you; nor is carrying a body you didn't kill.
+- Names: lawmen, sheriffs and counter keepers say so on their cards; names show inside big
+  buildings and in Saint Denis; a stranger you greet keeps the name you saw. Pickpockets keep to
+  their trade, and say so on their card once they've robbed you.
+- Shouts carry: anger, fright, "Thief!" and fight talk are shouted the game's way and heard from
+  down the street. [Scenes] ShoutsCarry.
+- Two subtitle boxes: what's said to Arthur in the game's place, what people say to each other
+  just under it. No thought is ever a subtitle.
+- The bar lists every scene nearby, in turn when they don't fit; T steps through them.
+- A working girl's own come-on, now and then, wherever she flirts.
+- Fewer people wake, and slowly: [WestWorld] AwakeningShare (3, can be a fraction),
+  AwakeningDays (5).
+- With a local language model ([Mind] Language, off unless you set it up; see the settings):
+  thoughts worded by it, the model picking what people near you do from what their minds allow
+  ([Mind] LanguagePicks), and thoughts said aloud in their own recorded voice when one of their
+  remarks fits ([Mind] ThoughtsAloud). In testing.
 
 NEW IN 0.7.3
 ------------
@@ -876,7 +916,11 @@ in the file. The new ones:
             Weddings, Funerals, JobRumours, PrisonerTransfers, Debts (all true)
 [Scenes]    SceneReactions, Standoffs, Songs, TallTales, NewspaperTalk, Haggling, SnakeOil,
             SmallTalk, Pickpockets, PosseTalk, Mourners, Pleading, ArrivalTalk (all true),
-            ScenesAtOnce (2): the scene and quiet talks beside it elsewhere on the street (1-3),
+            ScenesAtOnce (4): the scene and quiet talks beside it elsewhere on the street (1-6),
+            Aftermath (true): after a fight a friend tends the loser and the law has a word with the winner,
+            FightCrowds (true): a ring of onlookers around a fistfight, NightScenes (true): a mugging, a
+            drunk taken home, HorseThieves (true), GangShootouts (true): rival gangs who meet fight it
+            out, ShoutsCarry (true): shouts shouted the game's way, heard from farther off,
             Reactions (true): in a street scene the one spoken to reacts to the words by their
             nature, and a man whose face goes into the bar reels
             Acknowledge (true): people who know each other nod, tip a hat, wave or say hello as they
@@ -931,12 +975,18 @@ in the file. The new ones:
             MindActs (true, under MindLive): people near you do what their minds choose (a stroll, the
             nearest bench, chair, bar or work spot, off home, clear of you or a foe, over to a friend).
             MindJoinFights (true, under MindLive): onlookers may join a fistfight on a side (at most three).
+            MindPlans (true, under MindLive): plans over days (get even, thank, pay a debt, court) that send
+            people to find each other and shape their day. LadderShots (true, under MindLive): a quarrel
+            may end in shots when one of them is armed.
             QuarrelLadder (true, under MindLive): an argument or a fight between two people the mind knows
             climbs or cools by their natures and the room; the shot is never fired.
             ThoughtVariety (true): no two people near you think the same shape of thought within an hour,
             and a kind of thought that has had the last few turns gives way to the others.
             Language (false, in testing): the mind's own thoughts worded by a local model (Ollama at
             LanguageUrl, running LanguageModel); every answer checked, the written line the fallback.
+            LanguagePicks (true, with Language): the model picks what people near you do, from the few
+            things their minds allow; ThoughtsAloud (true, with Language): a thought is said aloud in
+            their own recorded voice when one of their remarks fits it.
 [Output]    NewsTo = corner | ticker | gamefeed
                 corner: the "Around town" box (default); ticker: the ticker;
                 gamefeed: the game's own updates, top left

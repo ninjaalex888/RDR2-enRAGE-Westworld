@@ -4,7 +4,7 @@
 // has busy; the army and the Pinkertons are one side): with a chance, more where enRAGE has lately reported a war or a
 // clash between the two, the nearest of each go toward the other and shout, a moment's standoff with guns on each other,
 // then every man of both within 50 m fights the nearest of the other side, until a side is beaten or gone, or a minute.
-// Behind [World] GangShootouts.
+// Behind [Scenes] GangShootouts.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -254,7 +254,7 @@ namespace EnrageWestworld.InGame
         private string GangStatus()
         {
             if (!_cfg.GangShootouts)
-                return "off ([World] GangShootouts)";
+                return "off ([Scenes] GangShootouts)";
             return _gangFights + " shootout" + (_gangFights == 1 ? "" : "s") + " between gangs this session" + (_gangLast != null ? " (last: " + _gangLast + ")" : "") + (_gang != null ? "; one going on" : "");
         }
     }

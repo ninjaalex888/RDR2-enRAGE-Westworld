@@ -18,7 +18,7 @@ namespace EnrageWestworld.InGame
         // a shout delivered as one, which the game lets carry much farther than talk (Lex, 2026-10-30: "hear the voices from
         // farther away"); the names are the game's own (its scripts use them); a voice that won't shout a line says it as usual
         private static readonly string[] Shouted = { "SPEECH_PARAMS_FORCE_SHOUTED_CLEAR", "SPEECH_PARAMS_FORCE_SHOUTED", "SPEECH_PARAMS_FORCE_NORMAL_CLEAR", "SPEECH_PARAMS_FORCE" };
-        public static bool ShoutsCarry = true;   // [World] ShoutsCarry
+        public static bool ShoutsCarry = true;   // [Scenes] ShoutsCarry
         private static HashSet<string> _shouts;
         private static readonly HashSet<string> Worked = new HashSet<string>();
         private static readonly Dictionary<string, int> Failed = new Dictionary<string, int>();
