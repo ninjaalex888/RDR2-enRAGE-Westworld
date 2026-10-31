@@ -103,6 +103,23 @@ namespace EnrageWestworld.InGame
             }
         }
 
+        /// At the store with a plan to court someone or to thank them: something picked out to give, said over their head.
+        private void PlanAtStore(int h, int now)
+        {
+            if (!PlansOn)
+                return;
+            MindWho w;
+            if (!_mindWho.TryGetValue(h, out w) || w.Id == null)
+                return;
+            Plan p = _store.Plans.FirstOrDefault(x => !x.Done && x.HolderId == w.Id && (x.Kind == "court" || x.Kind == "repay"));
+            if (p == null || p.Gift)
+                return;
+            p.Gift = true;
+            string line = Plans.GiftThought(p, p.HolderId + "|gift|" + _store.LastGameMin / 60);
+            _ticker.Push(p.HolderName + ", thinking", line, "near", h);
+            Log.Write("PLAN " + p.HolderName + " picks out something at the store for " + p.TargetName + " (to " + Plans.Words(p) + "): " + line);
+        }
+
         /// From PairReasons: a plan between these two leans the street to the scene it wants, or makes a reason where there was
         /// none (the holder starts it).
         private Reason PlanLean(Reason why, Someone a, Someone b)

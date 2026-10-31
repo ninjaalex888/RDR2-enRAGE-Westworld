@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Plans lean the day; someone enRAGE knew goes by its name (Lex, 2026-10-30)
+
+- A plan carried over the days now shapes what its holder does with the day, not only whom they seek out. Someone courting or meaning to thank a person goes to the store more (and once there picks out something to give, said over their head: lemon drops, a tin of tobacco, the good coffee) and strolls in the hope of passing them. Someone paying a debt back keeps to the work and away from the saloon, the cards and the bottle. Someone set on getting even broods over a drink, keeps an eye out, and has less of a friendly word for anyone. Where a thing is proper still decides. The log's MIND acts line says "and a plan" where it leaned the choice; PLAN ... picks out something at the store.
+- With enRAGE: one of our townsfolk who turns out to be someone enRAGE knew before now goes by enRAGE's name for good, in every record of ours (the resident, their ties, worries and plans), so the card, the thoughts and the bar say one name, and the next time they're ours alone it's the same one. In the log, NAME ... ours goes by ... now.
+
 ### Carrying a body you didn't kill isn't murder (Lex, 2026-10-30, in game)
 
 - Picking up a man who had ended his own life got Arthur wanted for murder: a witness took the body over his shoulder for his doing. While you carry a dead person you never hurt, and for 90 seconds after you put them down, a murder, corpse or kidnapping charge is put back to how you stood when you picked them up, and the law stands down. Hurt anyone who hadn't come at you in that time and it's the law's call again. Under `[World] SelfDefenceNoBounty`; in the log, LAW: the game charged you ... for carrying.

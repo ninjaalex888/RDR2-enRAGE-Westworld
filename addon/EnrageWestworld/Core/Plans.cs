@@ -20,6 +20,7 @@ namespace EnrageWestworld.Core
         [DataMember(EmitDefaultValue = false)] public long Made, Due;      // game minutes
         [DataMember(EmitDefaultValue = false)] public bool Done;
         [DataMember(EmitDefaultValue = false)] public string Outcome;      // the scene that settled it, or "let go"
+        [DataMember(EmitDefaultValue = false)] public bool Gift;           // something picked out at the store to give (court, repay)
     }
 
     public static class Plans
@@ -147,11 +148,25 @@ namespace EnrageWestworld.Core
             }
         }
 
+        /// At the store, picking out something to give.
+        public static string GiftThought(Plan p, string seed)
+        {
+            string t = Person.FirstOf(p.TargetName ?? "them");
+            if (p.Kind == "court")
+                return Voice.Pick(seed, "Ribbon, or the lemon drops? " + t + " likes a sweet.", "Too dear, the good one. I'll take it anyway.",
+                                  "Something for " + t + ". Nothing that says too much.", "Peppermints. And a card, if I can find the words.");
+            return Voice.Pick(seed, "A tin of tobacco for " + t + ". Small, but it's something.", "Coffee, the good kind. " + t + " won't refuse that.",
+                              "Can't repay it in full. This'll have to start it.", "A jar of preserves for " + t + "'s table.");
+        }
+
         public static IEnumerable<string> AllLines()
         {
             foreach (string k in new[] { "geteven", "repay", "paydebt", "court" })
                 for (int i = 0; i < 12; i++)
                     yield return Thought(new Plan { Kind = k, TargetName = "Wade Hollis" }, k + i);
+            foreach (string k in new[] { "repay", "court" })
+                for (int i = 0; i < 8; i++)
+                    yield return GiftThought(new Plan { Kind = k, TargetName = "Wade Hollis" }, k + "g" + i);
         }
     }
 }

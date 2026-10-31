@@ -383,7 +383,8 @@ namespace EnrageWestworld.InGame
                 // the about ring (quiet) is scored out of doors with nobody by: the player's room and crowd aren't theirs 120 m off (the late review)
                 Hour = CLOCK.GET_CLOCK_HOURS(), Weekday = InnerLife.Weekday, Place = !quiet && _engine.NowIndoors ? _engine.NowPlace : null, Indoors = !quiet && _engine.NowIndoors,
                 InTown = _placeTown != null, Weather = _engine.NowWeather, Others = quiet ? 0 : Math.Max(0, _mindNear.Count - 1), PlayerFeared = _engine.SawYouViolent(w.Id, 3),
-                Last = w.Choice, Recent = w.Recent, Now = g, TradeGroup = tg, Works = tg != "gentry" && !(w.P.Woman && tg == "town"), WorkPlace = tg == "girl" ? "saloon" : null, Woman = w.P.Woman, SaloonGirl = tg == "girl"
+                Last = w.Choice, Recent = w.Recent, Now = g, TradeGroup = tg, Works = tg != "gentry" && !(w.P.Woman && tg == "town"), WorkPlace = tg == "girl" ? "saloon" : null, Woman = w.P.Woman, SaloonGirl = tg == "girl",
+                Plan = PlansOn ? _store.Plans.FirstOrDefault(p => !p.Done && p.HolderId == w.Id)?.Kind : null   // a plan leans the day (WestworldScript.Plans.cs)
             };
             FeltAt best;
             float left;
@@ -432,7 +433,7 @@ namespace EnrageWestworld.InGame
             if (changed)
             {
                 w.Choice = ch.Key;
-                w.ChoiceWhy = ch.Value;
+                w.ChoiceWhy = ch.Value + (c.Plan != null && Choosing.PlanLean(c.Plan, ch.Key) > 0 ? ", and a plan (" + c.Plan + ")" : "");
                 w.ChoiceNext = next;
                 w.ChoiceTold = false;
                 w.ChoiceHeld = null;

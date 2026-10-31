@@ -27,6 +27,7 @@ namespace EnrageWestworld.Core
         public bool Works = true;             // a working trade: the day's work is a duty, not only a want (gentry and ladies: false)
         public string WorkPlace;              // where their work is, if it's somewhere work is otherwise improper (a barkeep's saloon)
         public bool Woman, SaloonGirl;        // a respectable woman of 1899 didn't drink or play cards in a saloon; the saloon's own women did
+        public string Plan;                   // a plan they carry over these days (Plans.cs: geteven, repay, paydebt, court), or null
         // night 2026-10-28 (item 5, the shadow): who is in sight
         public int TiesNear;                  // people in sight they have a warm tie with (a word or a nod to one of them)
         public bool FoeNear;                  // someone in sight they have a hostile tie with (stepping clear)
@@ -246,6 +247,8 @@ namespace EnrageWestworld.Core
                 s += 0.15f;   // a foe in sight: the needs don't see him, this does
             if (c.Mood == "sore" && (d.Id == "talk" || d.Id == "showoff"))
                 s -= 0.1f;   // sore: less for company (a friend is still sought: greet stays)
+            if (c.Plan != null)
+                s += PlanLean(c.Plan, d.Id);
             if (c.Mood == "glad" && (d.Id == "talk" || d.Id == "stroll" || d.Id == "greet"))
                 s += 0.08f;
             s -= d.Effort * (n != null ? 0.3f + n[NeedState.Rest] : 0.3f);   // effort weighs more on the tired
@@ -254,6 +257,22 @@ namespace EnrageWestworld.Core
                 s += Array.IndexOf(Lasting, d.Id) >= 0 ? 0.3f : -0.25f;   // a day's work goes on; a word or a look isn't repeated straight off
             s += (Voice.Hash(seed + "|" + d.Id) % 1000 / 1000f - 0.5f) * 0.4f * Impulse(t);
             return s;
+        }
+
+        /// How a plan carried over the days leans the day (Lex, 2026-10-30: plans steering more): to court or to thank someone,
+        /// the store for something to give and a stroll in the hope of passing them; to pay a debt back, the work and none of
+        /// the saloon's spending; to get even, brooding over a drink and an eye out, and less of the friendly word. Where it's
+        /// proper still decides (a plan never opens the saloon to a lady or the store on a Sunday).
+        public static float PlanLean(string plan, string id)
+        {
+            switch (plan)
+            {
+                case "court": return id == "store" ? 0.15f : id == "stroll" ? 0.1f : id == "showoff" ? 0.05f : 0f;
+                case "repay": return id == "store" ? 0.18f : id == "stroll" ? 0.05f : 0f;
+                case "paydebt": return id == "work" ? 0.2f : id == "saloon" ? -0.25f : id == "cards" ? -0.3f : id == "drink" ? -0.15f : id == "store" ? -0.1f : 0f;
+                case "geteven": return id == "saloon" ? 0.12f : id == "drink" ? 0.1f : id == "watch" ? 0.1f : id == "stroll" ? 0.05f : id == "talk" ? -0.1f : id == "greet" ? -0.05f : 0f;
+                default: return 0f;
+            }
         }
 
         /// What they do next and why: the urge of a feeling still strongly felt first, else the best-scoring proper action.

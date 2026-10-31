@@ -209,6 +209,8 @@ namespace EnrageWestworld.InGame
                         TASK.TASK_STAND_STILL(h, 30000);
                     a.Until = now + (a.Arrive == "spot" ? 150000 : 30000);
                     Log.Detail("MIND acts: " + a.Name + " is at the " + a.Kind + (PED.IS_PED_USING_ANY_SCENARIO(h) ? ", and took a spot" : ""));
+                    if (a.Kind == "store")
+                        Safe("plans", () => PlanAtStore(h, now));   // something to give, for a plan to court or to thank (WestworldScript.Plans.cs)
                     continue;
                 }
                 if (a.Arrived && !gone && now < a.Until && !_director.Involves(h))

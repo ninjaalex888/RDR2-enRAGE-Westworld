@@ -83,6 +83,35 @@ namespace EnrageWestworld.Core
 
         public long WasAt;
 
+        /// Someone known by another name now (enRAGE's, for one it knew before we named them): every record of ours that keeps
+        /// their name takes the new one, so the card, the thoughts and the bar say one name. Returns how many records changed.
+        public int Rename(string id, string name)
+        {
+            if (id == null || string.IsNullOrEmpty(name))
+                return 0;
+            int n = 0;
+            foreach (Resident r in Residents)
+                if (r.Id == id && r.Name != name) { r.Name = name; n++; }
+            PersonState st;
+            if (People.TryGetValue(id, out st) && st.Name != null && st.Name != name) { st.Name = name; n++; }
+            foreach (SceneTie t in Ties)
+            {
+                if (t.A == id && t.AName != name) { t.AName = name; n++; }
+                if (t.B == id && t.BName != name) { t.BName = name; n++; }
+            }
+            foreach (WorryLink l in Links)
+            {
+                if (l.Id == id && l.Name != name) { l.Name = name; n++; }
+                if (l.OtherId == id && l.OtherName != name) { l.OtherName = name; n++; }
+            }
+            foreach (Plan p in Plans)
+            {
+                if (p.HolderId == id && p.HolderName != name) { p.HolderName = name; n++; }
+                if (p.TargetId == id && p.TargetName != name) { p.TargetName = name; n++; }
+            }
+            return n;
+        }
+
         public PersonState Get(Person p)
         {
             PersonState st;

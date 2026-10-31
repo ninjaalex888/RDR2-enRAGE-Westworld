@@ -396,7 +396,17 @@ namespace EnrageWestworld.InGame
             {
                 if (!ac.IsNew)
                 {
-                    Log.Write("NAME " + was.Key + " is someone enRAGE knew before, " + (theirs ?? "nobody") + " (seen " + ac.TimesSeen + " times): its name kept");
+                    // someone enRAGE knew before: ours goes by enRAGE's name from now on, everywhere we keep it (Lex, 2026-10-30:
+                    // "our regulars could keep enrage names if enrage installed"), so the next time they're ours alone it's the same
+                    ResBind rb;
+                    int changed = 0;
+                    if (!string.IsNullOrEmpty(theirs) && _resBind.TryGetValue(h, out rb) && rb != null && rb.R != null && rb.R.Name == was.Key)
+                    {
+                        rb.R.Name = theirs;
+                        changed = 1 + _store.Rename(rb.R.Id, theirs);
+                    }
+                    Log.Write("NAME " + was.Key + " is someone enRAGE knew before, " + (theirs ?? "nobody") + " (seen " + ac.TimesSeen + " times): " +
+                              (changed > 0 ? "ours goes by " + theirs + " now (" + changed + " records)" : "its name kept"));
                     return;
                 }
                 ac.SetName(was.Key);
