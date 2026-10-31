@@ -151,3 +151,5 @@ The detailed plan, with the ideas, designs and build steps behind each item, is 
 ## License
 
 Copyright 2026 lexthestoic. All rights reserved. You're welcome to download and play RealNPCs; please ask before reusing its code.
+
+<sub>Enjoying RealNPCs? [Buy me a coffee](https://buymeacoffee.com/lexthestoic)</sub>
