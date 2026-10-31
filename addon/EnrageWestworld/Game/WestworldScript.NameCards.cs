@@ -389,6 +389,7 @@ namespace EnrageWestworld.InGame
             if (ac == null)
                 return;
             _nameAtGreet.Remove(h);
+            CarryWakeToEnrage(h, ac);
             string theirs = ac.Name;
             if (theirs == was.Key)
                 return;

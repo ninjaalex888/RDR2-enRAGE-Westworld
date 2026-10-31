@@ -292,7 +292,7 @@ namespace EnrageWestworld.InGame
         /// Taken by something else of ours already: a street scene, a waking act, a conversation, a nod, a sight, a walk-up.
         private bool NotFree(int h)
         {
-            return _director.Involves(h) || IsAcknowledging(h) || InTalk(h) || _wakeActs.Any(x => x.Handle == h);
+            return _director.Involves(h) || IsAcknowledging(h) || InTalk(h) || _wakeActs.Any(x => x.Handle == h || (x.Other == h && x.Other != 0));
         }
 
         private bool IsAcknowledging(int h)

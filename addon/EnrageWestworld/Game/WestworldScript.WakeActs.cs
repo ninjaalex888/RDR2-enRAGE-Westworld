@@ -59,6 +59,16 @@ namespace EnrageWestworld.InGame
             public int SaverHandle, SaverUntil, SaverSpokeAt;
             public string SaverId, SaverName;
             public uint SaverModel;   // the body the saver was in, so a handle the game gives to someone else is not taken for them
+            // the hold and its acts (WestworldScript.WakeHold.cs): links so far, when it began and must end; a gesture under way
+            public int Links, HoldStart, HoldUntil, NextMutter, AnswerAt;
+            public bool Stripped;
+            public string HoldWhy;   // why the hold let them go, for the log
+            public bool LashRolled;   // the hold's lash-out roll is taken (once a hold)
+            public int LashAt, Target;   // the link it comes at (0: none); whom they go for
+            public int GestPhase, GestAt, GestStarted, GestUntil, GestFlags;
+            public string GestDict, GestClip;
+            public Vector3 GestFrom;
+            public bool GestSeen, GestRetried;
         }
 
         private readonly List<WakeAct> _wakeActs = new List<WakeAct>();
@@ -109,6 +119,7 @@ namespace EnrageWestworld.InGame
                     return false;
                 Folk f = Snapshot.Of(a);
                 p = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, Bridge.Now());
+                CarryWakeToEnrage(h, a, p);   // one of ours that enRAGE took up: their stage comes with them
                 st = _store.Find(p.Id);
                 return st != null && st.WakeStage > 0;
             }
@@ -124,6 +135,28 @@ namespace EnrageWestworld.InGame
             p = _engine.PersonOfResident(res);
             st = _store.Find(res.Id);
             return st != null && st.WakeStage > 0;
+        }
+
+        /// One of our residents enRAGE has taken up as its own (a greeting does it): their waking moves to the state kept for
+        /// enRAGE's person, which is who they are looked up as from now on (Lex, 2026-10-31: greeted at stage 1, the stages
+        /// went; Y started them again at 1). Once a handle; p: enRAGE's person if already made.
+        private readonly HashSet<int> _wakeCarried = new HashSet<int>();
+
+        private void CarryWakeToEnrage(int h, FolkRef a, Person p = null)
+        {
+            ResBind b;
+            if (a == null || _wakeCarried.Contains(h) || !_resBind.TryGetValue(h, out b) || b == null || b.R == null || b.Model != ENTITY.GET_ENTITY_MODEL(h))
+                return;
+            _wakeCarried.Add(h);
+            if (_wakeCarried.Count > 200)
+                _wakeCarried.Clear();
+            if (p == null)
+            {
+                Folk f = Snapshot.Of(a);
+                p = _engine.PersonOfFolk(f.Key, f.Name, f.Woman, f.Town, Bridge.Now());
+            }
+            if (_engine.CarryWake(b.R.Id, p))
+                Log.Write("WAKE carried: " + b.R.Name + " is one of enRAGE's townsfolk now; their waking goes with them (" + Awakening.StageName(_engine.StageOf(p)) + ")");
         }
 
         /// Why someone woken only looks and speaks (passive), for the log: the first test that held them.
@@ -215,6 +248,8 @@ namespace EnrageWestworld.InGame
                 string why = WhyEnded(act, me, now);
                 if (why != null)
                 {
+                    if (why == "finished" && WakeHoldNext(i, act, me, now))
+                        continue;   // straight into the next act of the hold (WestworldScript.WakeHold.cs)
                     if (why == "ended")
                         DespairDied(act);
                     EndWakeAct(act, why);
@@ -226,6 +261,7 @@ namespace EnrageWestworld.InGame
                     act.NextStep = now + 400;
                     StepWakeAct(act, me, now);
                 }
+                WakeGestureStep(act, now);   // a gesture under way (WestworldScript.WakeHold.cs)
             }
             if (now < _nextWakeScan)
                 return;
@@ -337,6 +373,8 @@ namespace EnrageWestworld.InGame
                     return true;
                 case "lookaround":
                     act.Until = now + 8000;
+                    if (!act.Passive)
+                        WakeGesture(act, now + 3000, false);   // a hand to the face as they look round
                     act.NextStep = now;
                     return true;
                 case "stare":
@@ -351,12 +389,15 @@ namespace EnrageWestworld.InGame
                     }
                     TASK.TASK_LOOK_AT_ENTITY(h, me.Handle, 9000, 0, 51, 0);
                     act.Until = now + 9000;
+                    if (!act.Passive)
+                        WakeGesture(act, now + 2500, !PED.IS_PED_USING_ANY_SCENARIO(h));
                     return true;
                 case "freeze":
                     Take(act);
                     TASK.CLEAR_PED_TASKS(h, true, false);
                     TASK.TASK_STAND_STILL(h, 12000);
                     act.Until = now + 12000;
+                    WakeGesture(act, now + 4000, true);
                     return true;
                 case "pace":
                 {
@@ -406,6 +447,8 @@ namespace EnrageWestworld.InGame
                     }
                     act.Until = now + 5500;
                     ActSay(act, WakeBeats.Aloud("shout", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|shout|" + now / 1000), me, "angry");
+                    if (!act.Passive)
+                        WakeGesture(act, now + 500, true);
                     return true;
                 }
                 case "kneel":
@@ -435,7 +478,7 @@ namespace EnrageWestworld.InGame
                     act.Until = now + 100000;
                     return true;
                 default:
-                    return false;
+                    return OddKind(act.Kind) && BeginOdd(act, ped, me, now);   // the hold's own acts (WestworldScript.WakeHold.cs)
             }
         }
 
@@ -584,6 +627,9 @@ namespace EnrageWestworld.InGame
                 case "awake":
                     StepAwake(act, me, pos, dist, now);
                     break;
+                default:
+                    StepOdd(act, me, pos, dist, now);
+                    break;
             }
         }
 
@@ -600,6 +646,7 @@ namespace EnrageWestworld.InGame
                 act.Issued = false;
                 TASK.CLEAR_PED_TASKS(h, true, false);
                 TASK.TASK_STAND_STILL(h, 1800);
+                WakeGesture(act, now + 200, false);
                 return;
             }
             Vector3 goal = act.ToB ? act.B : act.A;
@@ -663,8 +710,10 @@ namespace EnrageWestworld.InGame
                         act.Said++;
                         if (line != null)
                         {
-                            ActSay(act, line, me, "plead");
+                            ActSay(act, line, me, "plead", true);
                             act.PhaseUntil = now + 5500 + line.Length * 45;
+                            if (!act.Passive)
+                                WakeGesture(act, now + 400, false);   // the hands as they plead (upper body)
                         }
                         break;
                     }
@@ -702,7 +751,7 @@ namespace EnrageWestworld.InGame
                     act.Until = now + 9000;
                     string line = WakeBeats.Aloud("plea", act.Stage, act.P, act.St, _engine.Player, act.P.Id + "|plea-end|" + now / 1000);
                     if (line != null)
-                        ActSay(act, line, me, "plead");
+                        ActSay(act, line, me, "plead", true);
                     break;
                 }
                 case "escape":
@@ -1315,9 +1364,15 @@ namespace EnrageWestworld.InGame
             }
             if (act.Phase >= 4 && act.Ending == "despair") return now >= act.Until ? "it didn't happen" : null;   // the last moments play out, to a deadline
             if (now >= act.Until) return act.Kind == "awake" && act.Phase == 0 ? "never reached you" : "finished";
-            if (PED.IS_PED_IN_COMBAT(act.Handle, 0)) return "got into a fight";
-            if (PED.IS_PED_RAGDOLL(act.Handle) && act.Kind != "run") return "was knocked down";
-            if (PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, act.Handle)) return "you aimed at them";
+            bool lash = act.Kind == "lashout";   // a lash-out is the fight: these don't end it (WestworldScript.WakeHold.cs)
+            if (!lash && PED.IS_PED_IN_COMBAT(act.Handle, 0)) return "got into a fight";
+            if (PED.IS_PED_RAGDOLL(act.Handle) && act.Kind != "run" && !lash) return "was knocked down";
+            if (!lash && PLAYER.IS_PLAYER_FREE_AIMING_AT_ENTITY(Game.Player.Handle, act.Handle)) return "you aimed at them";
+            if (act.Links > 0 && !lash)
+            {
+                string danger = HoldDanger(act, me);   // a hold's events are blocked, so the dangers are looked for here (WestworldScript.WakeHold.cs)
+                if (danger != null) return danger;
+            }
             if (new Ped(act.Handle).Position.DistanceTo(me.Position) > (act.Kind == "awake" ? 80f : 60f)) return "too far away";
             return null;
         }
@@ -1400,12 +1455,25 @@ namespace EnrageWestworld.InGame
             _ticker.Push(act.Name + ", thinking", text, "near", act.Handle);
         }
 
-        /// Something said aloud, ahead of the subtitle queue, in their own voice when the game has a fitting line.
-        private void ActSay(WakeAct act, string line, Ped me, string tag)
+        /// Something said aloud: their own voice now, when the game has a fitting line, and the words as a subtitle, the top
+        /// box when it's said to you (toYou), the one under it when not. Through the Feed's queue only lines to you were
+        /// ever subtitled, so the waking's words never showed (Lex, 2026-10-31: "I didn't hear the voicelines or see the
+        /// subtitles" for a wave's "Can you see my hand?").
+        private void ActSay(WakeAct act, string line, Ped me, string tag, bool toYou = false)
         {
             if (string.IsNullOrEmpty(line))
                 return;
-            Feed.SayFirst(act.Name, line, tag == null ? null : Speech.For(act.Handle, line, me.Handle, act.P.Hate, act.P.Fear, act.P.Friendly, tag), act.Handle);
+            int h = act.Handle;
+            Func<string> voice = tag == null ? null : Speech.For(h, line, me.Handle, act.P.Hate, act.P.Fear, act.P.Friendly, tag);
+            bool played = false;
+            if (voice != null && !Speech.Busy(h))
+            {
+                Speech.LastPlayed = false;
+                voice();
+                played = Speech.LastPlayed;
+            }
+            SpeechCaption(Person.FirstOf(act.Name), line, h, Math.Min(7000, 1800 + line.Length * 55), toYou);
+            Log.Write("WAKE said: " + act.Name + (toYou ? " to you" : "") + " (" + (played ? "voiced" : voice == null ? "no voice for it" : Speech.Busy(h) ? "voice busy" : "the game turned the voice down") + "): " + line);
         }
 
         /// Keeps ordinary reactions from interrupting the act.
@@ -1425,6 +1493,10 @@ namespace EnrageWestworld.InGame
             if (why != null)
                 Log.Write("WAKE act ended: " + act.Name + " " + act.Kind + (act.Ending != null ? " -> " + act.Ending : "") + " (" + why + ")");
             int h = act.Handle;
+            if (act.Links > 0)
+                HoldEnded(act, why);   // a minute's rest after a hold, however it ended (WestworldScript.WakeHold.cs)
+            if (act.Kind == "lashout")
+                LashOutEnded(act);   // no longer fair game; still at it, they're left to the fight
             if (act.Borrowed)
             {
                 // despair's borrow: the weapon we gave taken back from the living, then handed back (unblocked, orders cleared,
@@ -1467,6 +1539,7 @@ namespace EnrageWestworld.InGame
                 STREAMING.REMOVE_ANIM_DICT(BladeDict);   // the sets despair asked for go back too
             if (_writheSet == 1)
                 STREAMING.REMOVE_ANIM_DICT(WritheDict);
+            WakeGesturesUnload();
         }
     }
 }

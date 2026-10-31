@@ -132,7 +132,7 @@ namespace EnrageWestworld.InGame
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
-                                                         !Resting(p.Handle, now) && !_director.Involves(p.Handle)).ToList();   // (a quiet talk's two are taken)
+                                                         !Resting(p.Handle, now) && !_director.Involves(p.Handle) && !_wakeActs.Any(w => w.Handle == p.Handle)).ToList();   // (a quiet talk's two are taken; the waking are in an act of their own)
             if (pool.Count >= 2 && now >= _nextSpecial && SpecialScene(pool, me, saloon, now))
                 return;
             // first, two people near you who have a reason to have something to do with each other (Reasons.cs)
@@ -243,7 +243,7 @@ namespace EnrageWestworld.InGame
             List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && PostKindOf(p) == null &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false) && !PED.IS_PED_ON_MOUNT(p.Handle) &&
                                                          ENTITY.GET_ENTITY_SPEED(p.Handle) < 0.8f && p.Position.DistanceTo(me.Position) < StreetMetres &&
-                                                         !Resting(p.Handle, now) && clear(p)).ToList();
+                                                         !Resting(p.Handle, now) && clear(p) && !_wakeActs.Any(w => w.Handle == p.Handle)).ToList();   // not the waking (2026-10-31: a side quarrel took one mid-act)
             Ped a = null, b = null;
             float best = 3.4f;
             for (int i = 0; i < pool.Count; i++)

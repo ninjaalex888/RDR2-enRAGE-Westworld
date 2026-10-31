@@ -66,7 +66,7 @@ namespace EnrageWestworld.InGame
                 if (p.Position.DistanceTo(mid) > JoinMetres || _director.Involves(h))
                     continue;
                 witnesses++;
-                if (Spawner.IsOurs(h) || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) ||
+                if (Spawner.IsOurs(h) || Natives.StoryModel(p) || !IsGrownUp(p) || PED.IS_PED_ON_MOUNT(h) || PED.IS_PED_IN_ANY_VEHICLE(h, false) || _wakeActs.Any(w => w.Handle == h) ||
                     PED.IS_PED_USING_ANY_SCENARIO(h) || PED.IS_PED_IN_COMBAT(h, 0) || PED.IS_PED_FLEEING(h) || MayDirectWhyNot(p) != null)
                     continue;   // the sat and the leaning stay put (pulled off a bar they went into a T pose)
                 looking.Add(p);

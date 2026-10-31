@@ -191,7 +191,7 @@ namespace EnrageWestworld.InGame
             if (IsAcknowledging(h) || InTalk(h))
                 return "in a nod, a sight or a talk";
             WakeAct act = _wakeActs.FirstOrDefault(a => a.Handle == h);
-            if (act != null && (act.Kind == "awake" || act.Kind == "shout" || act.Kind == "ask" || act.Kind == "freeze"))
+            if (act != null && (act.Kind == "awake" || act.Kind == "shout" || act.Kind == "ask" || act.Kind == "freeze" || (OddKind(act.Kind) && act.Kind != "drift" && act.Kind != "mimic")))
                 return "in a waking act that speaks";
             return null;
         }

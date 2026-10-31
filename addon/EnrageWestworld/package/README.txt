@@ -1,4 +1,4 @@
-RealNPCs 0.7.7 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.8 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,23 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.8
+------------
+- The waking stay strange. From the second stage, a waking person near you no longer slips
+  back into their day between acts: they stand dazed, drift, pace or freeze, for up to three
+  minutes, and are let go at once for a fight, gunfire, the law or a street scene.
+- They use their hands and bodies as they act (rubbing their eyes, pointing at the sky, a hand
+  to the head, pleading), and what they say shows as subtitles.
+- From the third stage they bother the people around them: right up close and staring, a hand
+  waved before a face, following someone step for step, "you're not real", preaching. The
+  other walks off, curses, laughs or takes fright.
+- A quarter of holds at the third and fourth stages end with them turning on you or on someone
+  near: fists, or their own gun once fully awake. Stopping them is self-defence.
+- A few of the fully awake (5%), once each, strip bare where they stand. Never enRAGE's people.
+- A waking person you greet keeps their stage when enRAGE takes them up.
+- All under [WestWorld]: WakeHold, WakeHoldMinutes, WakeGestures, WakeStrange, WakeStripChance,
+  WakeLashOut. Testing page: "Strange waking acts, the next in turn".
 
 NEW IN 0.7.7
 ------------
@@ -902,6 +919,13 @@ in the file. The new ones:
             AwakeningShare (5), AwakeningDays (1), AwakeningBreakdown (90, how often an unravelling
             or awake person falls apart), AwakeningDespair (75, 0-100, see the content note above),
             WakeVoices (true): the waking say the game's own lines in the wrong places, more each stage,
+            WakeHold (true): from the second stage they stay strange between acts instead of going
+            back to their day, for WakeHoldMinutes (3); WakeGestures (true): their hands and bodies
+            as they act; WakeStrange (true): from the third stage they bother the people around them
+            (up close and staring, a hand before the face, following, "you're not real", preaching);
+            WakeStripChance (5): percent of the awake who strip bare once (never enRAGE's people),
+            WakeLashOut (25): percent of holds at stages 3-4 that end with them turning on you or on
+            someone near (fists, or their own gun when awake),
             HostsQuestionReality (true), RealityChance (15), Glitches (true),
             Reveries (true), ReturnChance (35), StrangerReturnChance (15)
 [Stalkers]  Stalkers (true): the master switch. StalkerRecords (true): one of enRAGE's people may be

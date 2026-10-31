@@ -251,6 +251,8 @@ namespace EnrageWestworld.InGame
                 LayingHands(starter, against, now, player);
             // and whoever joined in on it, or fires on someone in a quarrel: fair game while they do, the same as the man who
             // started it (Lex, 2026-10-30)
+            foreach (KeyValuePair<int, int> at in _wakeAttackers)
+                LayingHands(at.Key, at.Value, now, player);   // and someone waking who has turned on another (WestworldScript.WakeHold.cs)
             foreach (int[] at in _director.Attackers())
                 LayingHands(at[0], at[1], now, player);
             RescuedStep(now, player);

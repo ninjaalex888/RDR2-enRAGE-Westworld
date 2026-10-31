@@ -69,7 +69,7 @@ namespace EnrageWestworld.InGame
                 if (!Onlooking.ActsOn(ev.Kind) || id == ev.DoerId || id == ev.TargetId)
                     return;   // trouble between others, or something the player did; never the two it was between
                 int h = MindHandleById(id);
-                if (h == 0 || _director.Involves(h) || IsAcknowledging(h))
+                if (h == 0 || _director.Involves(h) || IsAcknowledging(h) || _wakeActs.Any(a => a.Handle == h))
                     return;   // nobody near now, one of the scene's own (the one who stepped in: a witness too), or busy elsewhere (a nod, a rescue, a greeting to you)
                 string act = Onlooking.ActFor(f, f.Shows, ae.Role, PED.IS_PED_USING_ANY_SCENARIO(h), ev.Place, w.Traits);
                 if (act == null)

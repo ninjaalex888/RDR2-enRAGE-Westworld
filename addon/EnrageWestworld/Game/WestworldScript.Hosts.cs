@@ -71,7 +71,7 @@ namespace EnrageWestworld.InGame
         private Ped Bystander(float min, float max, bool mustSee)
         {
             Ped me = Game.Player.Character;
-            List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null &&
+            List<Ped> pool = World.GetAllPeds().Where(p => Natives.Bystander(p, me.Handle) && !Spawner.IsOurs(p.Handle) && _bridge.RecordAt(p.Handle) == null && !_wakeActs.Any(w => w.Handle == p.Handle) &&
                                                          !PED.IS_PED_IN_ANY_VEHICLE(p.Handle, false)).ToList();
             pool = pool.Where(p =>
             {

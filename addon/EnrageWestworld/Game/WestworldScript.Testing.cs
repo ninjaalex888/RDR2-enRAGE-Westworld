@@ -377,6 +377,9 @@ namespace EnrageWestworld.InGame
                         return "nobody 3-16 m off to glitch";
                     skipped = "the 7-15 minutes between glitches";
                     return null;
+                case "wakestrange":
+                    skipped = "the stage's roll, the hold's turn and, for stripping, its chance and the once-a-person mark";
+                    return WakeStrangeTest(now);   // the next strange act in turn, then held (WestworldScript.WakeHold.cs)
                 case "despairnow":
                     return DespairNow(now);   // the nearest free person RealNPCs knows, straight to despair, each way in turn (WestworldScript.Despair.cs)
                 case "despairanims":

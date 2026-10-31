@@ -53,6 +53,26 @@ namespace EnrageWestworld.Core
             return p;
         }
 
+        /// enRAGE took up one of our residents as its own (a greeting does it): their waking goes with them to the state we
+        /// keep for enRAGE's person, so a stage isn't lost (Lex, 2026-10-31: awake, greeted, and the stages were gone).
+        /// The later stage wins; the despair roll and the strip go with it. True when anything moved.
+        public bool CarryWake(string fromId, Person to)
+        {
+            PersonState from = Store.Find(fromId);
+            if (from == null || from.WakeStage <= 0 || to == null || to.Id == fromId)
+                return false;
+            PersonState st = Store.Get(to);
+            st.WakeRolled = true;
+            if (st.WakeStage >= from.WakeStage)
+                return false;
+            st.WakeStage = from.WakeStage;
+            st.WakeStageAt = from.WakeStageAt;
+            foreach (string mark in new[] { "despair:rolled2", "wake:strip" })
+                if (from.Has(mark))
+                    st.Mark(mark);
+            return true;
+        }
+
         public int StageOf(Person p)
         {
             return StageOf(p.Id);

@@ -11,7 +11,7 @@ namespace EnrageWestworld.Core
 {
     public sealed class Settings
     {
-        public const int CurrentVersion = 143;
+        public const int CurrentVersion = 145;
 
         public int SettingsVersion = CurrentVersion;
 
@@ -103,6 +103,13 @@ namespace EnrageWestworld.Core
         public int AwakeningBreakdown = 90;
         public int AwakeningDespair = 75;
         public bool WakeVoices = true;   // the waking speak the game's own lines, oddly, more each stage (Core/WakeVoice.cs; settings version 78)
+        // the waking held and stranger (settings version 144; Lex, 2026-10-31: they swapped back to the game between acts; Game/WestworldScript.WakeHold.cs)
+        public bool WakeHold = true;
+        public int WakeHoldMinutes = 3;
+        public bool WakeGestures = true;
+        public bool WakeStrange = true;
+        public int WakeStripChance = 5;
+        public int WakeLashOut = 25;   // settings version 145 (Lex, 2026-10-31: the awake should turn on Arthur and on others)
         public bool HostsQuestionReality = true;
         public int RealityChance = 15;
         public bool Glitches = true;
@@ -634,6 +641,9 @@ namespace EnrageWestworld.Core
             AwakeningDays = Math.Max(1, Math.Min(60, AwakeningDays));
             AwakeningDespair = Math.Max(0, Math.Min(100, AwakeningDespair));
             AwakeningBreakdown = Math.Max(0, Math.Min(100, AwakeningBreakdown));
+            WakeHoldMinutes = Math.Max(1, Math.Min(15, WakeHoldMinutes));
+            WakeStripChance = Math.Max(0, Math.Min(100, WakeStripChance));
+            WakeLashOut = Math.Max(0, Math.Min(100, WakeLashOut));
             // stalker hours: the stalker day still runs 05:00 to 05:00; day hours stay in daylight, night hours cross midnight
             StalkerEveryMinutes = Math.Max(1, Math.Min(120, StalkerEveryMinutes));
             StalkerNearbyMetres = Math.Max(20, Math.Min(150, StalkerNearbyMetres));
@@ -811,6 +821,12 @@ namespace EnrageWestworld.Core
             b.AppendLine("AwakeningBreakdown = " + AwakeningBreakdown + "   ; percent of the time an unravelling or awake person breaks down (kneels, shouts at the sky, runs) rather than keeping it together");
             b.AppendLine("AwakeningDespair = " + AwakeningDespair + "   ; percent chance that a fully awake ordinary person, alone, can't bear it and ends their own life, with a gun that fits them, poison, a knife, or by running at a wall (0-100, 0 turns this off; a content note is in the readme)");
             b.AppendLine("WakeVoices = " + B(WakeVoices) + "   ; the waking say the game's own recorded lines in the wrong places: to nobody, the same words again, to the sky, at you; a little at the first stage, a great deal by the fourth, with a thought over the head for what they make of it");
+            b.AppendLine("WakeHold = " + B(WakeHold) + "   ; from the second stage, a waking person near you goes from one strange act into the next instead of going back to their day: stood dazed, drifting a few steps, pacing, freezing; let go for a fight, gunfire, the law after you, or a scene");
+            b.AppendLine("WakeHoldMinutes = " + WakeHoldMinutes + "   ; how long one hold lasts before they are let go for a minute (1 to 15)");
+            b.AppendLine("WakeGestures = " + B(WakeGestures) + "   ; the waking use their hands and bodies as they act: rubbing their eyes, pointing at the sky, a hand to the head, pleading; a clip that won't play or carries them off is dropped for the session (the log says which)");
+            b.AppendLine("WakeStrange = " + B(WakeStrange) + "   ; from the third stage, the waking do strange things to the people around them: right up close and staring, a hand waved before a face, following someone step for step, telling them they aren't real, preaching to whoever is about; the other walks off, curses, laughs or takes fright");
+            b.AppendLine("WakeStripChance = " + WakeStripChance + "   ; percent of the fully awake who, once, take every stitch off where they stand (never enRAGE's people: it knows them by their clothes); 0 for never");
+            b.AppendLine("WakeLashOut = " + WakeLashOut + "   ; percent of holds at the third and fourth stages that end with them turning on you or on someone near: fists while unravelling, their own gun when awake and carrying one; hotheads and the proud more often, cowards less. Coming at you or at someone else is fair game to stop; 0 for never");
             b.AppendLine("HostsQuestionReality = " + B(HostsQuestionReality) + "   ; people sometimes wonder whether their world is real");
             b.AppendLine("RealityChance = " + RealityChance + "   ; percent of remarks and thoughts that drift that way");
             b.AppendLine("Glitches = " + B(Glitches) + "   ; rarely, someone freezes or repeats themselves");
