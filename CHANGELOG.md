@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Carrying a body you didn't kill isn't murder (Lex, 2026-10-30, in game)
+
+- Picking up a man who had ended his own life got Arthur wanted for murder: a witness took the body over his shoulder for his doing. While you carry a dead person you never hurt, and for 90 seconds after you put them down, a murder, corpse or kidnapping charge is put back to how you stood when you picked them up, and the law stands down. Hurt anyone who hadn't come at you in that time and it's the law's call again. Under `[World] SelfDefenceNoBounty`; in the log, LAW: the game charged you ... for carrying.
+
 ### Shouts carry; T steps through the scenes nearby (Lex, 2026-10-30, in game)
 
 - What's shouted is now shouted: anger, threats, fright, a cry for the law ("Thief!"), fight talk, cheering and calling out play with the game's own shouted speech settings, which carry much farther than talk, so a quarrel or a cry down the street reaches you. Ordinary talk is as before; a voice that won't shout a line says it as usual. `[World] ShoutsCarry` (settings version 141).

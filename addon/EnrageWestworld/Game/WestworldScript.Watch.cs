@@ -497,6 +497,59 @@ namespace EnrageWestworld.InGame
                       (raised ? "bounty $" + bounty / 100 + " -> $" + _trampleBountyBefore / 100 : "") + (raised && newlyWanted ? ", " : "") + (newlyWanted ? "no longer wanted" : ""));
         }
 
+        // carrying a body he didn't kill: the game may take it for his murder (Lex, 2026-10-30, Saint Denis: he picked up a man
+        // who had ended his own life, and a witness went to the law: wanted for murder). While he carries a dead man he never hurt,
+        // and for 90 s after he puts him down, a murder, corpse or kidnapping charge (or one the game names none for) is put back
+        // to how he stood when he picked him up; hurting anyone who hadn't come at him in that time leaves it to the law. Under
+        // [World] SelfDefenceNoBounty.
+        private const int BodyAfterMs = 90000;
+        private static readonly uint[] BodyCrimes = { 0xE28ECE7Eu, 0x4E5F23F2u, 0x98F908DBu };   // murder, assaulting a corpse, kidnapping
+        private int _bodyCarryAt = -1, _bodyFirstAt, _bodyHandle, _bodyBounty, _bodyCleared;
+        private bool _bodyWanted;
+        private string _bodyWho;
+
+        private void NotYourBody(int me, int now, int level, bool incident, int bounty)
+        {
+            if (!_cfg.SelfDefenceNoBounty || MISC.GET_MISSION_FLAG())
+                return;
+            int my = Game.Player.Character.Handle;
+            int carried = PED.IS_PED_CARRYING_SOMETHING(my) ? PED._GET_FIRST_ENTITY_PED_IS_CARRYING(my) : 0;
+            if (carried != 0 && carried != my && ENTITY.DOES_ENTITY_EXIST(carried) && ENTITY.IS_ENTITY_A_PED(carried) && ENTITY.IS_ENTITY_DEAD(carried) &&
+                PED.IS_PED_HUMAN(carried) && !ENTITY.HAS_ENTITY_BEEN_DAMAGED_BY_ENTITY(carried, my, true, true))
+            {
+                if (_bodyCarryAt < 0 || carried != _bodyHandle)
+                {
+                    _bodyHandle = carried;
+                    _bodyFirstAt = now;
+                    _bodyBounty = bounty;
+                    _bodyWanted = level > 0 || incident;
+                    _bodyWho = NameToShow(carried);
+                    Log.Detail("LAW: you carry " + (_bodyWho ?? "a body") + ", dead by no hand of yours: a murder charge while you do, and for 90 s after, is put back");
+                }
+                _bodyCarryAt = now;
+            }
+            if (_bodyCarryAt < 0)
+                return;
+            if (now - _bodyCarryAt > BodyAfterMs || now < _bodyCarryAt || _lastOffenceAt > _bodyFirstAt)
+            {
+                _bodyCarryAt = -1;   // put down a while back, or he has hurt someone since: the law's call
+                return;
+            }
+            uint charge = LAW._GET_HUD_PLAYER_CRIME_TYPE(me);
+            if (charge != 0 && Array.IndexOf(BodyCrimes, charge) < 0)
+                return;
+            bool raised = bounty > _bodyBounty, newlyWanted = (level > 0 || incident) && !_bodyWanted;
+            if (!raised && !newlyWanted)
+                return;
+            if (raised)
+                LAW.SET_BOUNTY(me, _bodyBounty);
+            if (newlyWanted)
+                LawStandDown(me);
+            _bodyCleared++;
+            Log.Write("LAW: the game charged you (" + (charge == 0 ? "no charge named" : Crimes.Name(charge)) + ") for carrying " + (_bodyWho ?? "a body") + ", dead by no hand of yours: " +
+                      (raised ? "bounty $" + bounty / 100 + " -> $" + _bodyBounty / 100 : "") + (raised && newlyWanted ? ", " : "") + (newlyWanted ? "no longer wanted" : ""));
+        }
+
         /// Wanted the way the game shows it: a wanted level, or the law after him (an incident) with none yet.
         private static bool PlayerWanted(int me)
         {
@@ -545,6 +598,7 @@ namespace EnrageWestworld.InGame
             LawStages(me, now, level, incident);
             NotYourTrampling(me, now, level, incident, bounty);
             SelfDefenceAfter(me, now, level, incident, bounty);
+            NotYourBody(me, now, level, incident, bounty);
             if (wanted == _lawWasWanted && bounty == _lawWasBounty)
                 return;
             bool first = _lawWasBounty < 0;
