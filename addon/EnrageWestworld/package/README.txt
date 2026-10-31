@@ -1,4 +1,4 @@
-RealNPCs 0.7.9 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
+RealNPCs 0.7.10 - lives of their own for the people of Red Dead Redemption 2 (formerly enRAGE Westworld)
 =======================================================================================================
 
 The people of the world start acting like they have their own lives. They tell you about
@@ -17,6 +17,13 @@ Source code and bug reports: https://github.com/ninjaalex888/RealNPCs
 
 Story Mode only. Don't run script mods in Red Dead Online.
 
+
+NEW IN 0.7.10
+-------------
+- A fix for the game freezing in busy towns (Saint Denis above all). RealNPCs read what Arthur was
+  wearing every few seconds, so that people could react to him naked or half-dressed; that
+  reading could stop the game dead. It no longer reads clothes at all, so for now nobody remarks
+  on Arthur being undressed. Everything else is as in 0.7.9.
 
 NEW IN 0.7.9
 ------------

@@ -16,8 +16,13 @@ namespace EnrageWestworld.InGame
         public const int MostPieces = 64;
 
         /// The look of this body, "MODEL-HASH" in hex, or null.
+        // held back with the clothes read in sights (2026-10-31): the metaped piece calls hung the game thread in Saint Denis
+        public static readonly bool HeldBack = true;
+
         public static unsafe string Of(Ped p)
         {
+            if (HeldBack)
+                return null;
             if (p == null || !p.Exists() || p.IsDead)
                 return null;
             int h = p.Handle;

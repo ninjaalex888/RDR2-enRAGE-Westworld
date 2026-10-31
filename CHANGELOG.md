@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.7.10 (2026-10-31)
+
+A fix: the game froze in busy towns.
+
+- **The game no longer freezes in Saint Denis** (Lex, 2026-10-31: three freezes in Saint Denis, Windows calling each a hang). A watch added to find it caught the game thread stuck in RealNPCs' reading of what Arthur wore (`sights > sample > clothes (the metaped pieces)`, for 2, 8 and 30 s), read every 3 s since 0.7.4 so that people could react to him naked or undressed. It no longer reads clothes at all (nor does `[World] OwnLooks`, which used the same calls): nobody remarks on Arthur undressed for now. Nothing else changes from 0.7.9.
+
 ## 0.7.9 (2026-10-31)
 
 A fix: stripping froze the game.

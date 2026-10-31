@@ -75,9 +75,16 @@ namespace EnrageWestworld.InGame
 
         /// What he has on: naked (nothing over the body or the legs), undressed (one of the two bare), or null; worn says
         /// what was read, for the log.
+        // held back (2026-10-31): reading the metaped pieces hung the game thread, caught by the hang watch "inside sights >
+        // sample > clothes (the metaped pieces)" in Saint Denis, three hangs in all. Nothing reads them; naked and undressed
+        // aren't noticed meanwhile.
+        private static readonly bool ClothesReadHeldBack = true;
+
         private static unsafe string DressOf(int h, out string worn)
         {
             worn = null;
+            if (ClothesReadHeldBack)
+                return null;
             if (!PED.IS_PED_READY_TO_RENDER(h))
                 return null;
             int n = PED._GET_NUM_COMPONENTS_IN_PED(h);
