@@ -30,6 +30,63 @@ namespace EnrageWestworld.Core
         private readonly Dictionary<string, long> _asked = new Dictionary<string, long>(StringComparer.Ordinal);   // keys asked and not yet settled, with when
         private readonly Queue<LanguageAsk> _queue = new Queue<LanguageAsk>();
         public int Asked, Answered, Failed, Late, Held, ShownModel, ShownCache, ShownWritten, Dropped;
+        // the model's picks (Language.Pick.cs): their own queue, served first, and their answers by key until taken
+        public const int MostPicksWaiting = 6;
+        private readonly Queue<LanguageAsk> _picks = new Queue<LanguageAsk>();
+        private readonly Dictionary<string, KeyValuePair<string, long>> _picked = new Dictionary<string, KeyValuePair<string, long>>(StringComparer.Ordinal);
+        public int PicksAsked, PicksAnswered, PicksFailed, PicksDropped;
+
+        /// Queues a pick (the worker takes these before any thought). False when too many are waiting.
+        public bool AskPick(LanguageAsk ask)
+        {
+            if (ask == null || ask.Key == null || ask.Request == null)
+                return false;
+            lock (_lock)
+            {
+                if (_picks.Count >= MostPicksWaiting)
+                {
+                    PicksDropped++;
+                    return false;
+                }
+                _picks.Enqueue(ask);
+                PicksAsked++;
+                return true;
+            }
+        }
+
+        /// The worker's answer to a pick (null: none came), kept until the game takes it.
+        public void SettlePick(LanguageAsk ask, string answer, long elapsedMs)
+        {
+            if (ask == null)
+                return;
+            lock (_lock)
+            {
+                if (answer == null)
+                    PicksFailed++;
+                else
+                    PicksAnswered++;
+                if (_picked.Count >= 64)
+                    _picked.Clear();   // answers nobody came for (their moment passed)
+                _picked[ask.Key] = new KeyValuePair<string, long>(answer, elapsedMs);
+            }
+        }
+
+        /// The answer to a pick, once it has come: true and the answer (maybe null) with how long it took; it's forgotten then.
+        public bool TakePick(string key, out string answer, out long elapsedMs)
+        {
+            answer = null;
+            elapsedMs = 0;
+            lock (_lock)
+            {
+                KeyValuePair<string, long> a;
+                if (key == null || !_picked.TryGetValue(key, out a))
+                    return false;
+                _picked.Remove(key);
+                answer = a.Key;
+                elapsedMs = a.Value;
+                return true;
+            }
+        }
         public long AnswerMsTotal;
         public string LastWhy, LastShown, LastAnswer;
         public readonly Dictionary<string, int> HeldWhy = new Dictionary<string, int>(StringComparer.Ordinal);
@@ -74,7 +131,7 @@ namespace EnrageWestworld.Core
         public LanguageAsk Next()
         {
             lock (_lock)
-                return _queue.Count > 0 ? _queue.Dequeue() : null;
+                return _picks.Count > 0 ? _picks.Dequeue() : _queue.Count > 0 ? _queue.Dequeue() : null;
         }
 
         public int Waiting

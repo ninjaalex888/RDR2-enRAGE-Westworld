@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### The model picks what people near you do (Lex, 2026-10-30; in testing)
+
+- The first step toward the model deciding. When the mind's choice changes for someone within 15 m of you, the best three of the things it would allow them (and a plan's own step, "goes to find Gideon, meaning to get even with him", when the one it's about is near) go to the local model with who they are and how they feel, and it answers with a number. That's what they do. Every option is one the mind already allows, so any pick is safe; a feeling strongly felt still decides by itself. The wait is 2.5 s at most: late, empty or unreadable, the mind's own choice is done, as before. Picks go ahead of thoughts in the model's queue, four at once at most. Measured on llama3.1:8b before the game: 30 to 140 ms an answer, a clean number each time.
+- The log's MIND pick line shows what was offered, what the model picked and whether it was the mind's own (the first 40 a session in the main log); F7 TEST picks counts them. `[Mind] LanguagePicks`, on, with `Language` (settings version 142).
+
 ### Plans lean the day; someone enRAGE knew goes by its name (Lex, 2026-10-30)
 
 - A plan carried over the days now shapes what its holder does with the day, not only whom they seek out. Someone courting or meaning to thank a person goes to the store more (and once there picks out something to give, said over their head: lemon drops, a tin of tobacco, the good coffee) and strolls in the hope of passing them. Someone paying a debt back keeps to the work and away from the saloon, the cards and the bottle. Someone set on getting even broods over a drink, keeps an eye out, and has less of a friendly word for anyone. Where a thing is proper still decides. The log's MIND acts line says "and a plan" where it leaned the choice; PLAN ... picks out something at the store.

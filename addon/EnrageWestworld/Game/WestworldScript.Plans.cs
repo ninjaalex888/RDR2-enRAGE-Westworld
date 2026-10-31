@@ -80,12 +80,40 @@ namespace EnrageWestworld.InGame
                 Ped hp = new Ped(h);
                 if (MindActWhyNot(hp, h) != null || IsMindActing(h))
                     continue;
-                _planSoughtAt[key] = now;
-                TASK.TASK_GO_TO_ENTITY(h, t, 25000, 1.6f, 2.2f, 0f, 0);
-                _planSeeks++;
-                Log.Write("PLAN " + p.HolderName + " goes to find " + p.TargetName + " (to " + Plans.Words(p) + ", " + (int)d + " m off)");
+                PlanSeekNow(p, h, t, d, now, null);
                 return;   // one a look
             }
+        }
+
+        private void PlanSeekNow(Plan p, int h, int t, float d, int now, string why)
+        {
+            _planSoughtAt[p.HolderId + "|" + p.TargetId] = now;
+            TASK.TASK_GO_TO_ENTITY(h, t, 25000, 1.6f, 2.2f, 0f, 0);
+            _planSeeks++;
+            Log.Write("PLAN " + p.HolderName + " goes to find " + p.TargetName + " (to " + Plans.Words(p) + ", " + (int)d + " m off" + (why != null ? "; " + why : "") + ")");
+        }
+
+        /// The plan this holder could act on now: its target near, 3 to 40 m off, not sought these two minutes. Null if none.
+        private Plan PlanSeekable(string holderId, int h, int now, out int t, out float d)
+        {
+            t = 0;
+            d = 0f;
+            if (!PlansOn || holderId == null)
+                return null;
+            foreach (Plan p in _store.Plans.Where(x => !x.Done && x.HolderId == holderId))
+            {
+                int th = PlanNearHandle(p.TargetId);
+                if (th == 0)
+                    continue;
+                float dd = ENTITY.GET_ENTITY_COORDS(h, true, true).DistanceTo(ENTITY.GET_ENTITY_COORDS(th, true, true));
+                int last;
+                if (dd < 3f || dd > 40f || (_planSoughtAt.TryGetValue(p.HolderId + "|" + p.TargetId, out last) && now - last < 120000 && now >= last))
+                    continue;
+                t = th;
+                d = dd;
+                return p;
+            }
+            return null;
         }
 
         /// Now and then, someone near with a plan thinks of it, over their head.

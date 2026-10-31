@@ -83,7 +83,7 @@ namespace EnrageWestworld.Core
         }
     }
 
-    public static class Choosing
+    public static partial class Choosing
     {
         public const float Interrupts = 0.65f;   // a feeling this strong goes ahead of any plan (Appraisal's strong)
 

@@ -201,15 +201,25 @@ namespace EnrageWestworld.InGame
                         Thread.Sleep(60);
                         continue;
                     }
+                    bool pick = ask.Request.Kind == "pick";
                     if (!_langReady)
                     {
-                        _engine.LanguageAnswers.Settle(ask, null, 0);
+                        if (pick)
+                            _engine.LanguageAnswers.SettlePick(ask, null, 0);
+                        else
+                            _engine.LanguageAnswers.Settle(ask, null, 0);
                         continue;
                     }
                     var sw = Stopwatch.StartNew();
-                    string json = LanguagePost(_cfg.LanguageUrl + "/api/generate", Language.RequestBody(_cfg.LanguageModel, ask.Request));
+                    string json = LanguagePost(_cfg.LanguageUrl + "/api/generate", pick ? Language.PickBody(_cfg.LanguageModel, ask.Request) : Language.RequestBody(_cfg.LanguageModel, ask.Request));
                     sw.Stop();
                     string answer = Language.ParseResponse(json);
+                    if (pick)
+                    {
+                        _engine.LanguageAnswers.SettlePick(ask, answer, sw.ElapsedMilliseconds);   // read on the game thread (WestworldScript.Picks.cs)
+                        _langFailStreak = 0;
+                        continue;
+                    }
                     LanguageAnswer a = _engine.LanguageAnswers.Settle(ask, answer, sw.ElapsedMilliseconds);
                     _langFailStreak = 0;
                     if (a != null)

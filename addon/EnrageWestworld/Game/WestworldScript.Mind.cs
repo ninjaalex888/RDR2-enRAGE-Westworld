@@ -440,8 +440,8 @@ namespace EnrageWestworld.InGame
                 _mindChoiceChanges++;
                 if (!quiet)
                     _mindLastChoice = w.Name + " -> " + Choosing.WordsOf(ch.Key);   // F7's last choice is someone near, not the about ring's
-                if (!quiet)
-                    MindActOn(w, h, now);   // and now they do it (WestworldScript.MindActs.cs; the NPC-life run)
+                if (!quiet && !PickAsk(w, h, now, c))
+                    MindActOn(w, h, now);   // and now they do it (WestworldScript.MindActs.cs; the NPC-life run); or the model picks first (WestworldScript.Picks.cs)
             }
             if (quiet)
             {

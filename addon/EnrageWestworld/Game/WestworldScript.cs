@@ -1134,6 +1134,7 @@ namespace EnrageWestworld.InGame
 			Log.Write("TEST mind: " + MindsStatus());
 			Log.Write("TEST thought variety: " + (_cfg.ThoughtVariety ? "on; frames held back within the hour " + _engine.FramesHeld + ", choices with a source's pull spread " + _engine.SourcesSpread : "off ([Mind] ThoughtVariety): the old choice"));
 			Log.Write("TEST language: " + LanguageStatus());
+			Log.Write("TEST picks: " + PicksStatus());
 			Log.Write("TEST mind shadow: " + MindShadowStatus());
 			Log.Write("TEST mind choices: " + MindChoicesStatus());
 			Log.Write("TEST mind beliefs: " + MindBeliefsStatus());
